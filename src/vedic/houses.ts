@@ -88,6 +88,54 @@ export function calculateHouseCusps(date: DateTime, lat: number, lon: number, me
     const ascX = -Math.sin(ramcRad) * Math.cos(epsRad) - Math.tan(latRad) * Math.sin(epsRad);
     let asc = normalize360(Math.atan2(ascY, ascX) * RAD_TO_DEG);
 
+    // [High Precision] Refraction Correction
+    // Standard geometric ascendant assumes altitude = 0.
+    // Refraction means visible horizon is at altitude ~ -0.57 degrees (-34 arcmin).
+    // We iterate to find the ecliptic longitude where altitude is -0.57.
+    // Use Newton-Raphson or simple Binary Search? Or Secant.
+    // Search window: Asc +/- 2 degrees.
+    // Function to get Altitude of Ecliptic Point(lon) at this location/time.
+
+    // Convert Ecliptic(lon, 0) -> Equatorial -> Horizontal(Alt)
+    const getAltitude = (testLon: number): number => {
+        const rLon = testLon * DEG_TO_RAD;
+        // Ecl -> Eq
+        // x=cos(l), y=sin(l)cos(e), z=sin(l)sin(e)
+        const ex = Math.cos(rLon);
+        const ey = Math.sin(rLon) * Math.cos(epsRad);
+        const ez = Math.sin(rLon) * Math.sin(epsRad);
+        // RA/Dec
+        const ra = Math.atan2(ey, ex);
+        const dec = Math.asin(ez);
+        // Hour Angle
+        const ha = (ramcRad - ra); // ramc is LST (already in rad here?) No, ramcRad is LST+Lon? 
+        // Wait, RAMC is NOT LST. RAMC = LST + Lon_Local?
+        // RAMC (Right Ascension of Meridian) IS Local Sidereal Time (in degrees).
+        // So H = RAMC - RA.
+
+        // Eq -> Horiz
+        // sin(Alt) = sin(Lat)sin(Dec) + cos(Lat)cos(Dec)cos(H)
+        const sinAlt = Math.sin(latRad) * Math.sin(dec) + Math.cos(latRad) * Math.cos(dec) * Math.cos(ha);
+        return Math.asin(sinAlt) * RAD_TO_DEG;
+    };
+
+    // Target Altitude = -0.57 degrees
+    const targetAlt = -0.57;
+    // Iterate
+    let currentAsc = asc;
+    for (let i = 0; i < 5; i++) {
+        const alt = getAltitude(currentAsc);
+        const diff = alt - targetAlt;
+        if (Math.abs(diff) < 0.001) break;
+        // Derivative approx: 1 degree lon roughly 1 degree alt? (Depends on inclination)
+        // Usually Asc rises. So increasing Lon decreases Alt? Or increases?
+        // Let's test slope
+        const altPlus = getAltitude(currentAsc + 0.01);
+        const slope = (altPlus - alt) / 0.01;
+        currentAsc -= (diff / slope);
+    }
+    asc = normalize360(currentAsc);
+
     // 7. Calculate Houses
     let cusps: number[] = [];
 
