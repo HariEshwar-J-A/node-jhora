@@ -24,8 +24,9 @@ export type {
 export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
 export { calculateVarga, calculateShashtyamsa };
 
-export interface GlobalConfig {
+export interface NodeJHoraConfig {
     ayanamsaOrder?: number; // 1 = Lahiri
+    topocentric?: boolean;
 }
 
 // Global Singleton Instance of Engine?
@@ -44,22 +45,25 @@ export class NodeJHora {
     private ephemeris: EphemerisEngine;
     private location: { latitude: number, longitude: number };
     private ayanamsa: number;
+    private config: NodeJHoraConfig;
 
     constructor(
         location: { latitude: number, longitude: number },
-        config: GlobalConfig = { ayanamsaOrder: 1 }
+        config: NodeJHoraConfig = { ayanamsaOrder: 1 }
     ) {
         this.location = location;
-        this.ephemeris = new EphemerisEngine();
+        this.ephemeris = EphemerisEngine.getInstance();
         this.ayanamsa = config.ayanamsaOrder || 1;
+        this.config = config;
     }
 
     async init() {
         await this.ephemeris.initialize();
     }
 
-    getPlanets(date: DateTime): PlanetPosition[] {
-        return this.ephemeris.getPlanets(date, this.location, this.ayanamsa);
+    public getPlanets(date: DateTime): PlanetPosition[] {
+        const planets = this.ephemeris.getPlanets(date, this.location, this.config.ayanamsaOrder, this.config.topocentric);
+        return planets;
     }
 
     getHouses(date: DateTime): HouseData {
