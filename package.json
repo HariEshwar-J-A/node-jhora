@@ -1,6 +1,6 @@
 {
   "name": "node-jhora",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A high-performance Vedic Astrology calculation engine in TypeScript (Clean Room implementation).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,23 @@
     "shadbala",
     "typescript"
   ],
-  "author": "Hari Eshwar J",
+  "author": {
+    "name": "Harieshwar Jagan Abirami",
+    "email": "harieshwarja.official@gmail.com",
+    "url": "https://github.com/HariEshwar-J-A"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HariEshwar-J-A/node-jhora/issues"
+  },
+  "homepage": "https://github.com/HariEshwar-J-A/node-jhora#readme",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/HariEshwar-J-A"
+  },
   "license": "UNLICENSED",
   "dependencies": {
     "events": "^3.3.0",
