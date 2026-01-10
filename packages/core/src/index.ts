@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { EphemerisEngine, PlanetPosition, HouseData } from './engine/ephemeris.js';
 import { Geocoder, CityData } from './engine/geocoder.js';
-import { calculateHouseCusps } from './vedic/houses.js';
+import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
 import { calculateVarga, calculateShashtyamsa, VargaPoint } from './vedic/vargas.js';
 import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
 import { calculateTimeUpagrahas, calculateDhumadiUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
@@ -21,7 +21,8 @@ export type {
     StreamConfig,
     KPSignificator, RulingPlanetsResult,
     VargaPoint,
-    UpagrahaPositions
+    UpagrahaPositions,
+    HouseSystemMethod
 };
 
 // Re-export Utils
@@ -66,8 +67,8 @@ export class NodeJHora {
         return this.ephemeris.getPlanets(date, this.location, this.config.ayanamsaOrder, this.config.topocentric);
     }
 
-    getHouses(date: DateTime): HouseData {
-        const res = calculateHouseCusps(date, this.location.latitude, this.location.longitude, 'WholeSign', this.ephemeris);
+    getHouses(date: DateTime, system: HouseSystemMethod = 'WholeSign'): HouseData {
+        const res = calculateHouseCusps(date, this.location.latitude, this.location.longitude, system, this.ephemeris);
         return {
             cusps: res.cusps,
             ascendant: res.ascendant,
@@ -77,9 +78,9 @@ export class NodeJHora {
         };
     }
 
-    getChart(date: DateTime): { planets: PlanetPosition[], houses: HouseData } {
+    getChart(date: DateTime, system: HouseSystemMethod = 'WholeSign'): { planets: PlanetPosition[], houses: HouseData } {
         const planets = this.getPlanets(date);
-        const houses = this.getHouses(date);
+        const houses = this.getHouses(date, system);
         return { planets, houses };
     }
 
