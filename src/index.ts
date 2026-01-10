@@ -15,6 +15,10 @@ import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
 import { YogaEngine, ChartData } from './yogas/engine.js';
 import { Ashtakavarga, AshtakavargaResult } from './analytics/ashtakavarga.js';
 import { TransitEngine, TransitEvent } from './predictive/transits.js';
+import { YoginiDasha } from './predictive/yogini.js';
+import { NarayanaDasha } from './predictive/narayana.js';
+import { PoruthamMatch, CompatibilityResult, KutaScore } from './match/porutham.js';
+import { EphemerisInterpolator } from './engine/interpolator.js';
 import { YOGA_LIBRARY } from './yogas/library.js';
 import { VargaDeities } from './vedic/deities.js';
 
@@ -30,7 +34,8 @@ export type {
     ChartData,
     JaiminiKaraka, ArudhaPada, CharaDashaPeriod,
     KPSignificator, RulingPlanetsResult,
-    AshtakavargaResult, TransitEvent
+    AshtakavargaResult, TransitEvent,
+    CompatibilityResult, KutaScore
 };
 
 // Re-export Utils
@@ -165,5 +170,8 @@ export {
     KPSubLord, KPRuling,
     Ashtakavarga,
     TransitEngine,
-    VargaDeities
+    VargaDeities,
+    YoginiDasha, NarayanaDasha,
+    PoruthamMatch,
+    EphemerisInterpolator
 };
