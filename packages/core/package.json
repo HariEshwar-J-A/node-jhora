@@ -4,8 +4,16 @@
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "publishConfig": {
+        "access": "public"
+    },
     "files": [
-        "dist"
+        "dist",
+        "LICENSE"
     ],
     "scripts": {
         "build": "tsc"
