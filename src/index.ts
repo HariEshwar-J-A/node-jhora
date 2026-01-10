@@ -16,6 +16,7 @@ import { YogaEngine, ChartData } from './yogas/engine.js';
 import { Ashtakavarga, AshtakavargaResult } from './analytics/ashtakavarga.js';
 import { TransitEngine, TransitEvent } from './predictive/transits.js';
 import { YOGA_LIBRARY } from './yogas/library.js';
+import { VargaDeities } from './vedic/deities.js';
 
 // Re-export Interfaces
 export type {
@@ -163,5 +164,6 @@ export {
     JaiminiCore, JaiminiDashas,
     KPSubLord, KPRuling,
     Ashtakavarga,
-    TransitEngine
+    TransitEngine,
+    VargaDeities
 };
