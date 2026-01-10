@@ -8,6 +8,12 @@ import { calculateShadbala, ShadbalaResult } from './analytics/shadbala.js';
 import { generateVimshottari, DashaPeriod } from './predictive/dasha.js';
 import { PlanetaryStream, StreamConfig } from './stream/planetary_stream.js';
 import { getRelationship, Relationship } from './core/relationships.js';
+import { JaiminiCore, JaiminiKaraka, ArudhaPada } from './jaimini/core.js';
+import { JaiminiDashas, CharaDashaPeriod } from './jaimini/dashas.js';
+import { KPSubLord, KPSignificator } from './kp/sublord.js';
+import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
+import { YogaEngine, ChartData } from './yogas/engine.js';
+import { YOGA_LIBRARY } from './yogas/library.js';
 
 // Re-export Interfaces
 export type {
@@ -17,7 +23,10 @@ export type {
     ShadbalaResult,
     DashaPeriod,
     StreamConfig,
-    Relationship
+    Relationship,
+    ChartData,
+    JaiminiKaraka, ArudhaPada, CharaDashaPeriod,
+    KPSignificator, RulingPlanetsResult
 };
 
 // Re-export Utils
@@ -145,5 +154,9 @@ export {
     calculatePanchanga,
     calculateShadbala,
     generateVimshottari,
-    PlanetaryStream
+    PlanetaryStream,
+    YogaEngine,
+    YOGA_LIBRARY,
+    JaiminiCore, JaiminiDashas,
+    KPSubLord, KPRuling
 };
