@@ -154,6 +154,23 @@ const events = await scanner.findTransits(
 events.forEach(e => console.log(`${e.type} Change to ${e.newValue} at ${e.time}`));
 ```
 
+events.forEach(e => console.log(`${e.type} Change to ${e.newValue} at ${e.time}`));
+```
+
+### 9. Advanced Vargas & Deities
+Calculate Shashtyamsa (D60) Deities and Parashara-specific Vargas.
+
+```typescript
+import { calculateVarga, VargaDeities } from 'node-jhora';
+
+// 1. Parashara Hora (D2)
+const hora = calculateVarga(sunLon, 2, 'Parashara'); 
+
+// 2. Shashtyamsa Deity
+const deity = VargaDeities.getD60Deity(sunLon);
+console.log("D60 Deity:", deity); // e.g., "Ghor", "Amrita"
+```
+
 ## Contributing
 
 We welcome contributions! Please verify your changes with:
