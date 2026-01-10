@@ -1,0 +1,21 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": "src",
+        "composite": true,
+        "paths": {
+            "@node-jhora/core": [
+                "../core/src/index.ts"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "references": [
+        {
+            "path": "../core"
+        }
+    ]
+}
