@@ -4,6 +4,8 @@ import { Geocoder, CityData } from './engine/geocoder.js';
 import { calculateHouseCusps } from './vedic/houses.js';
 import { calculateVarga, calculateShashtyamsa, VargaPoint } from './vedic/vargas.js';
 import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
+import { calculateTimeUpagrahas, calculateDhumadiUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
+import { calculatePranapada, calculateInduLagna, calculateShreeLagna } from './vedic/special_lagnas.js';
 import { PlanetaryStream, StreamConfig } from './stream/planetary_stream.js';
 import { getRelationship, Relationship, PLANET_IDS } from './core/relationships.js';
 import { KPSubLord, KPSignificator } from './kp/sublord.js';
@@ -18,7 +20,8 @@ export type {
     PanchangaResult,
     StreamConfig,
     KPSignificator, RulingPlanetsResult,
-    VargaPoint
+    VargaPoint,
+    UpagrahaPositions
 };
 
 // Re-export Utils
@@ -105,5 +108,7 @@ export {
     calculatePanchanga,
     PlanetaryStream,
     KPSubLord, KPRuling,
-    EphemerisInterpolator
+    EphemerisInterpolator,
+    calculateTimeUpagrahas, calculateDhumadiUpagrahas,
+    calculatePranapada, calculateInduLagna, calculateShreeLagna
 };
