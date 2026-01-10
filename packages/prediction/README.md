@@ -71,3 +71,7 @@ Sequence based on Jaimini's sign-based logic.
 import { JaiminiDashas } from '@node-jhora/prediction';
 const chara = JaiminiDashas.calculateCharaDasha(lagnaSign, planets);
 ```
+
+## 🏷️ Keywords
+Vimshottari Dasha, Yogini Dasha, Narayana Dasha, Transits, Jaimini, Chara Dasha, Predictive Astrology, Timing Events, Horoscope, Gochara, Planetary Aspects, Mahadasha, Antardasha
+

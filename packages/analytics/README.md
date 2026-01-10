@@ -75,3 +75,7 @@ import { YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
 const foundYogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 console.log("Detected Yogas:", foundYogas);
 ```
+
+## 🏷️ Keywords
+Shadbala, Ashtakavarga, Yoga Engine, Planetary Strength, Vedic Astrology, Jyotish, Parashara, BAV, SAV, Raja Yoga, Astrology Analytics, Bhava Bala, Dig Bala
+

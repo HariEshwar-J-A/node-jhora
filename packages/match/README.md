@@ -41,3 +41,7 @@ The package includes internal tables for:
 - **Gana Table**: Mapping 27 stars to temperaments.
 - **Yoni Table**: Mapping 27 stars to symbolic animals and their mutual enemies (e.g., Cat vs Rat).
 - **Rajju Map**: Mapping 27 stars to body regions in a zig-zag pattern (Feet, Hip, Navel, Neck, Head).
+
+## 🏷️ Keywords
+Matchmaking, Porutham, Kuta, Marriage Compatibility, Gun Milan, Synastry, Vedic Match, Horoscope Matching, Relationship Compatibility, Nakshatra Compatibility, Rajju Dosha
+
