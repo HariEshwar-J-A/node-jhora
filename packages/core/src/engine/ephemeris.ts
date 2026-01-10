@@ -81,9 +81,8 @@ export class EphemerisEngine {
      * @param topocentric - Enable Parallax correction (default: false)
      */
     public getPlanets(date: DateTime, _location?: GeoLocation, ayanamsaOrder?: number, topocentric: boolean = false): PlanetPosition[] {
-        if (!this.module) {
-            throw new Error("EphemerisEngine not initialized. Call init() first.");
-        }
+        this.checkInit();
+        const Swe = this.module.SweModule;
 
         // Apply dynamic ayanamsa if requested
         if (ayanamsaOrder !== undefined) {
@@ -103,64 +102,58 @@ export class EphemerisEngine {
         // Get LST for Parallax
         let lst = 0;
         if (topocentric && _location) {
-            // Greenwich ST
             const gmst = this.getSiderealTime(jd);
-            // Local ST = GMST + Lon/15
             const lonHours = _location.longitude / 15;
             lst = normalize360((gmst + lonHours) * 15);
         }
 
         const planets: PlanetPosition[] = [];
-
-        // Define mapping: 0=Sun..8=Ketu.
-        // SwissEph IDs: Sun=0, Moon=1, Merc=2, Ven=3, Mar=4, Jup=5, Sat=6, Rahu=11, Ketu=SouthNode(calc)
         const planetIds = [0, 1, 2, 3, 4, 5, 6, 11];
 
-        for (let i = 0; i < planetIds.length; i++) {
-            const pid = planetIds[i];
-            // Flag: SEFLG_SWIEPH (2), SEFLG_SIDEREAL (64*1024), SEFLG_SPEED (256), SEFLG_EQUATORIAL (2*1024 for Declination?)
-            // We need Ecliptic Longitude (Sidereal) AND Equatorial Declination (for Shadbala/Parallax).
-            // swisseph-wasm `calc_ut` returns array [lon, lat, dist, speedInLon, speedInLat, speedInDist].
-            // To get Declination, we need a separate call with SEFLG_EQUATORIAL?
-            // Or use simple conversion. 
-            // Better to make 2 calls if we need high precision Declination.
-            // Let's stick to Sidereal Ecliptic first.
-            // Flag: SEFLG_MOSEPH (4) - ESSENTIAL for no-file mode.
-            // SEFLG_SWIEPH (2) tries to use files.
-            let flags = this.module.SEFLG_MOSEPH | this.module.SEFLG_SIDEREAL | this.module.SEFLG_SPEED;
+        // Pre-allocate buffer for results (6 doubles = 48 bytes)
+        const buffer = Swe._malloc(6 * 8);
 
-            // Just basic Sidereal.
-            const res = this.module.calc_ut(jd, pid, flags);
-            let lon = res[0];
-            let lat = res[1];
-            let dist = res[2];
-            let speed = res[3];
+        try {
+            for (let i = 0; i < planetIds.length; i++) {
+                const pid = planetIds[i];
+                let flags = this.module.SEFLG_MOSEPH | this.module.SEFLG_SIDEREAL | this.module.SEFLG_SPEED;
 
-            // Apply Manual Topocentric Correction
-            if (topocentric && _location && dist > 0) {
-                // For Moon (pid=1) it's critical. Others less so, but apply to all for "Perfect".
-                // Correction returns Topocentric Longitude.
-                const topo = calculateParallax(lon, lat, dist, _location.latitude, lst, obl);
-                lon = topo.lon;
-                lat = topo.lat;
-                // Note: Speed should also be corrected but difference is minute for astrology.
+                // Call swe_calc_ut directly
+                Swe.ccall('swe_calc_ut', 'number', ['number', 'number', 'number', 'pointer', 'pointer'], [jd, pid, flags, buffer, null]);
+                
+                // Copy values immediately from HEAPF64
+                const lon = Swe.HEAPF64[buffer / 8 + 0];
+                const lat = Swe.HEAPF64[buffer / 8 + 1];
+                const dist = Swe.HEAPF64[buffer / 8 + 2];
+                const speed = Swe.HEAPF64[buffer / 8 + 3];
+
+                // Get Equatorial Coordinates for Declination
+                const eqFlags = this.module.SEFLG_EQUATORIAL | this.module.SEFLG_MOSEPH;
+                Swe.ccall('swe_calc_ut', 'number', ['number', 'number', 'number', 'pointer', 'pointer'], [jd, pid, eqFlags, buffer, null]);
+                const dec = Swe.HEAPF64[buffer / 8 + 1];
+
+                let finalLon = lon;
+                let finalLat = lat;
+
+                // Apply Manual Topocentric Correction
+                if (topocentric && _location && dist > 0) {
+                    const topo = calculateParallax(lon, lat, dist, _location.latitude, lst, obl);
+                    finalLon = topo.lon;
+                    finalLat = topo.lat;
+                }
+
+                planets.push({
+                    id: pid,
+                    name: this.getPlanetName(pid),
+                    longitude: finalLon,
+                    latitude: finalLat,
+                    distance: dist,
+                    speed: speed,
+                    declination: dec
+                });
             }
-
-            // Get Equatorial Coordinates for Declination (Required for Shadbala/Ayanabala)
-            // Use SEFLG_EQUATORIAL (2048).
-            const eqFlags = this.module.SEFLG_EQUATORIAL | this.module.SEFLG_MOSEPH;
-            const eqResult = this.module.calc_ut(jd, pid, eqFlags);
-            // eqResult[0] = Right Ascension, eqResult[1] = Declination
-
-            planets.push({
-                id: pid, // Use pid directly
-                name: this.getPlanetName(pid), // Use helper to get name
-                longitude: lon, // Use corrected lon
-                latitude: lat, // Use corrected lat
-                distance: dist,
-                speed: speed,
-                declination: eqResult[1]
-            });
+        } finally {
+            Swe._free(buffer);
         }
 
         // Add Ketu (Opposite of Rahu)
@@ -174,10 +167,7 @@ export class EphemerisEngine {
                 latitude: -rahu.latitude,
                 distance: rahu.distance,
                 speed: rahu.speed,
-                declination: -rahu.declination // Approximation: Ketu is opposite node, declination is opposite? 
-                // Nodes intersect ecliptic. Lat is 0? 
-                // Rahu/Ketu latitude is not 0 (mean nodes). 
-                // For declination, opposite point on celestial sphere -> dec is -dec.
+                declination: -rahu.declination
             });
         }
 
