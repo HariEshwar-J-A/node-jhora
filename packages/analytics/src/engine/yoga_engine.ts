@@ -1,54 +1,5 @@
 import { PlanetPosition } from '@node-jhora/core';
-
-export type YogaCategory = 'Raja' | 'Dhana' | 'Nabhasa' | 'Other';
-
-export type ConditionType = 'placement' | 'aspect' | 'conjunction' | 'lordship' | 'strength';
-
-export interface BaseCondition {
-    type: ConditionType;
-}
-
-export interface PlacementCondition extends BaseCondition {
-    type: 'placement';
-    planet: string;
-    house?: number[]; // 1-based house numbers [1, 4, 7, 10]
-    sign?: number[]; // 0-based sign indices [0, 3, 4] (Aries, Cancer, Leo)
-    inOwnSign?: boolean;
-    inExaltation?: boolean;
-    relativeTo?: string; // Planet name (e.g. 'Moon'). If set, 'house' becomes relative to this planet.
-}
-
-export interface AspectCondition extends BaseCondition {
-    type: 'aspect';
-    from: string; // Planet Name
-    to: string;   // Planet Name
-}
-
-export interface ConjunctionCondition extends BaseCondition {
-    type: 'conjunction';
-    planets: string[]; // List of planet names required to be conjoined
-}
-
-export interface LordshipCondition extends BaseCondition {
-    type: 'lordship';
-    lord_of: number; // House number (e.g. 9) whose lord...
-    placed_in: number; // ...is placed in this house (e.g. 10)
-}
-
-export interface StrengthCondition extends BaseCondition {
-    type: 'strength';
-    planet: string;
-    min_shadbala: number;
-}
-
-export type Condition = PlacementCondition | AspectCondition | ConjunctionCondition | LordshipCondition | StrengthCondition;
-
-export interface YogaDefinition {
-    name: string;
-    category: YogaCategory;
-    description?: string;
-    conditions: Condition[]; // Implicit AND
-}
+import { YogaDefinition, Condition, PlacementCondition, AspectCondition, ConjunctionCondition, LordshipCondition, StrengthCondition } from '../types/rules.js';
 
 export interface ChartData {
     planets: PlanetPosition[];
@@ -92,6 +43,9 @@ export class YogaEngine {
                 return this.checkLordship(chart, condition as LordshipCondition);
             case 'strength':
                 return this.checkStrength(chart, condition as StrengthCondition);
+            case 'distance':
+                // @ts-ignore - Condition might not be fully discriminated if types overlap, but type string is unique
+                return this.checkDistance(chart, condition);
             default:
                 return false;
         }
@@ -168,10 +122,6 @@ export class YogaEngine {
     }
 
     private static checkAspect(chart: ChartData, cond: AspectCondition): boolean {
-        // Simple Parashari Aspects by Sign logic for now? 
-        // Or simple: 7th house aspect. 
-        // Mars: 4,7,8. Saturn: 3,7,10. Jupiter: 5,7,9.
-        // Needs helper.
         const pFrom = chart.planets.find(p => p.name === cond.from);
         const pTo = chart.planets.find(p => p.name === cond.to);
         if (!pFrom || !pTo) return false;
@@ -182,7 +132,7 @@ export class YogaEngine {
     private static checkLordship(chart: ChartData, cond: LordshipCondition): boolean {
         // Lord of X placed in Y.
         // 1. Determine Lord of House X.
-        const lord = this.getHouseLord(cond.lord_of, chart);
+        const lord = this.getHouseLord(cond.lordOf, chart);
         if (!lord) return false; // Lord unknown (e.g. Rahu/Ketu ownership debated, usually signs ruled by 7 planets)
 
         // 2. Check placement of that Lord.
@@ -190,12 +140,27 @@ export class YogaEngine {
         if (!lordPlanet) return false;
 
         const placementHouse = this.getHouse(lordPlanet.longitude, chart.cusps);
-        return placementHouse === cond.placed_in;
+        return placementHouse === cond.placedIn;
     }
 
     private static checkStrength(chart: ChartData, cond: StrengthCondition): boolean {
         // Placeholder until Shadbala is implemented
         return true;
+    }
+
+    private static checkDistance(chart: ChartData, cond: any): boolean {
+        // Condition: { type: 'distance', from: string, to: string, minHouse: number, maxHouse: number }
+        const pFrom = chart.planets.find(p => p.name === cond.from);
+        const pTo = chart.planets.find(p => p.name === cond.to);
+        if (!pFrom || !pTo) return false;
+
+        const fromSign = Math.floor(pFrom.longitude / 30);
+        const toSign = Math.floor(pTo.longitude / 30);
+
+        let distance = (toSign - fromSign) + 1;
+        if (distance <= 0) distance += 12;
+
+        return distance >= cond.minHouse && distance <= cond.maxHouse;
     }
 
     // --- Helpers ---
