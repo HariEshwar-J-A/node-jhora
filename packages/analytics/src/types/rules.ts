@@ -1,24 +1,23 @@
-export type YogaCategory = 'Raja' | 'Dhana' | 'Nabhasa' | 'Arishta';
+export type YogaCategory = 'Raja' | 'Dhana' | 'Nabhasa' | 'Arishta' | 'Parivartana';
 
-export interface PlacementCondition { type: 'placement'; planet: string; house?: number[]; sign?: number[]; inOwnSign?: boolean; inExaltation?: boolean; relativeTo?: string; }
-export interface LordshipCondition { type: 'lordship'; lordOf: number; placedIn: number; }
-export interface ConjunctionCondition { type: 'conjunction'; planets: string[]; }
-export interface AspectCondition { type: 'aspect'; from: string; to: string; kind?: 'graha'|'rashi'; }
-export interface StrengthCondition { type: 'strength'; planet: string; minShadbala: number; }
-export interface DistanceCondition { type: 'distance'; from: string; to: string; minHouse: number; maxHouse: number; }
+export type Condition =
+  | { type: 'placement'; planet: string; houses: number[]; signs?: number[]; from?: 'Lagna' | 'Moon' | 'Sun' }
+  | { type: 'lordship'; lordOf: number; placedIn: number[]; from?: 'Lagna' | 'Moon' }
+  | { type: 'conjunction'; planets: string[]; minOrb?: number }
+  | { type: 'aspect'; aspector: string; target: string | number; kind: 'graha' | 'rashi' }
+  | { type: 'strength'; planet: string; minShadbala: number }
+  | { type: 'distance'; planet: string; from: string; range: [number, number] };
 
-export type Condition = 
-  | PlacementCondition
-  | LordshipCondition
-  | ConjunctionCondition
-  | AspectCondition
-  | StrengthCondition
-  | DistanceCondition;
-
-export interface YogaDefinition {
-  id: string; // Added per prompt
+export interface YogaDef {
+  key: string;
   name: string;
-  group: YogaCategory; // Renamed category -> group per prompt
+  category: YogaCategory;
   conditions: Condition[];
-  interpretation_key: string; // Added per prompt
+  description_template: string;
+}
+
+export interface YogaResult {
+  yoga: YogaDef;
+  triggeringPlanets: string[];
+  strength?: number;
 }

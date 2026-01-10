@@ -1,92 +1,108 @@
+import { YogaDef } from '../types/rules.js';
 
-import { YogaDefinition } from '../types/rules.js';
-
-export const YOGA_LIBRARY: YogaDefinition[] = [
+export const YOGA_LIBRARY: YogaDef[] = [
     // --- Pancha Mahapurusha Yogas ---
+    // Rule: Planet in Kendra (1,4,7,10) AND in Own or Exaltation sign.
     {
-        id: 'HAMSA_YOGA',
+        key: 'HAMSA_YOGA',
         name: 'Hamsa Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Jupiter',
-                house: [1, 4, 7, 10],
-                sign: [3, 8, 11] // Cancer(3), Sag(8), Pis(11)
+                houses: [1, 4, 7, 10],
+                signs: [3, 8, 11] // Cancer(3), Sag(8), Pis(11)
             }
         ],
-        interpretation_key: 'hamsa_yoga_desc'
+        description_template: 'Jupiter in a Kendra and in Cancer, Sagittarius, or Pisces causes Hamsa Yoga.'
     },
     {
-        id: 'MALAVYA_YOGA',
+        key: 'MALAVYA_YOGA',
         name: 'Malavya Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Venus',
-                house: [1, 4, 7, 10],
-                sign: [1, 6, 11] // Tau(1), Lib(6), Pis(11)
+                houses: [1, 4, 7, 10],
+                signs: [1, 6, 11] // Tau(1), Lib(6), Pis(11)
             }
         ],
-        interpretation_key: 'malavya_yoga_desc'
+        description_template: 'Venus in a Kendra and in Taurus, Libra, or Pisces causes Malavya Yoga.'
     },
     {
-        id: 'RUCHAKA_YOGA',
+        key: 'RUCHAKA_YOGA',
         name: 'Ruchaka Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Mars',
-                house: [1, 4, 7, 10],
-                sign: [0, 7, 9] // Ari(0), Sco(7), Cap(9)
+                houses: [1, 4, 7, 10],
+                signs: [0, 7, 9] // Ari(0), Sco(7), Cap(9)
             }
         ],
-        interpretation_key: 'ruchaka_yoga_desc'
+        description_template: 'Mars in a Kendra and in Aries, Scorpio, or Capricorn causes Ruchaka Yoga.'
     },
     {
-        id: 'BHADRA_YOGA',
+        key: 'BHADRA_YOGA',
         name: 'Bhadra Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Mercury',
-                house: [1, 4, 7, 10],
-                sign: [2, 5] // Gem(2), Vir(5)
+                houses: [1, 4, 7, 10],
+                signs: [2, 5] // Gem(2), Vir(5)
             }
         ],
-        interpretation_key: 'bhadra_yoga_desc'
+        description_template: 'Mercury in a Kendra and in Gemini or Virgo causes Bhadra Yoga.'
     },
     {
-        id: 'SASA_YOGA',
+        key: 'SASA_YOGA',
         name: 'Sasa Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Saturn',
-                house: [1, 4, 7, 10],
-                sign: [9, 10, 6] // Cap(9), Aqu(10), Lib(6)
+                houses: [1, 4, 7, 10],
+                signs: [9, 10, 6] // Cap(9), Aqu(10), Lib(6)
             }
         ],
-        interpretation_key: 'sasa_yoga_desc'
+        description_template: 'Saturn in a Kendra and in Capricorn, Aquarius, or Libra causes Sasa Yoga.'
     },
 
     // --- Gaja Kesari Yoga ---
+    // Rule: Jupiter in Kendra from Moon.
     {
-        id: 'GAJA_KESARI',
+        key: 'GAJA_KESARI',
         name: 'Gaja Kesari Yoga',
-        group: 'Raja',
+        category: 'Raja',
         conditions: [
             {
                 type: 'placement',
                 planet: 'Jupiter',
-                house: [1, 4, 7, 10], 
-                relativeTo: 'Moon' 
+                houses: [1, 4, 7, 10],
+                from: 'Moon'
             }
         ],
-        interpretation_key: 'gaja_kesari_desc'
+        description_template: 'Jupiter in a Kendra from the Moon causes Gaja Kesari Yoga.'
+    },
+
+    // --- Dharma-Karma Adhipati Yoga ---
+    // Rule: Conjunction or mutual aspect between Lords of 9th and 10th.
+    {
+        key: 'DHARMA_KARMA_ADHIPATI',
+        name: 'Dharma-Karma Adhipati Yoga',
+        category: 'Raja',
+        conditions: [
+            {
+                type: 'conjunction',
+                planets: ['LordOf9', 'LordOf10']
+            }
+        ],
+        description_template: 'The conjunction of the lords of the 9th and 10th houses causes Dharma-Karma Adhipati Yoga.'
     }
 ];
