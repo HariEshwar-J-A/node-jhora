@@ -1,6 +1,6 @@
 {
   "name": "@node-jhora/ui-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Headless SVG Charts for Vedic Astrology",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
