@@ -18,10 +18,21 @@ Node-Jhora is a high-precision, performance-oriented **Vedic Astrology (Jyotish)
 
 | Package | Description |
 | :--- | :--- |
-| [`@node-jhora/core`](./packages/core) | Core math, astronomoy, ephemeris engine, and Vedic foundations. |
-| [`@node-jhora/analytics`](./packages/analytics) | Shadbala, Ashtakavarga, and Yoga engines. |
-| [`@node-jhora/prediction`](./packages/prediction) | Dashas (Vimshottari, Yogini, Narayana) and Transit scanners. |
-| [`@node-jhora/match`](./packages/match) | Kuta-based marriage compatibility (Porutham). |
+| [`@node-jhora/core`](./packages/core) | Core math, astronomoy, ephemeris engine, and Vedic foundations. ([Detailed Docs](./docs/CORE.md)) |
+| [`@node-jhora/analytics`](./packages/analytics) | Shadbala, Ashtakavarga, and Yoga engines. ([Detailed Docs](./docs/ANALYTICS.md)) |
+| [`@node-jhora/prediction`](./packages/prediction) | Dashas (Vimshottari, Yogini, Narayana) and Transit scanners. ([Detailed Docs](./docs/PREDICTION.md)) |
+| [`@node-jhora/match`](./packages/match) | Kuta-based marriage compatibility (Porutham). ([Detailed Docs](./docs/MATCHMAKING.md)) |
+
+## Detailed Technical Documentation
+
+For in-depth explanations of the engine's internals, refer to the following guides:
+
+*   **[Architecture Overview](./docs/ARCHITECTURE.md)**: Monorepo design, package boundaries, and build system.
+*   **[Mathematical Foundation](./docs/MATH.md)**: Spherical geometry, Topocentric parallax, and interpolation logic.
+*   **[Core Engine Guide](./docs/CORE.md)**: Swiss Ephemeris (WASM) setup, Geocoding, and Panchanga fundamentals.
+*   **[Analytics & Strengths](./docs/ANALYTICS.md)**: Shadbala, Ashtakavarga, and the Yoga Rule Engine.
+*   **[Predictive Logic](./docs/PREDICTION.md)**: Dasha systems, Transit scanners, and Jaimini astrology.
+*   **[Matchmaking (Kuta)](./docs/MATCHMAKING.md)**: Marriage compatibility scoring and mandatory rules (Rajju).
 
 ## Installation
 
