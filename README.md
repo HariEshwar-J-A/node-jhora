@@ -33,6 +33,7 @@ For in-depth explanations of the engine's internals, refer to the following guid
 *   **[Analytics & Strengths](./docs/ANALYTICS.md)**: Shadbala, Ashtakavarga, and the Yoga Rule Engine.
 *   **[Predictive Logic](./docs/PREDICTION.md)**: Dasha systems, Transit scanners, and Jaimini astrology.
 *   **[Matchmaking (Kuta)](./docs/MATCHMAKING.md)**: Marriage compatibility scoring and mandatory rules (Rajju).
+*   **[Market Positioning](./docs/MARKET_POSITION.md)**: Comparison with standard libraries and enterprise APIs.
 
 ## Installation
 
