@@ -1,5 +1,5 @@
 {
-    "name": "@node-jhora/match",
+    "name": "@node-jhora/events",
     "version": "1.2.0",
     "type": "module",
     "main": "dist/index.js",
@@ -16,7 +16,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
     },
     "dependencies": {
         "@node-jhora/core": "*",
