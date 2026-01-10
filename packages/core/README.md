@@ -98,3 +98,7 @@ stream.on('data', (chart) => {
 });
 stream.start();
 ```
+
+## 🏷️ Keywords
+Vedic Astrology, Jyotish, Swiss Ephemeris, WASM, Astronomy, Panchanga, Ephemeris Engine, Sidereal, Geocoding, TypeScript, Planetary Positions, Ascendant, Ayanamsa
+
