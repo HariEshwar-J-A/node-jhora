@@ -19,7 +19,8 @@ export const DASHA_ORDER = [
 ];
 
 export interface DashaPeriod {
-    planet: string;
+    planet: string; // Name of the period (e.g., "Sun" or "Mangala")
+    lord?: string;  // Ruling planet (e.g., "Moon" for Mangala)
     level: number; // 1=Maha, 2=Antar, 3=Pratyantar
     start: DateTime;
     end: DateTime;

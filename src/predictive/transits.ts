@@ -83,6 +83,97 @@ export class TransitEngine {
         return events;
     }
 
+    /**
+     * Finds when two planets form an exact aspect (Newton-Raphson).
+     * @param p1Id Planet 1 ID
+     * @param p2Id Planet 2 ID
+     * @param targetAngle Aspect Angle (e.g. 90, 180)
+     * @param start Search Start
+     * @param end Search End
+     * @param tolerance Degrees of error (default 0.01)
+     */
+    public async findExactAspect(
+        p1Id: number, 
+        p2Id: number, 
+        targetAngle: number,
+        start: DateTime,
+        end: DateTime,
+        tolerance: number = 0.01
+    ): Promise<DateTime | null> {
+        // Crude Scan then Refine.
+        // Step size: 6 hours? 
+        let cursor = start;
+        const stepHours = 24; // Initial crude scan
+        
+        let prevDiff = 0;
+        let prevTime = start;
+        
+        // Helper: Get Angle Difference (0-360) ensuring minimal distance logic?
+        // No, Aspects are usually Longitude difference: abs(l1 - l2).
+        // But 350 and 10 is 20 deg difference.
+        // Distance = min(|l1-l2|, 360-|l1-l2|)
+        
+        const getDist = (t: DateTime) => {
+            const l1 = this.getPos(p1Id, t);
+            const l2 = this.getPos(p2Id, t);
+            let diff = Math.abs(l1 - l2);
+            if (diff > 180) diff = 360 - diff;
+            return diff;
+        };
+
+        // Scan LOOP
+        while (cursor < end) {
+            cursor = cursor.plus({ hours: stepHours });
+            if (cursor > end) cursor = end;
+
+            const currDist = getDist(cursor);
+            const prevDist = getDist(prevTime);
+            
+            // Check if we crossed Target
+            // e.g. Prev=89, Curr=91. Target 90.
+            // Or Prev=91, Curr=89.
+            if ((prevDist < targetAngle && currDist >= targetAngle) || 
+                (prevDist > targetAngle && currDist <= targetAngle)) {
+                
+                // Crossed! Refine.
+                // Binary Search for MVP (Newton is robust but requires derivative/speed).
+                // Binary search 24h window (prevTime to cursor).
+                let low = prevTime.toMillis();
+                let high = cursor.toMillis();
+                let mid = 0;
+                
+                for(let i=0; i<30; i++) { // 30 iters -> accuracy ~ 100ms
+                    mid = (low + high) / 2;
+                    const tMid = DateTime.fromMillis(mid);
+                    const dMid = getDist(tMid);
+                    
+                    if (Math.abs(dMid - targetAngle) < tolerance) {
+                        return tMid;
+                    }
+                    
+                    // Decide which half
+                    // Assume monotonic in this small window
+                    const dLow = getDist(DateTime.fromMillis(low));
+                    
+                    // If Low < Target and Mid > Target -> Target in Low..Mid
+                    // But we don't know slope direction easily without checking.
+                    // Simple logic: If (dLow < Target) == (dMid < Target), then Mid is on same side as Low.
+                    // Move Low to Mid.
+                    if ((dLow < targetAngle) === (dMid < targetAngle)) {
+                        low = mid;
+                    } else {
+                        high = mid;
+                    }
+                }
+                return DateTime.fromMillis(mid);
+            }
+            
+            prevTime = cursor;
+        }
+        
+        return null;
+    }
+
     // Helper: synchronous fetch from cached engine? 
     // EphemerisEngine.getPlanets is technically blocking WASM call (if loaded).
     // But getPlanets signature is not async in our code? 
