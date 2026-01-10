@@ -13,6 +13,8 @@ import { JaiminiDashas, CharaDashaPeriod } from './jaimini/dashas.js';
 import { KPSubLord, KPSignificator } from './kp/sublord.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
 import { YogaEngine, ChartData } from './yogas/engine.js';
+import { Ashtakavarga, AshtakavargaResult } from './analytics/ashtakavarga.js';
+import { TransitEngine, TransitEvent } from './predictive/transits.js';
 import { YOGA_LIBRARY } from './yogas/library.js';
 
 // Re-export Interfaces
@@ -26,7 +28,8 @@ export type {
     Relationship,
     ChartData,
     JaiminiKaraka, ArudhaPada, CharaDashaPeriod,
-    KPSignificator, RulingPlanetsResult
+    KPSignificator, RulingPlanetsResult,
+    AshtakavargaResult, TransitEvent
 };
 
 // Re-export Utils
@@ -158,5 +161,7 @@ export {
     YogaEngine,
     YOGA_LIBRARY,
     JaiminiCore, JaiminiDashas,
-    KPSubLord, KPRuling
+    KPSubLord, KPRuling,
+    Ashtakavarga,
+    TransitEngine
 };

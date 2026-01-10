@@ -134,6 +134,26 @@ const navamsa = calculateVarga(planetLon, 9);
 console.log(`Planet in D9: Sign ${navamsa.sign}`);
 ```
 
+### 8. Ashtakavarga & Transits
+Calculate BAV/SAV scores and detect planetary movements.
+
+```typescript
+import { Ashtakavarga, TransitEngine } from 'node-jhora';
+
+// 1. Ashtakavarga
+const result = Ashtakavarga.calculate(chart.planets, chart.houses.ascendant.sign);
+console.log("Sarvashtakavarga (SAV):", result.sav); // [28, 30, ...]
+
+// 2. Transits (Event Scanner)
+const scanner = new TransitEngine();
+const events = await scanner.findTransits(
+    0, // Sun
+    DateTime.now(),
+    DateTime.now().plus({ months: 1 })
+);    
+events.forEach(e => console.log(`${e.type} Change to ${e.newValue} at ${e.time}`));
+```
+
 ## Contributing
 
 We welcome contributions! Please verify your changes with:
