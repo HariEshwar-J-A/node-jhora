@@ -1,0 +1,20 @@
+{
+    "name": "@node-jhora/core",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "luxon": "^3.7.2",
+        "swisseph-wasm": "^0.0.2"
+    },
+    "devDependencies": {
+        "typescript": "*"
+    }
+}
