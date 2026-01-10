@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/core",
-    "version": "1.0.6",
+    "version": "1.1.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -16,13 +16,17 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "npx jest"
     },
     "dependencies": {
         "luxon": "^3.7.2",
         "swisseph-wasm": "^0.0.2"
     },
     "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
         "typescript": "*"
     }
 }

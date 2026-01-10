@@ -227,6 +227,60 @@ export class EphemerisEngine {
         };
     }
 
+    /**
+     * Calculates houses using Swiss Ephemeris (supporting Placidus, etc.)
+     * @param julday - Julian Day
+     * @param lat - Latitude
+     * @param lon - Longitude
+     * @param houseMethod - 'P' (Placidus), 'W' (WholeSign - though SE mapping might be 'W'), 'O' (Porphyry), etc. 
+     *                      Standard Keys: 'P' = Placidus, 'K' = Koch, 'O' = Porphyry, 'E' = Equal, 'W' = Whole Sign.
+     * @returns HouseData
+     */
+    public getHouses(julday: number, lat: number, lon: number, houseMethod: string = 'P'): HouseData {
+        this.checkInit();
+        
+        const Swe = this.module.SweModule;
+        if (!Swe || !Swe._malloc || !Swe._free || !Swe.ccall) {
+            throw new Error("SwissEph WASM module missing required memory/call methods");
+        }
+
+        const cuspsPtr = Swe._malloc(13 * 8); // 13 doubles
+        const ascmcPtr = Swe._malloc(10 * 8); // 10 doubles
+
+        try {
+            // we use sweat_houses(jd, lat, lon, hsys, cusps, ascmc)
+            const hsysCode = houseMethod.charCodeAt(0);
+            
+            Swe.ccall(
+                'swe_houses', 
+                null, 
+                ['number', 'number', 'number', 'number', 'pointer', 'pointer'], 
+                [julday, lat, lon, hsysCode, cuspsPtr, ascmcPtr]
+            );
+
+            const cusps: number[] = [];
+            for (let i = 1; i <= 12; i++) {
+                cusps.push(Swe.HEAPF64[cuspsPtr / 8 + i]);
+            }
+
+            const ascmc: number[] = [];
+            for (let i = 0; i < 10; i++) {
+                ascmc.push(Swe.HEAPF64[ascmcPtr / 8 + i]);
+            }
+
+            return {
+                cusps,
+                ascendant: ascmc[0],
+                mc: ascmc[1],
+                armc: ascmc[2],
+                vertex: ascmc[3]
+            };
+        } finally {
+            Swe._free(cuspsPtr);
+            Swe._free(ascmcPtr);
+        }
+    }
+
     private checkInit() {
         if (!this.initialized) {
             throw new Error("EphemerisEngine not initialized. Call initialize() first.");

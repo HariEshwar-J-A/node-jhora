@@ -33,10 +33,10 @@ describe('House Systems', () => {
         expect(res.cusps[0]).toBe(ascSignStart);
     });
 
-    test('Calculates Placidus Houses (Fallback to Porphyry)', () => {
+    test('Calculates Placidus Houses (Native WASM)', () => {
         const res = calculateHouseCusps(date, lat, lon, 'Placidus');
-        // Fallback behavior
-        expect(res.system).toBe('Porphyry');
+        // Now using Native SE Placidus
+        expect(res.system).toBe('Placidus');
         expect(res.cusps.length).toBe(12);
 
         expect(res.ascendant).toBeDefined();
