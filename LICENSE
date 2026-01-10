@@ -1,23 +1,18 @@
-PROPRIETARY LICENSE AGREEMENT
+NODE-JHORA LICENSE AGREEMENT
 
-Copyright (c) 2024 Harieshwar Jagan Abirami. All Rights Reserved.
+Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved.
 
-NOTICE:  All information contained herein is, and remains the property of the author. 
-The intellectual and technical concepts contained herein are proprietary to the author 
-and may be covered by U.S. and Foreign Patents, patents in process, and are protected 
-by trade secret or copyright law.
+1. OWNERSHIP
+This software ("node-jhora") is the sole proprietary property of Harieshwar Jagan Abirami. The copyright owner retains all intellectual property rights, title, and interest in the source code, documentation, and related assets.
 
-1. LICENSE GRANT
-   No license is granted to use, copy, modify, or distribute this software for any purpose 
-   (commercial or non-commercial) without a written agreement and payment of applicable fees 
-   to the copyright holder.
+2. ACCESS AND USAGE
+   a. **Restricted Use**: Unauthorized copying, modification, distribution, sublicensing, or sale of this software, in whole or in part, is strictly prohibited.
+   b. **Discretionary Grants**: The owner (Harieshwar Jagan Abirami) reserves the exclusive right to grant usage licenses to specific individuals or entities ("people I like") under terms decided solely by the owner. Such licenses must be obtained in writing.
 
-2. COMMERCIAL USE
-   Any commercial use, monetization, or use in a derivative product for profit is STRICTLY PROHIBITED 
-   without an explicit Commercial License Agreement from the author.
+3. CONTRIBUTIONS
+   a. **Invitation to Contribute**: The community is invited to suggest improvements or submit fixes via Pull Requests to the official repository.
+   b. **Assignment of Rights**: By submitting any contribution (code, documentation, or other materials), you hereby assign and transfer to Harieshwar Jagan Abirami all copyright and intellectual property rights in such contribution. You waive any moral rights to the contribution.
+   c. **Contributor Privileges**: In recognition of valuable contributions, the owner may, at their sole discretion, offer favorable usage terms, wage reductions, or royalty-free licenses to significant contributors. These benefits are non-binding and awarded entirely at the owner's pleasure.
 
-3. UNAUTHORIZED USE
-   Any unauthorized use, duplication, or distribution of this software or its source code, 
-   in whole or in part, will be prosecuted to the maximum extent permitted by law.
-
-For licensing inquiries and lump-sum payment arrangements, please contact the author.
+4. DISCLAIMER
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
