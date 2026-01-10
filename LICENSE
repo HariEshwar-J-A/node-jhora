@@ -1,18 +1,23 @@
-NODE-JHORA LICENSE AGREEMENT
+NODE-JHORA SOURCE AVAILABLE LICENSE AGREEMENT
 
-Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved.
+Copyright (c) 2026 Hari Eshwar J A. All rights reserved.
 
 1. OWNERSHIP
-This software ("node-jhora") is the sole proprietary property of Harieshwar Jagan Abirami. The copyright owner retains all intellectual property rights, title, and interest in the source code, documentation, and related assets.
+This software ("node-jhora") is the sole proprietary property of Hari Eshwar J A.
 
-2. ACCESS AND USAGE
-   a. **Restricted Use**: Unauthorized copying, modification, distribution, sublicensing, or sale of this software, in whole or in part, is strictly prohibited.
-   b. **Discretionary Grants**: The owner (Harieshwar Jagan Abirami) reserves the exclusive right to grant usage licenses to specific individuals or entities ("people I like") under terms decided solely by the owner. Such licenses must be obtained in writing.
+2. SOURCE AVAILABLE
+The source code is made publicly available for inspection and educational purposes only. You are permitted to view and read the code.
 
-3. CONTRIBUTIONS
-   a. **Invitation to Contribute**: The community is invited to suggest improvements or submit fixes via Pull Requests to the official repository.
-   b. **Assignment of Rights**: By submitting any contribution (code, documentation, or other materials), you hereby assign and transfer to Harieshwar Jagan Abirami all copyright and intellectual property rights in such contribution. You waive any moral rights to the contribution.
-   c. **Contributor Privileges**: In recognition of valuable contributions, the owner may, at their sole discretion, offer favorable usage terms, wage reductions, or royalty-free licenses to significant contributors. These benefits are non-binding and awarded entirely at the owner's pleasure.
+3. RESTRICTIONS ON USE AND DERIVATION
+   a. **No Unauthorized Use**: You may NOT use, execute, copy, or distribute this software for any purpose (personal or commercial) without a valid Commercial License from the Owner.
+   b. **No Derivative Works**: You may NOT alter, transform, build upon, or create derivative works from this software without a valid Commercial License.
+   c. **Royalty Requirement**: Usage and creation of derivative works are strictly conditioned upon the payment of royalties and explicit written agreement with the Owner.
 
-4. DISCLAIMER
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+4. COMMERCIAL LICENSING
+To obtain a Commercial License and negotiate royalty terms, please contact the Owner directly. Any usage or derivation without such an agreement is a violation of copyright law.
+
+5. CONTRIBUTIONS
+By submitting contributions, you assign all copyright and intellectual property rights to Hari Eshwar J A. Contributors may be eligible for reduced royalty terms or special licenses at the Owner's sole discretion.
+
+6. DISCLAIMER
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM OR DAMAGES.
