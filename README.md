@@ -165,7 +165,7 @@ Clean room implementations (like Jaimini and KP) have dedicated test suites in `
 ## License
 
 **Source Available - Commercial License Required**.
-Copyright (c) 2026 Hari Eshwar J A. All Rights Reserved.
+Copyright (c) 2026 Harieshwar Jagan Abirami. All Rights Reserved.
 
 *   **Public Access**: Source code is available for inspection and education.
 *   **Restricted Use**: Usage, distribution, and **derivative works** are strictly prohibited without a Commercial License.
