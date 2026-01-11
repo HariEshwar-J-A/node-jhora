@@ -45,3 +45,8 @@ The package includes internal tables for:
 ## 🏷️ Keywords
 Matchmaking, Porutham, Kuta, Marriage Compatibility, Gun Milan, Synastry, Vedic Match, Horoscope Matching, Relationship Compatibility, Nakshatra Compatibility, Rajju Dosha
 
+
+---
+## Standard Usage Rules
+> [!NOTE]
+> The Kuta system logic implements the standard matching rules as defined in standard text specifications (e.g. BPHS/Standard North, Standard South). Variations (e.g., Kalamrita specific exceptions) are not currently enforced to maintain broad compatibility.
