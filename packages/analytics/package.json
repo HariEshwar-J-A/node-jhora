@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/analytics",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -19,7 +19,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@node-jhora/core": "^1.4.0",
+        "@node-jhora/core": "^1.5.0",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
