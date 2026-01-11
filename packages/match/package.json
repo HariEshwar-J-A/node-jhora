@@ -16,13 +16,18 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
     },
     "dependencies": {
-        "@node-jhora/core": "*",
+        "@node-jhora/core": "^1.4.0",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
-        "typescript": "*"
+        "typescript": "*",
+        "jest": "*",
+        "ts-jest": "*",
+        "@types/jest": "*",
+        "@types/node": "*"
     }
 }
