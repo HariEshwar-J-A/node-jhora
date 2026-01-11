@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { PlanetPosition as CorePlanetPosition } from '@node-jhora/core';
-import { ChartProps } from './index.js'; // Assuming basic props are shared
+import { ChartProps } from './index.js';
 import { PortalTooltip } from './PortalTooltip.js';
+import { SOUTH_GRID_MAP, BoxCoordinate } from './geometry/south_grid.js';
+import { useSouthLayout } from './hooks/useSouthLayout.js';
 
 interface PlanetPosition extends CorePlanetPosition {
     isRetrograde?: boolean;
@@ -20,27 +22,6 @@ const gridVariants: Variants = {
   dimmed: { opacity: 0.2, strokeWidth: 0.5 }
 };
 
-// --- Coords Helper (South Indian) ---
-// 0(Pi)-TopLeft, Clockwise.
-// Actually standard South Indian: 
-// [Pi(0), Ar(1), Ta(2), Ge(3)] -> Top Row
-// [Aq(11), ..., ..., Cn(4)] -> Side Logic is complex to map to 4x4 index
-// Let's use simpler explicit map like before.
-const SOUTH_MAP: Record<number, {x: number, y: number}> = {
-  11: {x: 0, y: 0}, // Pis (Top Left)
-  0:  {x: 1, y: 0}, // Ari
-  1:  {x: 2, y: 0}, // Tau
-  2:  {x: 3, y: 0}, // Gem (Top Right)
-  3:  {x: 3, y: 1}, // Can
-  4:  {x: 3, y: 2}, // Leo
-  5:  {x: 3, y: 3}, // Vir (Bot Right)
-  6:  {x: 2, y: 3}, // Lib
-  7:  {x: 1, y: 3}, // Sco
-  8:  {x: 0, y: 3}, // Sag (Bot Left)
-  9:  {x: 0, y: 2}, // Cap
-  10: {x: 0, y: 1}  // Aqu
-};
-
 export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
   planets,
   ascendant,
@@ -51,21 +32,15 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
   onPlanetClick,
   style
 }) => {
-  const [hoveredPlanet, setHoveredPlanet] = useState<PlanetPosition | null>(null);
+  const [hoveredPlanet, setHoveredPlanet] = useState<CorePlanetPosition | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const boxW = width / 4;
   const boxH = height / 4;
   const ascSign = Math.floor(ascendant / 30);
 
-  // Group planets
-  const planetsBySign: Record<number, PlanetPosition[]> = {};
-  planets.forEach(p => {
-    const extendedP: PlanetPosition = { ...p, isRetrograde: p.speed < 0 };
-    const s = Math.floor(p.longitude / 30);
-    if (!planetsBySign[s]) planetsBySign[s] = [];
-    planetsBySign[s].push(extendedP);
-  });
+  // Group planets using hook
+  const planetsBySign = useSouthLayout(planets);
 
   // Handle Mouse Move for Tooltip
   useEffect(() => {
@@ -82,14 +57,13 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
     <>
       <svg width={width} height={height} className={className} style={{...style, overflow: 'visible'}} viewBox={`0 0 ${width} ${height}`}>
          {/* Background / Grid */}
-         {/* We animate the entire grid group based on if ANY planet is hovered */}
          <motion.g
            animate={hoveredPlanet ? "dimmed" : "default"}
            variants={gridVariants}
            transition={{ duration: 0.3 }}
          >
            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(signId => {
-             const coords = SOUTH_MAP[signId];
+             const coords = SOUTH_GRID_MAP[signId];
              const x = coords.x * boxW;
              const y = coords.y * boxH;
              return (
@@ -99,7 +73,8 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
                   fill="none" 
                   stroke="currentColor" 
                   onClick={() => onHouseClick?.(signId)}
-                  pointerEvents="all" // Ensure clicks work
+                  pointerEvents="all"
+                  cursor="pointer"
                />
              );
            })}
@@ -107,7 +82,7 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
 
          {/* Content Layer (Planets + ASC) */}
          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(signId => {
-             const coords = SOUTH_MAP[signId];
+             const coords = SOUTH_GRID_MAP[signId];
              const x = coords.x * boxW;
              const y = coords.y * boxH;
              const pts = planetsBySign[signId] || [];
@@ -115,7 +90,7 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
 
              return (
                <g key={signId}>
-                  {/* Ascendant Label (Recedes too? Or stays? Let's say it stays or dims slightly) */}
+                  {/* Ascendant Label */}
                   {isAsc && (
                     <motion.text
                       x={x + boxW - 5} y={y + 15} textAnchor="end" fontSize="12" fontWeight="bold"
@@ -127,10 +102,9 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
 
                   {/* Planets */}
                   {pts.map((p, i) => {
-                    // Determine state
                     let state = 'default';
                     if (hoveredPlanet) {
-                        state = (hoveredPlanet.name === p.name) ? 'hovered' : 'dimmed';
+                        state = (hoveredPlanet.id === p.id) ? 'hovered' : 'dimmed';
                     }
 
                     // Calculate center for text
@@ -144,13 +118,13 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
                          animate={state}
                          variants={planetVariants}
                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                         style={{ transformOrigin: `${txtX}px ${txtY}px` }} // Zoom from center
+                         style={{ transformOrigin: `${txtX}px ${txtY}px` }}
                          onMouseEnter={() => setHoveredPlanet(p)}
                          onMouseLeave={() => setHoveredPlanet(null)}
                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onPlanetClick?.(p); }}
                          cursor="pointer"
                        >
-                         {/* Glow Effect (Only visible when hovered) */}
+                         {/* Glow Effect */}
                          <motion.circle 
                             cx={txtX} cy={txtY - 4} r={12} 
                             fill="url(#glowGradient)" 
@@ -167,7 +141,7 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
                            fill="currentColor"
                          >
                            {p.name.substring(0, 2)}
-                           {p.isRetrograde ? ' [R]' : ''}
+                           {p.speed < 0 ? '[R]' : ''}
                          </text>
                        </motion.g>
                     );
@@ -193,7 +167,7 @@ export const AnimatedSouthIndianChart: React.FC<ChartProps> = ({
         content={
             hoveredPlanet && (
                 <div>
-                    <div style={{fontWeight: 'bold', marginBottom: '2px'}}>{hoveredPlanet.name} {hoveredPlanet.isRetrograde ? '[R]' : ''}</div>
+                    <div style={{fontWeight: 'bold', marginBottom: '2px'}}>{hoveredPlanet.name} {hoveredPlanet.speed < 0 ? '[R]' : ''}</div>
                     <div style={{opacity: 0.8}}>
                         {Math.floor(hoveredPlanet.longitude % 30)}° {Math.floor((hoveredPlanet.longitude % 1) * 60)}'
                     </div>
