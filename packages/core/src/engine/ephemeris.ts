@@ -60,7 +60,67 @@ export class EphemerisEngine {
             await this.module.initSwissEph();
         }
 
+        // Try to fetch ephemeris files if configured (passed via globals or similar, or just try fetching from expected locations)
+        // In browser context, we can try fetching from /ephe/
+        if (typeof window !== 'undefined' && typeof fetch === 'function') {
+            await this.loadEphemerisFiles('/ephe/');
+        }
+
         this.initialized = true;
+    }
+
+    private async loadEphemerisFiles(baseUrl: string): Promise<void> {
+        const files = ['sepl_18.se1', 'semo_18.se1', 'seas_18.se1'];
+        
+        // Robust FS detection
+        // @ts-ignore
+        const Swe = this.module.SweModule || this.module;
+        // @ts-ignore
+        const FS = Swe.FS || (this.module.FS);
+        
+        // Ensure FS is available
+        if (!FS) {
+            console.warn('SwissEph WASM FS not available, skipping file load');
+            return;
+        }
+
+        try {
+             // Create 'ephe' directory in MEMFS
+             try {
+                 FS.mkdir('/ephe');
+             } catch(e) { /* ignore if exists */ }
+
+             for (const file of files) {
+                 try {
+                     const response = await fetch(`${baseUrl}${file}`);
+                     if (response.ok) {
+                         const buffer = await response.arrayBuffer();
+                         const data = new Uint8Array(buffer);
+                         FS.createDataFile('/ephe', file, data, true, true, true); // canRead, canWrite, canOwn
+                         console.log(`Loaded ${file} to WASM FS`);
+                     } else {
+                         console.warn(`Failed to fetch ${file}: ${response.statusText}`);
+                     }
+                 } catch (e) {
+                     console.warn(`Error loading ${file}`, e);
+                 }
+             }
+             
+             // Set path using ccall with 'string' type (handles stringToUTF8 internally)
+             try {
+                if (Swe.ccall) {
+                    Swe.ccall('swe_set_ephe_path', null, ['string'], ['/ephe']);
+                    console.log('Set Swiss Ephemeris path to /ephe via ccall(string)');
+                } else {
+                    console.warn("Swe.ccall not available for setting ephe path");
+                }
+             } catch (e) {
+                 console.error('Failed to set ephe path via ccall', e);
+             }
+
+        } catch (e) {
+            console.error('Failed to load ephemeris files', e);
+        }
     }
 
     /**
@@ -80,9 +140,12 @@ export class EphemerisEngine {
      * @param ayanamsaOrder - Optional override for Ayanamsa
      * @param topocentric - Enable Parallax correction (default: false)
      */
-    public getPlanets(date: DateTime, _location?: GeoLocation, ayanamsaOrder?: number, topocentric: boolean = false): PlanetPosition[] {
+    public getPlanets(date: DateTime, _location?: GeoLocation, options: { ayanamsaOrder?: number, topocentric?: boolean, nodeType?: 'mean' | 'true', ayanamsaOffset?: number } = {}): PlanetPosition[] {
+        // console.log('EphemerisEngine.getPlanets options:', JSON.stringify(options));
         this.checkInit();
-        const Swe = this.module.SweModule;
+        const Swe = this.module.SweModule || this.module;
+
+        const { ayanamsaOrder, topocentric = false, nodeType = 'mean', ayanamsaOffset = 0 } = options;
 
         // Apply dynamic ayanamsa if requested
         if (ayanamsaOrder !== undefined) {
@@ -108,38 +171,50 @@ export class EphemerisEngine {
         }
 
         const planets: PlanetPosition[] = [];
-        const planetIds = [0, 1, 2, 3, 4, 5, 6, 11];
+        const planetIds = [0, 1, 2, 3, 4, 5, 6];
+        planetIds.push(nodeType === 'true' ? 10 : 11); // 10 = True Node, 11 = Mean Node
 
         // Pre-allocate buffer for results (6 doubles = 48 bytes)
+        // @ts-ignore
         const buffer = Swe._malloc(6 * 8);
 
         try {
             for (let i = 0; i < planetIds.length; i++) {
                 const pid = planetIds[i];
-                let flags = this.module.SEFLG_MOSEPH | this.module.SEFLG_SIDEREAL | this.module.SEFLG_SPEED;
+                let flags = this.module.SEFLG_SIDEREAL | this.module.SEFLG_SPEED;
 
                 // Call swe_calc_ut directly
                 Swe.ccall('swe_calc_ut', 'number', ['number', 'number', 'number', 'pointer', 'pointer'], [jd, pid, flags, buffer, null]);
-                
+
                 // Copy values immediately from HEAPF64
+                // @ts-ignore
                 const lon = Swe.HEAPF64[buffer / 8 + 0];
+                // @ts-ignore
                 const lat = Swe.HEAPF64[buffer / 8 + 1];
+                // @ts-ignore
                 const dist = Swe.HEAPF64[buffer / 8 + 2];
+                // @ts-ignore
                 const speed = Swe.HEAPF64[buffer / 8 + 3];
 
                 // Get Equatorial Coordinates for Declination
                 const eqFlags = this.module.SEFLG_EQUATORIAL | this.module.SEFLG_MOSEPH;
                 Swe.ccall('swe_calc_ut', 'number', ['number', 'number', 'number', 'pointer', 'pointer'], [jd, pid, eqFlags, buffer, null]);
+                // @ts-ignore
                 const dec = Swe.HEAPF64[buffer / 8 + 1];
 
                 let finalLon = lon;
                 let finalLat = lat;
 
-                // Apply Manual Topocentric Correction
                 if (topocentric && _location && dist > 0) {
                     const topo = calculateParallax(lon, lat, dist, _location.latitude, lst, obl);
                     finalLon = topo.lon;
                     finalLat = topo.lat;
+                }
+
+                // Apply Ayanamsa Offset (Manual Correction)
+                // If ayanamsaOffset is positive, it means Ayanamsa is larger, so Sidereal Longitude is smaller.
+                if (ayanamsaOffset !== 0) {
+                   finalLon = normalize360(finalLon - ayanamsaOffset);
                 }
 
                 planets.push({
@@ -153,6 +228,7 @@ export class EphemerisEngine {
                 });
             }
         } finally {
+            // @ts-ignore
             Swe._free(buffer);
         }
 
@@ -180,7 +256,7 @@ export class EphemerisEngine {
     private getPlanetName(id: number): string {
         const names: { [key: number]: string } = {
             0: 'Sun', 1: 'Moon', 2: 'Mercury', 3: 'Venus', 4: 'Mars',
-            5: 'Jupiter', 6: 'Saturn', 11: 'Rahu'
+            5: 'Jupiter', 6: 'Saturn', 11: 'Rahu', 10: 'Rahu'
         };
         return names[id] || 'Unknown';
     }
@@ -229,7 +305,8 @@ export class EphemerisEngine {
     public getHouses(julday: number, lat: number, lon: number, houseMethod: string = 'P'): HouseData {
         this.checkInit();
         
-        const Swe = this.module.SweModule;
+        // @ts-ignore
+        const Swe = this.module.SweModule || this.module;
         if (!Swe || !Swe._malloc || !Swe._free || !Swe.ccall) {
             throw new Error("SwissEph WASM module missing required memory/call methods");
         }
@@ -250,11 +327,13 @@ export class EphemerisEngine {
 
             const cusps: number[] = [];
             for (let i = 1; i <= 12; i++) {
+                // @ts-ignore
                 cusps.push(Swe.HEAPF64[cuspsPtr / 8 + i]);
             }
 
             const ascmc: number[] = [];
             for (let i = 0; i < 10; i++) {
+                // @ts-ignore
                 ascmc.push(Swe.HEAPF64[ascmcPtr / 8 + i]);
             }
 
