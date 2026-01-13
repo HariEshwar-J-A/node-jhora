@@ -23,10 +23,12 @@ export const BirthInputForm: React.FC<BirthInputFormProps> = ({
   onCalculate,
   className = ''
 }) => {
-  const [date, setDate] = useState('1998-12-06');
-  const [time, setTime] = useState('09:23');
-  const [search, setSearch] = useState('Chennai');
-  const [selectedCity, setSelectedCity] = useState<City>(CITIES.find(c => c.name === 'Chennai') || CITIES[0]);
+  // Default to current date and New Delhi
+  const now = DateTime.now();
+  const [date, setDate] = useState(now.toFormat('yyyy-MM-dd'));
+  const [time, setTime] = useState(now.toFormat('HH:mm'));
+  const [search, setSearch] = useState('New Delhi');
+  const [selectedCity, setSelectedCity] = useState<City>(CITIES.find(c => c.name === 'New Delhi') || CITIES[0]);
   const [suggestions, setSuggestions] = useState<City[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
