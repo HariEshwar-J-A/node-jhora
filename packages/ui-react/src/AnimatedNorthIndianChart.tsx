@@ -67,6 +67,8 @@ export const AnimatedNorthIndianChart: React.FC<ChartProps> = ({
                          <path 
                             d={house.path} 
                             stroke="currentColor" 
+                            fill="transparent"
+                            strokeWidth="0.5" 
                             vectorEffect="non-scaling-stroke"
                             onClick={() => onHouseClick?.(houseNum)}
                             cursor="pointer"
@@ -122,10 +124,11 @@ export const AnimatedNorthIndianChart: React.FC<ChartProps> = ({
                                 <text
                                     x={px} 
                                     y={py} 
-                                    fontSize="3.5" 
+                                    fontSize="3" 
                                     textAnchor="middle" 
                                     fill="currentColor"
                                     fontWeight={state === 'hovered' ? 'bold' : 'normal'}
+                                    style={{ pointerEvents: 'none' }}
                                 >
                                     {p.name.substring(0, 2)}
                                     {p.speed < 0 ? '[R]' : ''}
