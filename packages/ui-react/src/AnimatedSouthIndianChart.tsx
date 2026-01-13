@@ -12,9 +12,9 @@ interface PlanetPosition extends CorePlanetPosition {
 
 // --- Variants ---
 const planetVariants: Variants = {
-  default: { scale: 1, opacity: 1, filter: "grayscale(0%)", zIndex: 1 },
-  hovered: { scale: 1.3, opacity: 1, filter: "brightness(1.2)", zIndex: 10 },
-  dimmed: { scale: 0.9, opacity: 0.4, filter: "grayscale(50%)", zIndex: 0 }
+  default: { scale: 1, opacity: 1, filter: "grayscale(0%)" },
+  hovered: { scale: 1.3, opacity: 1, filter: "brightness(1.2)" },
+  dimmed: { scale: 0.9, opacity: 0.4, filter: "grayscale(50%)" }
 };
 
 const gridVariants: Variants = {
