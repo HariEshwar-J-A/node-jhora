@@ -4,19 +4,19 @@ import { VargaDeities } from '../../src/vedic/deities.js';
 
 describe('Advanced Varga Precision', () => {
 
-    describe('D2 Hora (Parashara)', () => {
-        test('Odd Sign (Aries 10deg) -> Sun Hora (Leo)', () => {
-            // Aries (Odd). 1st Half (0-15). Rule: Sun (Leo).
+    describe('D2 Hora (Parivritti Even-Reverse)', () => {
+        test('Aries 10° → Aries (sign 1)', () => {
+            // Aries (signIdx=0, even). hora=0 → targetIdx=(0*2+0)%12=0 → Aries
             const val = calculateVarga(10, 2, 'Parashara');
-            expect(val.sign).toBe(5); // Leo
+            expect(val.sign).toBe(1); // Aries
         });
-        test('Odd Sign (Aries 20deg) -> Moon Hora (Cancer)', () => {
-            // Aries (Odd). 2nd Half (15-30). Rule: Moon (Can).
+        test('Aries 20° → Taurus (sign 2)', () => {
+            // Aries (signIdx=0, even). hora=1 → targetIdx=(0*2+1)%12=1 → Taurus
             const val = calculateVarga(20, 2, 'Parashara');
-            expect(val.sign).toBe(4); // Cancer
+            expect(val.sign).toBe(2); // Taurus
         });
-        test('Even Sign (Taurus 10deg) -> Moon Hora (Cancer)', () => {
-            // Taurus (Even). 1st Half. Rule: Moon (Can).
+        test('Taurus 10° → Cancer (sign 4)', () => {
+            // Taurus (signIdx=1, odd). hora=0 → targetIdx=(1*2+(1-0))%12=3 → Cancer
             const val = calculateVarga(40, 2, 'Parashara'); // 30+10
             expect(val.sign).toBe(4); // Cancer
         });

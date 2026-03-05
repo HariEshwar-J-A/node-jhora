@@ -116,7 +116,6 @@ export class NodeJHora {
             ayanamsaOrder,
             topocentric: config.topocentric,
             nodeType: config.nodeType,
-            ayanamsaOffset: config.ayanamsaOffset
         });
         const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
         
@@ -143,7 +142,6 @@ export class NodeJHora {
             ayanamsaOrder: this.config.ayanamsaOrder,
             topocentric: this.config.topocentric,
             nodeType: this.config.nodeType,
-            ayanamsaOffset: this.config.ayanamsaOffset
         });
     }
 

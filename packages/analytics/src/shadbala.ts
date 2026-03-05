@@ -25,15 +25,17 @@ const EXALTATION_POINTS: { [key: number]: number } = {
 const FEMALE_PLANETS = [1, 3]; // Moon, Venus
 const MALE_PLANETS = [0, 2, 4, 5, 6]; // Sun, Mars, Jup, Merc, Sat
 
-// Naisargika Bala (Natural Strength) - virupas
+// Naisargika Bala (Natural Strength) in Virupas — BPHS exact fractions (60 * n/7)
+// Sun=60*(7/7)=60, Moon=60*(6/7)≈51.4286, Venus=60*(5/7)≈42.8571
+// Jupiter=60*(4/7)≈34.2857, Mercury=60*(3/7)≈25.7143, Mars=60*(2/7)≈17.1429, Saturn=60*(1/7)≈8.5714
 const NAISARGIKA_BALA: { [key: number]: number } = {
-    0: 60.00,
-    1: 51.43,
-    3: 42.85,
-    5: 34.28,
-    2: 25.71,
-    4: 17.14,
-    6: 8.57
+    0: 60.000000,              // Sun
+    1: 60 * 6 / 7,            // Moon   ≈ 51.428571
+    3: 60 * 5 / 7,            // Venus  ≈ 42.857143
+    5: 60 * 4 / 7,            // Jupiter ≈ 34.285714
+    2: 60 * 3 / 7,            // Mercury ≈ 25.714286
+    4: 60 * 2 / 7,            // Mars   ≈ 17.142857
+    6: 60 * 1 / 7,            // Saturn ≈  8.571429
 };
 
 export interface ShadbalaInput {

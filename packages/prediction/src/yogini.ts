@@ -1,5 +1,4 @@
 
-import { PlanetPosition, normalize360 } from '@node-jhora/core';
 import { DashaPeriod } from './dasha.js';
 import { DateTime } from 'luxon';
 
@@ -64,7 +63,6 @@ export class YoginiDasha {
         // Add First Period (Partial)
         periods.push({
             planet: startYogini.name,
-            lord: startYogini.lord,
             level: 1,
             start: currentStart,
             end: runningDate,
@@ -80,10 +78,9 @@ export class YoginiDasha {
             const yogini = YOGINIS[idx];
             const start = runningDate;
             const end = runningDate.plus({ years: yogini.years });
-            
+
             periods.push({
                 planet: yogini.name,
-                lord: yogini.lord,
                 level: 1,
                 start: start,
                 end: end,

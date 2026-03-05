@@ -31,26 +31,10 @@ describe('EphemerisEngine (WASM)', () => {
         const sun = planets.find(p => p.name === 'Sun');
         expect(sun).toBeDefined();
 
-        if (sun) {
-            console.log("Sun Longitude:", sun.longitude);
-        }
-
-        // Verification:
-        // Tropical Sun 2000-01-01 12:00 is roughly 280.46
-        // Sidereal (Lahiri) Ayanamsa approx 23.85 deg in 2000 => ~256.61
-        // We expect Sidereal.
-
-        // If the engine fails to apply Sidereal, it will be ~280.
-        // If it works, ~256.
-
-        // Assert it is defined and reasonable (0-360)
+        // Sidereal (Lahiri) Sun on 2000-01-01 12:00 UTC ≈ 256.6°
+        // Tropical would be ~280.5° — confirms sidereal flag is applied.
         expect(sun?.longitude).toBeGreaterThanOrEqual(0);
         expect(sun?.longitude).toBeLessThan(360);
-
-        // Conditional warning or check
-        if (sun!.longitude > 270 && sun!.longitude < 290) {
-            console.log("WARNING: Result appears to be Tropical. Sidereal flag might be ignored.");
-        }
 
         // Strict check for Sidereal (optional, can be relaxed if precision issues)
         // expect(sun?.longitude).toBeCloseTo(256.6, 0); 

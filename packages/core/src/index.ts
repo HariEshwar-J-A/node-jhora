@@ -25,7 +25,10 @@ export type {
 
 // Re-export Utils
 export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
+export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from './core/precise.js';
 export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
+export { AYANAMSA } from './engine/ephemeris.js';
+export type { AyanamsaMode } from './engine/ephemeris.js';
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -104,10 +107,9 @@ export class NodeJHora {
         
         const dt = DateTime.fromJSDate(date);
         const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder, 
+            ayanamsaOrder,
             topocentric: config.topocentric,
             nodeType: config.nodeType,
-            ayanamsaOffset: config.ayanamsaOffset
         });
         const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
         
@@ -142,7 +144,6 @@ export class NodeJHora {
             ayanamsaOrder: this.config.ayanamsaOrder,
             topocentric: this.config.topocentric,
             nodeType: this.config.nodeType,
-            ayanamsaOffset: this.config.ayanamsaOffset
         });
     }
 
