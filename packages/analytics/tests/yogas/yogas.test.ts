@@ -15,14 +15,14 @@ describe('Yoga Engine', () => {
         };
 
         const results = YogaEngine.findYogas(chart, YOGA_LIBRARY);
-        expect(results).toContain('Hamsa Yoga');
+        expect(results.some(r => r.yoga.name === 'Hamsa Yoga')).toBe(true);
     });
 
     test('Detects Gaja Kesari Yoga (Jupiter in Kendra from Moon)', () => {
         // Moon in Aries (0-30), Jupiter in Cancer (90-120).
         // Jupiter is in 4th from Moon.
         const chart: ChartData = {
-            ascendant: 0, 
+            ascendant: 0,
             cusps: [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330],
             planets: [
                 { id: 1, name: 'Moon', longitude: 10, distance: 1, speed: 1, latitude: 0, declination: 0 } as any, // Aries
@@ -31,7 +31,7 @@ describe('Yoga Engine', () => {
         };
 
         const results = YogaEngine.findYogas(chart, YOGA_LIBRARY);
-        expect(results).toContain('Gaja Kesari Yoga');
+        expect(results.some(r => r.yoga.name === 'Gaja Kesari Yoga')).toBe(true);
     });
 
     test('Does NOT detect Yoga when conditions fail', () => {
@@ -45,6 +45,6 @@ describe('Yoga Engine', () => {
         };
 
         const results = YogaEngine.findYogas(chart, YOGA_LIBRARY);
-        expect(results).not.toContain('Hamsa Yoga');
+        expect(results.some(r => r.yoga.name === 'Hamsa Yoga')).toBe(false);
     });
 });

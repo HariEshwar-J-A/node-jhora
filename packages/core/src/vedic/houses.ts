@@ -46,11 +46,20 @@ export function calculateHouseCusps(date: DateTime, lat: number, lon: number, me
     try {
         // Attempt Native SwissEph Calculation
         const seHouses = engine.getHouses(jd, lat, lon, seMethod);
-        
+
+        // For Whole Sign, snap cusps to sidereal sign boundaries starting from ascendant's sign.
+        // swe_houses returns tropical cusps; after ayanamsa subtraction they no longer fall on
+        // exact 30° boundaries. Vedic Whole Sign requires cusps at 0°, 30°, 60°… of the sidereal zodiac.
+        let cusps = seHouses.cusps;
+        if (method === 'WholeSign') {
+            const signStart = Math.floor(seHouses.ascendant / 30) * 30;
+            cusps = Array.from({ length: 12 }, (_, i) => (signStart + i * 30) % 360);
+        }
+
         // Map to HouseResult
         return {
             system: method,
-            cusps: seHouses.cusps,
+            cusps,
             ascendant: seHouses.ascendant,
             mc: seHouses.mc,
             vertex: seHouses.vertex,

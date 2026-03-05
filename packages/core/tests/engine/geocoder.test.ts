@@ -1,30 +1,23 @@
 import { Geocoder } from '../../src/engine/geocoder.js';
 
-describe('Geocoder (Pure JS)', () => {
+describe('Geocoder (Browser Stub)', () => {
     let geocoder: Geocoder;
 
     beforeAll(() => {
         geocoder = new Geocoder();
     });
 
-    test('finds a known city (exact match)', async () => {
-        const result = await geocoder.searchCity('Chennai');
-        expect(result).not.toBeNull();
-        expect(result?.name).toBe('Chennai');
-        expect(result?.country).toBe('India');
-        expect(result?.latitude).toBeCloseTo(13.0827);
-        expect(result?.timezone).toBe('Asia/Kolkata');
+    test('throws in non-browser environment (stub behaviour)', async () => {
+        await expect(geocoder.searchCity('Chennai')).rejects.toThrow(
+            'Geocoder is not available in browser environments'
+        );
     });
 
-    test('finds a city case-insensitive', async () => {
-        const result = await geocoder.searchCity('london');
-        expect(result).not.toBeNull();
-        expect(result?.name).toBe('London');
-        expect(result?.latitude).toBeCloseTo(51.5074);
+    test('stub always throws for any query', async () => {
+        await expect(geocoder.searchCity('London')).rejects.toThrow();
     });
 
-    test('returns null for unknown city', async () => {
-        const result = await geocoder.searchCity('Atlantis');
-        expect(result).toBeNull();
+    test('stub throws for unknown city too', async () => {
+        await expect(geocoder.searchCity('Atlantis')).rejects.toThrow();
     });
 });

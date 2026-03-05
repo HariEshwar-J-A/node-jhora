@@ -1,0 +1,37 @@
+{
+    "name": "@node-jhora/api",
+    "version": "1.5.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "node --watch dist/index.js",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
+    },
+    "dependencies": {
+        "@fastify/cors": "^10.0.2",
+        "@node-jhora/analytics": "^1.5.0",
+        "@node-jhora/core": "^1.5.0",
+        "@node-jhora/match": "^1.5.0",
+        "@node-jhora/prediction": "^1.5.0",
+        "decimal.js": "^10.4.3",
+        "fastify": "^5.4.0",
+        "luxon": "^3.7.2",
+        "pino": "^9.7.0",
+        "zod": "^3.25.51"
+    },
+    "devDependencies": {
+        "@types/jest": "*",
+        "@types/luxon": "*",
+        "@types/node": "*",
+        "jest": "*",
+        "ts-jest": "*",
+        "typescript": "*"
+    }
+}

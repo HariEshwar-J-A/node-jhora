@@ -186,12 +186,8 @@ export class TransitEngine {
         // Using `getPlanets` is expensive (calcs ALL planets).
         // Optimization: Use `calc_ut` directly if possible, or filtered getPlanets.
         // For now, use getPlanets for API consistency.
-        const planets = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, 0, false); // Sayana/Tropical or Lahiri?
-        // Transits in Vedic are Sidereal (Lahiri). So ayanamsaOrder = 1.
-        
-        // Wait, `getPlanets` takes `ayanamsaOrder`.
-        // Let's use Lahiri (1).
-        const p = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, 1, false);
+        // Transits are Geocentric Sidereal (Lahiri = 1).
+        const p = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1 });
         const target = p.find((x: PlanetPosition) => x.id === planetId);
         return target ? target.longitude : 0;
     }

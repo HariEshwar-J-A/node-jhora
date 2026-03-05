@@ -1,4 +1,4 @@
-import { generateVimshottari, DashaPeriod } from './dasha.js';
+import { generateVimshottari, calculateDashaBalance, DashaPeriod } from './dasha.js';
 import { TransitEngine, TransitEvent } from './transits.js';
 import { YoginiDasha } from './yogini.js';
 import { NarayanaDasha } from './narayana.js';
@@ -9,6 +9,7 @@ export type { DashaPeriod, TransitEvent, JaiminiKaraka, ArudhaPada, CharaDashaPe
 
 export {
     generateVimshottari,
+    calculateDashaBalance,
     TransitEngine,
     YoginiDasha,
     NarayanaDasha,
