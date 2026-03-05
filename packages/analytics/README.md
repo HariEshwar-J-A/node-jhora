@@ -1,81 +1,49 @@
-# Package: `@node-jhora/analytics`
+# @node-jhora/analytics
 
-The `@node-jhora/analytics` package provides deep insights into planetary strengths, mathematical patterns (Ashtakavarga), and combination detection (Yogas).
+Depth and strength analysis layer for the Node-Jhora Vedic astrology engine. Provides Shadbala (6-fold planetary strength), Ashtakavarga (BAV/SAV grids), an extensible Yoga detection engine, and KP Engine significators.
 
-## 💪 Shadbala (Six-fold Strength)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/ANALYTICS.md)
 
-A complete implementation of the complex Parashari Shadbala system.
+## Installation
 
-### Calculation Components
-Shadbala is calculated in **Virupas** (points) and consists of:
-1.  **Sthana Bala** (Positional): Uchcha, Saptavargaja, Kendra, Ojayugma.
-2.  **Dig Bala** (Directional): Strength based on proximity to specific house cusps.
-3.  **Kaala Bala** (Temporal): Natonata, Paksha, Tribhaga, Ayanabala.
-4.  **Chesta Bala** (Motional): Based on planetary speed and retrograde status.
-5.  **Naisargika Bala** (Natural): Constant strength inherent to each planet.
-6.  **Drig Bala** (Aspect): Strength derived from benefic and malefic aspects.
-
-### Usage
-```typescript
-import { calculateShadbala } from '@node-jhora/analytics';
-
-const result = calculateShadbala({
-    planet, allPlanets, houses, sun, moon,
-    timeDetails: { sunrise, sunset, birthHour },
-    vargaPositions // D1, D2, D3, D7, D9, D12, D30 for Saptavargaja
-});
-
-console.log(`Total Shadbala: ${result.total} Virupas`);
-console.log(`Ishta Phala: ${result.ishtaPhala}`);
+```bash
+npm install @node-jhora/analytics @node-jhora/core
 ```
 
----
-
-## 🔢 Ashtakavarga
-
-Calculates the "Eight-fold Grids" for planets and the combined Sarvashtakavarga (SAV).
+## Quick Start
 
 ```typescript
-import { Ashtakavarga } from '@node-jhora/analytics';
+import { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
 
-const result = Ashtakavarga.calculate(planets, ascendantSign);
+// Shadbala — 6-fold planetary strength (Virupas)
+const strength = calculateShadbala({ planet, allPlanets, houses, sun, moon, timeDetails, vargaPositions });
 
-// BAV for Sun
-console.log("Sun BAV:", result.bav[0]); 
-// Sarvashtakavarga (SAV)
-console.log("SAV Points:", result.sav); // Array of 12 scores
+// Ashtakavarga — BAV/SAV grids
+const av = Ashtakavarga.calculate(planets, ascendantSign);
+
+// Yogas — detect planetary combinations
+const yogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 ```
 
----
+## Features
 
-## 🧘 Yoga Engine
+| Feature | Description |
+| :--- | :--- |
+| **Shadbala** | Full Parashara 6-fold strength (Sthana, Dig, Kaala, Chesta, Naisargika, Drig) |
+| **Ashtakavarga** | Bhinnashtakavarga (BAV) and Sarvashtakavarga (SAV) |
+| **Yoga Engine** | Rule-based, extensible via JSON-compatible `YogaDef` definitions |
+| **YOGA_LIBRARY** | Built-in library of standard Raja, Dhana, Nabhasa Yogas |
+| **KP Engine** | Extended KP planet and house significator analysis |
+| **Aspects** | Aspect strength calculations for Drig Bala |
 
-A powerful, rule-based engine to identify hundreds of planetary yogas.
+## Exports
 
-### Configuration
-Yogas are defined using a structured `YogaDefinition` interface:
 ```typescript
-interface YogaDefinition {
-    name: string;
-    category: 'Raja' | 'Dhana' | 'Nabhasa' | 'Other';
-    conditions: Condition[]; // Logical AND of conditions
-}
+export { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY, KPEngine };
+export type { ShadbalaResult, VargaInfo, AshtakavargaResult, ChartData,
+              KPPlanetSignificator, KPHouseSignificator, YogaDef, YogaResult };
 ```
 
-**Supported Conditions:**
-- `placement`: Planet in specific house or sign.
-- `aspect`: Aspect from Planet A to Planet B.
-- `conjunction`: Multiple planets in the same sign.
-- `lordship`: Lord of House X placed in House Y.
+## License
 
-### Usage
-```typescript
-import { YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
-
-const foundYogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
-console.log("Detected Yogas:", foundYogas);
-```
-
-## 🏷️ Keywords
-Shadbala, Ashtakavarga, Yoga Engine, Planetary Strength, Vedic Astrology, Jyotish, Parashara, BAV, SAV, Raja Yoga, Astrology Analytics, Bhava Bala, Dig Bala
-
+Source Available — Commercial License Required. See [LICENSE](../../LICENSE).

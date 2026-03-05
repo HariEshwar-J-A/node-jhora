@@ -1,104 +1,82 @@
-# Package: `@node-jhora/core`
+# @node-jhora/core
 
-The `@node-jhora/core` package is the heart of the engine, providing high-precision astronomical data and fundamental Vedic math.
+The foundation of the Node-Jhora Vedic astrology engine. Provides high-precision astronomical data via Swiss Ephemeris (WASM), fundamental Vedic math, and an ergonomic facade for common operations.
 
-## 🏛️ Ephemeris Engine
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/CORE.md)
 
-The engine uses **Swiss Ephemeris (WASM)** for all planetary calculations.
+## Installation
 
-### Initialization
-The engine must be initialized before use to load the WASM binary.
-
-```typescript
-import { EphemerisEngine } from '@node-jhora/core';
-
-const eph = EphemerisEngine.getInstance();
-await eph.initialize(); // Loads WASM
+```bash
+npm install @node-jhora/core
 ```
 
-### Planetary Positions
-Supports Sidereal (Vedic) and Tropical calculations with optional **Topocentric Parallax** correction.
+> **Note**: Pure ESM — requires `"type": "module"` in your `package.json`.
+
+## Quick Start
 
 ```typescript
-const date = DateTime.now();
-const location = { latitude: 13.08, longitude: 80.27 }; // Chennai
+import { NodeJHora } from '@node-jhora/core';
 
-// getPlanets(date, location?, ayanamsaOrder?, topocentric?)
-const planets = eph.getPlanets(date, location, 1, true);
+// One-line chart calculation
+const chart = await NodeJHora.calculate(
+    new Date('2000-01-01T12:00:00Z'),
+    { latitude: 13.08, longitude: 80.27 },
+    'Lahiri'
+);
+
+console.log("Ascendant:", chart.ascendant);
+console.log("Moon Nakshatra:", chart.panchanga.nakshatra);
 ```
 
-**Planet IDs:**
-- `0`: Sun
-- `1`: Moon
-- `2`: Mercury
-- `3`: Venus
-- `4`: Mars
-- `5`: Jupiter
-- `6`: Saturn
-- `11`: Rahu (Mean Node)
-- `99`: Ketu (Calculated as Rahu + 180°)
+## Features
 
-### Ayanamsa Support
-Standard Sidereal modes available:
-- `1`: Lahiri (Chitra Paksha)
-- `3`: Raman
-- `5`: Krishnamurti (KP)
+| Feature | Description |
+| :--- | :--- |
+| **Ephemeris Engine** | Swiss Ephemeris WASM — 0.0001″ accuracy |
+| **NodeJHora Facade** | Static `calculate()` + instance API for ergonomic usage |
+| **Panchanga** | Tithi, Nakshatra, Yoga, Karana, Vara |
+| **16 Vargas** | D1–D60 divisional charts with `Decimal.js` precision |
+| **House Systems** | Whole Sign, Placidus, Porphyry |
+| **Special Lagnas** | Pranapada, Indu, Hora, Ghati, Bhava, Varnada |
+| **Upagrahas** | Gulikadi (time-based) and Dhumadi (angular) |
+| **KP System** | Sub-lord tables and Ruling Planets |
+| **Geocoder** | Local CSV city lookup (coordinates + timezone) |
+| **Planetary Stream** | Real-time observable for live chart updates |
+| **Precision Math** | `Decimal.js` for all critical calculations |
 
----
-
-## 🧭 Geocoder
-
-A high-performance, stream-based city lookup tool. It uses a local CSV database to find coordinates and timezones.
+## Exports
 
 ```typescript
-import { Geocoder } from '@node-jhora/core';
+// Facade
+export { NodeJHora, init };
 
-const geo = new Geocoder();
-const cities = await geo.search('Chennai');
-// Returns: { name, latitude, longitude, timezone, country }
+// Engine
+export { EphemerisEngine, calculateHouseCusps, calculatePanchanga };
+
+// Vedic
+export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS };
+
+// KP
+export { KPSubLord, KPRuling };
+
+// Special Lagnas
+export { calculatePranapada, calculateInduLagna, calculateShreeLagna,
+         calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna };
+
+// Upagrahas
+export { calculateTimeUpagrahas, calculateDhumadiUpagrahas };
+
+// Math Utilities
+export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms };
+export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS };
+export { AYANAMSA };
+
+// Types
+export type { PlanetPosition, HouseData, PanchangaResult, ChartData, VargaPoint,
+              UpagrahaPositions, HouseSystemMethod, KPSignificator, RulingPlanetsResult,
+              AyanamsaMode, NodeJHoraConfig, Ayanamsa };
 ```
 
----
+## License
 
-## 📐 Vedic Math & Fundamentals
-
-### Angular Normalization
-Ensures all angles stay within the `[0, 360)` range, handling negative inputs and large overflows correctly.
-```typescript
-import { normalize360 } from '@node-jhora/core';
-normalize360(370); // 10
-normalize360(-10); // 350
-```
-
-### Panchanga (The Five Limbs)
-Calculates Tithi, Nakshatra, Yoga, Karana, and Vara based on Sun and Moon positions.
-```typescript
-import { calculatePanchanga } from '@node-jhora/core';
-const results = calculatePanchanga(sunLon, moonLon, date);
-```
-
-### Divisional Charts (Vargas)
-Calculates positions in any of the 16 standard Parashara Vargas.
-```typescript
-import { calculateVarga } from '@node-jhora/core';
-// D9 (Navamsa)
-const navamsa = calculateVarga(planetLon, 9); 
-```
-
----
-
-## 📡 Planetary Stream
-
-For real-time applications (e.g., a "ticker" or Prashna UI), use the `PlanetaryStream` to receive updates at a fixed interval.
-
-```typescript
-const stream = client.createStream(1000); // 1 second interval
-stream.on('data', (chart) => {
-    console.log("Current Ascendant:", chart.houses.ascendant);
-});
-stream.start();
-```
-
-## 🏷️ Keywords
-Vedic Astrology, Jyotish, Swiss Ephemeris, WASM, Astronomy, Panchanga, Ephemeris Engine, Sidereal, Geocoding, TypeScript, Planetary Positions, Ascendant, Ayanamsa
-
+Source Available — Commercial License Required. See [LICENSE](../../LICENSE).
