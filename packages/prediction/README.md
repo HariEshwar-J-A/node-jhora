@@ -1,77 +1,55 @@
-# Package: `@node-jhora/prediction`
+# @node-jhora/prediction
 
-The `@node-jhora/prediction` package handles time-based calculations, including dasha sequences, transit scanners, and Jaimini predictive tools.
+Time-based predictive logic for the Node-Jhora Vedic astrology engine. Provides multiple Dasha systems (Vimshottari, Yogini, Narayana), transit scanning with Newton-Raphson precision, and Jaimini predictive tools (Chara Karakas, Arudha Padas, Chara Dasha).
 
-## ⏳ Dasha Systems
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/PREDICTION.md)
 
-Supports multiple predictive time-cycle systems.
+## Installation
 
-### 1. Vimshottari Dasha
-The most widely used system based on 120-year cycles.
-- **Precision**: Calculates down to 5 levels (Maha, Antar, Pratyantar, Sookshma, Prana).
-- **Flexibility**: Handles any duration and provides nested structure.
-
-```typescript
-import { generateVimshottari } from '@node-jhora/prediction';
-
-const dashas = generateVimshottari(birthDate, moonLon, 120);
+```bash
+npm install @node-jhora/prediction @node-jhora/core @node-jhora/analytics
 ```
 
-### 2. Yogini Dasha
-An 8-year recurring cycle system.
-```typescript
-import { YoginiDasha } from '@node-jhora/prediction';
-const periods = YoginiDasha.calculate(moonLon, birthDate, 80);
-```
-
-### 3. Narayana Dasha
-A Rashi-based dasha (Varga Dasha) used for general life events.
-- **Directional Logic**: Odd/Even sign logic for forward/reverse sequences.
-- **Exceptions**: Handles Saturn and Ketu exceptions in the Lagna.
-
----
-
-## 🛰️ Transit Engine
-
-Scans for planetary movement over time, detecting house ingresses and aspects.
+## Quick Start
 
 ```typescript
-import { TransitEngine } from '@node-jhora/prediction';
+import { generateVimshottari, YoginiDasha, TransitEngine, JaiminiCore, JaiminiDashas } from '@node-jhora/prediction';
 
+// Vimshottari — 120-year cycle, 5 recursive levels
+const dashas = generateVimshottari(birthDate, moonLongitude, 5);
+
+// Yogini — 8-year recurring cycles
+const yogini = YoginiDasha.calculate(moonLongitude, birthDate, 80);
+
+// Jaimini Karakas
+const karakas = JaiminiCore.calculateKarakas(planets);
+
+// Transit scanning
 const engine = new TransitEngine();
-const events = await engine.findTransits(
-    0, // Sun
-    startDate,
-    endDate
-);
-
-// Aspect detection using Newton-Raphson for high precision
-const conjunct = await engine.findExactAspect(0, 4, 0 /* conjunction */, startDate); 
+const events = await engine.findTransits(0, startDate, endDate);
 ```
 
----
+## Features
 
-## 💎 Jaimini System
+| Feature | Description |
+| :--- | :--- |
+| **Vimshottari Dasha** | 120-year cycle, 5 levels (Maha → Antar → Pratyantar → Sookshma → Prana) |
+| **Dasha Balance** | Birth Nakshatra balance calculation |
+| **Yogini Dasha** | 8-year recurring cycle with 8 Yogini lords |
+| **Narayana Dasha** | Rashi-based with odd/even directional logic |
+| **Transit Engine** | Newton-Raphson aspect timing (1e-7° tolerance) |
+| **Jaimini Karakas** | 7-karaka system (AK, AmK, BK, MK, PK, GK, DK) |
+| **Arudha Padas** | Reflected house points with exception rules |
+| **Chara Dasha** | Jaimini sign-based timing sequences |
 
-Core Jaimini astrological components.
+## Exports
 
-### 1. Chara Karakas
-Calculates the 7-karaka system based on planetary degrees within a rashi.
-- `AK` (Atmakaraka): Highest degree.
-- `AmK` (Amatyakaraka): Second highest.
-- ... and so on.
-
-### 2. Arudha Padas
-Calculates the "Reflected Points" for houses.
-- Handles the **exception rules** where if the lord is in the same house or 7th house, the Arudha jumps another 10/4 signs.
-
-### 3. Chara Dasha
-Sequence based on Jaimini's sign-based logic.
 ```typescript
-import { JaiminiDashas } from '@node-jhora/prediction';
-const chara = JaiminiDashas.calculateCharaDasha(lagnaSign, planets);
+export { generateVimshottari, calculateDashaBalance, TransitEngine,
+         YoginiDasha, NarayanaDasha, JaiminiCore, JaiminiDashas };
+export type { DashaPeriod, TransitEvent, JaiminiKaraka, ArudhaPada, CharaDashaPeriod };
 ```
 
-## 🏷️ Keywords
-Vimshottari Dasha, Yogini Dasha, Narayana Dasha, Transits, Jaimini, Chara Dasha, Predictive Astrology, Timing Events, Horoscope, Gochara, Planetary Aspects, Mahadasha, Antardasha
+## License
 
+Source Available — Commercial License Required. See [LICENSE](../../LICENSE).
