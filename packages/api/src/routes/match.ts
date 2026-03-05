@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { PoruthamMatch } from '@node-jhora/match';
 import { getEngine } from '../server.js';
 import { MatchInputSchema } from '../schemas/birth-input.js';
@@ -13,12 +14,13 @@ function getMoonNakshatra(moonLon: number): { nakIdx: number; sign: number } {
 }
 
 export async function matchRoutes(app: FastifyInstance): Promise<void> {
-    app.post('/match', async (req, reply) => {
-        const input = MatchInputSchema.parse(req.body);
+    const typed = app.withTypeProvider<ZodTypeProvider>();
+
+    typed.post('/match', { schema: { body: MatchInputSchema } }, async (req, reply) => {
         const engine = getEngine();
 
-        const p1 = parseBirthInput(input.person1);
-        const p2 = parseBirthInput(input.person2);
+        const p1 = parseBirthInput(req.body.person1);
+        const p2 = parseBirthInput(req.body.person2);
 
         const planets1 = engine.getPlanets(p1.dt, p1.location, { ayanamsaOrder: p1.ayanamsaOrder, nodeType: p1.nodeType });
         const planets2 = engine.getPlanets(p2.dt, p2.location, { ayanamsaOrder: p2.ayanamsaOrder, nodeType: p2.nodeType });

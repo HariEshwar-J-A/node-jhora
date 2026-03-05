@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { generateVimshottari, calculateDashaBalance } from '@node-jhora/prediction';
 import { getEngine } from '../server.js';
 import { DashaInputSchema } from '../schemas/birth-input.js';
@@ -20,16 +21,17 @@ function serializePeriod(p: any): any {
 }
 
 export async function dashaRoutes(app: FastifyInstance): Promise<void> {
-    app.post('/dasha', async (req, reply) => {
-        const input = DashaInputSchema.parse(req.body);
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(input);
+    const typed = app.withTypeProvider<ZodTypeProvider>();
+
+    typed.post('/dasha', { schema: { body: DashaInputSchema } }, async (req, reply) => {
+        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
         const moon    = planets.find(p => p.id === 1)!;
 
         const balance = calculateDashaBalance(moon.longitude);
-        const periods = generateVimshottari(dt, moon.longitude, input.depth);
+        const periods = generateVimshottari(dt, moon.longitude, req.body.depth);
 
         return reply.status(200).send({
             balance: {

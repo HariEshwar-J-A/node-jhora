@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import cors from '@fastify/cors';
-import { EphemerisEngine, AYANAMSA } from '@node-jhora/core';
+import { EphemerisEngine } from '@node-jhora/core';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { healthRoutes } from './routes/health.js';
 import { chartRoutes } from './routes/chart.js';
@@ -46,6 +47,10 @@ export async function buildServer(opts: {
         },
         trustProxy: opts.trustProxy ?? false,
     });
+
+    // Register Zod type provider for schema-level validation and serialization
+    app.setValidatorCompiler(validatorCompiler);
+    app.setSerializerCompiler(serializerCompiler);
 
     // ---------------------------------------------------------------------------
     // Plugins

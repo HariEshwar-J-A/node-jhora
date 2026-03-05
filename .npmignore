@@ -4,3 +4,6 @@ examples/
 tsconfig.json
 jest.config.js
 .gitignore
+
+CLAUDE.md
+.claude/

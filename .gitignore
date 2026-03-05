@@ -23,3 +23,6 @@ coverage/
 .DS_Store
 Thumbs.db
 *.tgz
+
+CLAUDE.md
+.claude/

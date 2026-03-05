@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { KPSubLord } from '@node-jhora/core';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
@@ -10,9 +11,10 @@ const PLANET_NAMES: Record<number, string> = {
 };
 
 export async function kpRoutes(app: FastifyInstance): Promise<void> {
-    app.post('/kp/significators', async (req, reply) => {
-        const input = BirthInputSchema.parse(req.body);
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(input);
+    const typed = app.withTypeProvider<ZodTypeProvider>();
+
+    typed.post('/kp/significators', { schema: { body: BirthInputSchema } }, async (req, reply) => {
+        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
