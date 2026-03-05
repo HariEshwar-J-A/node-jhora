@@ -49,4 +49,6 @@ export type { TransitSearchConfig };
 
 ## License
 
-Source Available — Commercial License Required. See [LICENSE](../../LICENSE).
+**© Copyright HariEshwar-J-A (Harieshwar Jagan Abirami).** All rights reserved.
+
+This software is proprietary. For commercial use, enterprise integration, or any other use cases, explicit permission is required. Usage is subject to agreed-upon payment and licensing terms. Please contact the author for licensing inquiries.

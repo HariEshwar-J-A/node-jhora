@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/api",
-    "version": "1.5.0",
+    "version": "2.0.7",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -16,10 +16,10 @@
     },
     "dependencies": {
         "@fastify/cors": "^10.0.2",
-        "@node-jhora/analytics": "^1.5.0",
-        "@node-jhora/core": "^1.5.0",
-        "@node-jhora/match": "^1.5.0",
-        "@node-jhora/prediction": "^1.5.0",
+        "@node-jhora/analytics": "^2.0.7",
+        "@node-jhora/core": "^2.0.7",
+        "@node-jhora/match": "^2.0.7",
+        "@node-jhora/prediction": "^2.0.7",
         "city-timezones": "^1.2.1",
         "decimal.js": "^10.4.3",
         "fastify": "^5.4.0",
@@ -35,5 +35,27 @@
         "jest": "*",
         "ts-jest": "*",
         "typescript": "*"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "keywords": [
+        "vedic-astrology",
+        "astrology-api",
+        "jyotish-api",
+        "fastify",
+        "zod",
+        "horoscope-api",
+        "rest-api"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/api"
     }
 }

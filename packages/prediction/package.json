@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/prediction",
-    "version": "1.5.0",
+    "version": "2.0.7",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -13,18 +13,35 @@
     },
     "files": [
         "dist",
-        "LICENSE"
+        "LICENSE",
+        "README.md"
     ],
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@node-jhora/core": "^1.5.0",
-        "@node-jhora/analytics": "^1.5.0",
+        "@node-jhora/core": "^2.0.7",
+        "@node-jhora/analytics": "^2.0.7",
         "decimal.js": "^10.4.3",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
         "typescript": "*"
+    },
+    "keywords": [
+        "vedic-astrology",
+        "dasha",
+        "vimshottari",
+        "yogini",
+        "jaimini",
+        "chara-dasha",
+        "transits",
+        "gochara",
+        "astrology-timing"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/prediction"
     }
 }

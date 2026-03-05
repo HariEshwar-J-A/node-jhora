@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/analytics",
-    "version": "1.5.0",
+    "version": "2.0.7",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -13,17 +13,32 @@
     },
     "files": [
         "dist",
-        "LICENSE"
+        "LICENSE",
+        "README.md"
     ],
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@node-jhora/core": "^1.5.0",
+        "@node-jhora/core": "^2.0.7",
         "decimal.js": "^10.4.3",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
         "typescript": "*"
+    },
+    "keywords": [
+        "vedic-astrology",
+        "shadbala",
+        "ashtakavarga",
+        "yogas",
+        "astrology-analytics",
+        "kp-system",
+        "planetary-strength"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/analytics"
     }
 }
