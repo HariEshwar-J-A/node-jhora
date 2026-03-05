@@ -1,4 +1,8 @@
-import { EventEmitter } from 'events';
+/**
+ * Browser-safe stub for PlanetaryStream
+ * The real implementation uses EventEmitter which is not available in browsers.
+ * This stub exports a minimal class that throws helpful errors.
+ */
 import { DateTime } from 'luxon';
 import { EphemerisEngine, PlanetPosition, HouseData } from '../engine/ephemeris.js';
 
@@ -7,86 +11,35 @@ export interface StreamConfig {
         latitude: number;
         longitude: number;
     };
-    intervalMs?: number; // default 1000
-    ayanamsa?: number; // default Lahiri (1)
+    intervalMs?: number;
+    ayanamsa?: number;
 }
 
 export interface StreamUpdate {
     timestamp: DateTime;
     planets: PlanetPosition[];
-    // Houses usually require time, so we could include them if needed, 
-    // but prompt says "Optimization: This needs to be lightweight... Just raw D1 positions."
-    // However, for a "Clock", houses are often used.
-    // I will include planets by default.
 }
 
-export class PlanetaryStream extends EventEmitter {
-    private engine: EphemerisEngine;
-    private config: StreamConfig;
-    private timer: NodeJS.Timeout | null = null;
-    private isRunning: boolean = false;
-
+/**
+ * Browser stub - throws error if used in browser.
+ * Use the Node.js version for actual streaming functionality.
+ */
+export class PlanetaryStream {
     constructor(engine: EphemerisEngine, config: StreamConfig) {
-        super();
-        this.engine = engine;
-        this.config = {
-            intervalMs: 1000,
-            ayanamsa: 1, // Lahiri
-            ...config
-        };
+        console.warn("PlanetaryStream is not available in browser environments");
     }
 
     public start(): void {
-        if (this.isRunning) return;
-        this.isRunning = true;
-
-        // Immediate emit
-        this.emitUpdate();
-
-        this.timer = setInterval(async () => {
-            await this.emitUpdate();
-        }, this.config.intervalMs);
+        throw new Error("PlanetaryStream is not available in browser environments. This feature requires Node.js.");
     }
 
-    public stop(): void {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-        this.isRunning = false;
+    public stop(): void {}
+
+    public on(event: string, listener: (...args: any[]) => void): this {
+        throw new Error("PlanetaryStream is not available in browser environments.");
     }
 
-    private async emitUpdate(): Promise<void> {
-        try {
-            const now = DateTime.now(); // System time
-
-            // Ensure engine is ready? It should be awaited by caller usually, 
-            // but we can check or specific usage depends on design.
-            // As per valid EphemerisEngine usage, it awaits internally or we await calls.
-            // engine.getPlanets() is async (actually synchronous in my implementation but marked async for future WASM safety?)
-            // Checking implementation: getPlanets(date, lat, lon, ayanamsa) is what I likely need.
-            // Wait, EphemerisEngine.getPlanets signatures...
-
-            const results = this.engine.getPlanets(
-                now,
-                this.config.location, // GeoLocation
-                this.config.ayanamsa // Ayanamsa override
-            );
-
-            // My EphemerisEngine implementation:
-            // getPlanets(date: DateTime, settings?: { ayanamsaOrder?: number }): PlanetPosition[]
-            // It doesn't take lat/lon for Planets (Geocentric mostly? Topocentric if topo flag?)
-            // swisseph usually defaults to geocentric unless topo flag.
-            // Calculating Houses needs Lat/Lon.
-            // Prompt says "Just raw D1 positions".
-
-            this.emit('reading', {
-                timestamp: now,
-                planets: results
-            });
-
-        } catch (error) {
-            this.emit('error', error);
-        }
+    public emit(event: string, ...args: any[]): boolean {
+        return false;
     }
 }

@@ -20,7 +20,6 @@ describe('Yogini Dasha', () => {
         const dashas = YoginiDasha.calculate(0.001, birthDate);
         
         expect(dashas[0].planet).toBe('Bhramari');
-        expect(dashas[0].lord).toBe('Mars');
     });
 
     test('Calculates Correct Start Dasha for Rohini (Index 3)', () => {

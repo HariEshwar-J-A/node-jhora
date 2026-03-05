@@ -40,7 +40,7 @@ export class EphemerisInterpolator {
         while (cursor <= end) {
             // Get Planest sync? Ephemeris usually cache friendly?
             // EphemerisEngine.getPlanets is the call.
-            const planets = this.ephemeris.getPlanets(cursor, { latitude: 0, longitude: 0 }, 1, true); // Topo?
+            const planets = this.ephemeris.getPlanets(cursor, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1, topocentric: true });
             
             // Store compacted
             // Map ID to index specific? 
@@ -53,8 +53,9 @@ export class EphemerisInterpolator {
             // Map:
             const getIdIdx = (id: number) => {
                 if (id <= 6) return id;
-                if (id === 8) return 7; // Rahu
-                if (id === 9) return 8; // Ketu
+                if (id <= 6) return id;
+                if (id === 10 || id === 11) return 7; // Rahu
+                if (id === 99) return 8; // Ketu
                 return -1;
             };
 
@@ -81,7 +82,8 @@ export class EphemerisInterpolator {
         if (t < this.startTime || t > this.endTime) {
             // Out of bounds - Fallback or Error?
             // Fallback to real engine (slow but works)
-            return this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, 1, true);
+            // Fallback to real engine (slow but works)
+            return this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1, topocentric: true });
         }
 
         // Find indices
