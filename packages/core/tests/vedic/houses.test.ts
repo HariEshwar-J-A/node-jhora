@@ -40,13 +40,8 @@ describe('House Systems', () => {
         expect(res.cusps.length).toBe(12);
 
         expect(res.ascendant).toBeDefined();
-        // Check Ascendant value for verification (approx)
-        // Jan 1 2000 12:00 UTC Chennai.
-        // Sidereal Ascendant should be Pisces or Aries. 
-        // 0-30 deg = Aries (No, 0-30 is Aries in regular 0-360 counting if 0=Aries).
-        // 350-20 deg range (Pisces/Aries).
-        // Let's log it to be sure.
-        console.log(`Ascendant: ${res.ascendant}, MC: ${res.mc}`);
+        expect(res.ascendant).toBeGreaterThanOrEqual(0);
+        expect(res.ascendant).toBeLessThan(360);
     });
 
     test('Bhava Sandhi (Middle) Calculation', () => {

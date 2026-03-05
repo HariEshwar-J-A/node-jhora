@@ -20,6 +20,7 @@
         "test": "npx jest"
     },
     "dependencies": {
+        "decimal.js": "^10.4.3",
         "luxon": "^3.7.2",
         "swisseph-wasm": "^0.0.2"
     },

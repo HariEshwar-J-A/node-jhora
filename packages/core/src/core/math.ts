@@ -1,112 +1,65 @@
 /**
- * Core Mathematical Functions for Vedic Astrology (First Principles)
- * 
- * This module implements the mathematical foundation required for accurate
- * calculation of planetary positions, aspects, and divisional charts.
- * It avoids standard JavaScript modulo operators for angles to ensure
- * correct handling of negative values.
+ * Core Mathematical Functions for Vedic Astrology
+ *
+ * PUBLIC API — all functions take and return native `number`.
+ * Internally all critical angular arithmetic is delegated to `precise.ts`
+ * (Decimal.js, 34-digit precision) to eliminate IEEE-754 floating-point drift.
+ *
+ * This module is intentionally kept thin. All heavy lifting lives in precise.ts.
  */
 
+import { Decimal } from 'decimal.js';
+import {
+    normalize360D,
+    shortestArcD,
+    dmsToDecimalD,
+    decimalToDmsD,
+    midpointD,
+    D,
+    toNum,
+} from './precise.js';
+
+// Re-export Decimal utilities for packages that need them directly
+export { Decimal, normalize360D, shortestArcD, dmsToDecimalD, decimalToDmsD, midpointD, D as toDecimal, toNum } from './precise.js';
+
 /**
- * Normalizes an angle to the range [0, 360).
- * Handles negative angles correctly (e.g., -10 -> 350).
- * 
- * @param angle - The angle in degrees.
- * @returns The normalized angle between 0 (inclusive) and 360 (exclusive).
+ * Normalises an angle to [0, 360).
+ * Handles negatives (e.g. -10 → 350) and values ≥ 360 correctly.
+ * Uses Decimal.js internally to eliminate modulo floating-point drift.
  */
 export function normalize360(angle: number): number {
-    let res = angle % 360;
-    if (res < 0) {
-        res += 360;
-    }
-    // Handle -0 case or extremely small negative floating point errors if necessary,
-    // though the above covers standard arithmetic.
-    // Ensure 360 becomes 0
-    if (res >= 360) {
-        return 0;
-    }
-    return res;
+    return toNum(normalize360D(D(angle)));
 }
 
 /**
- * Calculates the shortest distance between two angles on a circle.
- * 
- * @param angle1 - First angle in degrees.
- * @param angle2 - Second angle in degrees.
- * @returns The shortest arc distance between the two angles.
+ * Shortest angular distance between two angles on a circle.
+ * Result is always in [0, 180].
  */
 export function getShortestDistance(angle1: number, angle2: number): number {
-    const diff = Math.abs(normalize360(angle1) - normalize360(angle2));
-    return diff > 180 ? 360 - diff : diff;
+    return toNum(shortestArcD(D(angle1), D(angle2)));
 }
 
 /**
- * Converts Degrees, Minutes, Seconds to Decimal Degrees.
- * 
- * @param d - Degrees
- * @param m - Minutes
- * @param s - Seconds
- * @returns Decimal representation of the angle.
+ * Degrees-Minutes-Seconds → Decimal degrees.
+ * Sign is inferred from the first non-zero signed component.
  */
 export function dmsToDecimal(d: number, m: number, s: number): number {
-    const sign = d < 0 || (d === 0 && (m < 0 || s < 0)) ? -1 : 1;
-    const absD = Math.abs(d);
-    const absM = Math.abs(m);
-    const absS = Math.abs(s);
-
-    return sign * (absD + absM / 60 + absS / 3600);
+    return toNum(dmsToDecimalD(d, m, s));
 }
 
 /**
- * Converts Decimal Degrees to Degrees, Minutes, Seconds.
- * 
- * @param deg - Angle in decimal degrees.
- * @returns Object containing {d, m, s}.
+ * Decimal degrees → { d, m, s }.
+ * `s` is rounded to 6 decimal places to avoid floating-point noise.
  */
 export function decimalToDms(deg: number): { d: number; m: number; s: number } {
-    const sign = deg < 0 ? -1 : 1;
-    const absDeg = Math.abs(deg);
-
-    const d = Math.floor(absDeg);
-    const remainder = absDeg - d;
-    const mDec = remainder * 60;
-    const m = Math.floor(mDec);
-    const s = (mDec - m) * 60;
-
-    return {
-        d: sign * d,
-        m: m,
-        s: s
-    };
+    const { d, m, s } = decimalToDmsD(new Decimal(deg));
+    return { d, m, s: toNum(s.toDecimalPlaces(6)) };
 }
 
 /**
- * Calculates the midpoint between two angles.
- * Important for Bhava Madhya (House Middle) calculations.
- * 
- * @param angle1 - First angle in degrees.
- * @param angle2 - Second angle in degrees.
- * @returns The midpoint angle normalized to 0-360.
+ * Midpoint of two angles on a circle — always takes the shorter arc.
+ * Correctly handles the 350°/10° wraparound.
  */
 export function midpoint(angle1: number, angle2: number): number {
-    const a1 = normalize360(angle1);
-    const a2 = normalize360(angle2);
-
-    if (Math.abs(a1 - a2) < 1e-9) return a1;
-
-    // Check if the shorter arc crosses 0/360
-    const diff = a2 - a1;
-    let mid: number;
-
-    if (Math.abs(diff) <= 180) {
-        mid = a1 + diff / 2;
-    } else {
-        // Crosses zero
-        // e.g. 350 and 10. diff = -340. abs > 180.
-        // We want midpoint to be 0.
-        // ((350 + 10 + 360) / 2) % 360 = 720/2 = 360 -> 0 
-        mid = (a1 + a2 + 360) / 2;
-    }
-
-    return normalize360(mid);
+    return toNum(midpointD(D(angle1), D(angle2)));
 }

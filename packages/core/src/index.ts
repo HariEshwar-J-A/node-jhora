@@ -16,9 +16,7 @@ import { VargaDeities } from './vedic/deities.js';
 // Re-export Interfaces
 export type {
     PlanetPosition, HouseData,
-    CityData,
     PanchangaResult,
-    StreamConfig,
     KPSignificator, RulingPlanetsResult,
     VargaPoint,
     UpagrahaPositions,
@@ -27,11 +25,26 @@ export type {
 
 // Re-export Utils
 export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
+export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from './core/precise.js';
 export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
+export { AYANAMSA } from './engine/ephemeris.js';
+export type { AyanamsaMode } from './engine/ephemeris.js';
+
+// Chart Data type for convenience
+export interface ChartData {
+    planets: PlanetPosition[];
+    houses: HouseData;
+    ascendant: number;
+    ayanamsa: string;
+}
+
+export type Ayanamsa = 'Lahiri' | 'Raman' | 'KP';
 
 export interface NodeJHoraConfig {
     ayanamsaOrder?: number; // 1 = Lahiri
     topocentric?: boolean;
+    nodeType?: 'mean' | 'true';
+    ayanamsaOffset?: number;
 }
 
 const defaultEphemeris = new EphemerisEngine();
@@ -63,8 +76,75 @@ export class NodeJHora {
         await this.ephemeris.initialize();
     }
 
+    // ========== STATIC API ==========
+    
+    /**
+     * Initialize the WASM engine (call once before calculate)
+     */
+    public static async init(): Promise<void> {
+        await EphemerisEngine.getInstance().initialize();
+    }
+
+    /**
+     * Quick calculation without creating an instance
+     * Note: Call NodeJHora.init() first or this will call it automatically
+     */
+    public static async calculate(
+        date: Date, 
+        location: { latitude: number, longitude: number }, 
+        ayanamsaName: Ayanamsa = 'Lahiri',
+        config: NodeJHoraConfig = { topocentric: true }
+    ): Promise<ChartData & { panchanga: PanchangaResult }> {
+        const ayanamsaMap: Record<Ayanamsa, number> = {
+            'Lahiri': 1,
+            'Raman': 3,
+            'KP': 5
+        };
+        const ayanamsaOrder = ayanamsaMap[ayanamsaName];
+        const engine = EphemerisEngine.getInstance();
+        
+        await engine.initialize();
+        
+        const dt = DateTime.fromJSDate(date);
+        const planets = engine.getPlanets(dt, location, {
+            ayanamsaOrder,
+            topocentric: config.topocentric,
+            nodeType: config.nodeType,
+        });
+        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
+        
+        const sun = planets.find(p => p.id === 0);
+        const moon = planets.find(p => p.id === 1);
+        let panchanga: any = null;
+        if (sun && moon) {
+            panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt);
+        }
+
+        const houses: HouseData = {
+            cusps: housesResult.cusps,
+            ascendant: housesResult.ascendant,
+            mc: housesResult.mc,
+            armc: housesResult.armc,
+            vertex: housesResult.vertex || 0
+        };
+
+        return {
+            planets,
+            houses,
+            panchanga,
+            ascendant: houses.ascendant,
+            ayanamsa: ayanamsaName
+        };
+    }
+
+    // ========== INSTANCE METHODS ==========
+
     public getPlanets(date: DateTime): PlanetPosition[] {
-        return this.ephemeris.getPlanets(date, this.location, this.config.ayanamsaOrder, this.config.topocentric);
+        return this.ephemeris.getPlanets(date, this.location, {
+            ayanamsaOrder: this.config.ayanamsaOrder,
+            topocentric: this.config.topocentric,
+            nodeType: this.config.nodeType,
+        });
     }
 
     getHouses(date: DateTime, system: HouseSystemMethod = 'WholeSign'): HouseData {
@@ -92,24 +172,14 @@ export class NodeJHora {
         return calculatePanchanga(sun.longitude, moon.longitude, date);
     }
 
-    createStream(intervalMs: number = 1000): PlanetaryStream {
-        return new PlanetaryStream(this.ephemeris, {
-            location: this.location,
-            intervalMs,
-            ayanamsa: this.ayanamsa
-        });
-    }
 }
 
-// Functional Exports
+// Functional Exports (Browser-safe only)
 export {
     EphemerisEngine,
-    Geocoder,
     calculateHouseCusps,
     calculatePanchanga,
-    PlanetaryStream,
     KPSubLord, KPRuling,
-    EphemerisInterpolator,
     calculateTimeUpagrahas, calculateDhumadiUpagrahas,
     calculatePranapada, calculateInduLagna, calculateShreeLagna,
     calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna
