@@ -1,15 +1,17 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { calculateHouseCusps, calculatePanchanga, calculateVarga } from '@node-jhora/core';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
 
 export async function chartRoutes(app: FastifyInstance): Promise<void> {
+    const typed = app.withTypeProvider<ZodTypeProvider>();
 
     // POST /v1/chart — full birth chart (planets, houses, panchanga)
-    app.post('/chart', async (req, reply) => {
-        const input = BirthInputSchema.parse(req.body);
-        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parseBirthInput(input);
+    typed.post('/chart', { schema: { body: BirthInputSchema } }, async (req, reply) => {
+        const parsed = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parsed;
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
@@ -40,18 +42,23 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
             },
             panchanga,
             meta: {
-                ayanamsaName:  input.ayanamsa,
+                ayanamsaName:  req.body.ayanamsa,
                 ayanamsaValue: ayanamsa,
-                nodeType:      input.nodeType,
+                nodeType:      req.body.nodeType,
                 julianDay:     engine.julday(dt),
+                ...(parsed.resolvedCity ? {
+                    resolvedCity:     parsed.resolvedCity,
+                    resolvedTimezone: parsed.resolvedTimezone,
+                    resolvedLat:      location.latitude,
+                    resolvedLon:      location.longitude,
+                } : {}),
             },
         });
     });
 
     // POST /v1/chart/vargas — all 16 divisional charts
-    app.post('/chart/vargas', async (req, reply) => {
-        const input = BirthInputSchema.parse(req.body);
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(input);
+    typed.post('/chart/vargas', { schema: { body: BirthInputSchema } }, async (req, reply) => {
+        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { calculateHouseCusps, calculateVarga } from '@node-jhora/core';
 import { calculateShadbala, VargaInfo } from '@node-jhora/analytics';
 import { getEngine } from '../server.js';
@@ -44,9 +45,10 @@ function estimateSunriseSunset(lat: number): { sunrise: number; sunset: number }
 }
 
 export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
-    app.post('/shadbala', async (req, reply) => {
-        const input = BirthInputSchema.parse(req.body);
-        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parseBirthInput(input);
+    const typed = app.withTypeProvider<ZodTypeProvider>();
+
+    typed.post('/shadbala', { schema: { body: BirthInputSchema } }, async (req, reply) => {
+        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
