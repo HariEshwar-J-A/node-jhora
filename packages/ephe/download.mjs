@@ -1,56 +1,48 @@
 /**
  * download.mjs — postinstall script for @node-jhora/ephe
  *
- * Downloads Swiss Ephemeris .se1 data files from Astrodienst.
- * These files are freely available and carry NO GPL restriction
- * (only the SE C library is AGPL; the data files are separate).
+ * Downloads de440s.bsp from JPL's public servers.
  *
- * Files downloaded:
- *   sepl_18.se1  — planets (Sun, Moon-node, Mercury-Pluto) 1800–2400 AD (~484 KB)
- *   semo_18.se1  — Moon 1800–2400 AD (~1.3 MB)
+ *   de440s.bsp:
+ *     Coverage : 1849-12-26 to 2150-01-22
+ *     Size     : ~32 MB
+ *     License  : U.S. Government public domain — no restrictions
+ *     Citation : Park et al. (2021), AJ 161 105, "The JPL Planetary and
+ *                Lunar Ephemerides DE440 and DE441"
  *
- * Source: https://www.astro.com/ftp/swisseph/ephe/
+ *   Canonical URL: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
  */
 
 import { createWriteStream, existsSync, statSync, unlinkSync } from 'fs';
-import { get as httpsGet } from 'https';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { get as httpsGet }  from 'https';
+import { fileURLToPath }    from 'url';
+import { dirname, join }    from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const DEST      = join(__dirname, 'de440s.bsp');
+const MIN_SIZE  = 30 * 1024 * 1024;   // 30 MB sanity-check floor
 
-const FILES = [
-    {
-        name:    'sepl_18.se1',
-        dest:    join(__dirname, 'sepl_18.se1'),
-        minSize: 400_000,   // ~484 KB
-        urls: [
-            'https://www.astro.com/ftp/swisseph/ephe/sepl_18.se1',
-            'https://github.com/aloistr/swisseph/raw/master/ephe/sepl_18.se1',
-        ],
-    },
-    {
-        name:    'semo_18.se1',
-        dest:    join(__dirname, 'semo_18.se1'),
-        minSize: 1_000_000, // ~1.3 MB
-        urls: [
-            'https://www.astro.com/ftp/swisseph/ephe/semo_18.se1',
-            'https://github.com/aloistr/swisseph/raw/master/ephe/semo_18.se1',
-        ],
-    },
+const SOURCES = [
+    'https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
+    'https://ssd.jpl.nasa.gov/pub/eph/planets/bsp/de440s.bsp',
 ];
 
-function download(url, dest, minSize) {
-    return new Promise((resolve, reject) => {
-        console.log(`[node-jhora/ephe] Downloading ${url} …`);
-        const proto  = url.startsWith('https') ? httpsGet : undefined;
-        if (!proto) { reject(new Error('Only HTTPS supported')); return; }
+// ── Already present? ──────────────────────────────────────────────────────
+if (existsSync(DEST) && statSync(DEST).size > MIN_SIZE) {
+    console.log('[node-jhora/ephe] de440s.bsp already present — skipping download.');
+    process.exit(0);
+}
 
-        const stream = createWriteStream(dest);
-        const req = httpsGet(url, (res) => {
+// ── Download helper ───────────────────────────────────────────────────────
+function download(url) {
+    return new Promise((resolve, reject) => {
+        console.log(`[node-jhora/ephe] Downloading de440s.bsp from ${url} …`);
+        const stream = createWriteStream(DEST);
+
+        httpsGet(url, (res) => {
             if (res.statusCode === 301 || res.statusCode === 302) {
                 stream.destroy();
-                download(res.headers.location, dest, minSize).then(resolve).catch(reject);
+                download(res.headers.location).then(resolve).catch(reject);
                 return;
             }
             if (res.statusCode !== 200) {
@@ -66,8 +58,8 @@ function download(url, dest, minSize) {
                 received += chunk.length;
                 if (total > 0) {
                     const pct = Math.floor(received / total * 100);
-                    if (pct !== lastPct && pct % 20 === 0) {
-                        process.stdout.write(`\r  ${pct}% (${(received / 1024).toFixed(0)} KB)`);
+                    if (pct !== lastPct && pct % 10 === 0) {
+                        process.stdout.write(`\r[node-jhora/ephe] ${pct}% (${(received / 1e6).toFixed(1)} MB)`);
                         lastPct = pct;
                     }
                 }
@@ -76,50 +68,40 @@ function download(url, dest, minSize) {
             res.pipe(stream);
             stream.on('finish', () => {
                 process.stdout.write('\n');
-                const size = statSync(dest).size;
-                if (size < minSize) {
-                    try { unlinkSync(dest); } catch {}
-                    reject(new Error(`File too small (${size} bytes) — download corrupted?`));
+                const size = statSync(DEST).size;
+                if (size < MIN_SIZE) {
+                    try { unlinkSync(DEST); } catch {}
+                    reject(new Error(`Downloaded file too small (${size} bytes) — corrupted?`));
                 } else {
-                    console.log(`  OK: ${dest} (${(size / 1024).toFixed(0)} KB)`);
+                    console.log(`[node-jhora/ephe] de440s.bsp ready (${(size / 1e6).toFixed(1)} MB).`);
                     resolve();
                 }
             });
+        }).on('error', (err) => {
+            try { unlinkSync(DEST); } catch {}
+            reject(err);
         });
 
-        req.on('error', (err) => { try { unlinkSync(dest); } catch {} reject(err); });
-        stream.on('error', (err) => { req.destroy(); reject(err); });
+        stream.on('error', (err) => { reject(err); });
     });
 }
 
-async function ensureFile(spec) {
-    if (existsSync(spec.dest) && statSync(spec.dest).size >= spec.minSize) {
-        console.log(`[node-jhora/ephe] ${spec.name} already present — skipping.`);
-        return;
-    }
-    for (const url of spec.urls) {
+// ── Try each source in order ──────────────────────────────────────────────
+async function main() {
+    for (const url of SOURCES) {
         try {
-            await download(url, spec.dest, spec.minSize);
-            return;
+            await download(url);
+            process.exit(0);
         } catch (err) {
-            console.warn(`  Failed (${err.message}), trying next source…`);
+            console.warn(`[node-jhora/ephe] Failed: ${err.message} — trying next source…`);
         }
     }
-    console.error(
-        `[node-jhora/ephe] ERROR: Could not download ${spec.name}.\n` +
-        `  Download manually from https://www.astro.com/ftp/swisseph/ephe/${spec.name}\n` +
-        `  and place it at: ${spec.dest}`,
-    );
+    console.error([
+        '[node-jhora/ephe] ERROR: Could not download de440s.bsp from any source.',
+        '  Download manually from: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
+        `  Place it at: ${DEST}`,
+    ].join('\n'));
     process.exit(1);
-}
-
-async function main() {
-    console.log('[node-jhora/ephe] Checking Swiss Ephemeris data files…');
-    for (const spec of FILES) {
-        await ensureFile(spec);
-    }
-    console.log('[node-jhora/ephe] All SE data files ready.');
-    process.exit(0);
 }
 
 main();

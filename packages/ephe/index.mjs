@@ -1,20 +1,21 @@
 /**
  * @node-jhora/ephe — entry point
- * Exports paths to Swiss Ephemeris .se1 data files.
+ * Exports the filesystem path to de440s.bsp so the engine can locate it.
+ *
+ * Data: NASA/JPL DE440s — U.S. Government public domain.
  */
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync }    from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** Absolute path to sepl_18.se1 (planets) on the local filesystem. */
-export const SEPL_PATH = join(__dirname, 'sepl_18.se1');
+/** Absolute path to de440s.bsp on the local filesystem. */
+export const DE440S_PATH = join(__dirname, 'de440s.bsp');
 
-/** Absolute path to semo_18.se1 (Moon) on the local filesystem. */
-export const SEMO_PATH = join(__dirname, 'semo_18.se1');
-
-/** Returns true if both SE data files are present. */
+/** Returns true if de440s.bsp is present and at least 30 MB. */
 export function isAvailable() {
-    return existsSync(SEPL_PATH) && existsSync(SEMO_PATH);
+    if (!existsSync(DE440S_PATH)) return false;
+    const { statSync } = await import('fs');
+    return statSync(DE440S_PATH).size > 30 * 1024 * 1024;
 }

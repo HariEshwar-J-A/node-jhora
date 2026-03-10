@@ -11,7 +11,7 @@ Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathemat
 ## STRICT CONSTRAINTS & RULES
 
 1. **Absolute Precision:** Jyotish calculations are highly sensitive. NEVER use native JavaScript `Number` for floating-point planetary longitudes, Ayanamsa, or divisional math. You MUST use a high-precision library like `decimal.js` or `bignumber.js` for all core calculations.
-2. **Ephemeris Parity:** Ensure the Swiss Ephemeris (`swisseph`) bindings in Node use the exact same flags (e.g., True vs. Mean nodes, specific Ayanamsa models like True Pushya/Lahiri) as `pyjhora`.
+2. **Ephemeris Parity:** The engine uses JPL DE440s (public domain, AGPL-free). Ensure planetary positions match JHora reference charts. Ayanamsa values in `packages/core/src/engine/ayanamsa.ts` are calibrated for DE440; do not copy SE/pyswisseph raw values without applying the +0.088827° DE440 offset.
 3. **No Frontend:** I do not care about the frontend. You are authorized to completely delete, deprecate, or ignore any frontend code (React, Vue, etc.) in this monorepo. Focus 100% on the backend engine.
 4. **Agentic Autonomy:** Run tests frequently. If a test fails, analyze the delta between the Node output and the Python expectation, correct the math, and re-run until it passes. Do not stop until the suite is green.
 
@@ -105,7 +105,7 @@ apps/portal               ← depends on core + match + ui-react (React + Vite d
 
 The foundation layer. Key sub-directories:
 
-- `engine/` — Swiss Ephemeris WASM wrapper (`EphemerisEngine` singleton, must call `await eph.initialize()` before use), interpolation, geocoding
+- `engine/` — JPL DE440s ephemeris engine (`EphemerisEngine` singleton, must call `await eph.initialize()` before use). Pure TypeScript SPK reader — no WASM, no AGPL. Data file `de440s.bsp` is loaded from `@node-jhora/ephe` or the `NODE_JHORA_EPHE_PATH` env var.
 - `vedic/` — Panchanga (Tithi/Nakshatra/Yoga/Karana/Vara), 16 divisional charts (Vargas D1–D60), house systems, Upagrahas, Special Lagnas
 - `kp/` — KP system sublord and ruling planet calculations
 - `core/` — Angular math utilities, planetary relationships
@@ -139,16 +139,21 @@ TypeScript Project References with `composite: true` enables incremental builds.
 
 Jest 30 with `ts-jest` ESM preset. The `moduleNameMapper` strips `.js` extensions for ESM resolution. Tests live in `packages/<name>/tests/` as `*.test.ts` or `*.spec.ts`.
 
-### Critical WASM Constraint
+### Engine Initialization (Required)
 
-The Swiss Ephemeris WASM engine must be initialized before any planetary calculations:
+The DE440 ephemeris engine reads `de440s.bsp` from disk and must be initialized before any planetary calculations:
 
 ```typescript
 const eph = EphemerisEngine.getInstance();
-await eph.initialize(); // Required before calling getPlanets() or similar
+await eph.initialize(); // Required — loads de440s.bsp
 ```
 
-In browser/Vite environments, the portal app uses `vite-plugin-wasm` and `vite-plugin-top-level-await` to handle WASM loading.
+The engine resolves `de440s.bsp` in this order:
+1. `NODE_JHORA_EPHE_PATH` environment variable
+2. `@node-jhora/ephe` npm package (auto-downloaded from JPL on `npm install`)
+3. Dev fallback: `de440s.bsp` next to the `packages/` directory
+
+**No WASM, no Swiss Ephemeris, no AGPL.** The engine is pure TypeScript + JPL data (U.S. Government public domain).
 
 ### ESM Import Convention
 

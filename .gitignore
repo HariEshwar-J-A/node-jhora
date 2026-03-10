@@ -19,6 +19,14 @@ lerna-debug.log*
 # Testing
 coverage/
 
+# Ephemeris data (downloaded from JPL — large binary, not tracked in git)
+de440s.bsp
+**/de440s.bsp
+
+# Debug / scratch scripts (not part of the codebase)
+debug_*.mjs
+debug_*.js
+
 # OS
 .DS_Store
 Thumbs.db

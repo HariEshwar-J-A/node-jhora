@@ -28,7 +28,9 @@
         "@node-jhora/ephe": "^440.1.0"
     },
     "peerDependenciesMeta": {
-        "@node-jhora/ephe": { "optional": false }
+        "@node-jhora/ephe": {
+            "optional": false
+        }
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",
