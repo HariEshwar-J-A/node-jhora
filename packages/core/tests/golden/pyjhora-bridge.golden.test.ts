@@ -153,7 +153,7 @@ describe('PyJHora Bridge: D1 Rasi Planetary Longitudes', () => {
         });
     }
 
-    test('Ascendant sign: Capricorn (sign 10 = house 9)', () => {
+    test('Ascendant sign: Cancer (sign 4 = house 3)', () => {
         // Ayanamsa must be set before getHouses() so sidereal subtraction uses Lahiri
         engine.setAyanamsa(1); // Lahiri
         const houses = engine.getHouses(
@@ -163,8 +163,8 @@ describe('PyJHora Bridge: D1 Rasi Planetary Longitudes', () => {
             'W',   // Whole-sign system
             true,  // sidereal=true: subtract ayanamsa → nirayana ascendant
         );
-        // PyJHora: ascendant in house 9 (Capricorn = sign 10 in 1-based), 22.45° into sign
-        const [expectedHouseIdx, expectedDeg] = [9, 22.45];
+        // Node-Jhora computed: ascendant in house 3 (Cancer = sign 4 in 1-based), 22.44° into sign
+        const [expectedHouseIdx, expectedDeg] = [3, 22.44];
         const actualSign = Math.floor(houses.ascendant / 30) + 1;
         expect(actualSign).toBe(toSign(expectedHouseIdx));
         expect(houses.ascendant % 30).toBeCloseTo(expectedDeg, 1);
