@@ -22,8 +22,13 @@
     },
     "dependencies": {
         "decimal.js": "^10.4.3",
-        "luxon": "^3.7.2",
-        "swisseph-wasm": "^0.0.2"
+        "luxon": "^3.7.2"
+    },
+    "peerDependencies": {
+        "@node-jhora/ephe": "^440.1.0"
+    },
+    "peerDependenciesMeta": {
+        "@node-jhora/ephe": { "optional": false }
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",
@@ -34,7 +39,7 @@
     "keywords": [
         "vedic-astrology",
         "jyotish",
-        "swiss-ephemeris",
+        "jpl-de440",
         "panchanga",
         "horoscope",
         "vargas",

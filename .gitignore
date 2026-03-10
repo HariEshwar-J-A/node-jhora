@@ -24,5 +24,6 @@ coverage/
 Thumbs.db
 *.tgz
 
+# AI
 CLAUDE.md
 .claude/

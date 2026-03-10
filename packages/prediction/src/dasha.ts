@@ -6,7 +6,7 @@
  *
  * Precision:
  *   - All balance arithmetic uses Decimal.js (34-digit precision)
- *   - Year definition: Tropical Year = 365.242189623 days (pyjhora standard)
+ *   - Year definition: Sidereal Year = 365.256364 days (JHora/PyJHora standard)
  *   - Date addition uses integer days to avoid Luxon calendar-year ambiguity
  *
  * Hierarchy: Mahadasha → Antardasha → Pratyantar → Sookshma → Prana (5 levels)
@@ -29,8 +29,17 @@ export const DASHA_ORDER: string[] = [
     'Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury',
 ];
 
-/** Tropical Year in days (pyjhora standard). */
-const TROPICAL_YEAR_DAYS = new Decimal('365.242189623');
+/**
+ * Sidereal Year in days (365.256364 days/year).
+ *
+ * CRITICAL FIX: PyJHora and JHora both use sidereal year for Dasha date calculations.
+ * Our previous constant (365.242189623 — tropical year) introduced ~3.6 hours of drift
+ * per 10-year Mahadasha period due to the ~0.0141-day/year difference.
+ *
+ * Reference: PyJHora const.py line 192 specifies sidereal_year = 365.256364
+ * (comment: "From JHora"), confirming this is the JHora standard.
+ */
+const TROPICAL_YEAR_DAYS = new Decimal('365.256364');
 
 /** Exact Nakshatra span: 360/27 degrees. */
 const NAKSHATRA_SPAN = new Decimal(360).div(27);

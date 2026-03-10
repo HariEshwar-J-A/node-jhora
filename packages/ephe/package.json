@@ -1,0 +1,31 @@
+{
+    "name": "@node-jhora/ephe",
+    "version": "440.1.0",
+    "description": "JPL DE440s ephemeris data for node-jhora (public domain, NASA/JPL)",
+    "type": "module",
+    "license": "LicenseRef-NASA-Open-Government",
+    "main": "index.mjs",
+    "scripts": {
+        "postinstall": "node download.mjs"
+    },
+    "files": [
+        "index.mjs",
+        "download.mjs",
+        "de440s.bsp"
+    ],
+    "keywords": [
+        "jpl",
+        "de440",
+        "ephemeris",
+        "astronomy",
+        "vedic-astrology"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/ephe"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}
