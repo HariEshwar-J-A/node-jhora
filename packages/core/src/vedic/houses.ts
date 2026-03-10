@@ -23,9 +23,8 @@ const DEG_TO_RAD = Math.PI / 180;
 export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method: HouseSystemMethod = 'WholeSign', engineInstance?: EphemerisEngine): HouseResult {
     const engine = engineInstance || EphemerisEngine.getInstance();
 
-    // 1. Get Julian Day
-    const dateUtc = date.toUTC();
-    const jd = engine['module'].julday(dateUtc.year, dateUtc.month, dateUtc.day, dateUtc.hour + dateUtc.minute / 60 + dateUtc.second / 3600, 1);
+    // 1. Get Julian Day via the engine's public API
+    const jd = engine.julday(date);
 
     // If method is supported natively by SwissEph, try using it first.
     // 'Placidus' -> 'P'
