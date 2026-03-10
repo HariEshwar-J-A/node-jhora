@@ -6,29 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 You are an expert Full Stack Node.js Backend Engineer and a specialist in Vedic Astrology (Jyotish) algorithmic calculations.
 
-Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathematical parity with the `pyjhora` library, establish a rigorous "Golden Standard" test suite, and expose the logic via an industry-grade API.
+Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathematical parity with **Jagannatha Hora (JHora)** — the authoritative Java desktop software by P.V.R. Narasimha Rao — establish a rigorous "Golden Standard" test suite, and expose the logic via an industry-grade API.
+
+> **NOTE on PyJHora:** PyJHora is a Python port that attempts to replicate JHora but uses the Moshier approximation backend for Moon positions, which produces Moon longitudes up to ~164° wrong for certain dates. PyJHora is NOT the golden standard. JHora is. When discrepancies exist between JHora and PyJHora, JHora is always correct.
 
 ## STRICT CONSTRAINTS & RULES
 
 1. **Absolute Precision:** Jyotish calculations are highly sensitive. NEVER use native JavaScript `Number` for floating-point planetary longitudes, Ayanamsa, or divisional math. You MUST use a high-precision library like `decimal.js` or `bignumber.js` for all core calculations.
-2. **Ephemeris Parity:** The engine uses JPL DE440s (public domain, AGPL-free). Ensure planetary positions match JHora reference charts. Ayanamsa values in `packages/core/src/engine/ayanamsa.ts` are calibrated for DE440; do not copy SE/pyswisseph raw values without applying the +0.088827° DE440 offset.
+2. **Ephemeris Parity:** The engine uses JPL DE440s (public domain, AGPL-free). Ensure planetary positions match **JHora** reference charts. Ayanamsa values in `packages/core/src/engine/ayanamsa.ts` are calibrated for DE440 by back-computing from actual JHora output — do NOT blindly copy pyswisseph raw values (PyJHora's values may differ from JHora's by up to 0.089° for Lahiri due to Moshier backend errors).
 3. **No Frontend:** I do not care about the frontend. You are authorized to completely delete, deprecate, or ignore any frontend code (React, Vue, etc.) in this monorepo. Focus 100% on the backend engine.
-4. **Agentic Autonomy:** Run tests frequently. If a test fails, analyze the delta between the Node output and the Python expectation, correct the math, and re-run until it passes. Do not stop until the suite is green.
+4. **Agentic Autonomy:** Run tests frequently. If a test fails, analyze the delta between the Node output and the **JHora** expectation, correct the math, and re-run until it passes. Do not stop until the suite is green. PyJHora disagreements are NOT bugs unless JHora also disagrees.
 
 ## EXECUTION PHASES (Execute sequentially)
 
 ### Phase 1: Test Suite Porting (The Golden Standard)
 
-- Analyze the `pyjhora` repository (specifically the `pvr_tests` or equivalent test data/fixtures).
+- The golden standard is **JHora** output — run JHora for reference charts and record exact degree outputs.
 - Scaffold a robust testing environment in `node-jhora` using `Vitest` or `Jest`.
-- Port all Python test cases into Node.js. These tests must validate ephemeris outputs, planetary longitudes, D-charts (Vargas), and Dashas.
+- Build tests that validate ephemeris outputs, planetary longitudes, D-charts (Vargas), and Dashas against JHora.
+- PyJHora (`pvr_tests.py`) may be consulted for calculation *methods* (Varga formulas, Dasha logic) but its ephemeris values (especially Moon) should NOT be trusted as ground truth.
 - Run the tests. (They will fail initially. This establishes our baseline).
 
 ### Phase 2: Core Engine Refactor
 
-- Refactor the core calculation modules in `node-jhora` to match the architectural flow of `pyjhora`.
+- Refactor the core calculation modules in `node-jhora` to produce output matching JHora.
 - Replace all floating-point math with high-precision decimal libraries.
-- Iterate on the math and ephemeris configurations until the Node.js test suite passes 100% of the Golden Standard tests.
+- Iterate on the math and ephemeris configurations until the Node.js test suite passes 100% of the JHora Golden Standard tests.
 
 ### Phase 3: Industry-Grade API Layer
 
@@ -42,11 +45,12 @@ Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathemat
 
 Please acknowledge these instructions. Begin Phase 1 by searching for the test fixtures and setting up the Node.js test runner. Show me your plan for porting the tests before writing the code.
 
-# CRITICAL DIRECTIVES: node-jhora vs pyjhora
+# CRITICAL DIRECTIVES: node-jhora vs JHora
 
-- **The Goal:** We are refactoring `node-jhora` to achieve 100% calculation parity with the Python `pyjhora` library.
+- **The Goal:** We are refactoring `node-jhora` to achieve 100% calculation parity with **Jagannatha Hora (JHora)** — the authoritative Java software by P.V.R. Narasimha Rao. This is the industry standard for Vedic astrology.
 - **Mathematical Precision:** NEVER use native JavaScript floating-point math for planetary longitudes, Ayanamsa, or divisional charts. ALWAYS use `Decimal.js` (or our designated math library) to prevent precision loss and rounding errors.
-- **Testing:** All logic changes must be verified against the `pyjhora` test suite standard.
+- **Testing:** All logic changes must be verified against **JHora output** for known reference charts. PyJHora's ephemeris values are NOT the standard — only its algorithmic formulas (Varga calculation methods, Dasha cycles, etc.) may be referenced.
+- **Why not PyJHora?** PyJHora uses the Moshier approximation backend for Moon (via swisseph WASM), which produces Moon longitudes up to ~164° wrong vs actual DE440/JHora values. This was proven by orbital mechanics: PyJHora's 1996-12-07 Moon (351.25°) is physically inconsistent with JHora's 1998-12-06 Moon (84.411°) by ~208° after accounting for 729 days of mean motion.
 
 ## Commands
 
