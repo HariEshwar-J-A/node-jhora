@@ -192,10 +192,20 @@ export function computeAscendant(ramc: number, lat: number, eps: number): number
     const numerator   = -Math.cos(R);
     const denominator =  Math.sin(E) * Math.tan(L) + Math.cos(E) * Math.sin(R);
 
-    let asc = Math.atan2(numerator, denominator) * RAD;
+    // Use single-argument atan (not atan2) — the SE/Meeus quadrant correction
+    // `if cos(RAMC) > 0 add 180°` is designed for atan, not atan2.
+    // atan2 already folds in an extra ±180° when the denominator is negative,
+    // which causes the ascendant to land in the wrong hemisphere (180° off).
+    let asc: number;
+    if (Math.abs(denominator) < 1e-10) {
+        // Denominator near zero only near geographic poles; treat as 0°
+        asc = 0;
+    } else {
+        asc = Math.atan(numerator / denominator) * RAD;
+    }
 
-    // Resolve quadrant — ascendant must be in the eastern hemisphere of the sky
-    // i.e., it must be within 90° of RAMC + 90°
+    // Standard quadrant resolution (Meeus / SE convention):
+    // when cos(RAMC) > 0, the raw atan lands in the wrong semicircle
     if (Math.cos(R) > 0) asc += 180;
     return mod360(asc);
 }
