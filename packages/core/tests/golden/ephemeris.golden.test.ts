@@ -81,14 +81,13 @@ describe('Golden: EphemerisEngine — Planetary Positions', () => {
     describe('Julian Day Calculation', () => {
         test('J2000 epoch JD = 2451545.0', () => {
             const date = DateTime.fromObject({ year: 2000, month: 1, day: 1, hour: 12 }, { zone: 'utc' });
-            // @ts-ignore — access internal module for JD
-            const jd = engine['module'].julday(2000, 1, 1, 12.0, 1);
+            const jd = engine.julday(date);
             expect(jd).toBeCloseTo(2451545.0, 2);
         });
 
         test('Unix epoch JD = 2440587.5', () => {
-            // @ts-ignore
-            const jd = engine['module'].julday(1970, 1, 1, 0.0, 1);
+            const date = DateTime.fromObject({ year: 1970, month: 1, day: 1, hour: 0 }, { zone: 'utc' });
+            const jd = engine.julday(date);
             expect(jd).toBeCloseTo(2440587.5, 2);
         });
     });
