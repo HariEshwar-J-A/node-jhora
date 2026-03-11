@@ -20,7 +20,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@node-jhora/core": "^2.0.7",
+        "@node-jhora/core": "^2.1.0",
         "decimal.js": "^10.4.3",
         "luxon": "^3.7.2"
     },
