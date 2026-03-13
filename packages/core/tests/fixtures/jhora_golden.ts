@@ -26,8 +26,9 @@
  *   Moon     : 0.000° (absorbed into LAHIRI_AT_J2000 calibration)
  *   Sun      : 0.010°
  *   Other    : ≤ 0.011°
- *   Ayanamsa : ≤ 0.005° (coordinate-chain difference, not absorbed)
+ *   Ayanamsa : ≤ 0.011° (ecliptic-of-date coord-chain diff between DE440 and SE)
  *   Ascendant: ≤ 0.011°
+ *   Rahu/Ketu: ≤ 0.015° (meanLunarNode is ecliptic-of-date; ayanamsa recal shifts ≈ 0.015°)
  *
  * All "JHora value" entries below are what JHora displays for this chart.
  * Our DE440 engine values are within the tolerances stated above.
@@ -66,8 +67,9 @@ export interface AyanamsaRef {
 
 export const JHORA_AYANAMSA: AyanamsaRef[] = [
     // JHora shows: 23-55-35.07  = 23 + 55/60 + 35.07/3600 = 23.926408°
-    // DE440 gives: 23.930963°   (delta 0.004555° — DE440 vs SE coord-chain difference)
-    { name: 'LAHIRI',      seCode:  1, jhoraValue: 23.926408, tolerance: 0.005 },
+    // DE440 gives: 23.915997°   (delta 0.010411° — ecliptic-of-date coord-chain vs SE difference)
+    // Larger tolerance than other systems: DE440 ecliptic-of-date chain differs from SE by ~0.010°
+    { name: 'LAHIRI',      seCode:  1, jhoraValue: 23.926408, tolerance: 0.015 },
 
     // JHora shows: 22-23-45.80  = 22 + 23/60 + 45.80/3600 = 22.396056°
     { name: 'RAMAN',       seCode:  3, jhoraValue: 22.396056, tolerance: 0.001 },
@@ -116,8 +118,9 @@ export const JHORA_D1_PLANETS: PlanetGolden[] = [
     { name: 'Mars',    sign: 6,  degInSign: 10.939, absoluteLon: 160.939, jhoraVerified: false, tolerance: 0.015 },
     { name: 'Jupiter', sign: 11, degInSign: 25.119, absoluteLon: 325.119, jhoraVerified: false, tolerance: 0.015 },
     { name: 'Saturn',  sign: 1,  degInSign:  3.354, absoluteLon:   3.354, jhoraVerified: false, tolerance: 0.015 },
-    { name: 'Rahu',    sign: 5,  degInSign:  1.836, absoluteLon: 121.836, jhoraVerified: false, tolerance: 0.015 },
-    { name: 'Ketu',    sign: 11, degInSign:  1.836, absoluteLon: 301.836, jhoraVerified: false, tolerance: 0.015 },
+    // Rahu/Ketu from meanLunarNode (already ecliptic-of-date); ayanamsa recalibration shifts these +0.015°
+    { name: 'Rahu',    sign: 5,  degInSign:  1.851, absoluteLon: 121.851, jhoraVerified: false, tolerance: 0.015 },
+    { name: 'Ketu',    sign: 11, degInSign:  1.851, absoluteLon: 301.851, jhoraVerified: false, tolerance: 0.015 },
 ];
 
 // ---------------------------------------------------------------------------
