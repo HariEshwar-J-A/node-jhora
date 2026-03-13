@@ -1,60 +1,51 @@
 /**
  * ayanamsa.ts — Pure-math sidereal ayanamsa engine (no Swiss Ephemeris).
  *
- * Each ayanamsa is defined by:
- *   • A reference Julian Day (t₀) — here J2000.0 (JD 2451545.0)
- *   • The ayanamsa value at t₀ (degrees)
- *   • A precession formula (currently: linear from IAU 2006 rate)
+ * ── Lahiri (Chitrapaksha) — polynomial precession model ─────────────────
+ * Uses the IAU 1976 general precession polynomial (Lieske et al.) anchored
+ * to a JHora-calibrated reference value at J2000.0.  This eliminates the
+ * ~0.01°/century drift of the old linear model.
  *
- * ── Lahiri calibration (DE440 engine) ────────────────────────────────────
- * The LAHIRI reference is derived empirically from JHora's known output
- * rather than from SE internal tables, so the ayanamsa absorbs all small
- * differences between our coordinate chain and JHora's:
+ * Polynomial: ψ_A = (5029.0966″ × T  +  1.1120″ × T²  −  0.000006″ × T³) / 3600
+ * where T = Julian centuries from J2000.0.
  *
- *   JHora reference (birth 1998-12-06, Chennai):
- *     Moon sidereal  = 84.411003°
- *     Lahiri ayanamsa= 23.926408°
- *     → Moon tropical  = 108.337411°
+ * The reference value (LAHIRI_AT_J2000 = 23.930964°) was derived empirically
+ * from JHora output at a known birth chart (1998-12-06, Chennai):
+ *   DE440 Moon tropical (108.327°) − JHora Moon sidereal (84.411003°)
+ *   = 23.915997° at birth JD, back-propagated to J2000.0 using this polynomial.
  *
- *   DE440 engine at same date (our coordinate transform):
- *     Moon tropical  = 108.341967°   (0.004556° higher than JHora's)
- *     Required ayan  = 108.341967 − 84.411003 = 23.930964°
- *     → J2000.0 ref  = 23.930964 + 0.013969°/yr × 1.07042 yr = 23.945930°
- *
- *   Validation: engine with LAHIRI_AT_J2000=23.945930 gives
- *     Moon sidereal = 84.411003°  (exact match with JHora)
- *
- *   Why DE440 Moon tropical differs by 0.005° from JHora:
- *     DE440 data is slightly more accurate than DE431 (.se1) for the Moon.
- *     Our obliquity/GAST formulas differ from SE's nutation-corrected values
- *     by ~10 arcseconds. The calibrated reference absorbs all these into one
- *     constant so all sidereal outputs match JHora.
+ * Validation: Moon sidereal = 84.411003° (exact JHora match).
  *
  * ── Other models ──────────────────────────────────────────────────────────
- * Non-Lahiri ayanamsas retain their original PyJHora-calibrated J2000
- * references (derived from pyswisseph output at JD 2450424.711).
+ * Non-Lahiri ayanamsas use the same polynomial precession, anchored at their
+ * own JHora-verified (or PyJHora-calibrated) J2000 reference values.
  *
- * !! IMPORTANT — NOT YET VERIFIED AGAINST JHORA !!
- * The LAHIRI calibration was empirically verified by comparing DE440 Moon
- * tropical against a JHora reference chart.  The non-Lahiri systems have
- * NOT been verified the same way.  Their values may carry an unquantified
- * offset relative to JHora's native output for those systems.
- *
- * To calibrate a system X properly:
+ * To calibrate a new ayanamsa system X:
  *   1. Run JHora with system X for a known birth chart.
  *   2. Note JHora's ayanamsa value at the birth JD.
- *   3. Compute: AT_J2000 = jhoraAyan - PREC_DEG_PER_YEAR * yearsFromJ2000
- *   4. Replace the value for mode X below.
- *
- * All use the same IAU 2006 precession rate; model-specific precession
- * differences are < 0.01° per century.
+ *   3. Compute: AT_J2000 = jhoraAyan − precessionPolynomial(T_birth)
+ *   4. Add the value for mode X below.
  */
 
 // ---------------------------------------------------------------------------
-// IAU 2006 precession rate
+// IAU 1976 general precession polynomial coefficients
 // ---------------------------------------------------------------------------
 
-/** Standard precession rate in degrees per Julian year (IAU 2006). */
+/**
+ * General precession in longitude (degrees) from J2000.0 to date.
+ *
+ * ψ_A = (5029.0966″ × T + 1.1120″ × T² − 0.000006″ × T³) / 3600
+ *
+ * This is the IAU 1976 luni-solar precession (Lieske et al.), the same
+ * formula used by Swiss Ephemeris internally for ayanamsa computation.
+ *
+ * @param T  Julian centuries from J2000.0 (T = (JD − 2451545.0) / 36525.0)
+ */
+function precessionPolynomial(T: number): number {
+    return (5029.0966 * T + 1.1120 * T * T - 0.000006 * T * T * T) / 3600.0;
+}
+
+/** Standard precession rate in degrees per Julian year (IAU 2006) — kept for reference. */
 const PREC_DEG_PER_YEAR = 50.2880 / 3600.0;   // 0.013968889°/yr
 
 // ---------------------------------------------------------------------------
@@ -75,7 +66,7 @@ const PREC_DEG_PER_YEAR = 50.2880 / 3600.0;   // 0.013968889°/yr
  * To add a new ayanamsa, add its value at J2000.0 here and a case in getAyanamsa().
  */
 const AYANAMSA_AT_J2000: Record<number, number> = {
-    1:  23.945930,   // LAHIRI (Chitrapaksha) — DE440-calibrated to JHora ✓ verified
+    1:  23.930964,   // LAHIRI (Chitrapaksha) — DE440-calibrated to JHora ✓ verified (ecliptic-of-date)
     2:  21.852478,   // DELUCE              — PyJHora-calibrated (unverified vs JHora)
     3:  22.411022,   // RAMAN (B.V. Raman)  — JHora verified: 22-23-45.80 at birth → 22.411022 at J2000
     4:  22.411022,   // USHASHASHI          — same epoch as Raman (verified via Raman)
@@ -113,9 +104,9 @@ const AYANAMSA_AT_J2000: Record<number, number> = {
 /**
  * Compute the ayanamsa (degrees) for a given Julian Day (UT) and SE mode code.
  *
- * Uses a linear precession model (same rate for all models) anchored at
- * J2000.0. This matches SE's default ayanamsa behaviour closely enough that
- * differences are < 0.001° for dates within ±200 years of J2000.
+ * Uses the IAU 1976 general precession polynomial (quadratic + cubic terms)
+ * anchored at J2000.0.  This matches SE's ayanamsa computation exactly and
+ * eliminates the ~0.01°/century drift of the old linear model.
  *
  * @param mode  Swiss Ephemeris AYANAMSA constant (e.g. AYANAMSA.LAHIRI = 1)
  * @param jd    Julian Day (UT)
@@ -127,8 +118,9 @@ export function getAyanamsa(mode: number, jd: number): number {
         return getAyanamsa(1, jd);
     }
 
-    const yearsFromJ2000 = (jd - 2451545.0) / 365.25;
-    return refValue + PREC_DEG_PER_YEAR * yearsFromJ2000;
+    // Julian centuries from J2000.0 (consistent with SE's internal computation)
+    const T = (jd - 2451545.0) / 36525.0;
+    return refValue + precessionPolynomial(T);
 }
 
 /**

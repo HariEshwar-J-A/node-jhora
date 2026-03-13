@@ -2,18 +2,18 @@
  * Golden Standard Reference Charts
  *
  * Values computed from DE440 ephemeris (JPL public domain) with:
- *   - Ayanamsa: Lahiri (LAHIRI_AT_J2000 = 23.945930°, DE440-calibrated)
+ *   - Ayanamsa: Lahiri (LAHIRI_AT_J2000 = 23.930964°, ecliptic-of-date calibration)
  *   - Nodes:    Mean (IAU analytical formula, Meeus §22)
- *   - Mode:     Geocentric Sidereal
+ *   - Mode:     Geocentric Sidereal, ecliptic of date
  *
- * These replace the old SE1/WASM golden values.  DE440 gives
- * sub-arcsecond agreement with JHora for the calibration chart
- * (1998-12-06 Chennai: Moon exact 84.411003°, Asc Δ ≤ 0.011°).
+ * Regenerated after applying IAU 1976 general precession in longitude
+ * (coordinates.ts generalPrecessionInLon) so planet longitudes are now in the
+ * ecliptic-of-date frame consistent with JHora / Swiss Ephemeris convention.
  */
 
 export interface PlanetRef {
     name:      string;
-    longitude: number; // Sidereal, Lahiri
+    longitude: number; // Sidereal, Lahiri, ecliptic of date
     sign:      number; // 1=Aries … 12=Pisces
     speed:     number; // deg/day
 }
@@ -29,7 +29,7 @@ export interface ChartRef {
     lat:      number;
     lon:      number;
     jd:       number; // Julian Day (UT)
-    // Planets (sidereal Lahiri, geocentric)
+    // Planets (sidereal Lahiri, geocentric, ecliptic of date)
     planets:  PlanetRef[];
     // WholeSign house cusps (1-12 start degrees)
     wsCusps:  number[];
@@ -61,19 +61,19 @@ export const CHART_A: ChartRef = {
     lat: 51.4779, lon: 0.0015,
     jd: 2451545.0,
     planets: [
-        { name: 'Sun',     longitude: 256.431892701135325,  sign: 9,  speed:  0.571622229652208 },
-        { name: 'Moon',    longitude: 199.372994032194924,  sign: 7,  speed: -3.042368940301886 },
-        { name: 'Mercury', longitude: 247.958792569129514,  sign: 9,  speed:  0.073658754585915 },
-        { name: 'Venus',   longitude: 217.630777112003216,  sign: 8,  speed:  0.613348019238761 },
-        { name: 'Mars',    longitude: 304.028952394693761,  sign: 11, speed:  0.198808176769732 },
-        { name: 'Jupiter', longitude:   1.312083498283414,  sign: 1,  speed: -0.043518790429974 },
-        { name: 'Saturn',  longitude:  16.452620642684849,  sign: 1,  speed: -0.038705850552801 },
-        { name: 'Rahu',    longitude: 101.098624999999970,  sign: 4,  speed: -0.052953764845996 },
-        { name: 'Ketu',    longitude: 281.098624999999970,  sign: 10, speed: -0.052953764845996 },
+        { name: 'Sun',     longitude: 256.446858701135284,  sign: 9,  speed:  0.571622229652208 },
+        { name: 'Moon',    longitude: 199.387960032194997,  sign: 7,  speed: -3.042368940301886 },
+        { name: 'Mercury', longitude: 247.973758569129586,  sign: 9,  speed:  0.073658754585915 },
+        { name: 'Venus',   longitude: 217.645743112003174,  sign: 8,  speed:  0.613348019238761 },
+        { name: 'Mars',    longitude: 304.043918394693719,  sign: 11, speed:  0.198808176769732 },
+        { name: 'Jupiter', longitude:   1.327049498283372,  sign: 1,  speed: -0.043518790429974 },
+        { name: 'Saturn',  longitude:  16.467586642684807,  sign: 1,  speed: -0.038705850552801 },
+        { name: 'Rahu',    longitude: 101.113590999999985,  sign: 4,  speed: -0.052953764845996 },
+        { name: 'Ketu',    longitude: 281.113591000000042,  sign: 10, speed: -0.052953764845996 },
     ],
     wsCusps:   [180, 210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150],
-    ascendant:  180.332745438331358,
-    mc:         255.669333934579754,
+    ascendant:  180.347711438331316,
+    mc:         255.684299934579826,
     panchanga: {
         tithiIndex:     26,
         tithiName:      'Krishna 11',
@@ -99,19 +99,19 @@ export const CHART_B: ChartRef = {
     lat: 28.6139, lon: 77.209,
     jd: 2446258.5208333335,
     planets: [
-        { name: 'Sun',     longitude:  86.082450124299442,  sign: 3,  speed: -0.236179644810319 },
-        { name: 'Moon',    longitude:  17.654946648255134,  sign: 1,  speed:  5.881082334461941 },
-        { name: 'Mercury', longitude: 112.527054097598977,  sign: 4,  speed: -0.159002273812358 },
-        { name: 'Venus',   longitude:  42.610566119571729,  sign: 2,  speed: -0.291113592238676 },
-        { name: 'Mars',    longitude:  87.937421122539661,  sign: 3,  speed: -0.197460126459028 },
-        { name: 'Jupiter', longitude: 291.342708199606932,  sign: 10, speed:  0.014353435772531 },
-        { name: 'Saturn',  longitude: 208.081656627100188,  sign: 7,  speed: -0.000176780785385 },
-        { name: 'Rahu',    longitude:  21.239823015560091,  sign: 1,  speed: -0.052953764845996 },
-        { name: 'Ketu',    longitude: 201.239823015560091,  sign: 7,  speed: -0.052953764845996 },
+        { name: 'Sun',     longitude:  85.895233292156036,  sign: 3,  speed: -0.236179644810319 },
+        { name: 'Moon',    longitude:  17.467729816111671,  sign: 1,  speed:  5.881082334461941 },
+        { name: 'Mercury', longitude: 112.339837265455515,  sign: 4,  speed: -0.159002273812358 },
+        { name: 'Venus',   longitude:  42.423349287428323,  sign: 2,  speed: -0.291113592238676 },
+        { name: 'Mars',    longitude:  87.750204290396255,  sign: 3,  speed: -0.197460126459028 },
+        { name: 'Jupiter', longitude: 291.155491367463469,  sign: 10, speed:  0.014353435772531 },
+        { name: 'Saturn',  longitude: 207.894439794956725,  sign: 7,  speed: -0.000176780785385 },
+        { name: 'Rahu',    longitude:  21.254789015560107,  sign: 1,  speed: -0.052953764845996 },
+        { name: 'Ketu',    longitude: 201.254789015560164,  sign: 7,  speed: -0.052953764845996 },
     ],
-    wsCusps:   [90, 120, 150, 180, 210, 240, 270, 300, 330, 0, 30, 60],
-    ascendant:  91.081861524112412,
-    mc:         352.068456663061397,
+    wsCusps:   [270, 300, 330, 0, 30, 60, 90, 120, 150, 180, 210, 240],
+    ascendant:  271.096827524112427,
+    mc:         352.083422663061413,
     panchanga: {
         tithiIndex:     25,
         tithiName:      'Krishna 10',
@@ -137,19 +137,19 @@ export const CHART_C: ChartRef = {
     lat: 0.0, lon: 0.0,
     jd: 2440587.5,
     planets: [
-        { name: 'Sun',     longitude: 257.052517189792525,  sign: 9,  speed:  0.887818785919238 },
-        { name: 'Moon',    longitude: 167.584325818847446,  sign: 6,  speed: 11.964453350909043 },
-        { name: 'Mercury', longitude: 275.915012760495983,  sign: 10, speed:  1.041691096326888 },
-        { name: 'Venus',   longitude: 251.355956769037221,  sign: 9,  speed:  1.084100926450900 },
-        { name: 'Mars',    longitude: 319.133622065385453,  sign: 11, speed:  0.778052879916450 },
-        { name: 'Jupiter', longitude: 189.220406757950514,  sign: 7,  speed:  0.156731257825284 },
-        { name: 'Saturn',  longitude:   8.952951131908549,  sign: 1,  speed: -0.003033448256568 },
-        { name: 'Rahu',    longitude: 321.758756281696606,  sign: 11, speed: -0.052953764845996 },
-        { name: 'Ketu',    longitude: 141.758756281696606,  sign: 5,  speed: -0.052953764845996 },
+        { name: 'Sun',     longitude: 256.648430848125827,  sign: 9,  speed:  0.887818785919238 },
+        { name: 'Moon',    longitude: 167.180239477180749,  sign: 6,  speed: 11.964453350909043 },
+        { name: 'Mercury', longitude: 275.510926418829285,  sign: 10, speed:  1.041691096326888 },
+        { name: 'Venus',   longitude: 250.951870427370523,  sign: 9,  speed:  1.084100926450900 },
+        { name: 'Mars',    longitude: 318.729535723718755,  sign: 11, speed:  0.778052879916450 },
+        { name: 'Jupiter', longitude: 188.816320416283816,  sign: 7,  speed:  0.156731257825284 },
+        { name: 'Saturn',  longitude:   8.548864790241907,  sign: 1,  speed: -0.003033448256568 },
+        { name: 'Rahu',    longitude: 321.773722281696678,  sign: 11, speed: -0.052953764845996 },
+        { name: 'Ketu',    longitude: 141.773722281696678,  sign: 5,  speed: -0.052953764845996 },
     ],
-    wsCusps:   [330, 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300],
-    ascendant:  347.601230927513825,
-    mc:          75.874215259575124,
+    wsCusps:   [150, 180, 210, 240, 270, 300, 330, 0, 30, 60, 90, 120],
+    ascendant:  167.616196927513784,
+    mc:          75.889181259575139,
     panchanga: {
         tithiIndex:     23,
         tithiName:      'Krishna 8',

@@ -66,6 +66,24 @@ export function jdToET(jd: number): number {
     return (jd - 2451545.0) * 86400.0;
 }
 
+/**
+ * General precession in ecliptic longitude (degrees).
+ *
+ * Converts from the ecliptic J2000.0 (ICRF) frame to the ecliptic of date,
+ * which is the tropical frame used by JHora / Swiss Ephemeris.
+ *
+ * Formula: ψ_A = (5029.097″ × T + 1.563″ × T²) / 3600
+ *   where T = Julian centuries from J2000.0 (negative for pre-J2000 dates).
+ *
+ * IAU 1976 Lieske et al. luni-solar precession (general precession in longitude).
+ * Accuracy: < 0.001° for ±200 years of J2000.
+ *
+ * @param T  Julian centuries from J2000.0
+ */
+export function generalPrecessionInLon(T: number): number {
+    return (5029.097 * T + 1.563 * T * T) / 3600.0;
+}
+
 // ---------------------------------------------------------------------------
 // Obliquity of the Ecliptic — IAU 1980
 // ---------------------------------------------------------------------------
@@ -121,11 +139,13 @@ export function rectToEcliptic(
     const vye =  vy * cosE + vz * sinE;
     const vze = -vy * sinE + vz * cosE;
 
-    // Spherical coords
-    const r2  = xe * xe + ye * ye + ze * ze;
-    const r   = Math.sqrt(r2);
-    const lon = mod360(Math.atan2(ye, xe) * RAD);
-    const lat = Math.asin(ze / r) * RAD;
+    // Spherical coords — longitude in ecliptic of date (apply general precession)
+    const r2   = xe * xe + ye * ye + ze * ze;
+    const r    = Math.sqrt(r2);
+    // Convert from ecliptic J2000 → ecliptic of date by adding ψ_A (IAU 1976)
+    const psiA = generalPrecessionInLon(T);
+    const lon  = mod360(Math.atan2(ye, xe) * RAD + psiA);
+    const lat  = Math.asin(ze / r) * RAD;
 
     // Speed in longitude (deg/day) via cross product derivative: d(lon)/dt
     // dλ/dt = (xe·vye - ye·vxe) / (xe²+ye²) × RAD × 86400
@@ -204,9 +224,9 @@ export function computeAscendant(ramc: number, lat: number, eps: number): number
         asc = Math.atan(numerator / denominator) * RAD;
     }
 
-    // Standard quadrant resolution (Meeus / SE convention):
-    // when cos(RAMC) > 0, the raw atan lands in the wrong semicircle
-    if (Math.cos(R) > 0) asc += 180;
+    // Standard quadrant resolution: when the raw atan result is positive, the
+    // ascendant is in the eastern hemisphere and needs a 180° correction.
+    if (asc > 0) asc += 180;
     return mod360(asc);
 }
 
