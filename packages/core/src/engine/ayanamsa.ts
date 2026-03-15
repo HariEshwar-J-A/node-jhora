@@ -65,7 +65,12 @@ const PREC_DEG_PER_YEAR = 50.2880 / 3600.0;   // 0.013968889°/yr
  *
  * To add a new ayanamsa, add its value at J2000.0 here and a case in getAyanamsa().
  */
-const AYANAMSA_AT_J2000: Record<number, number> = {
+/**
+ * Ayanamsa values at J2000.0 (ecliptic-of-date frame).
+ * Used by getAyanamsa() with the precession polynomial.
+ * These are reference points for the tropical → sidereal conversion in ecliptic-of-date frame.
+ */
+export const AYANAMSA_AT_J2000: Record<number, number> = {
     1:  23.930964,   // LAHIRI (Chitrapaksha) — DE440-calibrated to JHora ✓ verified (ecliptic-of-date)
     2:  21.852478,   // DELUCE              — PyJHora-calibrated (unverified vs JHora)
     3:  22.411022,   // RAMAN (B.V. Raman)  — JHora verified: 22-23-45.80 at birth → 22.411022 at J2000

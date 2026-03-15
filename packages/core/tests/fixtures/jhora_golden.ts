@@ -145,6 +145,50 @@ export const JHORA_ASCENDANT = {
 // All dates verified to the day — the exact boundary is within 24h.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Second reference chart: 1970-07-09 01:40:00 IST (1970-07-08 20:10:00 UTC)
+//
+// This chart catches two bugs the 1998 chart missed:
+//   1. Ascendant quadrant: atan-based formula placed ASC in Libra (202°)
+//      instead of Aries (~22°) — exactly 180° off.
+//   2. Precession-era offset: ecliptic-of-date pipeline had ~0.09° systematic
+//      error for dates far from J2000; J2000-ecliptic pipeline eliminates this.
+//
+// Place: Chennai, India (13.0878°N, 80.2785°E)
+// System: Lahiri ayanamsa, Mean nodes, Geocentric, Whole-Sign houses
+//
+// Planet values computed by the DE440 J2000-ecliptic pipeline. The ascendant
+// sign (Aries vs Libra) is the primary validation — this catches the 180° bug.
+// ---------------------------------------------------------------------------
+
+export const JHORA_1970_BIRTH = {
+    local: { year: 1970, month: 7, day: 9, hour: 1, minute: 40, second: 0, utcOffset: 5.5 },
+    utc:   { year: 1970, month: 7, day: 8, hour: 20, minute: 10, second: 0 },
+    lat: 13.0878,
+    lon: 80.2785,
+} as const;
+
+export const JHORA_1970_ASCENDANT = {
+    sign:         1,       // Aries — confirms the 180° bug is fixed (was Libra = sign 7)
+    tolerance:    0.5,     // Looser tolerance — no JHora-verified exact value yet
+} as const;
+
+export const JHORA_1970_PLANETS: { name: string; sign: number }[] = [
+    { name: 'Sun',     sign: 3 },   // Gemini (~82.7°)
+    { name: 'Moon',    sign: 5 },   // Leo (~139.7°)
+    { name: 'Mercury', sign: 3 },   // Gemini (~85.0°)
+    { name: 'Venus',   sign: 5 },   // Leo (~122.3°)
+    { name: 'Mars',    sign: 4 },   // Cancer (~90.4°)
+    { name: 'Jupiter', sign: 7 },   // Libra (~182.9°)
+    { name: 'Saturn',  sign: 1 },   // Aries (~26.3°)
+    { name: 'Rahu',    sign: 11 },  // Aquarius (~311.8°)
+    { name: 'Ketu',    sign: 5 },   // Leo (~131.8°)
+];
+
+// ---------------------------------------------------------------------------
+// Dasha boundaries (Vimshottari, Lahiri, mean Moon)
+// ---------------------------------------------------------------------------
+
 export const JHORA_DASHA = {
     /** Mahadasha lord at birth */
     birthLord: 'Saturn',
