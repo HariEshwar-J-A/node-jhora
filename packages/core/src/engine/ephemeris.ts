@@ -40,6 +40,7 @@ import {
     jdToET,
     meanObliquity,
     rectToEcliptic,
+    rectToJ2000Ecliptic,
     getGAST,
     computeAscendant,
     computeMC,
@@ -49,6 +50,7 @@ import {
 } from './coordinates.js';
 import {
     getAyanamsa as computeAyanamsa,
+    AYANAMSA_AT_J2000,
     meanLunarNode,
     toSidereal,
 } from './ayanamsa.js';

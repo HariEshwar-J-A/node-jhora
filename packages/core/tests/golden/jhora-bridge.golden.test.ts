@@ -23,6 +23,9 @@ import {
     JHORA_AYANAMSA,
     JHORA_D1_PLANETS,
     JHORA_ASCENDANT,
+    JHORA_1970_BIRTH,
+    JHORA_1970_ASCENDANT,
+    JHORA_1970_PLANETS,
 } from '../fixtures/jhora_golden.js';
 
 // ---------------------------------------------------------------------------
@@ -159,7 +162,40 @@ describe('JHora Bridge: Ascendant', () => {
 });
 
 // ===========================================================================
-// 5. DASHA BOUNDARIES
+// 5. SECOND REFERENCE CHART: 1970-07-09 01:40 IST, Chennai
+//    Catches the ascendant 180° quadrant bug (Aries vs Libra)
+// ===========================================================================
+
+describe('JHora Bridge: 1970 Chart — Ascendant quadrant fix', () => {
+    const REF_1970 = DateTime.fromObject(JHORA_1970_BIRTH.utc, { zone: 'utc' });
+
+    test('Ascendant sign: Aries (sign 1) — NOT Libra (the 180° bug)', () => {
+        engine.setAyanamsa(1);
+        const jd = engine.julday(REF_1970);
+        const houses = engine.getHouses(jd, JHORA_1970_BIRTH.lat, JHORA_1970_BIRTH.lon, 'W', true);
+        const actualSign = Math.floor(houses.ascendant / 30) + 1;
+        expect(actualSign).toBe(JHORA_1970_ASCENDANT.sign);
+    });
+
+    test('All planet signs match expected', () => {
+        engine.setAyanamsa(1);
+        const planets = engine.getPlanets(REF_1970, undefined, { ayanamsaOrder: 1 });
+        for (const ref of JHORA_1970_PLANETS) {
+            const p = planets.find(pl => pl.name === ref.name);
+            expect(p).toBeDefined();
+            const actualSign = Math.floor(p!.longitude / 30) + 1;
+            expect(actualSign).toBe(ref.sign);
+        }
+    });
+
+    test('9 planets returned', () => {
+        const planets = engine.getPlanets(REF_1970, undefined, { ayanamsaOrder: 1 });
+        expect(planets.length).toBe(9);
+    });
+});
+
+// ===========================================================================
+// 6. DASHA BOUNDARIES
 // NOTE: Dasha computation lives in @node-jhora/prediction (separate package).
 // Dasha validation is covered by packages/prediction tests and the API
 // integration test (packages/api/tests/integration/chart.test.ts).

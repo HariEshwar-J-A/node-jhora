@@ -157,6 +157,69 @@ export function rectToEcliptic(
 }
 
 // ---------------------------------------------------------------------------
+// Rectangular → J2000 Ecliptic conversion (for sidereal planet longitudes)
+// ---------------------------------------------------------------------------
+
+/**
+ * J2000.0 mean obliquity (degrees) — constant, not date-dependent.
+ * This is the obliquity at epoch J2000.0 = 23°26'21.448" (IAU 1980).
+ */
+const EPS_J2000 = 23.4392911111;
+
+export interface J2000EclipticPosition {
+    lon:  number;   // degrees [0, 360) in J2000 ecliptic frame
+    lat:  number;   // degrees [-90, +90]
+    dist: number;   // AU
+    speedLon: number;   // degrees per day
+}
+
+/**
+ * Convert geocentric J2000.0 equatorial rectangular coords to J2000 ecliptic
+ * longitude, latitude, and distance.
+ *
+ * Unlike `rectToEcliptic()`, this uses the FIXED J2000 obliquity (ε₀) and
+ * does NOT add generalPrecessionInLon. The result is in the J2000 ecliptic
+ * frame, which is ideal for sidereal computations because precession cancels:
+ *
+ *   sidereal = J2000_ecliptic_lon − AYANAMSA_AT_J2000
+ *
+ * This eliminates date-dependent precession errors that grow with distance
+ * from J2000 (~0.09° at 1970, ~0.01° at 1998).
+ *
+ * @param x,y,z    km, equatorial rectangular (J2000/ICRF)
+ * @param vx,vy,vz km/s, velocity components
+ */
+export function rectToJ2000Ecliptic(
+    x: number, y: number, z: number,
+    vx: number, vy: number, vz: number,
+): J2000EclipticPosition {
+    const eps  = EPS_J2000 * DEG;
+    const cosE = Math.cos(eps);
+    const sinE = Math.sin(eps);
+
+    // Rotate from equatorial to ecliptic (rotation about x-axis by ε₀)
+    const xe =  x;
+    const ye =  y * cosE + z * sinE;
+    const ze = -y * sinE + z * cosE;
+
+    const vxe =  vx;
+    const vye =  vy * cosE + vz * sinE;
+
+    // Spherical coords — NO precession added (stays in J2000 ecliptic frame)
+    const r2   = xe * xe + ye * ye + ze * ze;
+    const r    = Math.sqrt(r2);
+    const lon  = mod360(Math.atan2(ye, xe) * RAD);
+    const lat  = Math.asin(ze / r) * RAD;
+
+    // Speed in longitude (deg/day)
+    const rxy2 = xe * xe + ye * ye;
+    const dLonRad_s = rxy2 > 0 ? (xe * vye - ye * vxe) / rxy2 : 0;
+    const speedLon  = dLonRad_s * RAD * 86400;
+
+    return { lon, lat, dist: r / AU, speedLon };
+}
+
+// ---------------------------------------------------------------------------
 // Sidereal Time — GAST
 // ---------------------------------------------------------------------------
 
@@ -212,21 +275,15 @@ export function computeAscendant(ramc: number, lat: number, eps: number): number
     const numerator   = -Math.cos(R);
     const denominator =  Math.sin(E) * Math.tan(L) + Math.cos(E) * Math.sin(R);
 
-    // Use single-argument atan (not atan2) — the SE/Meeus quadrant correction
-    // `if cos(RAMC) > 0 add 180°` is designed for atan, not atan2.
-    // atan2 already folds in an extra ±180° when the denominator is negative,
-    // which causes the ascendant to land in the wrong hemisphere (180° off).
-    let asc: number;
-    if (Math.abs(denominator) < 1e-10) {
-        // Denominator near zero only near geographic poles; treat as 0°
-        asc = 0;
-    } else {
-        asc = Math.atan(numerator / denominator) * RAD;
-    }
-
-    // Standard quadrant resolution: when the raw atan result is positive, the
-    // ascendant is in the eastern hemisphere and needs a 180° correction.
-    if (asc > 0) asc += 180;
+    // Use atan2 with negated arguments for correct quadrant resolution:
+    //   atan2(-num, -den) = atan2(cos(RAMC), -(sin(ε)tan(φ) + cos(ε)sin(RAMC)))
+    //
+    // Single-argument atan(num/den) loses quadrant information (result in ±90°),
+    // and post-hoc corrections (checking signs of den or asc) fail for ~half the
+    // zodiac. The negated-atan2 maps directly to the correct 360° range because:
+    //   • cos(RAMC) determines the E/W hemisphere (atan2 y-argument)
+    //   • −denominator determines the N/S offset   (atan2 x-argument)
+    const asc = Math.atan2(-numerator, -denominator) * RAD;
     return mod360(asc);
 }
 
