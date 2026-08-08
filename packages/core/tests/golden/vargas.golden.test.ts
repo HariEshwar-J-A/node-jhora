@@ -29,34 +29,62 @@ describe('Golden: Divisional Charts (Vargas)', () => {
     // ---------------------------------------------------------------------------
     // D2 — Hora (Parivritti Even-Reverse method)
     // ---------------------------------------------------------------------------
-    describe('D2 (Hora)', () => {
-        // Aries (signIdx=0, even index): hora 0 → targetIdx=(0*2+0)%12=0 → Aries (1)
-        test('Aries 0° → Aries (sign 1)', () => {
-            const v = calculateVarga(0.001, 2);
-            expect(v.sign).toBe(1);
+    describe('D2 (Hora) — BPHS default', () => {
+        // BPHS, Shodasavarga sloka 5-6: "The first half of an odd sign is the
+        // Hora ruled by the Sun while the second half is the Hora of the Moon.
+        // The reverse is true in the case of an even sign."
+        //
+        // So a D2 position can only be Leo (Sun, sign 5) or Cancer (Moon, 4).
+        test('Aries 0° → Leo (Sun hora, first half of an odd sign)', () => {
+            expect(calculateVarga(0.001, 2).sign).toBe(5);
         });
-        test('Aries 14.999° → Aries (sign 1)', () => {
-            const v = calculateVarga(14.999, 2);
-            expect(v.sign).toBe(1);
+        test('Aries 14.999° → Leo', () => {
+            expect(calculateVarga(14.999, 2).sign).toBe(5);
         });
-        // Aries hora 1 → targetIdx=(0*2+1)%12=1 → Taurus (2)
-        test('Aries 15° → Taurus (sign 2)', () => {
-            const v = calculateVarga(15, 2);
-            expect(v.sign).toBe(2);
+        test('Aries 15° → Cancer (Moon hora, second half)', () => {
+            expect(calculateVarga(15, 2).sign).toBe(4);
         });
-        test('Aries 29.999° → Taurus (sign 2)', () => {
-            const v = calculateVarga(29.999, 2);
-            expect(v.sign).toBe(2);
+        test('Taurus 0° → Cancer (even sign reverses the order)', () => {
+            expect(calculateVarga(30.001, 2).sign).toBe(4);
         });
-        // Taurus (signIdx=1, odd index): hora 0 → targetIdx=(1*2+(1-0))%12=3 → Cancer (4)
-        test('Taurus 0° → Cancer (sign 4)', () => {
-            const v = calculateVarga(30.001, 2);
-            expect(v.sign).toBe(4);
+        test('Taurus 15° → Leo', () => {
+            expect(calculateVarga(45, 2).sign).toBe(5);
         });
-        // Taurus hora 1 → targetIdx=(1*2+(1-1))%12=2 → Gemini (3)
-        test('Taurus 15° → Gemini (sign 3)', () => {
-            const v = calculateVarga(45, 2);
-            expect(v.sign).toBe(3);
+
+        test('every D2 position in the zodiac is Leo or Cancer', () => {
+            for (let lon = 0; lon < 360; lon += 0.37) {
+                expect([4, 5]).toContain(calculateVarga(lon, 2).sign);
+            }
+        });
+
+        test('degree within the hora spans the full 30°', () => {
+            expect(calculateVarga(0, 2).degree).toBeCloseTo(0, 6);
+            expect(calculateVarga(14.999, 2).degree).toBeCloseTo(29.998, 3);
+        });
+    });
+
+    describe('D2 (Hora) — Parivritti variant', () => {
+        // The pre-3.1 behaviour, ported from PyJHora rather than from BPHS.
+        // Retained so charts built against it remain reproducible.
+        const opts = { horaScheme: 'parivritti' as const };
+
+        test('Aries 0° → Aries', () => {
+            expect(calculateVarga(0.001, 2, opts).sign).toBe(1);
+        });
+        test('Aries 15° → Taurus', () => {
+            expect(calculateVarga(15, 2, opts).sign).toBe(2);
+        });
+        test('Taurus 0° → Cancer', () => {
+            expect(calculateVarga(30.001, 2, opts).sign).toBe(4);
+        });
+        test('Taurus 15° → Gemini', () => {
+            expect(calculateVarga(45, 2, opts).sign).toBe(3);
+        });
+
+        test('unlike BPHS, it reaches all twelve signs', () => {
+            const seen = new Set<number>();
+            for (let lon = 0; lon < 360; lon += 0.37) seen.add(calculateVarga(lon, 2, opts).sign);
+            expect(seen.size).toBe(12);
         });
     });
 

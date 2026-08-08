@@ -31,8 +31,8 @@ export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from './co
 export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
 export { AYANAMSA, DEFAULT_AYANAMSA, DEFAULT_POSITION_MODE, DEFAULT_NODE_TYPE } from './engine/ephemeris.js';
 export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
-export { DEFAULT_DASAMSA_SCHEME } from './vedic/vargas.js';
-export type { DasamsaScheme, VargaOptions } from './vedic/vargas.js';
+export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
+export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
 export { ayanamsaName, AYANAMSA_MODELS } from './engine/ayanamsa.js';
 export {
     DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS,
@@ -248,7 +248,10 @@ export class NodeJHora {
     /** Divisional chart for one longitude, honouring the configured varga rules. */
     getVarga(longitude: number, division: number, override?: NodeJHoraConfig): VargaPoint {
         const c = this.cfg(override);
-        return calculateVarga(longitude, division, { dasamsaScheme: c.dasamsaScheme });
+        return calculateVarga(longitude, division, {
+            dasamsaScheme: c.dasamsaScheme,
+            horaScheme:    c.horaScheme,
+        });
     }
 
 }

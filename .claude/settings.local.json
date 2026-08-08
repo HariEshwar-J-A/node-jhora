@@ -4,7 +4,15 @@
       "Bash(npx jest:*)",
       "Bash(npm run:*)",
       "Bash(NODE_OPTIONS=\"--experimental-vm-modules\" npx jest:*)",
-      "Bash(npm test)"
+      "Bash(npm test)",
+      "Bash(npm run *)",
+      "Bash(node /tmp/vel.mjs)",
+      "Bash(node diag_current.mjs)",
+      "Bash(sed -i \"s#'./packages/core/dist/../tests/fixtures/horizons_golden.js'#'./horizons_data.mjs'#\" diag_current.mjs)",
+      "Bash(npx tsc *)",
+      "Bash(cp /tmp/hz/horizons_golden.js ./horizons_data.mjs)",
+      "Bash(NODE_OPTIONS=\"--experimental-vm-modules\" npx jest)",
+      "Bash(NODE_OPTIONS=\"--experimental-vm-modules\" npx jest --config packages/core/jest.config.js packages/core/tests/golden/ephemeris.golden.test.ts)"
     ]
   }
 }

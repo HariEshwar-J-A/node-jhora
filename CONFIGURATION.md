@@ -113,6 +113,16 @@ The D10 rule for **even** signs. Odd signs are identical under both.
 
 Only D10 is affected; every other varga has a single unambiguous rule.
 
+### `horaScheme`
+**Default: `'parashara'`** · `'parashara' | 'parivritti'`
+
+The D2 rule. BPHS 5-6 puts the first half of an odd sign in the Sun's hora and
+the second half in the Moon's, reversed for even signs — so **a D2 position is
+always Leo or Cancer**. `'parivritti'` is the twelve-sign Parivritti Dwaya
+variant, which is what this library did before 3.1.
+
+See [docs/BPHS-VARGA-AUDIT.md](docs/BPHS-VARGA-AUDIT.md).
+
 ### `sunriseHour`
 **Default: `6.0`** · decimal hours, local
 

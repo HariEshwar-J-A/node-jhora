@@ -70,35 +70,75 @@ function d1(lon: Decimal): VargaPoint {
 }
 
 // ---------------------------------------------------------------------------
-// D2 — Hora  (Parivritti Even-Reverse / PVR method)
+// D2 — Hora
 //
-// PyJHora uses __parivritti_even_reverse(dcf=2):
-//   For even-indexed signs (Ar=0, Ge=2, Le=4, Li=6, Sg=8, Aq=10):
-//     hora 0 (0-15°)  → (signIdx * 2 + 0) % 12
-//     hora 1 (15-30°) → (signIdx * 2 + 1) % 12
-//   For odd-indexed signs (Ta=1, Cn=3, Vi=5, Sc=7, Cp=9, Pi=11):
-//     hora 1 (15-30°) → (signIdx * 2 + 0) % 12   ← reversed
-//     hora 0 (0-15°)  → (signIdx * 2 + 1) % 12   ← reversed
-//   Degree within D2 sign: (degInSign * 2) % 30
+// BPHS, Shodasavarga chapter, sloka 5-6:
+//   "The first half of an odd sign is the Hora ruled by the Sun while the
+//    second half is the Hora of the Moon. The reverse is true in the case of
+//    an even sign."
+//
+// Under that rule a D2 position can only ever land in **Leo** (the Sun's own
+// sign) or **Cancer** (the Moon's). There are just two possible D2 signs.
+//
+// The previous implementation did something quite different: it mapped
+// `signIdx * 2 + hora` across all twelve signs. That is the Parivritti Dwaya
+// scheme, and the comment in the source said plainly where it came from —
+// "PyJHora uses __parivritti_even_reverse(dcf=2)". It was ported from another
+// program rather than from the text, and it is not what Parashara describes.
+//
+// Both are offered. `'parashara'` is the default because BPHS is the authority
+// for rules; `'parivritti'` reproduces the older behaviour and matches software
+// that follows that scheme.
 // ---------------------------------------------------------------------------
-function d2(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();   // 0-11
-    const degInSign = norm.mod(D30);
-    const hora      = degInSign.lt(new Decimal(15)) ? 0 : 1; // 0=first half, 1=second half
 
-    let targetIdx: number;
-    if (signIdx % 2 === 0) {
-        // Even-indexed sign: normal order
-        targetIdx = (signIdx * 2 + hora) % 12;
-    } else {
-        // Odd-indexed sign: reversed hora order
-        targetIdx = (signIdx * 2 + (1 - hora)) % 12;
-    }
+/** Which Hora (D2) rule to apply. */
+export type HoraScheme = 'parashara' | 'parivritti';
+
+/**
+ * Default Hora scheme: BPHS. A D2 position therefore falls in Leo or Cancer.
+ *
+ * Set `'parivritti'` for the twelve-sign Parivritti Dwaya variant.
+ */
+export const DEFAULT_HORA_SCHEME: HoraScheme = 'parashara';
+
+/** 0-indexed: Cancer = 3 (Moon's sign), Leo = 4 (Sun's sign). */
+const CANCER = 3;
+const LEO    = 4;
+
+function d2Parashara(lon: Decimal): VargaPoint {
+    const norm      = normalize360D(lon);
+    const signIdx   = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const firstHalf = degInSign.lt(new Decimal(15));
+
+    // signIdx is 0-based, so an even signIdx is an *odd* sign (Aries = 1st).
+    const oddSign = signIdx % 2 === 0;
+    const targetIdx = oddSign
+        ? (firstHalf ? LEO : CANCER)      // odd:  Sun's hora then Moon's
+        : (firstHalf ? CANCER : LEO);     // even: reversed
+
+    const vDeg = degInSign.mod(new Decimal(15)).times(2);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vDeg) };
+}
+
+function d2Parivritti(lon: Decimal): VargaPoint {
+    const norm      = normalize360D(lon);
+    const signIdx   = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const hora      = degInSign.lt(new Decimal(15)) ? 0 : 1;
+
+    const targetIdx = signIdx % 2 === 0
+        ? (signIdx * 2 + hora) % 12
+        : (signIdx * 2 + (1 - hora)) % 12;
 
     const vDeg = degInSign.times(2).mod(D30);
     const vLon = new Decimal(targetIdx).times(D30).plus(vDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vDeg) };
+}
+
+function d2(lon: Decimal, scheme: HoraScheme = DEFAULT_HORA_SCHEME): VargaPoint {
+    return scheme === 'parivritti' ? d2Parivritti(lon) : d2Parashara(lon);
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +311,7 @@ export const DEFAULT_DASAMSA_SCHEME: DasamsaScheme = 'parashara';
 /** Options accepted by {@link calculateVarga}. */
 export interface VargaOptions {
     dasamsaScheme?: DasamsaScheme;
+    horaScheme?: HoraScheme;
 }
 
 function d10(lon: Decimal, scheme: DasamsaScheme = DEFAULT_DASAMSA_SCHEME): VargaPoint {
@@ -550,7 +591,10 @@ export function calculateVarga(
 ): VargaPoint {
     const lon = new Decimal(longitude);
 
-    // D10 is the one varga with two schemes in circulation.
+    // D2 and D10 are the two vargas with competing schemes in circulation.
+    if (division === 2) {
+        return d2(lon, options.horaScheme ?? DEFAULT_HORA_SCHEME);
+    }
     if (division === 10) {
         return d10(lon, options.dasamsaScheme ?? DEFAULT_DASAMSA_SCHEME);
     }
@@ -565,7 +609,7 @@ export function calculateVarga(
 
 // Convenience exports for common vargas
 export const calculateD1  = (lon: number): VargaPoint => calculateVarga(lon, 1);
-export const calculateD2  = (lon: number): VargaPoint => calculateVarga(lon, 2);
+export const calculateD2  = (lon: number, options: VargaOptions = {}): VargaPoint => calculateVarga(lon, 2, options);
 export const calculateD3  = (lon: number): VargaPoint => calculateVarga(lon, 3);
 export const calculateD4  = (lon: number): VargaPoint => calculateVarga(lon, 4);
 export const calculateD7  = (lon: number): VargaPoint => calculateVarga(lon, 7);

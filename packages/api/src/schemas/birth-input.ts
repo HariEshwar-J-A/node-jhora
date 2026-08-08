@@ -49,6 +49,8 @@ const BirthBaseSchema = z.object({
     ayanamsaOffset: z.number().min(-10).max(10).default(0),
     /** D10 rule for even signs. 'parashara' follows BPHS; 'jhora_5_8' reproduces JHora. */
     dasamsaScheme: z.enum(['parashara', 'jhora_5_8']).default('parashara'),
+    /** D2 rule. 'parashara' follows BPHS (Leo/Cancer only); 'parivritti' is the 12-sign variant. */
+    horaScheme: z.enum(['parashara', 'parivritti']).default('parashara'),
     /** Local sunrise as a decimal hour; the Vedic weekday begins at sunrise. */
     sunriseHour: z.number().min(0).max(24).default(6),
     houseSystem: z.enum(['whole_sign', 'equal', 'placidus', 'porphyry']).default('whole_sign'),

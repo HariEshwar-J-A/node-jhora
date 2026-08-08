@@ -58,7 +58,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
 
     // POST /v1/chart/vargas — all 16 divisional charts
     typed.post('/chart/vargas', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, dasamsaScheme, positionMode, topocentric, ayanamsaOffset } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, dasamsaScheme, horaScheme, positionMode, topocentric, ayanamsaOffset } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
@@ -67,7 +67,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
         const vargas: Record<string, any[]> = {};
         for (const d of DIVISIONS) {
             vargas[`D${d}`] = planets.map(p => {
-                const v = calculateVarga(p.longitude, d, { dasamsaScheme });
+                const v = calculateVarga(p.longitude, d, { dasamsaScheme, horaScheme });
                 return {
                     planetId:   p.id,
                     planetName: p.name,
