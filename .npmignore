@@ -7,3 +7,14 @@ jest.config.js
 
 CLAUDE.md
 .claude/
+
+# Birth data — personal records. Never publish.
+# NOTE: .npmignore overrides .gitignore for npm, so this must be listed here
+# explicitly even though data/ is git-ignored.
+data/
+charts/
+
+# Local tooling and large binaries
+tools/
+docs/
+*.tsbuildinfo
