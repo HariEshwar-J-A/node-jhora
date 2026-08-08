@@ -12,6 +12,8 @@ import { KPSubLord, KPSignificator } from './kp/sublord.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
 import { EphemerisInterpolator } from './engine/interpolator.js';
 import { VargaDeities } from './vedic/deities.js';
+import { AYANAMSA } from './engine/ephemeris.js';
+import { DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS, type JyotishConfig } from './config.js';
 
 // Re-export Interfaces
 export type {
@@ -27,8 +29,17 @@ export type {
 export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
 export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from './core/precise.js';
 export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
-export { AYANAMSA } from './engine/ephemeris.js';
-export type { AyanamsaMode } from './engine/ephemeris.js';
+export { AYANAMSA, DEFAULT_AYANAMSA, DEFAULT_POSITION_MODE, DEFAULT_NODE_TYPE } from './engine/ephemeris.js';
+export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
+export { DEFAULT_DASAMSA_SCHEME } from './vedic/vargas.js';
+export type { DasamsaScheme, VargaOptions } from './vedic/vargas.js';
+export { ayanamsaName, AYANAMSA_MODELS } from './engine/ayanamsa.js';
+export {
+    DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS,
+} from './config.js';
+export type { JyotishConfig, HouseSystem, NodeType } from './config.js';
+export { parseJhd, jhdToUtcISO, hasPositions, sexagesimalToDecimal, JHD_BODY_ORDER } from './io/jhd.js';
+export type { JhdChart, JhdBody } from './io/jhd.js';
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -38,13 +49,46 @@ export interface ChartData {
     ayanamsa: string;
 }
 
-export type Ayanamsa = 'Lahiri' | 'Raman' | 'KP';
+/**
+ * Ayanamsa names accepted by the convenience API.
+ * For the full set of models use `config.ayanamsaMode` with an `AYANAMSA.*` code.
+ */
+export type Ayanamsa =
+    | 'TrueChitra' | 'TruePushya' | 'TrueRevati' | 'TrueMula'
+    | 'Lahiri' | 'LahiriICRC' | 'Raman' | 'KP' | 'Yukteshwar' | 'FaganBradley';
 
-export interface NodeJHoraConfig {
-    ayanamsaOrder?: number; // 1 = Lahiri
-    topocentric?: boolean;
-    nodeType?: 'mean' | 'true';
-    ayanamsaOffset?: number;
+const AYANAMSA_BY_NAME: Record<Ayanamsa, number> = {
+    TrueChitra:   AYANAMSA.TRUE_CITRA,
+    TruePushya:   AYANAMSA.TRUE_PUSHYA,
+    TrueRevati:   AYANAMSA.TRUE_REVATI,
+    TrueMula:     AYANAMSA.TRUE_MULA,
+    Lahiri:       AYANAMSA.LAHIRI,
+    LahiriICRC:   AYANAMSA.LAHIRI_ICRC,
+    Raman:        AYANAMSA.RAMAN,
+    KP:           AYANAMSA.KRISHNAMURTI,
+    Yukteshwar:   AYANAMSA.YUKTESHWAR,
+    FaganBradley: AYANAMSA.FAGAN_BRADLEY,
+};
+
+/**
+ * Instance configuration. Every field is optional and falls back to
+ * {@link DEFAULT_CONFIG}; every field can also be overridden per call.
+ *
+ * `ayanamsaOrder` is retained as an alias for `ayanamsaMode` so existing code
+ * keeps working.
+ */
+export interface NodeJHoraConfig extends Partial<JyotishConfig> {
+    /** @deprecated Use `ayanamsaMode`. Retained for backward compatibility. */
+    ayanamsaOrder?: number;
+}
+
+/** Normalise the deprecated alias into a full config. */
+function toConfig(c: NodeJHoraConfig = {}): JyotishConfig {
+    const { ayanamsaOrder, ...rest } = c;
+    return resolveConfig({
+        ...rest,
+        ayanamsaMode: rest.ayanamsaMode ?? ayanamsaOrder,
+    });
 }
 
 const defaultEphemeris = new EphemerisEngine();
@@ -58,18 +102,27 @@ export async function init(): Promise<void> {
  */
 export class NodeJHora {
     private ephemeris: EphemerisEngine;
-    private location: { latitude: number, longitude: number };
-    private ayanamsa: number;
-    private config: NodeJHoraConfig;
+    private location: { latitude: number, longitude: number, altitude?: number };
+    /** Instance defaults. Every method accepts a per-call override. */
+    public readonly config: JyotishConfig;
 
     constructor(
-        location: { latitude: number, longitude: number },
-        config: NodeJHoraConfig = { ayanamsaOrder: 1 }
+        location: { latitude: number, longitude: number, altitude?: number },
+        config: NodeJHoraConfig = {},
     ) {
-        this.location = location;
+        this.location  = location;
         this.ephemeris = EphemerisEngine.getInstance();
-        this.ayanamsa = config.ayanamsaOrder || 1;
-        this.config = config;
+        this.config    = toConfig(config);
+    }
+
+    /** Resolve a per-call override against this instance's defaults. */
+    private cfg(override?: NodeJHoraConfig): JyotishConfig {
+        if (!override) return this.config;
+        const { ayanamsaOrder, ...rest } = override;
+        return resolveConfig(
+            { ...rest, ayanamsaMode: rest.ayanamsaMode ?? ayanamsaOrder },
+            this.config,
+        );
     }
 
     async init() {
@@ -90,34 +143,42 @@ export class NodeJHora {
      * Note: Call NodeJHora.init() first or this will call it automatically
      */
     public static async calculate(
-        date: Date, 
-        location: { latitude: number, longitude: number }, 
-        ayanamsaName: Ayanamsa = 'Lahiri',
-        config: NodeJHoraConfig = { topocentric: true }
+        date: Date,
+        location: { latitude: number, longitude: number, altitude?: number },
+        ayanamsaName: Ayanamsa = 'TrueChitra',
+        config: NodeJHoraConfig = {},
     ): Promise<ChartData & { panchanga: PanchangaResult }> {
-        const ayanamsaMap: Record<Ayanamsa, number> = {
-            'Lahiri': 1,
-            'Raman': 3,
-            'KP': 5
-        };
-        const ayanamsaOrder = ayanamsaMap[ayanamsaName];
-        const engine = EphemerisEngine.getInstance();
-        
-        await engine.initialize();
-        
-        const dt = DateTime.fromJSDate(date);
-        const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder,
-            topocentric: config.topocentric,
-            nodeType: config.nodeType,
+        // An explicit ayanamsaMode in the config wins over the name argument.
+        const c = toConfig({
+            ayanamsaMode: config.ayanamsaMode ?? config.ayanamsaOrder ?? AYANAMSA_BY_NAME[ayanamsaName],
+            ...config,
         });
-        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
-        
-        const sun = planets.find(p => p.id === 0);
+
+        const engine = EphemerisEngine.getInstance();
+        await engine.initialize();
+
+        const dt = DateTime.fromJSDate(date);
+        const planets = engine.getPlanets(
+            dt,
+            { ...location, altitude: location.altitude ?? c.altitudeMetres },
+            {
+                ayanamsaOrder:  c.ayanamsaMode,
+                ayanamsaOffset: c.ayanamsaOffset,
+                topocentric:    c.topocentric,
+                nodeType:       c.nodeType,
+                positionMode:   c.positionMode,
+            },
+        );
+        const housesResult = calculateHouseCusps(
+            dt, location.latitude, location.longitude,
+            c.houseSystem as HouseSystemMethod, engine, c.ayanamsaMode, c.ayanamsaOffset,
+        );
+
+        const sun  = planets.find(p => p.id === 0);
         const moon = planets.find(p => p.id === 1);
         let panchanga: any = null;
         if (sun && moon) {
-            panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt);
+            panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, c.sunriseHour);
         }
 
         const houses: HouseData = {
@@ -139,37 +200,55 @@ export class NodeJHora {
 
     // ========== INSTANCE METHODS ==========
 
-    public getPlanets(date: DateTime): PlanetPosition[] {
-        return this.ephemeris.getPlanets(date, this.location, {
-            ayanamsaOrder: this.config.ayanamsaOrder,
-            topocentric: this.config.topocentric,
-            nodeType: this.config.nodeType,
-        });
+    public getPlanets(date: DateTime, override?: NodeJHoraConfig): PlanetPosition[] {
+        const c = this.cfg(override);
+        return this.ephemeris.getPlanets(
+            date,
+            { ...this.location, altitude: this.location.altitude ?? c.altitudeMetres },
+            {
+                ayanamsaOrder:  c.ayanamsaMode,
+                ayanamsaOffset: c.ayanamsaOffset,
+                topocentric:    c.topocentric,
+                nodeType:       c.nodeType,
+                positionMode:   c.positionMode,
+            },
+        );
     }
 
-    getHouses(date: DateTime, system: HouseSystemMethod = 'WholeSign'): HouseData {
-        const res = calculateHouseCusps(date, this.location.latitude, this.location.longitude, system, this.ephemeris);
+    getHouses(date: DateTime, override?: NodeJHoraConfig): HouseData {
+        const c = this.cfg(override);
+        const res = calculateHouseCusps(
+            date, this.location.latitude, this.location.longitude,
+            c.houseSystem as HouseSystemMethod, this.ephemeris,
+            c.ayanamsaMode, c.ayanamsaOffset,
+        );
         return {
             cusps: res.cusps,
             ascendant: res.ascendant,
             mc: res.mc,
             armc: res.armc,
-            vertex: res.vertex || 0
+            vertex: res.vertex || 0,
         };
     }
 
-    getChart(date: DateTime, system: HouseSystemMethod = 'WholeSign'): { planets: PlanetPosition[], houses: HouseData } {
-        const planets = this.getPlanets(date);
-        const houses = this.getHouses(date, system);
-        return { planets, houses };
+    getChart(date: DateTime, override?: NodeJHoraConfig): { planets: PlanetPosition[], houses: HouseData } {
+        const c = this.cfg(override);
+        return { planets: this.getPlanets(date, c), houses: this.getHouses(date, c) };
     }
 
-    getPanchanga(date: DateTime): PanchangaResult {
-        const planets = this.getPlanets(date);
-        const sun = planets.find(p => p.id === 0);
+    getPanchanga(date: DateTime, override?: NodeJHoraConfig): PanchangaResult {
+        const c = this.cfg(override);
+        const planets = this.getPlanets(date, c);
+        const sun  = planets.find(p => p.id === 0);
         const moon = planets.find(p => p.id === 1);
-        if (!sun || !moon) throw new Error("Sun or Moon data missing");
-        return calculatePanchanga(sun.longitude, moon.longitude, date);
+        if (!sun || !moon) throw new Error('Sun or Moon data missing');
+        return calculatePanchanga(sun.longitude, moon.longitude, date, c.sunriseHour);
+    }
+
+    /** Divisional chart for one longitude, honouring the configured varga rules. */
+    getVarga(longitude: number, division: number, override?: NodeJHoraConfig): VargaPoint {
+        const c = this.cfg(override);
+        return calculateVarga(longitude, division, { dasamsaScheme: c.dasamsaScheme });
     }
 
 }

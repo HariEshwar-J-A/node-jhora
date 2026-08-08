@@ -22,8 +22,8 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         const p1 = parseBirthInput(req.body.person1);
         const p2 = parseBirthInput(req.body.person2);
 
-        const planets1 = engine.getPlanets(p1.dt, p1.location, { ayanamsaOrder: p1.ayanamsaOrder, nodeType: p1.nodeType });
-        const planets2 = engine.getPlanets(p2.dt, p2.location, { ayanamsaOrder: p2.ayanamsaOrder, nodeType: p2.nodeType });
+        const planets1 = engine.getPlanets(p1.dt, p1.location, { ayanamsaOrder: p1.ayanamsaOrder, nodeType: p1.nodeType, positionMode: p1.positionMode, topocentric: p1.topocentric, ayanamsaOffset: p1.ayanamsaOffset });
+        const planets2 = engine.getPlanets(p2.dt, p2.location, { ayanamsaOrder: p2.ayanamsaOrder, nodeType: p2.nodeType, positionMode: p2.positionMode, topocentric: p2.topocentric, ayanamsaOffset: p2.ayanamsaOffset });
 
         const moon1 = planets1.find(p => p.id === 1)!;
         const moon2 = planets2.find(p => p.id === 1)!;

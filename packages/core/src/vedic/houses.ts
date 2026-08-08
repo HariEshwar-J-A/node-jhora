@@ -2,7 +2,7 @@ import { EphemerisEngine, HouseData } from '../engine/ephemeris.js';
 import { normalize360, dmsToDecimal } from '../core/math.js';
 import { DateTime } from 'luxon';
 
-export type HouseSystemMethod = 'WholeSign' | 'Placidus' | 'Porphyry';
+export type HouseSystemMethod = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
 
 export interface HouseResult {
     system: HouseSystemMethod;
@@ -20,7 +20,7 @@ const DEG_TO_RAD = Math.PI / 180;
  * Calculates House Cusps using manual trigonometric formulas for Ascendant/MC (First Principles),
  * passing dependency on broken `swe_houses`.
  */
-export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method: HouseSystemMethod = 'WholeSign', engineInstance?: EphemerisEngine): HouseResult {
+export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method: HouseSystemMethod = 'WholeSign', engineInstance?: EphemerisEngine, ayanamsaMode?: number, ayanamsaOffset = 0): HouseResult {
     const engine = engineInstance || EphemerisEngine.getInstance();
 
     // 1. Get Julian Day via the engine's public API
@@ -35,7 +35,8 @@ export function calculateHouseCusps(date: DateTime, lat: number, lon: number, me
     switch (method) {
         case 'Placidus': seMethod = 'P'; break;
         case 'Porphyry': seMethod = 'O'; break;
-        case 'WholeSign': seMethod = 'W'; break; // Verify SE behavior manually if specific offset needed?
+        case 'WholeSign': seMethod = 'W'; break;
+        case 'Equal': seMethod = 'E'; break; // Verify SE behavior manually if specific offset needed?
         // Vedic Whole Sign is usually: Asc sign is House 1. 0-30 deg of that sign is H1? No, 0-30 of Sign.
         // SE 'W' (Whole Sign) returns cusps at 0, 30, 60... starting from Sign(Asc). 
         // This exactly matches Vedic Whole Sign.
@@ -44,7 +45,7 @@ export function calculateHouseCusps(date: DateTime, lat: number, lon: number, me
 
     try {
         // Attempt Native SwissEph Calculation
-        const seHouses = engine.getHouses(jd, lat, lon, seMethod);
+        const seHouses = engine.getHouses(jd, lat, lon, seMethod, true, ayanamsaMode, ayanamsaOffset);
 
         // For Whole Sign, snap cusps to sidereal sign boundaries starting from ascendant's sign.
         // swe_houses returns tropical cusps; after ayanamsa subtraction they no longer fall on

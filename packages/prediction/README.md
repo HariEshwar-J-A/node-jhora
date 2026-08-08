@@ -55,3 +55,39 @@ export type { DashaPeriod, TransitEvent, JaiminiKaraka, ArudhaPada, CharaDashaPe
 **© Copyright HariEshwar-J-A (Harieshwar Jagan Abirami).** All rights reserved.
 
 This software is proprietary. For commercial use, enterprise integration, or any other use cases, explicit permission is required. Usage is subject to agreed-upon payment and licensing terms. Please contact the author for licensing inquiries.
+
+## Configuration
+
+Every calculation choice is explicit and overridable at three levels —
+library default, instance default, per-call override. Nothing is hidden in a
+constant.
+
+```
+library default  →  instance default  →  per-call override
+   (weakest)                                 (strongest)
+```
+
+Key options: `ayanamsaMode` (default `27`, True Chitrapaksha), `positionMode`
+(`'geometric'`), `nodeType` (`'true'`), `houseSystem` (`'WholeSign'`),
+`dasamsaScheme` (`'parashara'`, per BPHS), `topocentric`, `ayanamsaOffset`,
+`sunriseHour`.
+
+```ts
+import { NodeJHora, JHORA_PRESET } from '@node-jhora/core';
+
+// Library defaults: Drik Siddhanta astronomy, True Chitrapaksha, BPHS rules
+const chart = new NodeJHora(location);
+
+// Or reproduce Jagannatha Hora exactly
+const jhora = new NodeJHora(location, JHORA_PRESET);
+```
+
+Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
+Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+
+## Accuracy
+
+Validated against **JPL Horizons** (≤ 0.28″, 1900–2024) and against a real
+**JHora** export (D1 to 0.01″, ascendant 0.00″). Scored against Horizons as an
+independent referee, node-jhora is closer than JHora's own stored values on
+4 of 4 legacy charts.

@@ -11,16 +11,16 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
     // POST /v1/chart — full birth chart (planets, houses, panchanga)
     typed.post('/chart', { schema: { body: BirthInputSchema } }, async (req, reply) => {
         const parsed = parseBirthInput(req.body);
-        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parsed;
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, houseSystem } = parsed;
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
-        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, houseSystem as any, engine);
-        const ayanamsa = engine.getAyanamsa(engine.julday(dt));
+        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
+        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, houseSystem as any, engine, ayanamsaOrder, ayanamsaOffset);
+        const ayanamsa = engine.getAyanamsa(engine.julday(dt), ayanamsaOrder);
 
         const sun  = planets.find(p => p.id === 0)!;
         const moon = planets.find(p => p.id === 1)!;
-        const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt);
+        const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
         return reply.status(200).send({
             planets: planets.map(p => ({
@@ -58,16 +58,16 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
 
     // POST /v1/chart/vargas — all 16 divisional charts
     typed.post('/chart/vargas', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, dasamsaScheme, positionMode, topocentric, ayanamsaOffset } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
+        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
         const DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 
         const vargas: Record<string, any[]> = {};
         for (const d of DIVISIONS) {
             vargas[`D${d}`] = planets.map(p => {
-                const v = calculateVarga(p.longitude, d);
+                const v = calculateVarga(p.longitude, d, { dasamsaScheme });
                 return {
                     planetId:   p.id,
                     planetName: p.name,

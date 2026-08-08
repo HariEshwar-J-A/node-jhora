@@ -42,33 +42,45 @@ export function evalCheby(coeffs: readonly number[], tau: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Evaluate the derivative of a Chebyshev series with respect to τ.
+ * Evaluate the derivative dF/dτ of a Chebyshev series.
  *
- * Uses the recurrence for Chebyshev derivative series:
- *   T'₀ = 0, T'₁ = 1, T'ₙ = 2Tₙ₋₁ + T'ₙ₋₂   (for n ≥ 2)
- * Equivalently: d[Σ aₙ Tₙ(τ)]/dτ = Σ aₙ T'ₙ(τ)
+ * Uses the paired forward recurrences for the polynomials and their derivatives:
+ *   T₀ = 1,  T₁ = τ,   Tₖ  = 2τ·Tₖ₋₁ − Tₖ₋₂
+ *   T′₀ = 0, T′₁ = 1,  T′ₖ = 2·Tₖ₋₁ + 2τ·T′ₖ₋₁ − T′ₖ₋₂
  *
- * Returns dF/dτ.  To convert to physical velocity:
- *   vel [km/s] = dF/dτ × (2 / INTLEN)   where INTLEN is in seconds.
+ * The previous implementation folded a `2k` weight into a Clenshaw-style loop
+ * and closed with an unjustified factor of ½. It returned roughly 0.35× the
+ * true derivative — Earth's barycentric speed came out as 10.7 km/s instead of
+ * 30.2 km/s — which corrupted stellar aberration and every planet's daily
+ * motion (and therefore retrograde detection).
+ *
+ * Records hold ~10–15 coefficients, so the explicit recurrence costs nothing
+ * measurable and is far easier to verify than a folded form.
+ *
+ * To convert to physical velocity: vel = dF/dτ ÷ RADIUS, with RADIUS in seconds.
  */
 export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
     const n = coeffs.length;
     if (n <= 1) return 0;
 
-    // Build derivative coefficients using the standard recurrence
-    // d'[k] = 2k * coeffs[k] + d'[k-2]  working backwards
-    // Then evaluate with evalCheby-like recurrence
-    let b2 = 0.0;
-    let b1 = 0.0;
+    let tPrev = 1.0;      // T₀
+    let tCurr = tau;      // T₁
+    let dPrev = 0.0;      // T′₀
+    let dCurr = 1.0;      // T′₁
 
-    for (let i = n - 1; i >= 1; i--) {
-        const b0 = 2.0 * tau * b1 - b2 + 2.0 * i * coeffs[i];
-        b2 = b1;
-        b1 = b0;
+    let sum = coeffs[1] * dCurr;   // k = 0 contributes nothing (T′₀ = 0)
+
+    for (let k = 2; k < n; k++) {
+        const tNext = 2.0 * tau * tCurr - tPrev;
+        const dNext = 2.0 * tCurr + 2.0 * tau * dCurr - dPrev;
+
+        sum += coeffs[k] * dNext;
+
+        tPrev = tCurr; tCurr = tNext;
+        dPrev = dCurr; dCurr = dNext;
     }
 
-    // The 0.5 factor comes from the derivative of T₀ through the recurrence
-    return 0.5 * (tau * b1 - b2 + coeffs[1]);
+    return sum;
 }
 
 // ---------------------------------------------------------------------------

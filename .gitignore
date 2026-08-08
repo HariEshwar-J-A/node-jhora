@@ -35,3 +35,6 @@ Thumbs.db
 # AI
 CLAUDE.md
 .claude/
+# Birth data — personal records, never committed
+data/
+charts/

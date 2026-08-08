@@ -177,22 +177,104 @@ function d9(lon: Decimal): VargaPoint {
 
 // ---------------------------------------------------------------------------
 // D10 — Dasamsa
-// Odd signs: 10 parts starting from the sign itself
-// Even signs: 10 parts starting from the 9th from sign
+//
+// Two schemes are supported; they agree for odd signs and differ for even ones.
+// See {@link DasamsaScheme}.
 // ---------------------------------------------------------------------------
-function d10(lon: Decimal): VargaPoint {
+
+/** 30° / 10 parts = 3° per Dasamsa. */
+const DASAMSA_SPAN = new Decimal(3);
+
+/** Assemble a VargaPoint from a target sign index and a degree within it. */
+function vargaPoint(targetIdx: number, vargaDeg: Decimal): VargaPoint {
+    // A reversed degree of exactly 30° lands on a sign boundary; carry it into
+    // the next sign so sign, degree and longitude stay mutually consistent.
+    let idx = ((targetIdx % 12) + 12) % 12;
+    let deg = vargaDeg;
+    if (deg.gte(D30)) { deg = deg.minus(D30); idx = (idx + 1) % 12; }
+
+    const vLon = new Decimal(idx).times(D30).plus(deg);
+    return { longitude: toNum(normalize360D(vLon)), sign: idx + 1, degree: toNum(deg) };
+}
+
+/**
+ * Classical Parashara Dasamsa (BPHS).
+ *   Odd  signs: ten parts counted forward from the sign itself.
+ *   Even signs: ten parts counted forward from the 9th sign from it.
+ */
+function d10Parashara(lon: Decimal): VargaPoint {
     const norm      = normalize360D(lon);
     const signIdx   = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = new Decimal(3); // 30/10 = 3°
 
-    const part      = degInSign.div(partSpan).floor().toNumber();
-    const startOff  = (signIdx % 2 === 0) ? 0 : 8; // odd(0-idx)=0, even=8th (9th sign - 1)
-    const targetIdx = (signIdx + startOff + part) % 12;
+    const part      = degInSign.div(DASAMSA_SPAN).floor().toNumber();
+    // signIdx is 0-based, so an even signIdx is an odd sign.
+    const startOff  = (signIdx % 2 === 0) ? 0 : 8;
 
-    const vargaDeg  = degInSign.mod(partSpan).times(10);
-    const vLon      = new Decimal(targetIdx).times(D30).plus(vargaDeg);
-    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+    return vargaPoint(signIdx + startOff + part, degInSign.mod(DASAMSA_SPAN).times(10));
+}
+
+/**
+ * The Dasamsa scheme JHora labels **"D-10 (5-8)"**.
+ *
+ *   Odd  signs: identical to Parashara — forward from the sign itself.
+ *   Even signs: ten parts counted **backward** from the 5th sign from it, with
+ *               the degree **reversed** within each part.
+ *
+ * The label names the range the parts sweep: starting at the 5th sign and
+ * running backward through ten signs ends on the 8th, hence "5-8".
+ *
+ * Derived from a JHora natal export rather than from a text: for that chart all
+ * five bodies in odd signs already agreed, and all five in even signs matched
+ * this rule to 0.05″ — including the reversal, where engine degree and JHora
+ * degree sum to exactly 30.000 in every case.
+ */
+function d10Jhora58(lon: Decimal): VargaPoint {
+    const norm      = normalize360D(lon);
+    const signIdx   = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+
+    const part = degInSign.div(DASAMSA_SPAN).floor().toNumber();
+    const frac = degInSign.mod(DASAMSA_SPAN).times(10);
+
+    if (signIdx % 2 === 0) return vargaPoint(signIdx + part, frac);   // odd sign
+
+    return vargaPoint(signIdx + 4 - part, D30.minus(frac));           // even sign
+}
+
+/**
+ * Which Dasamsa (D10) rule to use for even signs.
+ *
+ * - `'parashara'` — classical BPHS: forward from the 9th sign.
+ * - `'jhora_5_8'` — the scheme JHora prints as "D-10 (5-8)": backward from the
+ *   5th sign, degree reversed within the part.
+ *
+ * Odd signs are identical under both. Only D10 is affected; every other varga
+ * has a single unambiguous rule.
+ */
+export type DasamsaScheme = 'parashara' | 'jhora_5_8';
+
+/**
+ * Default Dasamsa scheme: **classical Parashara**.
+ *
+ * This is the one place where the project deliberately does *not* follow JHora.
+ * BPHS states the rule plainly — ten parts from the sign itself for odd signs,
+ * from the ninth sign for even ones — and that is what `'parashara'` implements.
+ * JHora's `(5-8)` variant has no basis in BPHS.
+ *
+ * The distinction matters because the layers have different authorities:
+ * planetary positions are settled by astronomy, but *rules* are settled by the
+ * text. Pass `{ dasamsaScheme: 'jhora_5_8' }` to reproduce JHora's D10 exactly.
+ */
+export const DEFAULT_DASAMSA_SCHEME: DasamsaScheme = 'parashara';
+
+/** Options accepted by {@link calculateVarga}. */
+export interface VargaOptions {
+    dasamsaScheme?: DasamsaScheme;
+}
+
+function d10(lon: Decimal, scheme: DasamsaScheme = DEFAULT_DASAMSA_SCHEME): VargaPoint {
+    return scheme === 'parashara' ? d10Parashara(lon) : d10Jhora58(lon);
 }
 
 // ---------------------------------------------------------------------------
@@ -460,15 +542,25 @@ const VARGA_FNS: Record<number, (lon: Decimal) => VargaPoint> = {
  *
  * @param longitude  Sidereal longitude in degrees [0, 360)
  * @param division   Chart divisor (1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60)
+ * @param options    Per-call overrides; currently only the D10 scheme
  * @returns VargaPoint with sign (1-12), degree (0-30), and longitude
  */
-export function calculateVarga(longitude: number, division: number): VargaPoint {
+export function calculateVarga(
+    longitude: number, division: number, options: VargaOptions = {},
+): VargaPoint {
+    const lon = new Decimal(longitude);
+
+    // D10 is the one varga with two schemes in circulation.
+    if (division === 10) {
+        return d10(lon, options.dasamsaScheme ?? DEFAULT_DASAMSA_SCHEME);
+    }
+
     const fn = VARGA_FNS[division];
     if (!fn) {
         // Unknown division — fall back to harmonic
-        return harmonic(new Decimal(longitude), division);
+        return harmonic(lon, division);
     }
-    return fn(new Decimal(longitude));
+    return fn(lon);
 }
 
 // Convenience exports for common vargas
@@ -478,7 +570,8 @@ export const calculateD3  = (lon: number): VargaPoint => calculateVarga(lon, 3);
 export const calculateD4  = (lon: number): VargaPoint => calculateVarga(lon, 4);
 export const calculateD7  = (lon: number): VargaPoint => calculateVarga(lon, 7);
 export const calculateD9  = (lon: number): VargaPoint => calculateVarga(lon, 9);
-export const calculateD10 = (lon: number): VargaPoint => calculateVarga(lon, 10);
+export const calculateD10 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 10, options);
 export const calculateD12 = (lon: number): VargaPoint => calculateVarga(lon, 12);
 export const calculateD16 = (lon: number): VargaPoint => calculateVarga(lon, 16);
 export const calculateD20 = (lon: number): VargaPoint => calculateVarga(lon, 20);

@@ -9,13 +9,13 @@ export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/panchanga', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets   = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
+        const planets   = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
         const sun       = planets.find(p => p.id === 0)!;
         const moon      = planets.find(p => p.id === 1)!;
-        const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt);
+        const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
         return reply.status(200).send(panchanga);
     });

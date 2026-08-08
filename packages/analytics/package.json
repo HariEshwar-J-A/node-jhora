@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/analytics",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@node-jhora/core": "^2.1.0",
+        "@node-jhora/core": "^3.0.0",
         "decimal.js": "^10.4.3",
         "luxon": "^3.7.2"
     },
