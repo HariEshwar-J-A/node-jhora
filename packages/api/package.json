@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/api",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -16,10 +16,10 @@
     },
     "dependencies": {
         "@fastify/cors": "^10.0.2",
-        "@node-jhora/analytics": "^3.0.0",
-        "@node-jhora/core": "^3.0.0",
-        "@node-jhora/match": "^3.0.0",
-        "@node-jhora/prediction": "^3.0.0",
+        "@node-jhora/analytics": "^3.1.0",
+        "@node-jhora/core": "^3.1.0",
+        "@node-jhora/match": "^3.1.0",
+        "@node-jhora/prediction": "^3.1.0",
         "city-timezones": "^1.2.1",
         "decimal.js": "^10.4.3",
         "fastify": "^5.4.0",
