@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/reporting",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -13,9 +13,9 @@
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
     },
     "dependencies": {
-        "@node-jhora/core": "^3.0.0",
-        "@node-jhora/analytics": "^3.0.0",
-        "@node-jhora/prediction": "^3.0.0",
+        "@node-jhora/core": "^3.1.0",
+        "@node-jhora/analytics": "^3.1.0",
+        "@node-jhora/prediction": "^3.1.0",
         "pdfkit": "^0.15.0",
         "luxon": "^3.7.2"
     },
