@@ -7,7 +7,7 @@
     "exports": {
         ".": "./dist/index.js"
     },
-    "license": "SEE LICENSE IN LICENSE",
+    "license": "LicenseRef-NodeJHora-Source-Available",
     "publishConfig": {
         "access": "public"
     },
@@ -38,7 +38,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/HariEshwar-J-A/node-jhora.git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
         "directory": "packages/analytics"
     }
 }
