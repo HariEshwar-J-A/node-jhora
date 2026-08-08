@@ -4,21 +4,23 @@ import { VargaDeities } from '../../src/vedic/deities.js';
 
 describe('Advanced Varga Precision', () => {
 
-    describe('D2 Hora (Parivritti Even-Reverse)', () => {
-        test('Aries 10° → Aries (sign 1)', () => {
-            // Aries (signIdx=0, even). hora=0 → targetIdx=(0*2+0)%12=0 → Aries
-            const val = calculateVarga(10, 2, 'Parashara');
-            expect(val.sign).toBe(1); // Aries
+    describe('D2 Hora — BPHS (default) vs Parivritti', () => {
+        // BPHS puts every Hora in Leo or Cancer. The previous implementation
+        // spread them across all twelve signs, which came from PyJHora's
+        // parivritti_even_reverse rather than from Parashara.
+        test('Aries 10° → Leo under BPHS', () => {
+            expect(calculateVarga(10, 2).sign).toBe(5);
         });
-        test('Aries 20° → Taurus (sign 2)', () => {
-            // Aries (signIdx=0, even). hora=1 → targetIdx=(0*2+1)%12=1 → Taurus
-            const val = calculateVarga(20, 2, 'Parashara');
-            expect(val.sign).toBe(2); // Taurus
+        test('Aries 20° → Cancer under BPHS', () => {
+            expect(calculateVarga(20, 2).sign).toBe(4);
         });
-        test('Taurus 10° → Cancer (sign 4)', () => {
-            // Taurus (signIdx=1, odd). hora=0 → targetIdx=(1*2+(1-0))%12=3 → Cancer
-            const val = calculateVarga(40, 2, 'Parashara'); // 30+10
-            expect(val.sign).toBe(4); // Cancer
+        test('Taurus 10° → Cancer under BPHS (even sign reverses)', () => {
+            expect(calculateVarga(40, 2).sign).toBe(4);
+        });
+
+        test('the variant is still reachable and still differs', () => {
+            expect(calculateVarga(10, 2, { horaScheme: 'parivritti' }).sign).toBe(1);
+            expect(calculateVarga(20, 2, { horaScheme: 'parivritti' }).sign).toBe(2);
         });
     });
 

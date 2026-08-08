@@ -8,6 +8,7 @@ export interface ParsedBirth {
     ayanamsaOrder:    number;
     nodeType:         'mean' | 'true';
     dasamsaScheme:    'parashara' | 'jhora_5_8';
+    horaScheme:       'parashara' | 'parivritti';
     positionMode:     'geometric' | 'apparent';
     topocentric:      boolean;
     altitudeMetres:   number;
@@ -47,7 +48,8 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
     const location      = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
 
     return { dt, location, ayanamsaOrder, nodeType: input.nodeType,
-             dasamsaScheme: input.dasamsaScheme, houseSystem: input.houseSystem,
+             dasamsaScheme: input.dasamsaScheme, horaScheme: input.horaScheme,
+             houseSystem: input.houseSystem,
              positionMode: input.positionMode, topocentric: input.topocentric,
              altitudeMetres: input.altitudeMetres, ayanamsaOffset: input.ayanamsaOffset,
              sunriseHour: input.sunriseHour,

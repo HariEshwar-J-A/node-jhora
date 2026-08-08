@@ -27,7 +27,8 @@
  */
 
 import { AYANAMSA, DEFAULT_POSITION_MODE, DEFAULT_NODE_TYPE, type PositionMode } from './engine/ephemeris.js';
-import { DEFAULT_DASAMSA_SCHEME, type DasamsaScheme }                            from './vedic/vargas.js';
+import { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME,
+         type DasamsaScheme, type HoraScheme }                                  from './vedic/vargas.js';
 
 /** House systems the engine can produce. */
 export type HouseSystem = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
@@ -85,6 +86,12 @@ export interface JyotishConfig {
     dasamsaScheme: DasamsaScheme;
 
     /**
+     * D2 rule. `'parashara'` follows BPHS — a Hora position falls only in Leo
+     * (Sun) or Cancer (Moon). `'parivritti'` is the twelve-sign variant.
+     */
+    horaScheme: HoraScheme;
+
+    /**
      * Local sunrise as a decimal hour, used to place the Vedic weekday (vara),
      * which begins at sunrise rather than midnight. Supply the real sunrise for
      * the birth place; the default is a nominal 6 a.m.
@@ -116,6 +123,7 @@ export const DEFAULT_CONFIG: JyotishConfig = {
     nodeType:       DEFAULT_NODE_TYPE,
     houseSystem:    'WholeSign',
     dasamsaScheme:  DEFAULT_DASAMSA_SCHEME,
+    horaScheme:     DEFAULT_HORA_SCHEME,
     sunriseHour:    6.0,
     dashaYearDays:  TROPICAL_YEAR_DAYS,
 };
