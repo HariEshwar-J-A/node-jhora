@@ -1,6 +1,7 @@
 {
     "name": "node-jhora-monorepo",
     "version": "3.0.0",
+    "private": true,
     "type": "module",
     "workspaces": [
         "packages/*"
