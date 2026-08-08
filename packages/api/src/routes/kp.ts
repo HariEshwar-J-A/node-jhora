@@ -14,10 +14,10 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/kp/significators', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
+        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
 
         const significators = planets.map(p => {
             const kp = KPSubLord.calculateKPSignificators(p.longitude);

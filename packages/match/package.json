@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/match",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
     },
     "dependencies": {
-        "@node-jhora/core": "^2.1.0",
+        "@node-jhora/core": "^3.0.0",
         "luxon": "^3.7.2"
     },
     "devDependencies": {

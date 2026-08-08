@@ -7,6 +7,12 @@ export interface ParsedBirth {
     location:         { latitude: number; longitude: number };
     ayanamsaOrder:    number;
     nodeType:         'mean' | 'true';
+    dasamsaScheme:    'parashara' | 'jhora_5_8';
+    positionMode:     'geometric' | 'apparent';
+    topocentric:      boolean;
+    altitudeMetres:   number;
+    ayanamsaOffset:   number;
+    sunriseHour:      number;
     houseSystem:      string;
     resolvedCity?:     string;
     resolvedTimezone?: string;
@@ -38,8 +44,12 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
     }
 
     const ayanamsaOrder = AYANAMSA_MAP[input.ayanamsa as AyanamsaKey];
-    const location      = { latitude: lat, longitude: lon };
+    const location      = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
 
-    return { dt, location, ayanamsaOrder, nodeType: input.nodeType, houseSystem: input.houseSystem,
+    return { dt, location, ayanamsaOrder, nodeType: input.nodeType,
+             dasamsaScheme: input.dasamsaScheme, houseSystem: input.houseSystem,
+             positionMode: input.positionMode, topocentric: input.topocentric,
+             altitudeMetres: input.altitudeMetres, ayanamsaOffset: input.ayanamsaOffset,
+             sunriseHour: input.sunriseHour,
              resolvedCity, resolvedTimezone };
 }

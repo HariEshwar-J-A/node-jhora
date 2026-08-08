@@ -1,31 +1,33 @@
 /**
- * coordinates.ts — Astronomical coordinate transforms for the DE440 engine.
+ * coordinates.ts — Julian day, sidereal time, angles and house cusps.
  *
- * All input positions are barycentric/geocentric J2000.0 equatorial rectangular
- * (km) as returned by SpkFile.getGeocentric().
+ * Frame transforms (precession, obliquity) now live in `precession.ts`, and the
+ * apparent-place chain (light-time, aberration, deflection) in `apparent.ts`.
+ * What remains here is the Earth-rotation side of the problem: sidereal time,
+ * the ascendant/MC, house cusps, and the observer's geocentric vector.
  *
- * Formulas:
- *   Obliquity   — IAU 1980 series (Lieske et al.)
- *   GAST        — IAU 1982 formula (Aoki et al.)
- *   Ascendant   — standard spherical trigonometry
- *   Parallax    — simple lunar parallax correction (re-used from prior code)
- *
- * All angles in degrees unless documented otherwise.
+ * All angles are in degrees unless documented otherwise.
  */
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+import { nutation }                                from './nutation.js';
+import { deltaT }                                  from './deltat.js';
+import { meanObliquity, julianCenturies, rotateX,
+         matTransposeVec, precessionMatrix,
+         type Vec }                                from './precession.js';
 
-const DEG  = Math.PI / 180;
-const RAD  = 180 / Math.PI;
-const AU   = 149597870.7;   // 1 AU in km (IAU 2012)
+const DEG = Math.PI / 180;
+const RAD = 180 / Math.PI;
 
-// ---------------------------------------------------------------------------
-// Utility
-// ---------------------------------------------------------------------------
+/** Earth equatorial radius, km (WGS-84). */
+const EARTH_A = 6378.137;
+/** WGS-84 flattening. */
+const EARTH_F = 1 / 298.257223563;
+/** Earth rotation rate, rad/s (including precession in RA). */
+const OMEGA_EARTH = 7.292115146706979e-5;
 
-/** Reduce angle to [0, 360). */
+export { meanObliquity, julianCenturies };
+
+/** Reduce an angle to [0, 360). */
 export function mod360(x: number): number {
     return ((x % 360) + 360) % 360;
 }
@@ -35,330 +37,178 @@ export function mod360(x: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Compute Julian Day Number (UT) from a UTC calendar date.
- * Algorithm from Meeus §7.
+ * Julian Day Number (UT) from a UTC calendar date (Meeus §7, Gregorian).
  */
 export function julday(year: number, month: number, day: number, hourUT: number): number {
     let y = year;
     let m = month;
     if (m <= 2) { y -= 1; m += 12; }
     const A = Math.floor(y / 100);
-    const B = 2 - A + Math.floor(A / 4);   // Gregorian calendar correction
+    const B = 2 - A + Math.floor(A / 4);
     return Math.floor(365.25 * (y + 4716)) +
            Math.floor(30.6001 * (m + 1)) +
            day + hourUT / 24.0 + B - 1524.5;
 }
 
+// ---------------------------------------------------------------------------
+// Sidereal time
+// ---------------------------------------------------------------------------
+
 /**
- * Julian centuries from J2000.0.
- * T = (JD − 2451545.0) / 36525
+ * Greenwich Mean Sidereal Time in degrees, IAU 1982 (Aoki et al.).
+ *
+ * UTC is used in place of UT1. |UT1 − UTC| ≤ 0.9 s, which is ~13″ of Earth
+ * rotation — the dominant uncertainty in the ascendant. Swiss Ephemeris (and
+ * therefore JHora) makes the same substitution, so this matches rather than
+ * diverges from the reference.
  */
-export function julianCenturies(jd: number): number {
-    return (jd - 2451545.0) / 36525.0;
+export function getGMST(jdUT: number): number {
+    const jd0 = Math.floor(jdUT - 0.5) + 0.5;      // preceding midnight
+    const H   = (jdUT - jd0) * 24.0;               // hours past 0h UT
+    const Tu  = (jd0 - 2451545.0) / 36525.0;
+
+    // GMST at 0h UT, seconds of time
+    const gmst0 = 24110.54841
+                + 8640184.812866 * Tu
+                +       0.093104 * Tu ** 2
+                -       6.2e-6   * Tu ** 3;
+
+    // Advance by elapsed UT, scaled to the sidereal rate
+    const gmstHours = gmst0 / 3600.0 + H * 1.00273790935;
+    return mod360(gmstHours * 15.0);
 }
 
 /**
- * Convert Julian Day to ephemeris time (seconds from J2000.0 TDB).
- * Approximation: TDB ≈ TT ≈ UT + 69.184 s (as of 2024).
- * For astrological accuracy the 69 s correction is irrelevant (< 0.001°).
+ * Greenwich Apparent Sidereal Time in degrees: GMST plus the equation of the
+ * equinoxes (Δψ · cos ε_true).
  */
-export function jdToET(jd: number): number {
-    return (jd - 2451545.0) * 86400.0;
+export function getGAST(jdUT: number): number {
+    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+    const { dpsi, deps } = nutation(T);
+    const epsTrue = meanObliquity(T) + deps;
+    return mod360(getGMST(jdUT) + dpsi * Math.cos(epsTrue * DEG));
 }
 
+/** True obliquity of the ecliptic (mean + nutation in obliquity), degrees. */
+export function trueObliquity(jdUT: number): number {
+    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+    return meanObliquity(T) + nutation(T).deps;
+}
+
+// ---------------------------------------------------------------------------
+// Observer geocentric vector (topocentric places)
+// ---------------------------------------------------------------------------
+
 /**
- * General precession in ecliptic longitude (degrees).
+ * Observer position and velocity relative to the geocentre, expressed as an
+ * ICRF equatorial vector in km and km/s.
  *
- * Converts from the ecliptic J2000.0 (ICRF) frame to the ecliptic of date,
- * which is the tropical frame used by JHora / Swiss Ephemeris.
+ * This replaces the previous ad-hoc lunar-parallax formula. Adding the true
+ * observer vector to Earth's barycentric state means light-time, aberration
+ * (including the diurnal component) and parallax all fall out of the same
+ * apparent-place chain instead of being patched on afterwards.
  *
- * Formula: ψ_A = (5029.097″ × T + 1.563″ × T²) / 3600
- *   where T = Julian centuries from J2000.0 (negative for pre-J2000 dates).
- *
- * IAU 1976 Lieske et al. luni-solar precession (general precession in longitude).
- * Accuracy: < 0.001° for ±200 years of J2000.
- *
- * @param T  Julian centuries from J2000.0
+ * @param jdUT      Julian Day, UT
+ * @param latDeg    Geodetic latitude, degrees
+ * @param lonDeg    Geographic longitude, degrees east
+ * @param altitudeM Height above the ellipsoid, metres
  */
-export function generalPrecessionInLon(T: number): number {
-    return (5029.097 * T + 1.563 * T * T) / 3600.0;
+export function observerGeocentricVector(
+    jdUT: number, latDeg: number, lonDeg: number, altitudeM = 0,
+): { position: Vec; velocity: Vec } {
+    const lat = latDeg * DEG;
+    const sinLat = Math.sin(lat), cosLat = Math.cos(lat);
+
+    // Geodetic → geocentric (WGS-84 ellipsoid)
+    const e2 = EARTH_F * (2 - EARTH_F);
+    const C  = 1 / Math.sqrt(1 - e2 * sinLat * sinLat);
+    const S  = C * (1 - e2);
+    const h  = altitudeM / 1000.0;   // km
+
+    const rCos = (EARTH_A * C + h) * cosLat;   // distance from rotation axis, km
+    const rSin = (EARTH_A * S + h) * sinLat;   // distance from equatorial plane, km
+
+    // Local apparent sidereal time gives the position in the true equator of date
+    const last = mod360(getGAST(jdUT) + lonDeg) * DEG;
+
+    const posDate: Vec = [rCos * Math.cos(last), rCos * Math.sin(last), rSin];
+    const velDate: Vec = [
+        -OMEGA_EARTH * rCos * Math.sin(last),
+         OMEGA_EARTH * rCos * Math.cos(last),
+         0,
+    ];
+
+    // True equator of date → ICRF. Nutation is a sub-arcsecond rotation of the
+    // observer vector (< 1 m of position), so only precession is undone.
+    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+    const P = precessionMatrix(T);
+
+    return {
+        position: matTransposeVec(P, posDate),
+        velocity: matTransposeVec(P, velDate),
+    };
 }
 
 // ---------------------------------------------------------------------------
-// Obliquity of the Ecliptic — IAU 1980
+// Ascendant, MC, house cusps
 // ---------------------------------------------------------------------------
 
 /**
- * Mean obliquity of the ecliptic (degrees) using the IAU 1980 formula.
- * Accurate to ~0.001" over the range ±50 years from J2000.
+ * Tropical Ascendant from RAMC and geographic latitude.
  *
- * @param T  Julian centuries from J2000.0
- */
-export function meanObliquity(T: number): number {
-    // Lieske et al. (1977) / IAU 1980 series
-    return 23.4392911111
-         - 0.0130041667 * T
-         - 1.6388889e-7 * T * T
-         + 5.0361111e-7 * T * T * T;
-}
-
-// ---------------------------------------------------------------------------
-// Rectangular → Ecliptic conversion
-// ---------------------------------------------------------------------------
-
-export interface EclipticPosition {
-    lon:  number;   // degrees [0, 360)
-    lat:  number;   // degrees [-90, +90]
-    dist: number;   // AU
-    speedLon: number;   // degrees per day
-}
-
-/**
- * Convert geocentric J2000.0 equatorial rectangular coords to apparent
- * ecliptic longitude, latitude, and distance.
+ * ASC = atan2( cos(RAMC),  −(sin ε · tan φ + cos ε · sin RAMC) )
  *
- * @param x,y,z    km, equatorial rectangular
- * @param vx,vy,vz km/s, velocity components
- * @param T        Julian centuries from J2000.0 (for obliquity)
- */
-export function rectToEcliptic(
-    x: number, y: number, z: number,
-    vx: number, vy: number, vz: number,
-    T: number,
-): EclipticPosition {
-    const eps  = meanObliquity(T) * DEG;
-    const cosE = Math.cos(eps);
-    const sinE = Math.sin(eps);
-
-    // Rotate from equatorial to ecliptic (rotation about x-axis by ε)
-    const xe =  x;
-    const ye =  y * cosE + z * sinE;
-    const ze = -y * sinE + z * cosE;
-
-    const vxe =  vx;
-    const vye =  vy * cosE + vz * sinE;
-    const vze = -vy * sinE + vz * cosE;
-
-    // Spherical coords — longitude in ecliptic of date (apply general precession)
-    const r2   = xe * xe + ye * ye + ze * ze;
-    const r    = Math.sqrt(r2);
-    // Convert from ecliptic J2000 → ecliptic of date by adding ψ_A (IAU 1976)
-    const psiA = generalPrecessionInLon(T);
-    const lon  = mod360(Math.atan2(ye, xe) * RAD + psiA);
-    const lat  = Math.asin(ze / r) * RAD;
-
-    // Speed in longitude (deg/day) via cross product derivative: d(lon)/dt
-    // dλ/dt = (xe·vye - ye·vxe) / (xe²+ye²) × RAD × 86400
-    const rxy2 = xe * xe + ye * ye;
-    const dLonRad_s = rxy2 > 0 ? (xe * vye - ye * vxe) / rxy2 : 0;
-    const speedLon  = dLonRad_s * RAD * 86400; // deg/day
-
-    return { lon, lat, dist: r / AU, speedLon };
-}
-
-// ---------------------------------------------------------------------------
-// Rectangular → J2000 Ecliptic conversion (for sidereal planet longitudes)
-// ---------------------------------------------------------------------------
-
-/**
- * J2000.0 mean obliquity (degrees) — constant, not date-dependent.
- * This is the obliquity at epoch J2000.0 = 23°26'21.448" (IAU 1980).
- */
-const EPS_J2000 = 23.4392911111;
-
-export interface J2000EclipticPosition {
-    lon:  number;   // degrees [0, 360) in J2000 ecliptic frame
-    lat:  number;   // degrees [-90, +90]
-    dist: number;   // AU
-    speedLon: number;   // degrees per day
-}
-
-/**
- * Convert geocentric J2000.0 equatorial rectangular coords to J2000 ecliptic
- * longitude, latitude, and distance.
+ * The two-argument form resolves the quadrant directly. A single-argument
+ * atan collapses the result into ±90° and needs sign patching that fails for
+ * roughly half the zodiac — the source of the historical 180° ascendant bug.
  *
- * Unlike `rectToEcliptic()`, this uses the FIXED J2000 obliquity (ε₀) and
- * does NOT add generalPrecessionInLon. The result is in the J2000 ecliptic
- * frame, which is ideal for sidereal computations because precession cancels:
- *
- *   sidereal = J2000_ecliptic_lon − AYANAMSA_AT_J2000
- *
- * This eliminates date-dependent precession errors that grow with distance
- * from J2000 (~0.09° at 1970, ~0.01° at 1998).
- *
- * @param x,y,z    km, equatorial rectangular (J2000/ICRF)
- * @param vx,vy,vz km/s, velocity components
- */
-export function rectToJ2000Ecliptic(
-    x: number, y: number, z: number,
-    vx: number, vy: number, vz: number,
-): J2000EclipticPosition {
-    const eps  = EPS_J2000 * DEG;
-    const cosE = Math.cos(eps);
-    const sinE = Math.sin(eps);
-
-    // Rotate from equatorial to ecliptic (rotation about x-axis by ε₀)
-    const xe =  x;
-    const ye =  y * cosE + z * sinE;
-    const ze = -y * sinE + z * cosE;
-
-    const vxe =  vx;
-    const vye =  vy * cosE + vz * sinE;
-
-    // Spherical coords — NO precession added (stays in J2000 ecliptic frame)
-    const r2   = xe * xe + ye * ye + ze * ze;
-    const r    = Math.sqrt(r2);
-    const lon  = mod360(Math.atan2(ye, xe) * RAD);
-    const lat  = Math.asin(ze / r) * RAD;
-
-    // Speed in longitude (deg/day)
-    const rxy2 = xe * xe + ye * ye;
-    const dLonRad_s = rxy2 > 0 ? (xe * vye - ye * vxe) / rxy2 : 0;
-    const speedLon  = dLonRad_s * RAD * 86400;
-
-    return { lon, lat, dist: r / AU, speedLon };
-}
-
-// ---------------------------------------------------------------------------
-// Sidereal Time — GAST
-// ---------------------------------------------------------------------------
-
-/**
- * Greenwich Apparent Sidereal Time in degrees.
- * Uses the IAU 1982 formula (accurate to ~0.1" for modern dates).
- *
- * @param jd  Julian Day (UT)
- */
-export function getGAST(jd: number): number {
-    const T   = julianCenturies(jd);
-    const jd0 = Math.floor(jd - 0.5) + 0.5;   // JD of preceding midnight
-    const H   = (jd - jd0) * 24.0;             // hours past midnight UT
-
-    // GMST at 0h UT on Julian Day jd0 (degrees)
-    const T0    = julianCenturies(jd0);
-    const gmst0 = 100.4606184
-                + 36000.77004 * T0
-                + 0.000387933 * T0 * T0
-                - T0 * T0 * T0 / 38710000.0;
-
-    // Add Earth rotation: 360.98564724° per sidereal day × H/24
-    const gmst = mod360(gmst0 + 360.98564724 * H / 24.0);
-
-    // Nutation correction (approximate) for GAST
-    // Δψ ≈ -17.2" sin(Ω), Ω = mean lunar node longitude
-    const omega = mod360(125.04452 - 1934.136261 * T);
-    const nutEq = -0.000480 * Math.sin(omega * DEG);  // degrees
-
-    return mod360(gmst + nutEq);
-}
-
-// ---------------------------------------------------------------------------
-// Ascendant & House Cusps
-// ---------------------------------------------------------------------------
-
-/**
- * Compute the tropical Ascendant from RAMC (Right Ascension of MC) and
- * geographic latitude.
- *
- * Formula: tan(ASC) = −cos(RAMC) / (sin(ε)tan(φ) + cos(ε)sin(RAMC))
- *
- * @param ramc  RAMC in degrees
- * @param lat   Geographic latitude in degrees
- * @param eps   Obliquity of ecliptic in degrees
- * @returns     Tropical ascendant longitude in degrees [0, 360)
+ * @param ramc  Right ascension of the midheaven, degrees
+ * @param lat   Geographic latitude, degrees
+ * @param eps   Obliquity of the ecliptic, degrees
  */
 export function computeAscendant(ramc: number, lat: number, eps: number): number {
     const R = ramc * DEG;
-    const L = lat  * DEG;
     const E = eps  * DEG;
 
-    const numerator   = -Math.cos(R);
-    const denominator =  Math.sin(E) * Math.tan(L) + Math.cos(E) * Math.sin(R);
+    // Clamp latitude away from the poles, where the ascendant is undefined.
+    const L = Math.max(-89.9999, Math.min(89.9999, lat)) * DEG;
 
-    // Use atan2 with negated arguments for correct quadrant resolution:
-    //   atan2(-num, -den) = atan2(cos(RAMC), -(sin(ε)tan(φ) + cos(ε)sin(RAMC)))
-    //
-    // Single-argument atan(num/den) loses quadrant information (result in ±90°),
-    // and post-hoc corrections (checking signs of den or asc) fail for ~half the
-    // zodiac. The negated-atan2 maps directly to the correct 360° range because:
-    //   • cos(RAMC) determines the E/W hemisphere (atan2 y-argument)
-    //   • −denominator determines the N/S offset   (atan2 x-argument)
-    const asc = Math.atan2(-numerator, -denominator) * RAD;
-    return mod360(asc);
+    return mod360(
+        Math.atan2(
+            Math.cos(R),
+            -(Math.sin(E) * Math.tan(L) + Math.cos(E) * Math.sin(R)),
+        ) * RAD,
+    );
 }
 
-/**
- * Compute the tropical Midheaven (MC).
- * MC = atan2(cos RAMC, −sin ε · tan δ + cos ε · sin RAMC)  ... but simpler:
- * MC ≈ atan2(tan RAMC, cos ε)    (standard formula)
- */
+/** Tropical Midheaven from RAMC. */
 export function computeMC(ramc: number, eps: number): number {
     const R = ramc * DEG;
     const E = eps  * DEG;
-    const mc = Math.atan2(Math.sin(R), Math.cos(R) * Math.cos(E)) * RAD;
-    return mod360(mc);
+    return mod360(Math.atan2(Math.sin(R), Math.cos(R) * Math.cos(E)) * RAD);
 }
 
 /**
- * Compute Whole-Sign house cusps from the sidereal ascendant.
- *
- * In Whole Sign houses, each house occupies exactly one sign.
- * House 1 starts at 0° of the sign containing the ascendant.
- *
- * @param ascSidereal  Sidereal ascendant in degrees
- * @returns 12-element array of house cusp longitudes (sidereal, 0-indexed = H1 start)
+ * Tropical Vertex — the ecliptic point on the prime vertical due west.
+ * Equivalent to the ascendant computed for the co-latitude, half a turn away.
+ */
+export function computeVertex(ramc: number, lat: number, eps: number): number {
+    const coLat = (lat >= 0 ? 90 - lat : -90 - lat);
+    return mod360(computeAscendant(mod360(ramc + 180), coLat, eps) + 180);
+}
+
+/**
+ * Whole-Sign house cusps from the sidereal ascendant: house 1 begins at 0° of
+ * the sign holding the ascendant, and each subsequent house is the next sign.
  */
 export function wholeSignCusps(ascSidereal: number): number[] {
-    const h1Start = Math.floor(ascSidereal / 30) * 30;   // start of ascendant's sign
+    const h1Start = Math.floor(mod360(ascSidereal) / 30) * 30;
     return Array.from({ length: 12 }, (_, i) => mod360(h1Start + i * 30));
 }
 
-// ---------------------------------------------------------------------------
-// Lunar parallax correction (topocentric)
-// ---------------------------------------------------------------------------
-
 /**
- * Apply Moon parallax correction for a surface observer.
- * Shifts geocentric ecliptic lon/lat to topocentric.
- *
- * @param lon      Geocentric ecliptic longitude (degrees)
- * @param lat      Geocentric ecliptic latitude (degrees)
- * @param dist     Geocentric distance (AU)
- * @param geoLat   Observer geographic latitude (degrees)
- * @param lst      Local Sidereal Time (degrees)
- * @param eps      Obliquity of ecliptic (degrees)
+ * Equal-house cusps: 30° arcs measured from the exact ascendant degree.
  */
-export function applyLunarParallax(
-    lon: number, lat: number, dist: number,
-    geoLat: number, lst: number, eps: number,
-): { lon: number; lat: number } {
-    // Equatorial horizontal parallax
-    const sinPi = (6378.137 / AU) / dist;   // Earth radius / distance
-    const pi_   = Math.asin(sinPi);          // parallax angle (rad)
-
-    const L = lon * DEG;
-    const B = lat * DEG;
-    const E = eps * DEG;
-    const P = geoLat * DEG;
-    const H = (lst - lon) * DEG;             // local hour angle of body
-
-    // Observer's geocentric lat and distance (Meeus §11)
-    const u    = Math.atan(0.99664719 * Math.tan(P));
-    const rhoSinP = 0.99664719 * Math.sin(u) + (0 / 6378137) * Math.sin(P);
-    const rhoCosP = Math.cos(u) + (0 / 6378137) * Math.cos(P);
-
-    // Parallax in longitude and latitude (Meeus §40)
-    const DeltaL = -pi_ * rhoCosP * Math.sin(H) /
-                   (Math.cos(B) - pi_ * rhoCosP * Math.cos(H));
-
-    const newLon = lon + DeltaL * RAD;
-
-    const DeltaB = -pi_ * (rhoSinP * Math.cos(E) - rhoCosP * Math.sin(E) * Math.cos(H)) *
-                   Math.sin(newLon * DEG - L) / Math.sin(B - pi_ * (rhoSinP * Math.sin(E) +
-                   rhoCosP * Math.cos(E) * Math.cos(H) * Math.cos(newLon * DEG - L)));
-
-    return {
-        lon: mod360(newLon),
-        lat: lat + (isNaN(DeltaB) ? 0 : DeltaB * RAD),
-    };
+export function equalHouseCusps(ascSidereal: number): number[] {
+    return Array.from({ length: 12 }, (_, i) => mod360(ascSidereal + i * 30));
 }

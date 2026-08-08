@@ -8,24 +8,88 @@ You are an expert Full Stack Node.js Backend Engineer and a specialist in Vedic 
 
 Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathematical parity with **Jagannatha Hora (JHora)** — the authoritative Java desktop software by P.V.R. Narasimha Rao — establish a rigorous "Golden Standard" test suite, and expose the logic via an industry-grade API.
 
-> **NOTE on PyJHora:** PyJHora is a Python port that attempts to replicate JHora but uses the Moshier approximation backend for Moon positions, which produces Moon longitudes up to ~164° wrong for certain dates. PyJHora is NOT the golden standard. JHora is. When discrepancies exist between JHora and PyJHora, JHora is always correct.
+> **NOTE on PyJHora:** JHora is the reference, not PyJHora. But the specific claim
+> previously recorded here — that PyJHora's Moon is "~164° wrong due to a Moshier
+> backend" — is **unverified and should not be repeated.** It rested entirely on
+> `packages/core/tests/fixtures/pyjhora_golden.ts`, now deleted along with its
+> 311 permanently-skipped bridge tests, because that fixture was demonstrably
+> not a chart:
+>
+> - its ascendant is exactly 179.999° from the correct value — the signature of
+>   the old node-jhora ascendant bug, so the number was produced by the broken
+>   engine rather than read from PyJHora;
+> - no single instant reproduces its planet set. The Sun implies the stated epoch
+>   (+0.15 d), the Moon implies −179.7 d, Mercury −26 d, Venus +42 d, and Mars,
+>   Jupiter and Saturn cannot be fitted within ±200 days at all.
+>
+> Nothing can be concluded about PyJHora's real accuracy from it. Benchmarking
+> PyJHora requires running PyJHora and capturing its output.
 
 ## STRICT CONSTRAINTS & RULES
 
 1. **Absolute Precision:** Jyotish calculations are highly sensitive. NEVER use native JavaScript `Number` for floating-point planetary longitudes, Ayanamsa, or divisional math. You MUST use a high-precision library like `decimal.js` or `bignumber.js` for all core calculations.
-2. **Ephemeris Parity:** The engine uses JPL DE440s (public domain, AGPL-free). Ensure planetary positions match **JHora** reference charts. Ayanamsa values in `packages/core/src/engine/ayanamsa.ts` are calibrated for DE440 by back-computing from actual JHora output — do NOT blindly copy pyswisseph raw values (PyJHora's values may differ from JHora's by up to 0.089° for Lahiri due to Moshier backend errors).
-3. **No Frontend:** I do not care about the frontend. You are authorized to completely delete, deprecate, or ignore any frontend code (React, Vue, etc.) in this monorepo. Focus 100% on the backend engine.
-4. **Agentic Autonomy:** Run tests frequently. If a test fails, analyze the delta between the Node output and the **JHora** expectation, correct the math, and re-run until it passes. Do not stop until the suite is green. PyJHora disagreements are NOT bugs unless JHora also disagrees.
+2. **Ephemeris Parity:** The engine uses JPL DE440s (public domain, AGPL-free).
+
+   **Separate the two halves before debugging anything.** A sidereal longitude is
+   `astrometry − ayanamsa`, and each half is independently wrong-able:
+
+   - **Astrometry** is pinned against JPL Horizons in
+     `packages/core/tests/fixtures/horizons_golden.ts` (sub-arcsecond, 1900–2024).
+     Horizons is ground truth here and needs no JHora involvement.
+   - **Ayanamsa** is pinned against JHora in `jhora_golden.ts`.
+
+   Never absorb an astrometric error into an ayanamsa constant. A previous
+   revision did exactly that — the J2000 ayanamsa values were back-fitted until
+   one chart reproduced one expected Moon longitude, which hid 7–41″ of
+   astrometric error at that date and re-emitted it at every other date.
+
+   **Default ayanamsa is True Chitrapaksha (SE mode 27), Drik Siddhanta.** It is
+   *derived* from Spica's computed position, not fitted, so it needs no
+   calibration constant. The same holds for True Pushya/Revati/Mula. Prefer
+   star-defined models; only epoch-anchored ones (Lahiri, Raman, KP) need
+   constants, and each carries a `source` field recording its provenance.
+
+3. **JHora conventions are choices, not accuracy.** Correct astronomy alone will
+   not reproduce JHora. Four discrete settings must also match, and each was
+   confirmed against a real JHora export (1998-12-06, Chennai):
+
+   | Setting | Default | Evidence it is right |
+   |---|---|---|
+   | `AYANAMSA.TRUE_CITRA` (27) | ✔ | JHora prints `23-49-35.07`; engine 0.015″ away |
+   | `positionMode: 'geometric'` | ✔ | JHora applies **no** light-time or aberration — removing them moves Venus 43.9″, Sun 20.8″, Saturn 7.4″, each onto JHora to 0.01″ |
+   | `nodeType: 'true'` | ✔ | mean node misses Rahu by 0.97°; osculating node by 0.12″ |
+   | `dasamsaScheme: 'jhora_5_8'` | ✔ | JHora's "D-10 (5-8)": even signs count backward from the 5th sign, degree reversed |
+
+   Each is a single named constant in `ephemeris.ts` / `vargas.ts` and is
+   overridable per call. If a chart disagrees with JHora, check these four before
+   touching any math.
+4. **No Frontend:** I do not care about the frontend. You are authorized to completely delete, deprecate, or ignore any frontend code (React, Vue, etc.) in this monorepo. Focus 100% on the backend engine.
+5. **Agentic Autonomy:** Run tests frequently. If a test fails, analyze the delta between the Node output and the **JHora** expectation, correct the math, and re-run until it passes. Do not stop until the suite is green. PyJHora disagreements are NOT bugs unless JHora also disagrees.
 
 ## EXECUTION PHASES (Execute sequentially)
 
-### Phase 1: Test Suite Porting (The Golden Standard)
+### Phase 1: Test Suite Porting (The Golden Standard) — DONE
 
-- The golden standard is **JHora** output — run JHora for reference charts and record exact degree outputs.
-- Scaffold a robust testing environment in `node-jhora` using `Vitest` or `Jest`.
-- Build tests that validate ephemeris outputs, planetary longitudes, D-charts (Vargas), and Dashas against JHora.
+Two independent reference fixtures now exist, and the distinction between them
+is the whole point:
+
+| Fixture | Pins | Source | Status |
+|---|---|---|---|
+| `horizons_golden.ts` | astrometry | JPL Horizons API | ≤ 0.28″, 1900–2024 |
+| `jhora_golden.ts` | JHora conventions | real JHora export | D1 to 0.01″, D9 to 0.1″ |
+| `reference_charts.ts` | regression only | this engine's own output | not ground truth |
+
+**Rule for `reference_charts.ts`:** it is a snapshot, never evidence. Regenerate
+it only after the other two suites are green, otherwise a regression simply gets
+re-baselined. Every entry in `jhora_golden.ts` must carry the literal DMS string
+JHora displays; if a value has no such string it does not belong there.
+
+Each suite also asserts fixture-independent physical bounds (the Sun is never
+retrograde, the ascendant leads the MC by 0°–180°, daily motion within orbital
+limits). Those exist because the earlier fixture asserted a retrograde Sun and
+the suite passed.
+
 - PyJHora (`pvr_tests.py`) may be consulted for calculation *methods* (Varga formulas, Dasha logic) but its ephemeris values (especially Moon) should NOT be trusted as ground truth.
-- Run the tests. (They will fail initially. This establishes our baseline).
 
 ### Phase 2: Core Engine Refactor
 
@@ -50,7 +114,8 @@ Please acknowledge these instructions. Begin Phase 1 by searching for the test f
 - **The Goal:** We are refactoring `node-jhora` to achieve 100% calculation parity with **Jagannatha Hora (JHora)** — the authoritative Java software by P.V.R. Narasimha Rao. This is the industry standard for Vedic astrology.
 - **Mathematical Precision:** NEVER use native JavaScript floating-point math for planetary longitudes, Ayanamsa, or divisional charts. ALWAYS use `Decimal.js` (or our designated math library) to prevent precision loss and rounding errors.
 - **Testing:** All logic changes must be verified against **JHora output** for known reference charts. PyJHora's ephemeris values are NOT the standard — only its algorithmic formulas (Varga calculation methods, Dasha cycles, etc.) may be referenced.
-- **Why not PyJHora?** PyJHora uses the Moshier approximation backend for Moon (via swisseph WASM), which produces Moon longitudes up to ~164° wrong vs actual DE440/JHora values. This was proven by orbital mechanics: PyJHora's 1996-12-07 Moon (351.25°) is physically inconsistent with JHora's 1998-12-06 Moon (84.411°) by ~208° after accounting for 729 days of mean motion.
+- **Why not PyJHora?** It is a port, not the reference implementation; JHora is. See the note at the top of this file on why the repo's former PyJHora fixture could not support any accuracy claim, and why it was deleted rather than repaired.
+- **Beware second-hand reference values.** JHora's Moon for the 1998-12-06 chart is `24 Ge 30' 39.61"` = 84.511003°, verified against a real export. An earlier revision of this file and its fixtures quoted 84.411° — 6′ low, because the numbers had been generated from an ayanamsa 6′ high rather than read from JHora. Always re-derive from an actual export.
 
 ## Commands
 

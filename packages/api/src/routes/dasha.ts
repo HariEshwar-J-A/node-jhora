@@ -24,10 +24,10 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/dasha', { schema: { body: DashaInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
+        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
         const moon    = planets.find(p => p.id === 1)!;
 
         const balance = calculateDashaBalance(moon.longitude);

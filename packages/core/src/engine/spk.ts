@@ -180,53 +180,47 @@ export class SpkFile {
      *   Moon_SSB  = EMB_SSB + Moon_EMB    (body 3 + body 301)
      */
     getGeocentric(naifBody: number, et: number): Vec3 {
-        // Earth position in SSB frame
-        const emb   = this.getState(NAIF.EMB,   NAIF.SSB, et);
-        const earth = this.getState(NAIF.Earth, NAIF.EMB, et);
-
-        const earthX  = emb.x + earth.x;
-        const earthY  = emb.y + earth.y;
-        const earthZ  = emb.z + earth.z;
-        const earthVx = emb.vx + earth.vx;
-        const earthVy = emb.vy + earth.vy;
-        const earthVz = emb.vz + earth.vz;
-
-        let bodyX: number, bodyY: number, bodyZ: number;
-        let bodyVx: number, bodyVy: number, bodyVz: number;
-
-        if (naifBody === NAIF.Moon) {
-            // Moon: SSB = EMB + Moon_EMB
-            const moon = this.getState(NAIF.Moon, NAIF.EMB, et);
-            bodyX  = emb.x + moon.x;
-            bodyY  = emb.y + moon.y;
-            bodyZ  = emb.z + moon.z;
-            bodyVx = emb.vx + moon.vx;
-            bodyVy = emb.vy + moon.vy;
-            bodyVz = emb.vz + moon.vz;
-        } else if (naifBody === NAIF.Earth) {
-            bodyX = earthX; bodyY = earthY; bodyZ = earthZ;
-            bodyVx = earthVx; bodyVy = earthVy; bodyVz = earthVz;
-        } else {
-            // All other bodies are given relative to SSB directly
-            const body = this.getState(naifBody, NAIF.SSB, et);
-            bodyX  = body.x;
-            bodyY  = body.y;
-            bodyZ  = body.z;
-            bodyVx = body.vx;
-            bodyVy = body.vy;
-            bodyVz = body.vz;
-        }
+        const body  = this.getBarycentric(naifBody,   et);
+        const earth = this.getBarycentric(NAIF.Earth, et);
 
         return {
-            x:  bodyX  - earthX,
-            y:  bodyY  - earthY,
-            z:  bodyZ  - earthZ,
-            vx: bodyVx - earthVx,
-            vy: bodyVy - earthVy,
-            vz: bodyVz - earthVz,
+            x:  body.x  - earth.x,
+            y:  body.y  - earth.y,
+            z:  body.z  - earth.z,
+            vx: body.vx - earth.vx,
+            vy: body.vy - earth.vy,
+            vz: body.vz - earth.vz,
         };
     }
 
+    /**
+     * Return solar-system-barycentric J2000 equatorial rectangular position (km)
+     * and velocity (km/s) for a body.
+     *
+     * Light-time and aberration corrections require the body and the observer to
+     * be evaluated at *different* epochs, so callers need the barycentric states
+     * separately rather than a pre-differenced geocentric vector.
+     *
+     * For de440s.bsp:
+     *   Earth_SSB = EMB_SSB + Earth_EMB   (body 3 + body 399)
+     *   Moon_SSB  = EMB_SSB + Moon_EMB    (body 3 + body 301)
+     */
+    getBarycentric(naifBody: number, et: number): Vec3 {
+        if (naifBody === NAIF.Moon || naifBody === NAIF.Earth) {
+            const emb  = this.getState(NAIF.EMB, NAIF.SSB, et);
+            const rel  = this.getState(naifBody, NAIF.EMB, et);
+            return {
+                x:  emb.x  + rel.x,
+                y:  emb.y  + rel.y,
+                z:  emb.z  + rel.z,
+                vx: emb.vx + rel.vx,
+                vy: emb.vy + rel.vy,
+                vz: emb.vz + rel.vz,
+            };
+        }
+        // All other bodies are stored relative to the SSB directly
+        return this.getState(naifBody, NAIF.SSB, et);
+    }
     // ─── Internals ────────────────────────────────────────────────────────
 
     private findSegment(target: number, center: number, et: number): SpkSegment | undefined {

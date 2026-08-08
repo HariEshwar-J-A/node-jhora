@@ -48,11 +48,11 @@ export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/shadbala', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, houseSystem } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, houseSystem } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType });
-        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, houseSystem as any, engine);
+        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
+        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, houseSystem as any, engine, ayanamsaOrder, ayanamsaOffset);
 
         const houses = {
             cusps:     housesResult.cusps,
