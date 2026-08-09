@@ -148,6 +148,58 @@ Returns the dasha periods (Maha → Antar → Pratyantar) for a given birth char
 
 ---
 
+### `POST /v1/transits` — Gochara (current sky vs natal)
+
+Where the planets are **now** relative to a birth chart. Answering "what should
+I expect?" needs the sky at the moment of asking, not only the natal chart.
+
+Extra fields: `asOf` (ISO 8601, default now — the moment the sky is read for,
+while the birth fields still describe the native) and `horizonDays` (default 365).
+
+Returns, per body: current sign and degree, retrograde state, **house from the
+natal Moon** (the classical gochara reference) and from the lagna, and the
+**Ashtakavarga bindus** of the transited sign so a transit can be weighted
+rather than merely noted. Plus `sadeSati` (with phase, and Kantaka / Ashtama
+Shani flagged separately) and upcoming Jupiter/Saturn sign ingresses.
+
+---
+
+### `POST /v1/reading` — Everything an interpretation needs, in one call
+
+Composite endpoint: natal chart, the live Dasha stack, and current transits.
+
+Extra fields: `asOf` (default now), `depth` (Dasha levels, default 3 — reaches
+Pratyantardasha), `horizonDays` (default 365).
+
+The field that matters most is **`houseFromLordAbove`** on each Dasha level.
+Classical dasha results are almost never unconditional — BPHS states them as
+"…if the antardasha lord is in the 5th, 9th, 11th or 2nd from the dasha lord"
+versus "…if in the 6th, 8th or 12th". That house distance selects which branch
+applies, and `classicalBranch` names it (`favourable` / `adverse` / `mixed`).
+A client stitching `/v1/chart` and `/v1/dasha` together has to re-derive it, and
+getting it wrong inverts the reading.
+
+Also returns each Dasha lord's natal placement and dignity, the houses every
+planet rules for that ascendant (its functional nature), and Ashtakavarga by
+sign.
+
+**Scope: computation only.** No classical text, no LLM, no prose — retrieval of
+BPHS passages and the wording of a reading belong to the layer above.
+
+```json
+{
+  "dashaStack": [
+    { "levelName": "Mahadasha", "lord": "Saturn", "start": "2009-07-08", "end": "2028-07-08",
+      "houseFromLordAbove": null, "classicalBranch": null,
+      "lordNatal": { "signName": "Aries", "dignity": "debilitated", "rulesHouses": [1, 2] } },
+    { "levelName": "Antardasha", "lord": "Jupiter", "houseFromLordAbove": 11,
+      "classicalBranch": "favourable" }
+  ]
+}
+```
+
+---
+
 ### `POST /v1/shadbala` — Shadbala Strengths
 
 Returns the 6-fold planetary strength breakdown for all planets.
