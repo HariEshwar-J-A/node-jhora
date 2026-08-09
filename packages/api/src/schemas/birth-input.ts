@@ -107,3 +107,19 @@ export const TransitInputSchema = BirthBaseSchema
     .refine(locationRefine, { message: locationMessage });
 
 export type TransitInput = z.infer<typeof TransitInputSchema>;
+
+/**
+ * Composite reading: natal chart, the live dasha stack, and current transits in
+ * one response. `asOf` is the moment being asked about (default now); the birth
+ * fields still describe the native.
+ */
+export const ReadingInputSchema = BirthBaseSchema
+    .extend({
+        asOf: z.string().datetime({ offset: true }).optional(),
+        /** Dasha tree depth. 3 reaches Pratyantardasha, which readings need. */
+        depth: z.number().int().min(1).max(5).default(3),
+        horizonDays: z.number().int().min(1).max(3650).default(365),
+    })
+    .refine(locationRefine, { message: locationMessage });
+
+export type ReadingInput = z.infer<typeof ReadingInputSchema>;

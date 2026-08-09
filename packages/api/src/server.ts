@@ -11,6 +11,7 @@ import { shadbalaRoutes } from './routes/shadbala.js';
 import { kpRoutes } from './routes/kp.js';
 import { matchRoutes } from './routes/match.js';
 import { transitRoutes } from './routes/transits.js';
+import { readingRoutes } from './routes/reading.js';
 
 // ---------------------------------------------------------------------------
 // Singleton WASM engine — initialized once at startup.
@@ -73,6 +74,7 @@ export async function buildServer(opts: {
     await app.register(panchangaRoutes, { prefix: '/v1' });
     await app.register(dashaRoutes,     { prefix: '/v1' });
     await app.register(transitRoutes,   { prefix: '/v1' });
+    await app.register(readingRoutes,   { prefix: '/v1' });
     await app.register(shadbalaRoutes,  { prefix: '/v1' });
     await app.register(kpRoutes,        { prefix: '/v1' });
     await app.register(matchRoutes,     { prefix: '/v1' });
