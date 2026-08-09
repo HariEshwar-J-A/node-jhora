@@ -10,12 +10,30 @@ export interface TransitEvent {
     time: DateTime;    // Time of ingress
 }
 
+/** Calculation settings a transit scan must share with the chart it is compared to. */
+export interface TransitOptions {
+    /** SE_SIDM_* code. Must match the natal chart, or every result is shifted. */
+    ayanamsaOrder?: number;
+    positionMode?:  'geometric' | 'apparent';
+    nodeType?:      'mean' | 'true';
+}
+
 export class TransitEngine {
     private ephemeris: EphemerisEngine;
+    private options: TransitOptions;
 
-    constructor(ephemeris?: EphemerisEngine) {
-        // Use singleton if not provided, assuming it's initialized
+    /**
+     * @param ephemeris Initialised engine; falls back to the singleton.
+     * @param options   Must match the chart these transits are read against.
+     *
+     * The ayanamsa used to be hardcoded to Lahiri here regardless of the caller.
+     * Against a True Chitrapaksha chart that shifted every longitude by 0.0203 deg,
+     * which for Saturn is five hours of motion — so reported sign-ingress times
+     * were five hours wrong while looking precise to the second.
+     */
+    constructor(ephemeris?: EphemerisEngine, options: TransitOptions = {}) {
         this.ephemeris = ephemeris || EphemerisEngine.getInstance();
+        this.options = options;
     }
 
     /**
@@ -49,15 +67,16 @@ export class TransitEngine {
 
             // Check Sign Change
             if (currSign !== prevSign) {
-                // refine time? For MVP, we use the step time. 
-                // To be "Best", we should binary search the exact ingress time.
-                // TODO: specific binary search refinement here.
                 events.push({
                     planetId,
                     type: 'Sign',
                     prevValue: prevSign,
                     newValue: currSign,
-                    time: cursor
+                    // Bisect back into the step. Reporting `cursor` would place
+                    // the ingress up to `stepHours` late — 24 h by default — and
+                    // a date that wrong is worse than an admitted range, because
+                    // it will be quoted as if exact.
+                    time: this.refineIngress(planetId, cursor.minus({ hours: stepHours }), cursor, 30),
                 });
                 prevSign = currSign;
             }
@@ -69,7 +88,8 @@ export class TransitEngine {
                     type: 'Nakshatra',
                     prevValue: prevNak,
                     newValue: currNak,
-                    time: cursor
+                    time: this.refineIngress(planetId, cursor.minus({ hours: stepHours }), cursor,
+                                             13 + 1 / 3),
                 });
                 prevNak = currNak;
             }
@@ -80,6 +100,35 @@ export class TransitEngine {
         }
 
         return events;
+    }
+
+    /**
+     * Bisect the moment a planet crosses a boundary of width `arc` degrees.
+     *
+     * The scan loop only knows the crossing happened somewhere inside the last
+     * step. Without this the reported time is the end of that step, so a 24-hour
+     * scan yields ingress dates up to a day late. Twenty-eight halvings of a
+     * 24 h window converge to well under a second, which costs 28 ephemeris
+     * evaluations — negligible next to being wrong by a day.
+     *
+     * Handles the 360 to 0 wrap, and returns `hi` unchanged if the boundary is
+     * not actually inside the bracket (retrograde re-crossings can produce that).
+     */
+    private refineIngress(planetId: number, lo: DateTime, hi: DateTime, arc: number): DateTime {
+        const bucket = (t: DateTime) => Math.floor(this.getPos(planetId, t) / arc);
+
+        const startBucket = bucket(lo);
+        if (bucket(hi) === startBucket) return hi;
+
+        let a = lo;
+        let b = hi;
+        for (let i = 0; i < 28; i++) {
+            const midMs = (a.toMillis() + b.toMillis()) / 2;
+            const mid = DateTime.fromMillis(midMs, { zone: a.zone });
+            if (bucket(mid) === startBucket) a = mid;
+            else b = mid;
+        }
+        return b;
     }
 
     /**
@@ -180,14 +229,18 @@ export class TransitEngine {
     // It calls `this.swe.swe_calc_ut`. If WASM is loaded, it's synchronous.
     // However, our `getPlanets` takes (date, location). We just need Geocentric or Topo?
     // Transits are usually Geocentric.
+    /**
+     * Geocentric sidereal longitude, in the caller's zodiac.
+     *
+     * Location is nominal: it is only consulted for topocentric places, which
+     * transit work does not use.
+     */
     private getPos(planetId: number, time: DateTime): number {
-        // Mock location for Geocentric (0,0)? Or reuse standard call.
-        // We need a specific `getPlanetPosition(planetId, time)` method in Ephemeris or just use `getPlanets`.
-        // Using `getPlanets` is expensive (calcs ALL planets).
-        // Optimization: Use `calc_ut` directly if possible, or filtered getPlanets.
-        // For now, use getPlanets for API consistency.
-        // Transits are Geocentric Sidereal (Lahiri = 1).
-        const p = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1 });
+        const p = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, {
+            ayanamsaOrder: this.options.ayanamsaOrder,
+            positionMode:  this.options.positionMode,
+            nodeType:      this.options.nodeType,
+        });
         const target = p.find((x: PlanetPosition) => x.id === planetId);
         return target ? target.longitude : 0;
     }

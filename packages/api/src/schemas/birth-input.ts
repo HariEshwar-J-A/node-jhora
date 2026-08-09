@@ -93,3 +93,17 @@ export const DashaInputSchema = BirthBaseSchema
     .refine(locationRefine, { message: locationMessage });
 
 export type DashaInput = z.infer<typeof DashaInputSchema>;
+
+/**
+ * Transit endpoint: the birth fields describe the native, `asOf` is the moment
+ * the sky is evaluated for. Defaults to now, which is what an interpretive
+ * question almost always means.
+ */
+export const TransitInputSchema = BirthBaseSchema
+    .extend({
+        asOf: z.string().datetime({ offset: true }).optional(),
+        horizonDays: z.number().int().min(1).max(3650).default(365),
+    })
+    .refine(locationRefine, { message: locationMessage });
+
+export type TransitInput = z.infer<typeof TransitInputSchema>;
