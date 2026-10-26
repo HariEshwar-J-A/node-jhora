@@ -1,6 +1,7 @@
 
 import { DateTime } from 'luxon';
 
+import { Body, EPHEMERIS_BODIES } from '../core/body.js';
 import { EphemerisEngine, PlanetPosition } from './ephemeris.js';
 
 interface PlanetSnapshot {
@@ -35,7 +36,7 @@ export class EphemerisInterpolator {
         this.stepMs = stepHours * 3600 * 1000;
 
         let cursor = start;
-        const targetIds = [0, 1, 2, 3, 4, 5, 6, 8, 9]; // Sun..Sat, Rahu, Ketu
+        const targetIds = [...EPHEMERIS_BODIES];
         
         // Loop and fill
         while (cursor <= end) {
@@ -53,10 +54,9 @@ export class EphemerisInterpolator {
             
             // Map:
             const getIdIdx = (id: number) => {
-                if (id <= 6) return id;
-                if (id <= 6) return id;
-                if (id === 10 || id === 11) return 7; // Rahu
-                if (id === 99) return 8; // Ketu
+                if (id <= Body.Saturn) return id;
+                if (id === Body.Rahu || id === 11) return 7; // Rahu (legacy 11 tolerated)
+                if (id === Body.Ketu) return 8;
                 return -1;
             };
 
@@ -131,7 +131,7 @@ export class EphemerisInterpolator {
         // 0=Sun, 1=Moon...
         // Names needed?
         const names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu'];
-        const ids = [0, 1, 2, 3, 4, 5, 6, 8, 9];
+        const ids = [...EPHEMERIS_BODIES];
         
         return ids.map((id, idx) => ({
             id,

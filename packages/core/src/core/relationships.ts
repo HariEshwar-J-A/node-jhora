@@ -1,3 +1,4 @@
+import { Body, SEVEN_GRAHAS_JHORA_ORDER } from './body.js';
 import { getShortestDistance,normalize360 } from './math.js';
 
 export enum Relationship {
@@ -8,17 +9,7 @@ export enum Relationship {
     GreatEnemy = 'GreatEnemy'
 }
 
-// Swisseph IDs
-const SUN = 0;
-const MOON = 1;
-const MERCURY = 2;
-const VENUS = 3;
-const MARS = 4;
-const JUPITER = 5;
-const SATURN = 6;
-const RAHU = 11; // Often not used in Shadbala, but good to have ID
-
-export const PLANET_IDS = [SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN];
+export const PLANET_IDS: readonly Body[] = [...SEVEN_GRAHAS_JHORA_ORDER];
 
 interface NaisargikaTable {
     [key: number]: {
@@ -30,41 +21,41 @@ interface NaisargikaTable {
 
 // Standard BPHS Natural Relationships
 export const NAISARGIKA_MAITRI: NaisargikaTable = {
-    [SUN]: {
-        friends: [MOON, MARS, JUPITER],
-        neutrals: [MERCURY],
-        enemies: [VENUS, SATURN]
+    [Body.Sun]: {
+        friends: [Body.Moon, Body.Mars, Body.Jupiter],
+        neutrals: [Body.Mercury],
+        enemies: [Body.Venus, Body.Saturn],
     },
-    [MOON]: {
-        friends: [SUN, MERCURY],
-        neutrals: [MARS, JUPITER, VENUS, SATURN],
-        enemies: [] // No enemies among 7 planets
+    [Body.Moon]: {
+        friends: [Body.Sun, Body.Mercury],
+        neutrals: [Body.Mars, Body.Jupiter, Body.Venus, Body.Saturn],
+        enemies: [], // No enemies among 7 planets
     },
-    [MARS]: {
-        friends: [SUN, MOON, JUPITER],
-        neutrals: [VENUS, SATURN],
-        enemies: [MERCURY]
+    [Body.Mars]: {
+        friends: [Body.Sun, Body.Moon, Body.Jupiter],
+        neutrals: [Body.Venus, Body.Saturn],
+        enemies: [Body.Mercury],
     },
-    [MERCURY]: {
-        friends: [SUN, VENUS],
-        neutrals: [MARS, JUPITER, SATURN],
-        enemies: [MOON]
+    [Body.Mercury]: {
+        friends: [Body.Sun, Body.Venus],
+        neutrals: [Body.Mars, Body.Jupiter, Body.Saturn],
+        enemies: [Body.Moon],
     },
-    [JUPITER]: {
-        friends: [SUN, MOON, MARS],
-        neutrals: [SATURN],
-        enemies: [MERCURY, VENUS]
+    [Body.Jupiter]: {
+        friends: [Body.Sun, Body.Moon, Body.Mars],
+        neutrals: [Body.Saturn],
+        enemies: [Body.Mercury, Body.Venus],
     },
-    [VENUS]: {
-        friends: [MERCURY, SATURN],
-        neutrals: [MARS, JUPITER],
-        enemies: [SUN, MOON]
+    [Body.Venus]: {
+        friends: [Body.Mercury, Body.Saturn],
+        neutrals: [Body.Mars, Body.Jupiter],
+        enemies: [Body.Sun, Body.Moon],
     },
-    [SATURN]: {
-        friends: [MERCURY, VENUS],
-        neutrals: [JUPITER],
-        enemies: [SUN, MOON, MARS]
-    }
+    [Body.Saturn]: {
+        friends: [Body.Mercury, Body.Venus],
+        neutrals: [Body.Jupiter],
+        enemies: [Body.Sun, Body.Moon, Body.Mars],
+    },
 };
 
 /**

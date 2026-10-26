@@ -1,13 +1,5 @@
-import { getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
+import { Body, getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
 import { Decimal } from 'decimal.js';
-
-const SUN = 0;
-const MOON = 1;
-const MERCURY = 2;
-const VENUS = 3;
-const MARS = 4;
-const JUPITER = 5;
-const SATURN = 6;
 
 // ==========================================
 // 1. Dig Bala (Directional Strength)
@@ -24,19 +16,19 @@ export function calculateDigBala(planet: PlanetPosition, ascendant: number, mc: 
     let powerPoint = 0;
 
     switch (planet.id) {
-        case MERCURY:
-        case JUPITER:
+        case Body.Mercury:
+        case Body.Jupiter:
             powerPoint = ascendant;
             break;
-        case SUN:
-        case MARS:
+        case Body.Sun:
+        case Body.Mars:
             powerPoint = mc;
             break;
-        case SATURN:
+        case Body.Saturn:
             powerPoint = normalize360(ascendant + 180);
             break;
-        case MOON:
-        case VENUS:
+        case Body.Moon:
+        case Body.Venus:
             powerPoint = normalize360(mc + 180);
             break;
         default:
@@ -57,17 +49,17 @@ export function calculateDigBala(planet: PlanetPosition, ascendant: number, mc: 
 // Mercury              → always 60.
 
 export function calculateNatonataBala(planetId: number, sunLon: number, mcLon: number): number {
-    if (planetId === MERCURY) return 60;
+    if (planetId === Body.Mercury) return 60;
 
     const D180 = new Decimal(180);
     const D3   = new Decimal(3);
     const distSunMC = new Decimal(getShortestDistance(sunLon, mcLon));
 
-    if ([SUN, JUPITER, VENUS].includes(planetId)) {
+    if ([Body.Sun, Body.Jupiter, Body.Venus].includes(planetId)) {
         return D180.minus(distSunMC).div(D3).toNumber();
     }
 
-    if ([MOON, MARS, SATURN].includes(planetId)) {
+    if ([Body.Moon, Body.Mars, Body.Saturn].includes(planetId)) {
         const icLon = normalize360(mcLon + 180);
         const distSunIC = new Decimal(getShortestDistance(sunLon, icLon));
         return D180.minus(distSunIC).div(D3).toNumber();
@@ -89,7 +81,7 @@ export function calculatePakshaBala(planetId: number, sunLon: number, moonLon: n
     const beneficScore = dist.div(D3);
     const maleficScore = D60.minus(beneficScore);
 
-    if ([JUPITER, VENUS, MERCURY, MOON].includes(planetId)) {
+    if ([Body.Jupiter, Body.Venus, Body.Mercury, Body.Moon].includes(planetId)) {
         return beneficScore.toNumber();
     }
     return maleficScore.toNumber();
@@ -102,7 +94,7 @@ export function calculatePakshaBala(planetId: number, sunLon: number, moonLon: n
 // Lords of their part receive 60; all others receive 0.
 
 export function calculateTribhagaBala(planetId: number, birthHour: number, sunrise: number, sunset: number): number {
-    if (planetId === JUPITER) return 60;
+    if (planetId === Body.Jupiter) return 60;
 
     const isDay = birthHour >= sunrise && birthHour < sunset;
 
@@ -113,9 +105,9 @@ export function calculateTribhagaBala(planetId: number, birthHour: number, sunri
         const rawPart      = timeFromRise.div(partDuration).floor().toNumber();
         const partIndex    = Math.min(rawPart, 2);
 
-        if (partIndex === 0 && planetId === MERCURY) return 60;
-        if (partIndex === 1 && planetId === SUN)     return 60;
-        if (partIndex === 2 && planetId === SATURN)  return 60;
+        if (partIndex === 0 && planetId === Body.Mercury) return 60;
+        if (partIndex === 1 && planetId === Body.Sun)     return 60;
+        if (partIndex === 2 && planetId === Body.Saturn)  return 60;
     } else {
         const nightLen     = new Decimal(24 - sunset + sunrise);
         const timeFromSet  = new Decimal(birthHour >= sunset ? birthHour - sunset : birthHour + 24 - sunset);
@@ -123,9 +115,9 @@ export function calculateTribhagaBala(planetId: number, birthHour: number, sunri
         const rawPart      = timeFromSet.div(partDuration).floor().toNumber();
         const partIndex    = Math.min(rawPart, 2);
 
-        if (partIndex === 0 && planetId === MOON)   return 60;
-        if (partIndex === 1 && planetId === VENUS)  return 60;
-        if (partIndex === 2 && planetId === MARS)   return 60;
+        if (partIndex === 0 && planetId === Body.Moon)   return 60;
+        if (partIndex === 1 && planetId === Body.Venus)  return 60;
+        if (partIndex === 2 && planetId === Body.Mars)   return 60;
     }
 
     return 0;
@@ -143,16 +135,16 @@ const D60   = new Decimal(60);
 const D0    = new Decimal(0);
 
 export function calculateAyanabala(planetId: number, declination: number): number {
-    if (planetId === MERCURY) return 60;
+    if (planetId === Body.Mercury) return 60;
 
     const dec = new Decimal(declination);
 
-    if ([SUN, MARS, JUPITER, VENUS].includes(planetId)) {
+    if ([Body.Sun, Body.Mars, Body.Jupiter, Body.Venus].includes(planetId)) {
         const raw = D24.plus(dec).times(D1_25);
         return Decimal.max(D0, Decimal.min(D60, raw)).toNumber();
     }
 
-    if ([MOON, SATURN].includes(planetId)) {
+    if ([Body.Moon, Body.Saturn].includes(planetId)) {
         const raw = D24.minus(dec).times(D1_25);
         return Decimal.max(D0, Decimal.min(D60, raw)).toNumber();
     }
@@ -171,7 +163,7 @@ export function calculateAyanabala(planetId: number, declination: number): numbe
 const STATIONARY_EPSILON = new Decimal('0.001');
 
 export function calculateChestaBala(planet: PlanetPosition): number {
-    if (planet.id === SUN || planet.id === MOON) return 0;
+    if (planet.id === Body.Sun || planet.id === Body.Moon) return 0;
 
     const speed = new Decimal(planet.speed);
 
@@ -179,7 +171,7 @@ export function calculateChestaBala(planet: PlanetPosition): number {
         return 60; // Vakra
     }
     if (speed.abs().lte(STATIONARY_EPSILON)) {
-        return 15; // Vikala (stationary)
+        return 15; // Vikala
     }
-    return 15; // Direct — conservative baseline
+    return 15; // Anuvakra / direct baseline
 }

@@ -1,10 +1,23 @@
 import { calculateShadbala, type VargaInfo } from '@node-jhora/analytics';
-import { calculateVarga, type PlanetPosition } from '@node-jhora/core';
+import { Body, calculateVarga, type PlanetPosition } from '@node-jhora/core';
 
 import type { SerializableShadbalaRow } from '../types.js';
 
 const SAPTAVARGA_DIVISIONS = [1, 2, 3, 7, 9, 12, 30];
-const SIGN_LORDS: number[] = [4, 3, 2, 1, 0, 2, 3, 4, 5, 6, 6, 5];
+const SIGN_LORDS: number[] = [
+    Body.Mars,
+    Body.Venus,
+    Body.Mercury,
+    Body.Moon,
+    Body.Sun,
+    Body.Mercury,
+    Body.Venus,
+    Body.Mars,
+    Body.Jupiter,
+    Body.Saturn,
+    Body.Saturn,
+    Body.Jupiter,
+];
 
 function buildVargaPositions(planetLon: number, allPlanets: PlanetPosition[]): VargaInfo[] {
     return SAPTAVARGA_DIVISIONS.map((d) => {
@@ -34,12 +47,12 @@ export function computeShadbalaSection(
     birthHour: number,
     latitude: number,
 ): SerializableShadbalaRow[] {
-    const sun = planets.find((p) => p.id === 0)!;
-    const moon = planets.find((p) => p.id === 1)!;
+    const sun = planets.find((p) => p.id === Body.Sun)!;
+    const moon = planets.find((p) => p.id === Body.Moon)!;
     const { sunrise, sunset } = estimateSunriseSunset(latitude);
 
     return planets
-        .filter((p) => p.id >= 0 && p.id <= 6)
+        .filter((p) => p.id >= Body.Sun && p.id <= Body.Saturn)
         .map((planet) => {
             const vargaPositions = buildVargaPositions(planet.longitude, planets);
             const shadbala = calculateShadbala({

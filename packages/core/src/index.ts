@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 
 import { type JyotishConfig } from './config.js';
+import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, EPHEMERIS_BODIES, SEVEN_GRAHAS_JHORA_ORDER } from './core/body.js';
 import { getRelationship, PLANET_IDS,Relationship } from './core/relationships.js';
 import { EphemerisEngine, HouseData,PlanetPosition } from './engine/ephemeris.js';
 import { AYANAMSA } from './engine/ephemeris.js';
@@ -29,7 +30,18 @@ HouseData,
 // Re-export Utils
 export { decimalToDms,dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
 export { D, DASHA_YEAR_DAYS,NAKSHATRA_SPAN_D, normalize360D, toNum } from './core/precise.js';
-export { calculateShashtyamsa, calculateVarga, getRelationship, PLANET_IDS, Relationship,VargaDeities };
+export {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
+    calculateShashtyamsa,
+    calculateVarga,
+    EPHEMERIS_BODIES,
+    getRelationship,
+    PLANET_IDS,
+    Relationship,
+    SEVEN_GRAHAS_JHORA_ORDER,
+    VargaDeities,
+};
 export type { HouseSystem, JyotishConfig, NodeType } from './config.js';
 export {
     DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS,
@@ -218,8 +230,8 @@ export class NodeJHora {
             c.houseSystem as HouseSystemMethod, engine, c.ayanamsaMode, c.ayanamsaOffset,
         );
 
-        const sun  = planets.find(p => p.id === 0);
-        const moon = planets.find(p => p.id === 1);
+        const sun  = planets.find(p => p.id === Body.Sun);
+        const moon = planets.find(p => p.id === Body.Moon);
         let panchanga: any = null;
         if (sun && moon) {
             panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, c.sunriseHour);
@@ -289,8 +301,8 @@ export class NodeJHora {
     getPanchanga(date: DateTime, override?: SettingsInput): PanchangaResult & { settingsHash: string } {
         const { config: c, settingsHash } = this.bind(override);
         const planets = this.getPlanets(date, override);
-        const sun  = planets.find(p => p.id === 0);
-        const moon = planets.find(p => p.id === 1);
+        const sun  = planets.find(p => p.id === Body.Sun);
+        const moon = planets.find(p => p.id === Body.Moon);
         if (!sun || !moon) throw new Error('Sun or Moon data missing');
         return { ...calculatePanchanga(sun.longitude, moon.longitude, date, c.sunriseHour), settingsHash };
     }

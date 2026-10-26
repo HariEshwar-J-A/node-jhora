@@ -1,4 +1,4 @@
-import { PlanetPosition } from '@node-jhora/core';
+import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, PlanetPosition, SEVEN_GRAHAS_JHORA_ORDER } from '@node-jhora/core';
 
 import { ASHTAKAVARGA_RULES } from './rules.js';
 
@@ -22,7 +22,7 @@ export class AshtakavargaCalculator {
         }
 
         // Donor IDs: 0-6 (Planets) + 99 (Lagna)
-        const donorIds = [0, 1, 4, 2, 5, 3, 6, 99];
+        const donorIds = [...SEVEN_GRAHAS_JHORA_ORDER, BODY_ASHTAKAVARGA_LAGNA_DONOR];
 
         donorIds.forEach(donorId => {
             const beneficHouses = rules[donorId];
@@ -51,7 +51,7 @@ export class AshtakavargaCalculator {
     public static calculateSAV(planets: PlanetPosition[]): AshtakavargaResult {
         const bav: Record<number, number[]> = {};
         const sav = new Array(12).fill(0);
-        const targetPlanets = [0, 1, 4, 2, 5, 3, 6]; // Sun, Moon, Mars, Mer, Jup, Ven, Sat
+        const targetPlanets = [...SEVEN_GRAHAS_JHORA_ORDER];
 
         targetPlanets.forEach(id => {
             const planetBAV = this.calculateBAV(planets, id);

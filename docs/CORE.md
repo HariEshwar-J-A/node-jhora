@@ -106,9 +106,11 @@ Each `PlanetPosition` contains:
 | :---: | :--- | :---: | :--- |
 | `0` | Sun | `5` | Jupiter |
 | `1` | Moon | `6` | Saturn |
-| `2` | Mercury | `11` | Rahu (Mean Node) |
+| `2` | Mercury | `10` | Rahu (Mean Node) |
 | `3` | Venus | `99` | Ketu (Rahu + 180°) |
 | `4` | Mars | | |
+
+Use the `Body` enum (`Body.Rahu === 10`, `Body.Ketu === 99`) rather than literals. `EphemerisInterpolator.unpack()` uses the same ids.
 
 ### Ayanamsa Support
 
@@ -340,6 +342,9 @@ import { KPSubLord } from '@node-jhora/core';
 // Get KP significators (Sign Lord, Star Lord, Sub Lord, Sub-Sub Lord)
 const kp = KPSubLord.getSignificators(planetLongitude);
 ```
+
+> **Node ids in KP significators:** `KPSubLord` lord ids keep the legacy KP values **Rahu = 7, Ketu = 8** (API-stable; the `/v1/kp` response uses them). These differ intentionally from the ephemeris `Body` ids (Rahu = 10, Ketu = 99); don't compare them directly.
+
 
 ### Ruling Planets
 
