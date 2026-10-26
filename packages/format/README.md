@@ -13,3 +13,7 @@ pnpm --filter @node-jhora/format run generate
 ```
 
 This package uses no Node-only APIs in its runtime code so the same module loads in the browser.
+
+## CSV import wizard
+
+`csvWizardParse` → `csvWizardSuggestMappings` → `csvWizardValidate` → `csvWizardBuildCharts` implement a four-step CSV import (RFC 4180, delimiter detection, column mapping heuristics, row validation, `.njh` v2 output). Use `csvWizardImport` to run the full pipeline with optional explicit mappings.
