@@ -1,0 +1,14 @@
+{
+    "schemaVersion": 1,
+    "regressionTolerance": 0.15,
+    "cases": {
+        "full-chart-warm-node": {
+            "medianMs": 23.118704999999977,
+            "budgetMs": 20
+        },
+        "ephemeris-init-cold": {
+            "medianMs": 28.261182000000005,
+            "budgetMs": 150
+        }
+    }
+}

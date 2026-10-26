@@ -332,6 +332,40 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/bench:
+    dependencies:
+      '@node-jhora/core':
+        specifier: workspace:*
+        version: link:../core
+      '@node-jhora/engine':
+        specifier: workspace:*
+        version: link:../engine
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
+      tinybench:
+        specifier: ^4.0.1
+        version: 4.1.0
+    devDependencies:
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.6
+      '@types/node':
+        specifier: ^25.0.3
+        version: 25.9.9
+      jest:
+        specifier: ^30.2.0
+        version: 30.5.2(@types/node@25.9.9)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@25.9.9)(typescript@5.9.3))
+      ts-jest:
+        specifier: ^29.4.6
+        version: 29.4.15(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.5.2(supports-color@8.1.1))(@jest/types@30.5.1)(babel-jest@30.5.2(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(esbuild@0.28.2)(jest-util@30.5.1)(jest@30.5.2(@types/node@25.9.9)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@25.9.9)(typescript@5.9.3)))(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/core:
     dependencies:
       decimal.js:
@@ -4389,6 +4423,10 @@ packages:
 
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
+
+  tinybench@4.1.0:
+    resolution: {integrity: sha512-8JZoQRJgWWEIIeAmpiNmMHIREmUY3oGX8GRmlmNapLr/qtgMe+K76vM2qabh85hNScnE2lqTVTajVETjuD9Ixg==}
+    engines: {node: '>=18.0.0'}
 
   tinyclip@1.0.3:
     resolution: {integrity: sha512-nTv2raKFMzGG6JJp0lpNDsRPdfFE6UHlu2rVEjXo8vkx1ZS3LW2CVXqIaLu8xZlu+6tbFs9V58Qc/Jmk/Ii7wA==}
@@ -9251,6 +9289,8 @@ snapshots:
       real-require: 0.2.0
 
   tiny-inflate@1.0.3: {}
+
+  tinybench@4.1.0: {}
 
   tinyclip@1.0.3: {}
 
