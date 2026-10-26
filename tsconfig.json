@@ -45,6 +45,9 @@
             "path": "./packages/engine"
         },
         {
+            "path": "./packages/atlas"
+        },
+        {
             "path": "./packages/bench"
         }
     ]

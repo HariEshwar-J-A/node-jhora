@@ -25,19 +25,20 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 
 ## Packages
 
-| Package                                           | Description                                                                            |
-| :------------------------------------------------ | :------------------------------------------------------------------------------------- |
-| [`@node-jhora/core`](./packages/core)             | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md))    |
-| [`@node-jhora/ephe`](./packages/ephe)             | JPL `de440s.bsp` kernel (31 MB, in the tarball). Data only; calculation stays in core. |
-| [`@node-jhora/analytics`](./packages/analytics)   | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md))          |
-| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md))       |
-| [`@node-jhora/match`](./packages/match)           | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md))       |
-| [`@node-jhora/events`](./packages/events)         | `TransitScanner`. ([Docs](./docs/EVENTS.md))                                           |
-| [`@node-jhora/reporting`](./packages/reporting)   | PDF reports. ([Docs](./docs/REPORTING.md))                                             |
-| [`@node-jhora/api`](./packages/api)               | Fastify + Zod HTTP API. ([Docs](./docs/API.md))                                        |
-| [`@node-jhora/testkit`](./packages/testkit)       | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md))        |
+| Package                                           | Description                                                                             |
+| :------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| [`@node-jhora/core`](./packages/core)             | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md))     |
+| [`@node-jhora/ephe`](./packages/ephe)             | JPL `de440s.bsp` kernel (31 MB, in the tarball). Data only; calculation stays in core.  |
+| [`@node-jhora/analytics`](./packages/analytics)   | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md))           |
+| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md))        |
+| [`@node-jhora/match`](./packages/match)           | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md))        |
+| [`@node-jhora/events`](./packages/events)         | `TransitScanner`. ([Docs](./docs/EVENTS.md))                                            |
+| [`@node-jhora/reporting`](./packages/reporting)   | PDF reports. ([Docs](./docs/REPORTING.md))                                              |
+| [`@node-jhora/api`](./packages/api)               | Fastify + Zod HTTP API. ([Docs](./docs/API.md))                                         |
+| [`@node-jhora/atlas`](./packages/atlas)           | Offline GeoNames city gazetteer (data © GeoNames, CC-BY 4.0). ([Docs](./docs/ATLAS.md)) |
+| [`@node-jhora/testkit`](./packages/testkit)       | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md))         |
 
-`pnpm build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, and `testkit`. `ephe` is a data package with no `tsconfig.json`.
+`pnpm build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, `testkit`, `format`, `engine`, `atlas`, and `bench`. `ephe` is a data package with no `tsconfig.json`.
 
 ## Documentation
 
@@ -53,6 +54,7 @@ The [documentation site](./apps/docs) (Astro Starlight) is built with `pnpm run 
 - **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
 - **[Events](./docs/EVENTS.md)** — `TransitScanner`.
 - **[PDF reporting](./docs/REPORTING.md)**
+- **[Atlas](./docs/ATLAS.md)** — offline GeoNames gazetteer and attribution.
 - **[Golden cases](./docs/GOLDENS.md)** — schema for accuracy fixtures.
 - **[Market notes](./docs/MARKET_POSITION.md)**
 
@@ -261,3 +263,4 @@ Copyright (c) 2026 Harieshwar Jagan Abirami. All Rights Reserved.
 - **Public access**: source is available for inspection and education.
 - **Restricted use**: usage, distribution, and derivative works require a commercial license.
 - See [LICENSE](LICENSE).
+- `@node-jhora/atlas` place data is derived from [GeoNames](https://www.geonames.org/) and licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/); see [packages/atlas/ATTRIBUTION.md](./packages/atlas/ATTRIBUTION.md).
