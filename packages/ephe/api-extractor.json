@@ -1,0 +1,12 @@
+{
+    "extends": "../../config/api-extractor.common.json",
+    "mainEntryPointFilePath": "./index.d.ts",
+    "apiReport": {
+        "reportFileName": "ephe.api.md",
+        "reportFolder": "../../etc/",
+        "reportTempFolder": "../../temp/"
+    },
+    "compiler": {
+        "tsconfigFilePath": "./api-extractor-tsconfig.json"
+    }
+}

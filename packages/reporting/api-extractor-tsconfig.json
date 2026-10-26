@@ -1,0 +1,9 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "paths": {},
+        "rootDir": "dist",
+        "types": ["node", "pdfkit"]
+    },
+    "include": ["dist/**/*.d.ts"]
+}

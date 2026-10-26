@@ -25,6 +25,31 @@
             "dependsOn": ["^build", "build"],
             "outputs": []
         },
+        "api:report": {
+            "dependsOn": ["build"],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "dist/**",
+                "index.d.ts",
+                "api-extractor.json",
+                "api-extractor-tsconfig.json",
+                "$TURBO_ROOT$/config/api-extractor.common.json"
+            ],
+            "outputs": []
+        },
+        "api:check": {
+            "dependsOn": ["build"],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "dist/**",
+                "index.d.ts",
+                "api-extractor.json",
+                "api-extractor-tsconfig.json",
+                "$TURBO_ROOT$/config/api-extractor.common.json",
+                "$TURBO_ROOT$/etc/**"
+            ],
+            "outputs": []
+        },
         "@node-jhora/core#build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", "scripts/write-build-constants.mjs", "package.json"],
@@ -40,6 +65,37 @@
             "dependsOn": [],
             "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/**"],
             "outputs": ["coverage/**"]
+        },
+        "@node-jhora/analytics#api:report": {
+            "outputs": ["../../etc/analytics.api.md"]
+        },
+        "@node-jhora/api#api:report": {
+            "outputs": ["../../etc/api.api.md"]
+        },
+        "@node-jhora/core#api:report": {
+            "outputs": ["../../etc/core.api.md"]
+        },
+        "@node-jhora/engine#api:report": {
+            "outputs": ["../../etc/engine.api.md"]
+        },
+        "@node-jhora/ephe#api:report": {
+            "dependsOn": ["build"],
+            "outputs": ["../../etc/ephe.api.md"]
+        },
+        "@node-jhora/events#api:report": {
+            "outputs": ["../../etc/events.api.md"]
+        },
+        "@node-jhora/format#api:report": {
+            "outputs": ["../../etc/format.api.md"]
+        },
+        "@node-jhora/match#api:report": {
+            "outputs": ["../../etc/match.api.md"]
+        },
+        "@node-jhora/prediction#api:report": {
+            "outputs": ["../../etc/prediction.api.md"]
+        },
+        "@node-jhora/reporting#api:report": {
+            "outputs": ["../../etc/reporting.api.md"]
         },
         "@node-jhora/testkit#generate": {
             "dependsOn": ["^build", "build"],
@@ -57,6 +113,9 @@
         "@node-jhora/core#test": {
             "dependsOn": ["^build", "build"],
             "outputs": ["coverage/**"]
+        },
+        "@node-jhora/atlas#api:report": {
+            "outputs": ["../../etc/atlas.api.md"]
         }
     }
 }

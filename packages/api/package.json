@@ -16,6 +16,8 @@
         "node": ">=22"
     },
     "scripts": {
+        "api:report": "api-extractor run --local",
+        "api:check": "api-extractor run",
         "build": "tsc",
         "typecheck": "tsc --noEmit --pretty false",
         "lint": "eslint .",

@@ -1,4 +1,4 @@
-# Required-check pipeline for main (install, typecheck, lint, format, unit, golden, build, docs).
+# Required-check pipeline for main (install, typecheck, lint, format, unit, golden, build, docs, api-report).
 # The changeset gate runs in changeset-check.yml (job `changeset-check`) so the
 # `no-changeset` label can re-run it without re-running this matrix.
 name: CI
@@ -211,3 +211,25 @@ jobs:
             - run: pnpm install --frozen-lockfile
             - run: pnpm run build
             - run: pnpm run docs:build
+
+    api-report:
+        name: api-report
+        needs: install
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22.23.4'
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-ubuntu-latest-node22.23.4-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-ubuntu-latest-node22.23.4-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build
+            - run: pnpm run api:check
