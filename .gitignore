@@ -20,6 +20,7 @@ lerna-debug.log*
 # Testing
 coverage/
 .turbo/
+temp/
 apps/browser-harness/fixtures/node-chart-snapshots.json
 apps/browser-harness/test-results/
 packages/bench/artifacts/*.json
