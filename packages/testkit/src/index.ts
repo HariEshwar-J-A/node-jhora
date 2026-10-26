@@ -1,4 +1,9 @@
 export {
+    canonicalSerialize,
+    formatCanonicalNumber,
+    hashCanonicalSerialize,
+} from './canonical-serialize.js';
+export {
     angleDeltaArcsec,
     compareGoldenCase,
     type CompareGoldenOptions,
@@ -24,6 +29,7 @@ export {
     toJhoraGoldenCase,
 } from './convert.js';
 export { formatGoldenJson, formatGoldenJsonl, parseGoldenCorpus } from './corpus.js';
+export { DETERMINISM_CORPUS, type DeterminismCorpusCase } from './determinism-corpus.js';
 export { expectGolden, installGoldenMatchers } from './jest.js';
 export { buildGoldenCaseJsonSchema, formatJsonSchema } from './json-schema.js';
 export {
@@ -57,3 +63,4 @@ export {
     type SettingsDocument,
     SettingsSchema,
 } from './schema.js';
+export { sha256Hex, sha256Utf8 } from './sha256.js';
