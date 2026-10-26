@@ -15,7 +15,7 @@ npm workspaces (`packages/*`), ESM, TypeScript project references. Root scripts 
 | `docs/` | Technical documentation. |
 | `tools/` | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test. |
 
-Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `api`. Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `api`, and private `testkit` (golden-case schema). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Engine facts to keep intact
 
@@ -33,14 +33,14 @@ From the repository root:
 
 ```bash
 npm install
-npm run build          # tsc -b — root references: core, analytics, prediction, match, api, events, reporting
+npm run build          # tsc -b — root references: core, analytics, prediction, match, api, events, reporting, testkit
 npm test               # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
 npm test -w @node-jhora/core
 npm run check:links    # relative Markdown links, no network
 npm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
 ```
 
-Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporting`, `api`) share one script shape:
+Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporting`, `api`, `testkit`) share one script shape:
 
 | Script | Shape |
 | :--- | :--- |
