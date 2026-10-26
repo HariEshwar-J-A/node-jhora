@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/harieshwar-ai/node-jhora/blob/main/CONTRIBUTING.md
+    about: Branch names, pull request titles, and merge rules.

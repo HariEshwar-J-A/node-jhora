@@ -1,0 +1,75 @@
+name: Story
+description: Propose a story under an epic.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One story per issue. Start the title with the backlog ID, for example `[E1-S5] Repository process`.
+  - type: input
+    id: backlog-id
+    attributes:
+      label: Backlog ID
+      description: Story ID.
+      placeholder: E1-S5
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this story exists, including the parent epic.
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What is true when this story is done.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checklist the story must satisfy.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: files-likely-touched
+    attributes:
+      label: Files likely touched
+      description: Paths or packages this story is expected to change.
+      placeholder: |
+        - .github/
+    validations:
+      required: true
+  - type: textarea
+    id: test-requirements
+    attributes:
+      label: Test requirements
+      description: Tests, goldens, or checks required before the story is complete.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Backlog IDs or issues that block this story. Write "None" if nothing blocks it.
+      placeholder: E1-S1-T1
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: XS=1, S=2, M=3, L=5, XL=8 points.
+      options:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+    validations:
+      required: true
