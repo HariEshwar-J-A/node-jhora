@@ -48,6 +48,10 @@ export const CONTENT_EXEMPT = new Set([
     'tools/check-forbidden-assets.test.mjs',
     'docs/CLEAN_ROOM.md',
     'docs/decisions/0002-clean-room-policy.md',
+    // Gitignored copies synced from the two policy docs above by
+    // apps/docs/scripts/prepare-content.mjs during `pnpm run docs:build`.
+    'apps/docs/src/content/docs/guides/clean-room.md',
+    'apps/docs/src/content/docs/guides/decisions-0002-clean-room-policy.md',
 ]);
 
 const TEXT_EXTENSIONS = new Set([

@@ -1,0 +1,28 @@
+{
+  "name": "@node-jhora/docs",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "predev": "node ./scripts/prepare-all.mjs",
+    "dev": "astro dev",
+    "prebuild": "node ./scripts/prepare-all.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "prepare-content": "node ./scripts/prepare-content.mjs",
+    "generate-catalogues": "node ./scripts/generate-catalogues.mjs",
+    "generate-api": "node ./scripts/generate-api.mjs",
+    "test": "node --test scripts/*.test.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.42.7",
+    "astro": "^7.2.10",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "jiti": "^2.6.1",
+    "starlight-links-validator": "^0.26.0",
+    "typedoc": "^0.28.17"
+  }
+}
