@@ -4,6 +4,7 @@
  */
 import { DateTime } from 'luxon';
 
+import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, EPHEMERIS_BODIES, SEVEN_GRAHAS_JHORA_ORDER } from './core/body.js';
 import { getRelationship, PLANET_IDS,Relationship } from './core/relationships.js';
 import { EphemerisEngine, HouseData,PlanetPosition } from './engine/ephemeris.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
@@ -36,7 +37,18 @@ export type Ayanamsa = 'Lahiri' | 'Raman' | 'KP';
 
 // Re-export Utils
 export { decimalToDms,dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
-export { calculateShashtyamsa, calculateVarga, getRelationship, PLANET_IDS, Relationship,VargaDeities };
+export {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
+    calculateShashtyamsa,
+    calculateVarga,
+    EPHEMERIS_BODIES,
+    getRelationship,
+    PLANET_IDS,
+    Relationship,
+    SEVEN_GRAHAS_JHORA_ORDER,
+    VargaDeities,
+};
 
 export interface NodeJHoraConfig {
     ayanamsaOrder?: number; // 1 = Lahiri
@@ -169,8 +181,8 @@ export class NodeJHora {
 
     getPanchanga(date: DateTime): PanchangaResult {
         const planets = this.getPlanets(date);
-        const sun = planets.find(p => p.id === 0);
-        const moon = planets.find(p => p.id === 1);
+        const sun = planets.find(p => p.id === Body.Sun);
+        const moon = planets.find(p => p.id === Body.Moon);
         if (!sun || !moon) throw new Error("Sun or Moon data missing");
         return calculatePanchanga(sun.longitude, moon.longitude, date);
     }

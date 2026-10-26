@@ -1,4 +1,4 @@
-import { calculatePanchanga } from '@node-jhora/core';
+import { Body, calculatePanchanga } from '@node-jhora/core';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -15,8 +15,8 @@ export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
         const engine = getEngine();
 
         const planets   = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
-        const sun       = planets.find(p => p.id === 0)!;
-        const moon      = planets.find(p => p.id === 1)!;
+        const sun       = planets.find(p => p.id === Body.Sun)!;
+        const moon      = planets.find(p => p.id === Body.Moon)!;
         const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
         return reply.status(200).send(attachResultEnvelope({ ...panchanga, settingsHash }, { settingsHash }));

@@ -1,5 +1,5 @@
 import { calculateShadbala, VargaInfo } from '@node-jhora/analytics';
-import { calculateHouseCusps, calculateVarga } from '@node-jhora/core';
+import { Body, calculateHouseCusps, calculateVarga } from '@node-jhora/core';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -12,7 +12,20 @@ import { getEngine } from '../server.js';
 const SAPTAVARGA_DIVISIONS = [1, 2, 3, 7, 9, 12, 30];
 
 // Standard sign → lord mapping (0-indexed sign 0-11)
-const SIGN_LORDS: number[] = [4, 3, 2, 1, 0, 2, 3, 4, 5, 6, 6, 5]; // Mars, Venus, Merc, Moon, Sun, Merc, Venus, Mars, Jup, Sat, Sat, Jup
+const SIGN_LORDS: number[] = [
+    Body.Mars,
+    Body.Venus,
+    Body.Mercury,
+    Body.Moon,
+    Body.Sun,
+    Body.Mercury,
+    Body.Venus,
+    Body.Mars,
+    Body.Jupiter,
+    Body.Saturn,
+    Body.Saturn,
+    Body.Jupiter,
+];
 
 function buildVargaPositions(
     planetLon: number,
@@ -64,15 +77,15 @@ export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
             vertex:    housesResult.vertex ?? 0,
         };
 
-        const sun  = planets.find(p => p.id === 0)!;
-        const moon = planets.find(p => p.id === 1)!;
+        const sun  = planets.find(p => p.id === Body.Sun)!;
+        const moon = planets.find(p => p.id === Body.Moon)!;
 
         const birthHour    = dt.hour + dt.minute / 60 + dt.second / 3600;
         const { sunrise, sunset } = estimateSunriseSunset(location.latitude);
 
         // Calculate shadbala for the 7 classical planets (Sun–Saturn, IDs 0–6)
         const results = planets
-            .filter(p => p.id >= 0 && p.id <= 6)
+            .filter(p => p.id >= Body.Sun && p.id <= Body.Saturn)
             .map(planet => {
                 const vargaPositions = buildVargaPositions(
                     planet.longitude,

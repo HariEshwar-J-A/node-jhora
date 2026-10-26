@@ -1,5 +1,7 @@
 import { Ashtakavarga, YOGA_LIBRARY, YogaEngine } from '@node-jhora/analytics';
 import {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
     calculateHouseCusps,
     calculatePanchanga,
     calculateVarga,
@@ -180,8 +182,8 @@ export class ChartSession {
     getPanchanga(): PanchangaResult {
         if (!this.panchangaOut) {
             const raw = this.loadRawPlanets();
-            const sun = raw.find((p) => p.id === 0)!;
-            const moon = raw.find((p) => p.id === 1)!;
+            const sun = raw.find((p) => p.id === Body.Sun)!;
+            const moon = raw.find((p) => p.id === Body.Moon)!;
             this.panchangaOut = this.deps.calculatePanchanga(
                 sun.longitude,
                 moon.longitude,
@@ -220,7 +222,7 @@ export class ChartSession {
 
     getDasha(): NonNullable<ChartSectionsSnapshot['dasha']> {
         if (!this.dashaOut) {
-            const moon = this.loadRawPlanets().find((p) => p.id === 1)!;
+            const moon = this.loadRawPlanets().find((p) => p.id === Body.Moon)!;
             const balance = calculateDashaBalance(moon.longitude);
             const depth = this.dashaOpts.depth ?? 2;
             const yearDays =
@@ -294,7 +296,7 @@ export class ChartSession {
             const withLagna: PlanetPosition[] = [
                 ...raw,
                 {
-                    id: 99,
+                    id: BODY_ASHTAKAVARGA_LAGNA_DONOR,
                     name: 'Ascendant',
                     longitude: houses.ascendant,
                     latitude: 0,

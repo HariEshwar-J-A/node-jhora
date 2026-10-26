@@ -1,5 +1,5 @@
 import { ChartData } from '@node-jhora/analytics';
-import { PlanetPosition } from '@node-jhora/core';
+import { Body, PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 import { CharaDashaPeriod,JaiminiDashas } from './jaimini/dashas.js';
@@ -37,7 +37,7 @@ export class NarayanaDasha {
         years: number = 80
     ): CharaDashaPeriod[] {
         const ascSign = Math.floor(chart.ascendant / 30) + 1; // 1-12
-        const ascObj = chart.planets.find((p: PlanetPosition) => p.id === 99) || { longitude: 0 }; // fallback
+        const ascObj = chart.planets.find((p: PlanetPosition) => p.id === Body.Ketu) || { longitude: 0 }; // fallback
         
         // 1. Determine Direction
         // Default: Odd Lagna -> Forward. Even Lagna -> Reverse.
@@ -46,7 +46,7 @@ export class NarayanaDasha {
         // Exception: Saturn or Ketu in Lagna?
         // Let's implement basic rule first. User said "Check exceptions for Sat/Ketu".
         // If Sat or Ketu is IN the Lagna sign, reverse the order.
-        const saturn = chart.planets.find((p: PlanetPosition) => p.id === 6); // Sat
+        const saturn = chart.planets.find((p: PlanetPosition) => p.id === Body.Saturn);
         const ketu = chart.planets.find((p: PlanetPosition) => p.id === 8);   // Ketu
         
         const saturnInLagna = saturn && Math.floor(saturn.longitude/30)+1 === ascSign;

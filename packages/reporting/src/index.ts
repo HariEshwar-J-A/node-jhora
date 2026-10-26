@@ -1,5 +1,5 @@
 import { calculateShadbala, ChartData,YOGA_LIBRARY, YogaEngine } from '@node-jhora/analytics';
-import { PlanetPosition } from '@node-jhora/core';
+import { Body, PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 import PDFDocument from 'pdfkit';
 
@@ -127,8 +127,8 @@ export async function generateFullReport(chart: ChartData, options: ReportOption
             // Phase 11/12 Shadbala (Mock call if implementation incomplete, or real)
             try {
                 // Find Sun/Moon for inputs
-                const sun = chart.planets.find(p => p.id === 0) || chart.planets[0];
-                const moon = chart.planets.find(p => p.id === 1) || chart.planets[1];
+                const sun = chart.planets.find(p => p.id === Body.Sun) || chart.planets[0];
+                const moon = chart.planets.find(p => p.id === Body.Moon) || chart.planets[1];
 
                 const shadbalaResults: any[] = []; // Use explicit type if available, else any for build safety
                 

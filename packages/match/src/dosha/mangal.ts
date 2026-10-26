@@ -1,4 +1,4 @@
-import { HouseData,PlanetPosition } from '@node-jhora/core';
+import { Body, HouseData,PlanetPosition } from '@node-jhora/core';
 
 import { DoshaResult } from '../types.js';
 
@@ -16,13 +16,13 @@ function hasMangalDosha(
     strict: boolean = true
 ): { hasDosha: boolean; reasons: string[] } {
     const reasons: string[] = [];
-    const mars = chart.planets.find(p => p.id === 2);
+    const mars = chart.planets.find(p => p.id === Body.Mercury);
     if (!mars) return { hasDosha: false, reasons }; // Should not happen
 
     const ascSign = Math.floor(chart.houses.ascendant / 30) + 1; // 1-12
     const marsSign = Math.floor(mars.longitude / 30) + 1; // 1-12
-    const moonSign = Math.floor((chart.planets.find(p => p.id === 1)?.longitude || 0) / 30) + 1;
-    const venusSign = Math.floor((chart.planets.find(p => p.id === 5)?.longitude || 0) / 30) + 1;
+    const moonSign = Math.floor((chart.planets.find(p => p.id === Body.Moon)?.longitude || 0) / 30) + 1;
+    const venusSign = Math.floor((chart.planets.find(p => p.id === Body.Jupiter)?.longitude || 0) / 30) + 1;
 
     // Helper: 1-based House from Ref Sign
     const getHouse = (from: number, target: number) => ((target - from + 12) % 12) + 1;

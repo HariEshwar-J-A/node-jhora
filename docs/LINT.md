@@ -18,6 +18,7 @@ pnpm --filter @node-jhora/core lint
 | `@typescript-eslint/no-floating-promises` | Unhandled async work must be awaited or voided explicitly. |
 | `simple-import-sort/*` | Stable import/export ordering. |
 | `no-restricted-imports` / `no-restricted-globals` | **Browser-targeted source only** — blocks `fs`, `path`, `node:*`, `Buffer`, and `process`. |
+| `node-jhora/no-body-numeric-literal` | **Non-core packages** — use `Body` from `@node-jhora/core` instead of raw `0`–`6`, `10`, or `99` in `planet.id` comparisons. |
 
 Browser-targeted paths (engine must run in the browser):
 

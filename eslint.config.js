@@ -5,6 +5,8 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+import noBodyNumericLiteral from './tools/eslint/no-body-numeric-literal.cjs';
+
 /** Browser-targeted library source (engine must run in the browser). */
 const browserSourceFiles = [
     'packages/core/src/**/*.ts',
@@ -95,6 +97,20 @@ export default tseslint.config(
                 { name: 'Buffer', message: 'Use Uint8Array in browser-targeted source.' },
                 { name: 'process', message: 'Not available in browser-targeted source.' },
             ],
+        },
+    },
+    {
+        files: ['packages/*/src/**/*.ts'],
+        ignores: ['packages/core/src/**'],
+        plugins: {
+            'node-jhora': {
+                rules: {
+                    'no-body-numeric-literal': noBodyNumericLiteral,
+                },
+            },
+        },
+        rules: {
+            'node-jhora/no-body-numeric-literal': 'error',
         },
     },
 );

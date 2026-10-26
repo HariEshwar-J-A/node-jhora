@@ -1,18 +1,10 @@
-import { getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
-
-const SUN = 0;
-const MOON = 1;
-const MERCURY = 2;
-const VENUS = 3;
-const MARS = 4;
-const JUPITER = 5;
-const SATURN = 6;
+import { Body, getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
 
 // Natural Classification for Aspect Strength
 // Benefics add strength, Malefics subtract strength.
 // Simplification per user instruction: Jup, Ven, Moon, Merc are Benefics.
-const NATURAL_BENEFICS = [JUPITER, VENUS, MOON, MERCURY];
-const NATURAL_MALEFICS = [SUN, MARS, SATURN];
+const NATURAL_BENEFICS = [Body.Jupiter, Body.Venus, Body.Moon, Body.Mercury];
+const NATURAL_MALEFICS = [Body.Sun, Body.Mars, Body.Saturn];
 
 /**
  * Calculates the Drishti Value (Aspect Value) of an Aspecting Planet on an Aspected Planet.
@@ -138,17 +130,17 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
 
     let specialBoost = 0;
 
-    if (aspectingPlanetId === MARS) {
+    if (aspectingPlanetId === Body.Mars) {
         // 90 (4th) +/- 15
         if (Math.abs(angle - 90) <= 15) specialBoost += 15;
         // 210 (8th) +/- 15
         if (Math.abs(angle - 210) <= 15) specialBoost += 15;
-    } else if (aspectingPlanetId === JUPITER) {
+    } else if (aspectingPlanetId === Body.Jupiter) {
         // 120 (5th) +/- 15
         if (Math.abs(angle - 120) <= 15) specialBoost += 30;
         // 240 (9th) +/- 15
         if (Math.abs(angle - 240) <= 15) specialBoost += 30;
-    } else if (aspectingPlanetId === SATURN) {
+    } else if (aspectingPlanetId === Body.Saturn) {
         // 60 (3rd) +/- 15
         if (Math.abs(angle - 60) <= 15) specialBoost += 45;
         // 270 (10th) +/- 15
@@ -174,7 +166,7 @@ export function calculateDrigBala(targetPlanet: PlanetPosition, allPlanets: Plan
 
     for (const aspectingPlanet of allPlanets) {
         if (aspectingPlanet.id === targetPlanet.id) continue;
-        if (aspectingPlanet.id > SATURN) continue; // Ignore Rahu/Ketu for Aspect Strength usually
+        if (aspectingPlanet.id > Body.Saturn) continue; // Ignore Rahu/Ketu for Aspect Strength usually
 
         // Calculate Angle: (Aspected - Aspecting)
         // Ensure 0-360 positive

@@ -1,4 +1,4 @@
-import { KPSubLord } from '@node-jhora/core';
+import { Body, KPSubLord } from '@node-jhora/core';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -8,8 +8,15 @@ import { parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 const PLANET_NAMES: Record<number, string> = {
-    0: 'Sun', 1: 'Moon', 2: 'Mercury', 3: 'Venus', 4: 'Mars',
-    5: 'Jupiter', 6: 'Saturn', 7: 'Rahu', 8: 'Ketu',
+    [Body.Sun]: 'Sun',
+    [Body.Moon]: 'Moon',
+    [Body.Mercury]: 'Mercury',
+    [Body.Venus]: 'Venus',
+    [Body.Mars]: 'Mars',
+    [Body.Jupiter]: 'Jupiter',
+    [Body.Saturn]: 'Saturn',
+    7: 'Rahu',
+    8: 'Ketu',
 };
 
 export async function kpRoutes(app: FastifyInstance): Promise<void> {

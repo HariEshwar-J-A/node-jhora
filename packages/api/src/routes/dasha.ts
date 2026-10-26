@@ -1,3 +1,4 @@
+import { Body } from '@node-jhora/core';
 import { calculateDashaBalance,generateVimshottari } from '@node-jhora/prediction';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -31,7 +32,7 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
-        const moon    = planets.find(p => p.id === 1)!;
+        const moon    = planets.find(p => p.id === Body.Moon)!;
 
         const balance = calculateDashaBalance(moon.longitude);
         // The historical 365.256364-day year stays in force until the client

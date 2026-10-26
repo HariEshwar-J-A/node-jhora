@@ -1,3 +1,4 @@
+import { Body } from '@node-jhora/core';
 import { PoruthamMatch } from '@node-jhora/match';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -27,8 +28,8 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         const planets1 = engine.getPlanets(p1.dt, p1.location, { ayanamsaOrder: p1.ayanamsaOrder, nodeType: p1.nodeType, positionMode: p1.positionMode, topocentric: p1.topocentric, ayanamsaOffset: p1.ayanamsaOffset });
         const planets2 = engine.getPlanets(p2.dt, p2.location, { ayanamsaOrder: p2.ayanamsaOrder, nodeType: p2.nodeType, positionMode: p2.positionMode, topocentric: p2.topocentric, ayanamsaOffset: p2.ayanamsaOffset });
 
-        const moon1 = planets1.find(p => p.id === 1)!;
-        const moon2 = planets2.find(p => p.id === 1)!;
+        const moon1 = planets1.find(p => p.id === Body.Moon)!;
+        const moon2 = planets2.find(p => p.id === Body.Moon)!;
 
         const { nakIdx: nak1, sign: sign1 } = getMoonNakshatra(moon1.longitude);
         const { nakIdx: nak2, sign: sign2 } = getMoonNakshatra(moon2.longitude);

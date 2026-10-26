@@ -1,4 +1,4 @@
-import { getRelationship, getShortestDistance, HouseData,normalize360, PLANET_IDS, PlanetPosition, Relationship } from '@node-jhora/core';
+import { Body, getRelationship, getShortestDistance, HouseData,normalize360, PLANET_IDS, PlanetPosition, Relationship } from '@node-jhora/core';
 
 import { calculateDrigBala } from './aspects.js';
 import {
@@ -13,29 +13,29 @@ import {
 // Sun: 10 Aries, Moon: 3 Taurus, Mars: 28 Capricorn, Merc: 15 Virgo
 // Jup: 5 Cancer, Ven: 27 Pisces, Sat: 20 Libra
 const EXALTATION_POINTS: { [key: number]: number } = {
-    0: 10,   // Sun (Aries 10)
-    1: 33,   // Moon (Taurus 3 => 30+3)
-    2: 165,  // Mercury (Virgo 15 => 150+15)
-    3: 357,  // Venus (Pisces 27 => 330+27)
-    4: 298,  // Mars (Capricorn 28 => 270+28)
-    5: 95,   // Jupiter (Cancer 5 => 90+5)
-    6: 200   // Saturn (Libra 20 => 180+20)
+    [Body.Sun]: 10,   // Sun (Aries 10)
+    [Body.Moon]: 33,   // Moon (Taurus 3 => 30+3)
+    [Body.Mercury]: 165,  // Mercury (Virgo 15 => 150+15)
+    [Body.Venus]: 357,  // Venus (Pisces 27 => 330+27)
+    [Body.Mars]: 298,  // Mars (Capricorn 28 => 270+28)
+    [Body.Jupiter]: 95,   // Jupiter (Cancer 5 => 90+5)
+    [Body.Saturn]: 200,   // Saturn (Libra 20 => 180+20)
 };
 
-const FEMALE_PLANETS = [1, 3]; // Moon, Venus
-const MALE_PLANETS = [0, 2, 4, 5, 6]; // Sun, Mars, Jup, Merc, Sat
+const FEMALE_PLANETS = [Body.Moon, Body.Venus];
+const MALE_PLANETS = [Body.Sun, Body.Mercury, Body.Mars, Body.Jupiter, Body.Saturn];
 
 // Naisargika Bala (Natural Strength) in Virupas — BPHS exact fractions (60 * n/7)
 // Sun=60*(7/7)=60, Moon=60*(6/7)≈51.4286, Venus=60*(5/7)≈42.8571
 // Jupiter=60*(4/7)≈34.2857, Mercury=60*(3/7)≈25.7143, Mars=60*(2/7)≈17.1429, Saturn=60*(1/7)≈8.5714
 const NAISARGIKA_BALA: { [key: number]: number } = {
-    0: 60.000000,              // Sun
-    1: 60 * 6 / 7,            // Moon   ≈ 51.428571
-    3: 60 * 5 / 7,            // Venus  ≈ 42.857143
-    5: 60 * 4 / 7,            // Jupiter ≈ 34.285714
-    2: 60 * 3 / 7,            // Mercury ≈ 25.714286
-    4: 60 * 2 / 7,            // Mars   ≈ 17.142857
-    6: 60 * 1 / 7,            // Saturn ≈  8.571429
+    [Body.Sun]: 60.000000,
+    [Body.Moon]: 60 * 6 / 7,
+    [Body.Venus]: 60 * 5 / 7,
+    [Body.Jupiter]: 60 * 4 / 7,
+    [Body.Mercury]: 60 * 3 / 7,
+    [Body.Mars]: 60 * 2 / 7,
+    [Body.Saturn]: 60 * 1 / 7,
 };
 
 export interface ShadbalaInput {

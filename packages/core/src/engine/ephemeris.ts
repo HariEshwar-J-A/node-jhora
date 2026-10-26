@@ -45,6 +45,7 @@
 
 import { DateTime }          from 'luxon';
 
+import { Body } from '../core/body.js';
 import {
 APPARENT,
     computePlace,     GEOMETRIC, observerState,
@@ -145,23 +146,38 @@ export interface HouseData {
 // ---------------------------------------------------------------------------
 
 const PLANET_NAMES: Record<number, string> = {
-    0: 'Sun', 1: 'Moon', 2: 'Mercury', 3: 'Venus',
-    4: 'Mars', 5: 'Jupiter', 6: 'Saturn', 10: 'Rahu', 99: 'Ketu',
+    [Body.Sun]: 'Sun',
+    [Body.Moon]: 'Moon',
+    [Body.Mercury]: 'Mercury',
+    [Body.Venus]: 'Venus',
+    [Body.Mars]: 'Mars',
+    [Body.Jupiter]: 'Jupiter',
+    [Body.Saturn]: 'Saturn',
+    [Body.Rahu]: 'Rahu',
+    [Body.Ketu]: 'Ketu',
 };
 
 /** Our internal planet IDs → NAIF body IDs in de440s.bsp */
 const ID_TO_NAIF: Record<number, number> = {
-    0: NAIF.Sun,
-    1: NAIF.Moon,
-    2: NAIF.Mercury,
-    3: NAIF.Venus,
-    4: NAIF.Mars,
-    5: NAIF.Jupiter,
-    6: NAIF.Saturn,
+    [Body.Sun]: NAIF.Sun,
+    [Body.Moon]: NAIF.Moon,
+    [Body.Mercury]: NAIF.Mercury,
+    [Body.Venus]: NAIF.Venus,
+    [Body.Mars]: NAIF.Mars,
+    [Body.Jupiter]: NAIF.Jupiter,
+    [Body.Saturn]: NAIF.Saturn,
 };
 
 /** Bodies drawn from the SPK file, in the order they are reported. */
-const SPK_BODY_IDS = [0, 1, 2, 3, 4, 5, 6] as const;
+const SPK_BODY_IDS = [
+    Body.Sun,
+    Body.Moon,
+    Body.Mercury,
+    Body.Venus,
+    Body.Mars,
+    Body.Jupiter,
+    Body.Saturn,
+] as const;
 
 /** Half-step used for the central difference that yields daily motion, in days. */
 const SPEED_STEP_DAYS = 0.25;
@@ -351,7 +367,7 @@ export class EphemerisEngine {
         // ── Lunar nodes ─────────────────────────────────────────────────────
         const node = this.lunarNode(jd, nodeType);
         planets.push({
-            id: 10, name: 'Rahu',
+            id: Body.Rahu, name: 'Rahu',
             longitude:   toSidereal(node.lon, ayan),
             latitude:    0,
             distance:    node.dist,
@@ -361,7 +377,7 @@ export class EphemerisEngine {
 
         const rahu = planets[planets.length - 1];
         planets.push({
-            id: 99, name: 'Ketu',
+            id: Body.Ketu, name: 'Ketu',
             longitude:   mod360(rahu.longitude + 180),
             latitude:    0,
             distance:    rahu.distance,

@@ -15,15 +15,31 @@
 
 import { Decimal } from 'decimal.js';
 
+import { Body } from '../core/body.js';
 import { D, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-// Vimshottari Dasha order (cycle of 9 lords)
-const DASHA_LORD_IDS: number[] = [8, 3, 0, 1, 4, 7, 5, 6, 2];
-// Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury
+/**
+ * Vimshottari dasha cycle lord ids returned in KP significators.
+ * Nodes use legacy 8/7 (API-stable); ephemeris {@link Body} uses 99/10.
+ */
+const KP_SIGNIFICATOR_KETU = 8;
+const KP_SIGNIFICATOR_RAHU = 7;
+
+const DASHA_LORD_IDS: number[] = [
+    KP_SIGNIFICATOR_KETU,
+    Body.Venus,
+    Body.Sun,
+    Body.Moon,
+    Body.Mars,
+    KP_SIGNIFICATOR_RAHU,
+    Body.Jupiter,
+    Body.Saturn,
+    Body.Mercury,
+];
 
 // Dasha years for each lord (same order)
 const DASHA_YEARS: number[] = [7, 20, 6, 10, 7, 18, 16, 19, 17];
@@ -38,7 +54,20 @@ const NAKSHATRA_SPAN = new Decimal(40).div(3);
 // Aries=Mars(4), Taurus=Venus(3), Gemini=Mercury(2), Cancer=Moon(1), Leo=Sun(0),
 // Virgo=Mercury(2), Libra=Venus(3), Scorpio=Mars(4), Sag=Jupiter(5),
 // Cap=Saturn(6), Aquarius=Saturn(6), Pisces=Jupiter(5)
-const SIGN_RULERS: number[] = [4, 3, 2, 1, 0, 2, 3, 4, 5, 6, 6, 5];
+const SIGN_RULERS: number[] = [
+    Body.Mars,
+    Body.Venus,
+    Body.Mercury,
+    Body.Moon,
+    Body.Sun,
+    Body.Mercury,
+    Body.Venus,
+    Body.Mars,
+    Body.Jupiter,
+    Body.Saturn,
+    Body.Saturn,
+    Body.Jupiter,
+];
 
 // ---------------------------------------------------------------------------
 // Public types
