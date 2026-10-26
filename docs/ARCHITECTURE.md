@@ -113,6 +113,10 @@ Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-prov
 
 Private. No dependency on the engine. Depends on `zod@4.6.7` only. pnpm's isolated `node_modules` keeps that copy separate from `@node-jhora/api`'s Zod 3. `GoldenCaseSchema` and `schema/golden-case.schema.json` describe one accuracy case. `FEATURE_PATH_RULES` is the allow-list of feature paths (`d1.planets.Sun.lon`, `dasa.vimshottari[0].start`, and the other patterns in [docs/GOLDENS.md](./GOLDENS.md)). Converters in `src/convert.ts` map `jhora_golden.ts` and `horizons_golden.ts` onto that schema. The package is in the root TypeScript project references.
 
+### `@node-jhora/bench`
+
+Private. `tinybench` suites for `ChartSession` (D1–D60, Vimshottari dasha depth 3, strengths) and cold `EphemerisEngine.initialize()` in a child process. `pnpm run bench` writes `artifacts/bench-results.json`; `pnpm run bench:check` compares medians to `baseline.json` and fails on a >15% regression. Node warm-chart budget 20 ms; browser worker 40 ms is documented with `registerBrowserWorkerBenchHook()` for a later worker host PR.
+
 ## `apps/`
 
 Not present in this tree. Application code (the planned React UI, and any later shell around it) goes under `apps/`. Libraries stay in `packages/` and do not depend on `apps/`.
@@ -129,6 +133,8 @@ From the repository root:
 | `pnpm run check:clean-room` | `node tools/check-forbidden-assets.mjs` |
 | `pnpm run validate-github-templates` | `node scripts/validate-github-templates.mjs` |
 | `pnpm run lint` | `eslint packages/**/src --ext .ts` — ESLint is not a root `devDependency` |
+| `pnpm run bench` | `@node-jhora/bench` performance suites → `packages/bench/artifacts/bench-results.json` |
+| `pnpm run bench:check` | Re-run benches; fail on >15% regression vs `packages/bench/baseline.json` |
 
 Jest's root config loads `packages/*/jest.config.js` and `tools/jest.config.js`. `ephe` has no Jest config. Package tests use `ts-jest` ESM. `moduleNameMapper` strips a trailing `.js` so TypeScript source can be imported with NodeNext specifiers.
 

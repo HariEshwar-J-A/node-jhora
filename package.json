@@ -19,6 +19,8 @@
         "docs:build": "pnpm --filter @node-jhora/docs build",
         "postinstall": "node packages/ephe/download.mjs",
         "format:check": "node scripts/format-check-changed.mjs",
+        "bench": "pnpm --filter @node-jhora/bench run bench",
+        "bench:check": "pnpm --filter @node-jhora/bench run bench:check",
         "changeset": "changeset"
     },
     "devDependencies": {

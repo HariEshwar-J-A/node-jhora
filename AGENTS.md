@@ -15,7 +15,7 @@ pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeS
 | `docs/` | Technical documentation. |
 | `tools/` | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test. |
 
-Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, `format` (.njh chart files), and private `testkit` (golden-case schema). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, `format` (.njh chart files), private `testkit` (golden-case schema), and private `bench` (performance budgets). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Engine facts to keep intact
 
@@ -45,11 +45,13 @@ pnpm run check:licenses    # no AGPL/GPL in production dependency graph
 pnpm run validate-github-templates
 pnpm run docs:build   # Starlight site in apps/docs (standalone; not part of the turbo graph, which is filtered to packages/*)
 pnpm run docs:dev
+pnpm run bench        # performance suites → packages/bench/artifacts/bench-results.json
+pnpm run bench:check  # fail on >15% regression vs packages/bench/baseline.json
 ```
 
 Task graph and cache inputs live in `turbo.json`. `@node-jhora/ephe#test` lists `$TURBO_ROOT$/tools/**` so edits under `tools/` invalidate that cache entry. `@node-jhora/core#build` restores `src/generated/build-constants.ts` from cache alongside `dist/**`. Regenerated artifacts (`packages/testkit/schema/**`, `packages/core/tests/fixtures/*.golden.json`) are declared on `@node-jhora/testkit#generate`.
 
-Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `format`, `testkit`) share one script shape:
+Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `format`, `testkit`, `bench`) share one script shape:
 
 | Script | Shape |
 | :--- | :--- |

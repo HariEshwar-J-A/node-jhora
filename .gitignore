@@ -20,6 +20,7 @@ lerna-debug.log*
 # Testing
 coverage/
 .turbo/
+packages/bench/artifacts/*.json
 
 # Ephemeris data (downloaded from JPL — large binary, not tracked in git)
 de440s.bsp
