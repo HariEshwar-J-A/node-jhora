@@ -102,6 +102,15 @@ export type { HistoricalDateTime } from './time/historical.js';
 export {
     civilDateFromJulianDay, julianDayUt, parseHistoricalDateString, parseHistoricalTimeString, usesProlepticJulian,
 } from './time/historical.js';
+export type {
+    AmbiguousLocalPolicy, CivilTimeInput, CivilTimePolicy, CivilTimeResult, CivilTimeWarning,
+    GapLocalPolicy, LocalClock, ManualOffsetOverride, TzResolutionStep, TzResolutionStepCode,
+    TzResolutionTrace,
+} from './time/index.js';
+export {
+    CIVIL_YEAR_MAX, CIVIL_YEAR_MIN, formatUtcIso, getTzdbVersion, isValidIanaTimeZone,
+    julianDayToUnixMs, localClockToHourUT, localClockToJulianDay, resolveCivilTime, unixMsToJulianDay,
+} from './time/index.js';
 export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
 export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
 
