@@ -209,7 +209,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -534,7 +534,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -859,7 +859,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -1184,7 +1184,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -1509,7 +1509,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -1649,140 +1649,140 @@
         "value": -0.7046609,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Jupiter.lon": {
         "value": 64.6531149,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Mars.lat": {
         "value": -1.085015,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Mars.lon": {
         "value": 34.3005606,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Mercury.lat": {
         "value": 0.9941056,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Mercury.lon": {
         "value": 84.7851129,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Moon.lat": {
         "value": 0.8844288,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Moon.lon": {
         "value": 182.8522759,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Neptune.lat": {
         "value": -1.2653207,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Neptune.lon": {
         "value": 359.8495327,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Pluto.lat": {
         "value": -3.1503413,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Pluto.lon": {
         "value": 301.6964948,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Saturn.lat": {
         "value": -1.9151279,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Saturn.lon": {
         "value": 349.2461792,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Sun.lat": {
         "value": -0.000013,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Sun.lon": {
         "value": 84.398376,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Uranus.lat": {
         "value": -0.2609606,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Uranus.lon": {
         "value": 54.9352525,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "horizons.planets.Venus.lat": {
         "value": 0.3488697,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 60
         }
       },
       "horizons.planets.Venus.lon": {
         "value": 87.218425,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 180
         }
       },
       "meta.birth.utc.day": {
@@ -1834,7 +1834,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -2159,7 +2159,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -2484,7 +2484,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }
@@ -2809,7 +2809,7 @@
         }
       },
       "meta.contract.lastObservedDeltaTYear": {
-        "value": 2025,
+        "value": 2019,
         "tolerance": {
           "type": "exact"
         }

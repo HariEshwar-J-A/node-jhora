@@ -22,9 +22,18 @@ export const LEGACY_DASHA_YEAR_DAYS_TEXT = '365.256364';
 export const LEGACY_DASHA_YEAR_DAYS = Number(LEGACY_DASHA_YEAR_DAYS_TEXT);
 
 export const AYANAMSA_IDS = [
-    'true_citra', 'true_pushya', 'true_revati', 'true_mula',
-    'fagan_bradley', 'lahiri', 'lahiri_icrc', 'raman', 'kp',
-    'yukteshwar', 'jn_bhasin', 'j2000',
+    'true_citra',
+    'true_pushya',
+    'true_revati',
+    'true_mula',
+    'fagan_bradley',
+    'lahiri',
+    'lahiri_icrc',
+    'raman',
+    'kp',
+    'yukteshwar',
+    'jn_bhasin',
+    'j2000',
 ] as const;
 
 export const AYANAMSA_MODE_BY_ID = {
@@ -45,8 +54,13 @@ export const AYANAMSA_MODE_BY_ID = {
 export const HOUSE_SYSTEM_IDS = ['whole_sign', 'equal', 'placidus', 'porphyry'] as const;
 export const SUNRISE_LIMBS = ['disc_centre', 'upper_limb'] as const;
 export const DASA_YEAR_KINDS = [
-    'mean_tropical', 'true_tropical', 'mean_sidereal', 'true_sidereal',
-    'savana', 'tithi_360', 'user',
+    'mean_tropical',
+    'true_tropical',
+    'mean_sidereal',
+    'true_sidereal',
+    'savana',
+    'tithi_360',
+    'user',
 ] as const;
 
 export type AyanamsaId = (typeof AYANAMSA_IDS)[number];
@@ -56,50 +70,65 @@ export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
 const finite = z.number().finite();
 
-export const SunriseSchema = z.object({
-    limb: z.enum(SUNRISE_LIMBS),
-    refraction: z.boolean(),
-    /** Local clock hour used for the weekday until a rise/set solver is wired. */
-    nominalHour: finite.min(0).max(24),
-}).strict();
+export const SunriseSchema = z
+    .object({
+        limb: z.enum(SUNRISE_LIMBS),
+        refraction: z.boolean(),
+        /** Local clock hour used for the weekday until a rise/set solver is wired. */
+        nominalHour: finite.min(0).max(24),
+    })
+    .strict();
 
-export const DasaYearSchema = z.object({
-    kind: z.enum(DASA_YEAR_KINDS),
-    /** Civil days actually added for one dasa year. */
-    days: finite.positive(),
-}).strict();
+export const DasaYearSchema = z
+    .object({
+        kind: z.enum(DASA_YEAR_KINDS),
+        /** Civil days actually added for one dasa year. */
+        days: finite.positive(),
+    })
+    .strict();
+
+/**
+ * Precision profiles. `'jhora'` reproduces Jagannatha Hora (the Swiss
+ * Ephemeris 2.02 conventions it ships with). A `'modern'` profile is a
+ * planned follow-up and is not accepted yet.
+ */
+export const PRECISION_PROFILES = ['jhora'] as const;
+export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 
 export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
 export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 
-export const CalculationSettingsSchema = z.object({
-    schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
-    /**
-     * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
-     * `de440s` / `de431_long` force a single kernel (long-range requires chunks).
-     */
-    ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
-    ayanamsa: z.enum(AYANAMSA_IDS),
-    ayanamsaOffsetDeg: finite,
-    /**
-     * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
-     * has no name in {@link AYANAMSA_IDS}.
-     */
-    customAyanamsaMode: z.number().int().optional(),
-    nodeType: z.enum(['mean', 'true']),
-    houseSystem: z.enum(HOUSE_SYSTEM_IDS),
-    /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
-    cuspsInMiddle: z.boolean(),
-    positionMode: z.enum(['geometric', 'apparent']),
-    topocentric: z.boolean(),
-    altitudeMetres: finite,
-    sunrise: SunriseSchema,
-    dasaYear: DasaYearSchema,
-    dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
-    horaScheme: z.enum(['parashara', 'parivritti']),
-    /** Placeholder division → variant id. Not applied by `calculateVarga`. */
-    vargaVariants: z.record(z.string(), z.string()).default({}),
-}).strict();
+export const CalculationSettingsSchema = z
+    .object({
+        schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
+        precisionProfile: z.enum(PRECISION_PROFILES).default('jhora'),
+        /**
+         * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
+         * `de440s` / `de431_long` force a single kernel (long-range requires chunks).
+         */
+        ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
+        ayanamsa: z.enum(AYANAMSA_IDS),
+        ayanamsaOffsetDeg: finite,
+        /**
+         * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
+         * has no name in {@link AYANAMSA_IDS}.
+         */
+        customAyanamsaMode: z.number().int().optional(),
+        nodeType: z.enum(['mean', 'true']),
+        houseSystem: z.enum(HOUSE_SYSTEM_IDS),
+        /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
+        cuspsInMiddle: z.boolean(),
+        positionMode: z.enum(['geometric', 'apparent']),
+        topocentric: z.boolean(),
+        altitudeMetres: finite,
+        sunrise: SunriseSchema,
+        dasaYear: DasaYearSchema,
+        dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
+        horaScheme: z.enum(['parashara', 'parivritti']),
+        /** Placeholder division → variant id. Not applied by `calculateVarga`. */
+        vargaVariants: z.record(z.string(), z.string()).default({}),
+    })
+    .strict();
 
 export type CalculationSettings = z.infer<typeof CalculationSettingsSchema>;
 

@@ -1,6 +1,6 @@
 export { canonicalJson, hashSettings } from './hash.js';
 export type { PresetId } from './presets.js';
-export { getPreset, isPresetId,PRESET_IDS, PRESETS } from './presets.js';
+export { getPreset, isPresetId, PRESET_IDS, PRESETS } from './presets.js';
 export type {
     FlatBirthSettings,
     LegacyCalculationInput,
@@ -24,6 +24,7 @@ export type {
     DasaYearKind,
     EphemerisPolicyId,
     HouseSystemId,
+    PrecisionProfileId,
     SunriseLimb,
 } from './schema.js';
 export {
@@ -38,6 +39,7 @@ export {
     inferDasaYearKind,
     LEGACY_DASHA_YEAR_DAYS,
     LEGACY_DASHA_YEAR_DAYS_TEXT,
+    PRECISION_PROFILES,
     SETTINGS_HASH_HEX_LENGTH,
     SETTINGS_SCHEMA_VERSION,
     SUNRISE_LIMBS,

@@ -23,23 +23,24 @@ import { evalRecord, type Vec3 } from './chebyshev.js';
 
 /**
  * NAIF integer body codes present in de440s.bsp.
+ * @provenance NAIF Integer ID codes, NAIF IDs Required Reading (naif_ids.req).
  * Positions are barycentric (relative to Solar System Barycenter = 0)
  * except 301/399 which are relative to the Earth-Moon Barycenter (3).
  */
 export const NAIF = {
-    SSB:     0,   // Solar System Barycenter (origin)
-    Mercury: 1,   // Mercury barycenter
-    Venus:   2,   // Venus barycenter
-    EMB:     3,   // Earth-Moon Barycenter
-    Mars:    4,   // Mars barycenter
-    Jupiter: 5,   // Jupiter barycenter
-    Saturn:  6,   // Saturn barycenter
-    Uranus:  7,   // Uranus barycenter
-    Neptune: 8,   // Neptune barycenter
-    Pluto:   9,   // Pluto barycenter
-    Sun:    10,   // Sun
-    Moon:  301,   // Moon (relative to EMB)
-    Earth: 399,   // Earth (relative to EMB)
+    SSB: 0, // Solar System Barycenter (origin)
+    Mercury: 1, // Mercury barycenter
+    Venus: 2, // Venus barycenter
+    EMB: 3, // Earth-Moon Barycenter
+    Mars: 4, // Mars barycenter
+    Jupiter: 5, // Jupiter barycenter
+    Saturn: 6, // Saturn barycenter
+    Uranus: 7, // Uranus barycenter
+    Neptune: 8, // Neptune barycenter
+    Pluto: 9, // Pluto barycenter
+    Sun: 10, // Sun
+    Moon: 301, // Moon (relative to EMB)
+    Earth: 399, // Earth (relative to EMB)
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -47,26 +48,26 @@ export const NAIF = {
 // ---------------------------------------------------------------------------
 
 interface SpkSegment {
-    target:    number;   // NAIF target body ID
-    center:    number;   // NAIF center body ID
-    frame:     number;   // Reference frame (1 = J2000)
-    type:      number;   // SPK data type (2 = Chebyshev position)
-    startET:   number;   // Segment start, seconds from J2000.0
-    endET:     number;   // Segment end, seconds from J2000.0
-    initAddr:  number;   // Initial double address (1-indexed)
-    finalAddr: number;   // Final double address (1-indexed)
+    target: number; // NAIF target body ID
+    center: number; // NAIF center body ID
+    frame: number; // Reference frame (1 = J2000)
+    type: number; // SPK data type (2 = Chebyshev position)
+    startET: number; // Segment start, seconds from J2000.0
+    endET: number; // Segment end, seconds from J2000.0
+    initAddr: number; // Initial double address (1-indexed)
+    finalAddr: number; // Final double address (1-indexed)
 }
 
 // ---------------------------------------------------------------------------
 // DAF record constants
 // ---------------------------------------------------------------------------
 
-const RECORD_BYTES = 1024;   // DAF record size (always 1024 bytes)
-const ND = 2;                 // Doubles per SPK summary descriptor
-const NI = 6;                 // Integers per SPK summary descriptor
+const RECORD_BYTES = 1024; // DAF record size (always 1024 bytes)
+const ND = 2; // Doubles per SPK summary descriptor
+const NI = 6; // Integers per SPK summary descriptor
 // Each summary occupies ND + ceil(NI/2) = 2 + 3 = 5 doubles of space
-const SUMMARY_SIZE_F64 = ND + Math.ceil(NI / 2);   // 5
-const SUMMARY_BYTES    = SUMMARY_SIZE_F64 * 8;      // 40
+const SUMMARY_SIZE_F64 = ND + Math.ceil(NI / 2); // 5
+const SUMMARY_BYTES = SUMMARY_SIZE_F64 * 8; // 40
 
 // ---------------------------------------------------------------------------
 // SpkFile — load once at init, query at will
@@ -119,8 +120,8 @@ export class SpkFile {
         let recordNum = fward;
 
         while (recordNum > 0) {
-            const recBase  = (recordNum - 1) * RECORD_BYTES;
-            const nextRec  = this.readF64(recBase + 0);  // next summary record (0 = end)
+            const recBase = (recordNum - 1) * RECORD_BYTES;
+            const nextRec = this.readF64(recBase + 0); // next summary record (0 = end)
             // prev at +8, unused
             const nSummaries = Math.round(this.readF64(recBase + 16));
 
@@ -129,20 +130,29 @@ export class SpkFile {
 
                 // ND = 2 doubles: startET, endET
                 const startET = this.readF64(base);
-                const endET   = this.readF64(base + 8);
+                const endET = this.readF64(base + 8);
 
                 // NI = 6 int32s immediately after the doubles
-                const intBase  = base + ND * 8;
-                const target   = this.readI32(intBase);
-                const center   = this.readI32(intBase + 4);
-                const frame    = this.readI32(intBase + 8);
-                const type     = this.readI32(intBase + 12);
+                const intBase = base + ND * 8;
+                const target = this.readI32(intBase);
+                const center = this.readI32(intBase + 4);
+                const frame = this.readI32(intBase + 8);
+                const type = this.readI32(intBase + 12);
                 const initAddr = this.readI32(intBase + 16);
                 const finlAddr = this.readI32(intBase + 20);
 
                 // Only handle SPK Type 2 (Chebyshev position)
                 if (type === 2) {
-                    this.segments.push({ target, center, frame, type, startET, endET, initAddr, finalAddr: finlAddr });
+                    this.segments.push({
+                        target,
+                        center,
+                        frame,
+                        type,
+                        startET,
+                        endET,
+                        initAddr,
+                        finalAddr: finlAddr,
+                    });
                 }
             }
 
@@ -163,6 +173,19 @@ export class SpkFile {
     getState(target: number, center: number, et: number): Vec3 {
         const seg = this.findSegment(target, center, et);
         if (!seg) {
+            const cov = this.segments.filter((s) => s.target === target && s.center === center);
+            if (cov.length > 0) {
+                const lo = Math.min(...cov.map((s) => s.startET));
+                const hi = Math.max(...cov.map((s) => s.endET));
+                if (et < lo || et > hi) {
+                    const jd = (x: number) => (2451545.0 + x / 86400).toFixed(1);
+                    throw new RangeError(
+                        `SpkFile: epoch JD(TDB) ${jd(et)} is outside the loaded ephemeris coverage ` +
+                            `JD ${jd(lo)}–${jd(hi)} (DE440s: 1849-12-26 to 2150-01-22). ` +
+                            `Long-range support is tracked separately.`,
+                    );
+                }
+            }
             throw new Error(
                 `SpkFile: no Type-2 segment for target=${target}, center=${center} at ET=${et.toFixed(0)}s`,
             );
@@ -182,13 +205,13 @@ export class SpkFile {
      *   Moon_SSB  = EMB_SSB + Moon_EMB    (body 3 + body 301)
      */
     getGeocentric(naifBody: number, et: number): Vec3 {
-        const body  = this.getBarycentric(naifBody,   et);
+        const body = this.getBarycentric(naifBody, et);
         const earth = this.getBarycentric(NAIF.Earth, et);
 
         return {
-            x:  body.x  - earth.x,
-            y:  body.y  - earth.y,
-            z:  body.z  - earth.z,
+            x: body.x - earth.x,
+            y: body.y - earth.y,
+            z: body.z - earth.z,
             vx: body.vx - earth.vx,
             vy: body.vy - earth.vy,
             vz: body.vz - earth.vz,
@@ -209,12 +232,12 @@ export class SpkFile {
      */
     getBarycentric(naifBody: number, et: number): Vec3 {
         if (naifBody === NAIF.Moon || naifBody === NAIF.Earth) {
-            const emb  = this.getState(NAIF.EMB, NAIF.SSB, et);
-            const rel  = this.getState(naifBody, NAIF.EMB, et);
+            const emb = this.getState(NAIF.EMB, NAIF.SSB, et);
+            const rel = this.getState(naifBody, NAIF.EMB, et);
             return {
-                x:  emb.x  + rel.x,
-                y:  emb.y  + rel.y,
-                z:  emb.z  + rel.z,
+                x: emb.x + rel.x,
+                y: emb.y + rel.y,
+                z: emb.z + rel.z,
                 vx: emb.vx + rel.vx,
                 vy: emb.vy + rel.vy,
                 vz: emb.vz + rel.vz,
@@ -235,7 +258,10 @@ export class SpkFile {
             if (seg.center !== center) continue;
             if (et < seg.startET || et > seg.endET) continue;
             const span = seg.endET - seg.startET;
-            if (span < bestSpan) { best = seg; bestSpan = span; }
+            if (span < bestSpan) {
+                best = seg;
+                bestSpan = span;
+            }
         }
         return best;
     }
@@ -252,11 +278,11 @@ export class SpkFile {
      */
     private evalSegment(seg: SpkSegment, et: number): Vec3 {
         // Read metadata from last 4 doubles of segment
-        const metaBase  = (seg.finalAddr - 4) * 8;   // 0-indexed byte offset
-        const INIT      = this.readF64(metaBase);
-        const INTLEN    = this.readF64(metaBase + 8);
-        const RSIZE     = Math.round(this.readF64(metaBase + 16));
-        const N         = Math.round(this.readF64(metaBase + 24));
+        const metaBase = (seg.finalAddr - 4) * 8; // 0-indexed byte offset
+        const INIT = this.readF64(metaBase);
+        const INTLEN = this.readF64(metaBase + 8);
+        const RSIZE = Math.round(this.readF64(metaBase + 16));
+        const N = Math.round(this.readF64(metaBase + 24));
 
         if (RSIZE < 4 || N < 1) {
             throw new Error(`SpkFile: invalid segment metadata (RSIZE=${RSIZE}, N=${N})`);
@@ -268,7 +294,7 @@ export class SpkFile {
 
         // Read the RSIZE doubles of that record
         const recordBase = (seg.initAddr - 1 + recordIdx * RSIZE) * 8;
-        const record     = new Array<number>(RSIZE);
+        const record = new Array<number>(RSIZE);
         for (let i = 0; i < RSIZE; i++) {
             record[i] = this.readF64(recordBase + i * 8);
         }
@@ -294,12 +320,12 @@ export class SpkFile {
         data: Float64Array;
     } {
         const metaBase = (seg.finalAddr - 4) * 8;
-        const init   = this.readF64(metaBase);
+        const init = this.readF64(metaBase);
         const intlen = this.readF64(metaBase + 8);
-        const rsize  = Math.round(this.readF64(metaBase + 16));
-        const n      = Math.round(this.readF64(metaBase + 24));
-        const total  = n * rsize;
-        const data   = new Float64Array(total);
+        const rsize = Math.round(this.readF64(metaBase + 16));
+        const n = Math.round(this.readF64(metaBase + 24));
+        const total = n * rsize;
+        const data = new Float64Array(total);
         const recordBase = (seg.initAddr - 1) * 8;
         for (let i = 0; i < total; i++) {
             data[i] = this.readF64(recordBase + i * 8);

@@ -29,7 +29,7 @@
  * from `precession.ts`, and the true-star family carries no fitted constant.
  */
 
-import { AU_KM } from './apparent.js';
+import { apparentStarDirection, AU_KM } from './apparent.js';
 import { deltaT } from './deltat.js';
 import {
     icrfToMeanEclipticOfDate,
@@ -42,9 +42,9 @@ import {
 
 const DEG = Math.PI / 180;
 const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);
-const PC_IN_AU   = 206264.806247;
+const PC_IN_AU = 206264.806247;
 /** km/s → AU/Julian year. */
-const KMS_TO_AU_YR = 86400 * 365.25 / AU_KM;
+const KMS_TO_AU_YR = (86400 * 365.25) / AU_KM;
 
 const mod360 = (x: number): number => ((x % 360) + 360) % 360;
 
@@ -58,53 +58,82 @@ const mod360 = (x: number): number => ((x % 360) + 360) % 360;
  * the ~1 mas/yr difference between Hipparcos reductions.
  */
 export interface StarData {
-    name:     string;
+    name: string;
     /** Right ascension at J2000, degrees (ICRS). */
-    ra:       number;
+    ra: number;
     /** Declination at J2000, degrees (ICRS). */
-    dec:      number;
+    dec: number;
     /** Proper motion in RA, μα·cos δ, mas/yr. */
-    pmRA:     number;
+    pmRA: number;
     /** Proper motion in declination, mas/yr. */
-    pmDec:    number;
+    pmDec: number;
     /** Parallax, mas. */
     parallax: number;
     /** Radial velocity, km/s. */
-    radVel:   number;
+    radVel: number;
 }
 
 const hms = (h: number, m: number, s: number): number => (h + m / 60 + s / 3600) * 15;
 const dms = (d: number, m: number, s: number): number =>
     Math.sign(d || 1) * (Math.abs(d) + m / 60 + s / 3600);
 
+/**
+ * @provenance Star astrometry (J2000 ICRS position, proper motion, parallax):
+ *   - Spica (HIP 65474) and λ Sco (HIP 85927): The Hipparcos Catalogue,
+ *     ESA SP-1200 (1997), VizieR I/239 — parallax and proper motions match
+ *     that catalogue exactly.
+ *   - δ Cnc (HIP 42911): Hipparcos new reduction, van Leeuwen 2007, VizieR
+ *     I/311 (parallax 24.98 mas; proper motion within 0.4 mas/yr).
+ *   - ζ Psc A (HIP 5737): Hipparcos new reduction, van Leeuwen 2007, VizieR
+ *     I/311/hip2 — parallax 18.76 mas, μα* +145.00 / μδ −55.69 mas/yr; the
+ *     J2000 position is the I/311 J1991.25 position propagated 8.75 yr with
+ *     that proper motion (01h13m43.8873s, +07°34′31.274″).
+ *   Radial velocities: CRVAD-2, Kharchenko et al. 2007, VizieR III/254
+ *   (Spica 0.0, δ Cnc 17.14 ± 0.20, ζ Psc 15.0 ± 4.9, λ Sco −3.0 km/s).
+ *   Only Spica feeds the default (True Chitrapaksha) ayanamsa; at these
+ *   speeds radial velocity moves a star's longitude by well under 1e-4″
+ *   across the supported range.
+ */
 export const STARS: Record<string, StarData> = {
     /** Chitra — α Virginis. Defines True Chitrapaksha. */
     Spica: {
         name: 'Spica (Chitra, α Vir)',
-        ra:   hms(13, 25, 11.5793),
-        dec:  dms(-11, 9, 40.759),
-        pmRA: -42.50, pmDec: -31.73, parallax: 12.44, radVel: 1.0,
+        ra: hms(13, 25, 11.5793),
+        dec: dms(-11, 9, 40.759),
+        pmRA: -42.5,
+        pmDec: -31.73,
+        parallax: 12.44,
+        radVel: 0.0,
     },
     /** Pushya — δ Cancri (Asellus Australis). Defines True Pushya paksha. */
     DeltaCancri: {
         name: 'Asellus Australis (Pushya, δ Cnc)',
-        ra:   hms(8, 44, 41.0996),
-        dec:  dms(18, 9, 15.511),
-        pmRA: -17.65, pmDec: -228.9, parallax: 24.98, radVel: 17.1,
+        ra: hms(8, 44, 41.0996),
+        dec: dms(18, 9, 15.511),
+        pmRA: -17.65,
+        pmDec: -228.9,
+        parallax: 24.98,
+        radVel: 17.14,
     },
     /** Revati — ζ Piscium. Defines True Revati. */
     ZetaPiscium: {
         name: 'Revati (ζ Psc)',
-        ra:   hms(1, 13, 43.8869),
-        dec:  dms(7, 34, 31.274),
-        pmRA: -52.85, pmDec: -9.48, parallax: 14.87, radVel: 5.4,
+        ra: hms(1, 13, 43.8873),
+        dec: dms(7, 34, 31.2745),
+        pmRA: 145.0,
+        pmDec: -55.69,
+        parallax: 18.76,
+        radVel: 15.0,
     },
     /** Mula — λ Scorpii (Shaula). Defines True Mula. */
     LambdaScorpii: {
         name: 'Shaula (Mula, λ Sco)',
-        ra:   hms(17, 33, 36.5200),
-        dec:  dms(-37, 6, 13.765),
-        pmRA: -8.90, pmDec: -29.95, parallax: 4.64, radVel: 0.0,
+        ra: hms(17, 33, 36.52),
+        dec: dms(-37, 6, 13.765),
+        pmRA: -8.9,
+        pmDec: -29.95,
+        parallax: 4.64,
+        radVel: -3.0,
     },
 };
 
@@ -117,44 +146,73 @@ export const STARS: Record<string, StarData> = {
  * in degrees.
  *
  * Applies space motion (proper motion + radial velocity) and, optionally,
- * annual parallax. Nutation is excluded by definition — ayanamsa is referred to
- * the mean equinox. Annual aberration is excluded by default: including it
- * would make the ayanamsa oscillate by ±20″ over each year, which is not how
- * panchanga ayanamsa is tabulated.
+ * annual parallax. Nutation and aberration are excluded: this is the geometric
+ * place on the mean ecliptic, which is what True Citra subtracts from geometric
+ * (TRUEPOS) planetary longitudes. The value Swiss Ephemeris *reports* from
+ * `swe_get_ayanamsa_ut` is the apparent place instead — see {@link getAyanamsa}.
  *
  * @param star        Catalogue entry
  * @param jdUT        Julian Day, UT
  * @param observerAU  Optional observer barycentric position (AU, ICRF) for parallax
  */
-export function starLongitudeOfDate(
-    star: StarData,
-    jdUT: number,
-    observerAU?: Vec,
-): number {
+export function starLongitudeOfDate(star: StarData, jdUT: number, observerAU?: Vec): number {
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const T = julianCenturies(jdTT);
+    return toSpherical(icrfToMeanEclipticOfDate(starIcrfVector(star, jdUT, observerAU), T)).lon;
+}
+
+/**
+ * Barycentric state the apparent-place reduction of a star needs.
+ * Registered by {@link EphemerisEngine.initialize} from DE440; kept out of
+ * this module so ayanamsa does not import the SPK reader.
+ */
+export interface StarKinematics {
+    /** Observer barycentric velocity, km/s, ICRF. */
+    velocityKmS: Vec;
+    /** Sun → observer, km, ICRF. */
+    sunToObserverKm: Vec;
+    /** Observer barycentric position, AU, ICRF (annual parallax). */
+    observerAU: Vec;
+}
+
+let kinematicsProvider: ((jdUT: number) => StarKinematics) | null = null;
+
+/** Install (or clear) the DE440 kinematics used by apparent star ayanamsa. */
+export function setStarKinematicsProvider(fn: ((jdUT: number) => StarKinematics) | null): void {
+    kinematicsProvider = fn;
+}
+
+/**
+ * Geometric ICRF position of a catalogue star at `jdUT`, in AU.
+ * Space motion follows the standard linear proper-motion + radial-velocity
+ * reduction (Urban & Seidelmann, *Explanatory Supplement*, §7.2 / the Hipparcos
+ * catalogue notes). The result is not a unit vector.
+ */
+function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const years = (jdTT - 2451545.0) / 365.25;
 
     // ── J2000 ICRS direction ────────────────────────────────────────────────
-    const ra  = star.ra  * DEG;
+    const ra = star.ra * DEG;
     const dec = star.dec * DEG;
-    const cosD = Math.cos(dec), sinD = Math.sin(dec);
-    const cosR = Math.cos(ra),  sinR = Math.sin(ra);
+    const cosD = Math.cos(dec),
+        sinD = Math.sin(dec);
+    const cosR = Math.cos(ra),
+        sinR = Math.sin(ra);
 
     const p: Vec = [cosD * cosR, cosD * sinR, sinD];
 
     // ── Distance from parallax; guard against zero/negative catalogue values ─
     const parallaxArcsec = star.parallax / 1000.0;
-    const distAU = parallaxArcsec > 0
-        ? (1 / parallaxArcsec) * PC_IN_AU
-        : 1e9 * PC_IN_AU;   // effectively at infinity
+    const distAU = parallaxArcsec > 0 ? (1 / parallaxArcsec) * PC_IN_AU : 1e9 * PC_IN_AU; // effectively at infinity
 
     // ── Space motion: tangential (proper motion) + radial ────────────────────
-    const eRA:  Vec = [-sinR, cosR, 0];
+    const eRA: Vec = [-sinR, cosR, 0];
     const eDec: Vec = [-sinD * cosR, -sinD * sinR, cosD];
 
-    const muRA  = star.pmRA  * MAS_TO_RAD;   // rad/yr
-    const muDec = star.pmDec * MAS_TO_RAD;   // rad/yr
-    const vRad  = star.radVel * KMS_TO_AU_YR;
+    const muRA = star.pmRA * MAS_TO_RAD; // rad/yr
+    const muDec = star.pmDec * MAS_TO_RAD; // rad/yr
+    const vRad = star.radVel * KMS_TO_AU_YR;
 
     // Position in AU at epoch `years` from J2000
     const pos: Vec = [0, 0, 0];
@@ -170,9 +228,36 @@ export function starLongitudeOfDate(
         pos[2] -= observerAU[2];
     }
 
-    // ── ICRF → mean ecliptic & equinox of date ──────────────────────────────
-    const T = julianCenturies(jdTT);
-    return toSpherical(icrfToMeanEclipticOfDate(pos, T)).lon;
+    return pos;
+}
+
+/**
+ * Apparent longitude of a star on the **mean** ecliptic of date.
+ *
+ * This is what `swe_get_ayanamsa_ut` is measured to return for a star-defined
+ * mode: the star's apparent place (annual aberration and solar deflection,
+ * annual parallax) with nutation left off, so Spica's reported ayanamsa is
+ * its apparent mean-ecliptic longitude minus 180°. Swiss Ephemeris general
+ * documentation §2.8.5 item 27 and §2.8.12 method 4: Spica is exactly 180°
+ * both geometrically and apparently, and the ayanamsa that produces each is
+ * a different number. `swe_get_ayanamsa_ut` is the apparent one, without nutation.
+ */
+function starApparentLongitude(star: StarData, jdUT: number): number {
+    const kin = kinematicsProvider?.(jdUT);
+    if (!kin) {
+        throw new Error(
+            'Apparent star ayanamsa needs the barycentric velocity of the Earth from DE440. ' +
+                'Call EphemerisEngine.initialize() first.',
+        );
+    }
+
+    const pos = starIcrfVector(star, jdUT, kin.observerAU);
+    const n = Math.hypot(pos[0], pos[1], pos[2]);
+    const geometric: Vec = [pos[0] / n, pos[1] / n, pos[2] / n];
+    const apparent = apparentStarDirection(geometric, kin.velocityKmS, kin.sunToObserverKm);
+
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    return toSpherical(icrfToMeanEclipticOfDate(apparent, julianCenturies(jdTT))).lon;
 }
 
 // ---------------------------------------------------------------------------
@@ -226,24 +311,80 @@ export type AyanamsaModel = StarModel | EpochModel;
  * number behind it. Anchor to a published definition, or to a star; do not
  * anchor to a reading you cannot re-verify.
  */
+/**
+ * @provenance Star models: the star and the longitude it is pinned to are the
+ * published definitions (e.g. Chitrapaksha: Spica at 180°). Epoch models: the
+ * per-entry comment and `source` field give the definition each anchor comes
+ * from; 'provisional' entries are flagged as unverified.
+ */
 export const AYANAMSA_MODELS: Record<number, AyanamsaModel> = {
     // ── Exact, star-defined: no fitted constants ────────────────────────────
-    27: { kind: 'star', star: 'Spica',         atLongitude: 180,           label: 'True Chitrapaksha (Spica at 180°)' },
-    29: { kind: 'star', star: 'DeltaCancri',   atLongitude: 106,           label: 'True Pushya (δ Cnc at 106°)' },
-    30: { kind: 'star', star: 'ZetaPiscium',   atLongitude: 359 + 50 / 60, label: 'True Revati (ζ Psc at 359°50′)' },
-    35: { kind: 'star', star: 'LambdaScorpii', atLongitude: 240,           label: 'True Mula (λ Sco at 240°)' },
+    27: {
+        kind: 'star',
+        star: 'Spica',
+        atLongitude: 180,
+        label: 'True Chitrapaksha (Spica at 180°)',
+    },
+    29: {
+        kind: 'star',
+        star: 'DeltaCancri',
+        atLongitude: 106,
+        label: 'True Pushya (δ Cnc at 106°)',
+    },
+    30: {
+        kind: 'star',
+        star: 'ZetaPiscium',
+        atLongitude: 359 + 50 / 60,
+        label: 'True Revati (ζ Psc at 359°50′)',
+    },
+    35: {
+        kind: 'star',
+        star: 'LambdaScorpii',
+        atLongitude: 240,
+        label: 'True Mula (λ Sco at 240°)',
+    },
 
     // ── Epoch-defined ───────────────────────────────────────────────────────
     // Fagan/Bradley: 24°02′31.36″ at 1950-01-01.
-    0:  { kind: 'epoch', jd: 2433282.5, value: 24.042044444, label: 'Fagan/Bradley', source: 'definition'  },
+    0: {
+        kind: 'epoch',
+        jd: 2433282.5,
+        value: 24.042044444,
+        label: 'Fagan/Bradley',
+        source: 'definition',
+    },
     // Lahiri: 23°15′00″ at 1956-03-21 0h UT (Indian Calendar Reform Committee).
-    1:  { kind: 'epoch', jd: 2435553.5, value: 23.250182,    label: 'Lahiri (ICRC)', source: 'definition'  },
+    1: {
+        kind: 'epoch',
+        jd: 2435553.5,
+        value: 23.250182,
+        label: 'Lahiri (ICRC)',
+        source: 'definition',
+    },
     // Raman: 21°00′00″ at 1900-01-01.
-    3:  { kind: 'epoch', jd: 2415020.0, value: 21.0,         label: 'Raman',         source: 'definition'  },
-    5:  { kind: 'epoch', jd: 2435553.5, value: 23.1602778,   label: 'Krishnamurti (KP)', source: 'provisional' },
-    7:  { kind: 'epoch', jd: 2412543.5, value: 20.8194444,   label: 'Yukteshwar',    source: 'provisional' },
-    8:  { kind: 'epoch', jd: 2415020.0, value: 21.0,         label: 'JN Bhasin',     source: 'provisional' },
-    18: { kind: 'epoch', jd: 2451545.0, value: 0.0,          label: 'J2000 (no ayanamsa)', source: 'definition' },
+    3: { kind: 'epoch', jd: 2415020.0, value: 21.0, label: 'Raman', source: 'definition' },
+    5: {
+        kind: 'epoch',
+        jd: 2435553.5,
+        value: 23.1602778,
+        label: 'Krishnamurti (KP)',
+        source: 'provisional',
+    },
+    7: {
+        kind: 'epoch',
+        jd: 2412543.5,
+        value: 20.8194444,
+        label: 'Yukteshwar',
+        source: 'provisional',
+    },
+    8: { kind: 'epoch', jd: 2415020.0, value: 21.0, label: 'JN Bhasin', source: 'provisional' },
+    18: {
+        kind: 'epoch',
+        jd: 2451545.0,
+        value: 0.0,
+        label: 'J2000 (no ayanamsa)',
+        source: 'definition',
+    },
 };
 
 /** Human-readable name for a mode, for logs and API responses. */
@@ -263,13 +404,8 @@ export function ayanamsaName(mode: number): string {
  * Returned in (−180, 180] so that epochs before `jdFrom` give negative values.
  */
 export function accumulatedPrecession(jdFrom: number, jdTo: number): number {
-    const vernalAtFrom: Vec = matTransposeVec(
-        precessionMatrix(julianCenturies(jdFrom)),
-        [1, 0, 0],
-    );
-    const lon = toSpherical(
-        icrfToMeanEclipticOfDate(vernalAtFrom, julianCenturies(jdTo)),
-    ).lon;
+    const vernalAtFrom: Vec = matTransposeVec(precessionMatrix(julianCenturies(jdFrom)), [1, 0, 0]);
+    const lon = toSpherical(icrfToMeanEclipticOfDate(vernalAtFrom, julianCenturies(jdTo))).lon;
     return lon > 180 ? lon - 360 : lon;
 }
 
@@ -278,23 +414,41 @@ export function accumulatedPrecession(jdFrom: number, jdTo: number): number {
 // ---------------------------------------------------------------------------
 
 /**
+ * Which place of the defining star `getAyanamsa` reduces.
+ *
+ *   • `'apparent'`  — aberration and solar deflection, no nutation. This is
+ *     `swe_get_ayanamsa_ut` (Swiss Ephemeris general doc §2.8.5 / §2.8.12).
+ *   • `'geometric'` — neither aberration nor deflection. This is the zero point
+ *     subtracted from TRUEPOS sidereal planets, and the number JHora prints
+ *     for the 1998 reference chart (`23-51-11.00`).
+ *
+ * Epoch-defined modes have no star, so the two frames are the same value.
+ */
+export type AyanamsaFrame = 'apparent' | 'geometric';
+
+/**
  * Ayanamsa in degrees for a given SE mode and Julian Day (UT).
  *
- * @param mode  Swiss Ephemeris SE_SIDM_* code (27 = True Chitrapaksha)
- * @param jd    Julian Day, UT
+ * @param mode   Swiss Ephemeris SE_SIDM_* code (27 = True Chitrapaksha)
+ * @param jd     Julian Day, UT
+ * @param frame  Star-defined modes only. Defaults to the geometric place JHora
+ *               subtracts; 'apparent' is the swe_get_ayanamsa_ut value (opt-in).
  */
-export function getAyanamsa(mode: number, jd: number): number {
+export function getAyanamsa(mode: number, jd: number, frame: AyanamsaFrame = 'geometric'): number {
     const model = AYANAMSA_MODELS[mode];
 
     if (!model) {
         // Fall back to True Chitrapaksha — the project's reference model —
         // rather than silently substituting an unrelated zero point.
-        if (mode !== 27) return getAyanamsa(27, jd);
+        if (mode !== 27) return getAyanamsa(27, jd, frame);
         throw new Error('ayanamsa: True Chitrapaksha model missing from registry');
     }
 
     if (model.kind === 'star') {
-        const lon = starLongitudeOfDate(STARS[model.star], jd);
+        const lon =
+            frame === 'geometric'
+                ? starLongitudeOfDate(STARS[model.star], jd)
+                : starApparentLongitude(STARS[model.star], jd);
         return mod360(lon - model.atLongitude);
     }
 
@@ -312,11 +466,7 @@ export function getAyanamsa(mode: number, jd: number): number {
  */
 export function meanLunarNode(T: number): number {
     return mod360(
-        125.0445479
-        - 1934.1362891 * T
-        +    0.0020754 * T ** 2
-        +    T ** 3 / 467441
-        -    T ** 4 / 60616000,
+        125.0445479 - 1934.1362891 * T + 0.0020754 * T ** 2 + T ** 3 / 467441 - T ** 4 / 60616000,
     );
 }
 

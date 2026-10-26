@@ -58,6 +58,8 @@ export function formatHorizonsGoldenTs(
  * Regenerate with: pnpm horizons:refresh
  */
 
+import { LAST_OBSERVED_YEAR } from '../../src/engine/deltat.js';
+
 export interface HorizonsBody {
     name: string;
     /** Apparent ecliptic longitude of date, degrees. */
@@ -135,8 +137,13 @@ export const FUTURE_TOLERANCE_ARCSEC = {
     latitude:   60,   // 1′
 } as const;
 
-/** Last year for which ΔT is an observation rather than an extrapolation. */
-export const LAST_OBSERVED_DELTAT_YEAR = 2025;
+/**
+ * Last year for which the engine's ΔT is a tabulated value rather than an
+ * extrapolation. The JHora precision profile uses the ΔT record bundled with
+ * Swiss Ephemeris 2.02 (JHora's DLL), which ends in 2019, so later epochs are
+ * extrapolated exactly as JHora does (~8 s above the observed value by 2024).
+ */
+export const LAST_OBSERVED_DELTAT_YEAR = LAST_OBSERVED_YEAR;
 
 /** Bodies compared in engine ↔ Horizons tests (matches SPK_BODY_IDS today). */
 export const HORIZONS_ENGINE_COMPARE_BODIES = [

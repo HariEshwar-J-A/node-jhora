@@ -12,17 +12,18 @@
  * data is U.S. Government public domain — no restrictions at all.
  *
  * ── Measured accuracy ────────────────────────────────────────────────────
- * Tropical apparent longitude vs JPL Horizons, all bodies:
- *   1900 · 1970 · 1998 · 2024   ≤ 0.28″   (typically 0.04″)
- *   2100                        ≤ 46″     — entirely the ΔT forecast gap;
- *                                           Horizons freezes ΔT, this engine
- *                                           extrapolates it
- * Sidereal zero point vs JHora, 1998 reference chart:
- *   True Pushya   0.03″   derived from δ Cancri, no fitted constant
- *   Moon          1.0″
- *   Ascendant    24″      within the ~13″ that UT1−UTC alone can shift it
+ * The contract is JHora: < 1″ on every output against the Swiss Ephemeris
+ * 2.02.01 DLL bundled with Jagannatha Hora, over 1850–2150 (DE440s), in
+ * tests/golden/jhora-dll.golden.test.ts. JHora's conventions are the
+ * defaults: ET = UT + ΔT (deltat.ts), geometric (TRUEPOS) places, and
+ * sidereal = tropical − geometric True-Chitra ayanamsa for planets and
+ * house angles alike. An SE-2.10-style apparent house frame is opt-in
+ * (`siderealFrame: 'se-apparent'`) and is compared, informationally only,
+ * in se-parity.golden.test.ts.
  *
- * See tests/golden/horizons.golden.test.ts and jhora-bridge.golden.test.ts.
+ * Outside DE440s coverage the SPK reader throws a RangeError.
+ *
+ * See also tests/golden/horizons.golden.test.ts and jhora-bridge.golden.test.ts.
  *
  * ── Coordinate chain ─────────────────────────────────────────────────────
  * 1. jdUTtoET(jd)                  UT → TT → ephemeris seconds (applies ΔT)
@@ -43,19 +44,24 @@
  * https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
  */
 
-import { DateTime }          from 'luxon';
+import { DateTime } from 'luxon';
 
 import { Body } from '../core/body.js';
 import {
-APPARENT,
+    APPARENT,
+    AU_KM,
     type BarycentricSource,
-    computePlace,     GEOMETRIC, observerState,
+    computePlace,
+    GEOMETRIC,
+    observerState,
     type PlaceCorrections,
 } from './apparent.js';
 import {
+    type AyanamsaFrame,
     ayanamsaName,
     getAyanamsa as computeAyanamsa,
     meanLunarNode,
+    setStarKinematicsProvider,
     toSidereal,
 } from './ayanamsa.js';
 import { getBspBytesLoader } from './bsp-bytes-provider.js';
@@ -70,45 +76,44 @@ import {
     meanObliquity,
     mod360,
     observerGeocentricVector,
+    placidusCusps,
+    porphyryCusps,
     trueObliquity,
     wholeSignCusps,
 } from './coordinates.js';
-import { deltaT, jdUTtoET }  from './deltat.js';
-import { nutation }          from './nutation.js';
-import {
-    icrfToMeanEclipticOfDate,
-    toSpherical,
-    type Vec,
-} from './precession.js';
+import { deltaT, jdUTtoET } from './deltat.js';
+import { nutation } from './nutation.js';
+import { icrfToMeanEclipticOfDate, toSpherical, type Vec } from './precession.js';
 import {
     CompositeEphemerisProvider,
     type De431ChunkStore,
     type EphemerisPolicy,
     type EphemerisProvenance,
 } from './provider/index.js';
-import type { SpkFile }      from './spk.js';
+import type { SpkFile } from './spk.js';
 import { loadSpkFromBytes, NAIF } from './spk.js';
 
 // ---------------------------------------------------------------------------
 // Ayanamsa constants — identical to previous version for API compatibility
 // ---------------------------------------------------------------------------
 
+/** @provenance Swiss Ephemeris public API `SE_SIDM_*` mode numbers (identifiers, not data). */
 export const AYANAMSA = {
-    FAGAN_BRADLEY:   0,
+    FAGAN_BRADLEY: 0,
     /** Lahiri as JHora reports it (see AYANAMSA_MODELS note). */
-    LAHIRI:          1,
+    LAHIRI: 1,
     /** Lahiri per the Indian Calendar Reform Committee definition. */
-    LAHIRI_ICRC:     2,
-    RAMAN:           3,
-    KRISHNAMURTI:    5,
-    YUKTESHWAR:      7,
-    JN_BHASIN:       8,
-    J2000:          18,
+    LAHIRI_ICRC: 2,
+    RAMAN: 3,
+    KRISHNAMURTI: 5,
+    YUKTESHWAR: 7,
+    JN_BHASIN: 8,
+    J2000: 18,
     /** True Chitrapaksha — Spica pinned to 180°. The project's reference model. */
-    TRUE_CITRA:     27,
-    TRUE_PUSHYA:    29,
-    TRUE_REVATI:    30,
-    TRUE_MULA:      35,
+    TRUE_CITRA: 27,
+    TRUE_PUSHYA: 29,
+    TRUE_REVATI: 30,
+    TRUE_MULA: 35,
 } as const;
 
 /**
@@ -118,34 +123,34 @@ export const AYANAMSA = {
  */
 export const DEFAULT_AYANAMSA: number = AYANAMSA.TRUE_CITRA;
 
-export type AyanamsaMode = typeof AYANAMSA[keyof typeof AYANAMSA];
+export type AyanamsaMode = (typeof AYANAMSA)[keyof typeof AYANAMSA];
 
 // ---------------------------------------------------------------------------
 // Public types — identical to previous version
 // ---------------------------------------------------------------------------
 
 export interface GeoLocation {
-    latitude:  number;
+    latitude: number;
     longitude: number;
     altitude?: number;
 }
 
 export interface PlanetPosition {
-    id:          number;
-    name:        string;
-    longitude:   number;   // Sidereal [0, 360)
-    latitude:    number;   // Ecliptic latitude (degrees)
-    distance:    number;   // AU
-    speed:       number;   // Degrees per day (negative = retrograde)
-    declination: number;   // Equatorial declination (degrees)
+    id: number;
+    name: string;
+    longitude: number; // Sidereal [0, 360)
+    latitude: number; // Ecliptic latitude (degrees)
+    distance: number; // AU
+    speed: number; // Degrees per day (negative = retrograde)
+    declination: number; // Equatorial declination (degrees)
 }
 
 export interface HouseData {
-    cusps:     number[];   // 12 elements, H1 start … H12 start (sidereal)
-    ascendant: number;     // Sidereal ascendant (degrees)
-    mc:        number;     // Sidereal MC (degrees)
-    armc:      number;     // RAMC = Right Ascension of Midheaven (degrees)
-    vertex:    number;     // Sidereal vertex (degrees)
+    cusps: number[]; // 12 elements, H1 start … H12 start (sidereal)
+    ascendant: number; // Sidereal ascendant (degrees)
+    mc: number; // Sidereal MC (degrees)
+    armc: number; // RAMC = Right Ascension of Midheaven (degrees)
+    vertex: number; // Sidereal vertex (degrees)
 }
 
 // ---------------------------------------------------------------------------
@@ -222,12 +227,12 @@ function correctionsFor(mode: PositionMode): Required<PlaceCorrections> {
 
 export class EphemerisEngine {
     private static instance: EphemerisEngine;
-    private initialized     = false;
+    private initialized = false;
 
-    private spk!:         SpkFile;
-    private source!:      BarycentricSource;
-    private composite!:   CompositeEphemerisProvider;
-    private chunkStore?:  De431ChunkStore;
+    private spk!: SpkFile;
+    private source!: BarycentricSource;
+    private composite!: CompositeEphemerisProvider;
+    private chunkStore?: De431ChunkStore;
     private ayanamsaMode: number = DEFAULT_AYANAMSA;
 
     public constructor() {}
@@ -254,9 +259,7 @@ export class EphemerisEngine {
     public async initialize(options?: { kernel?: Uint8Array }): Promise<void> {
         if (this.initialized) return;
 
-        const bytes =
-            options?.kernel ??
-            (await getBspBytesLoader()?.());
+        const bytes = options?.kernel ?? (await getBspBytesLoader()?.());
 
         if (!bytes) {
             throw new Error(
@@ -266,14 +269,26 @@ export class EphemerisEngine {
             );
         }
 
-        this.spk         = loadSpkFromBytes(bytes);
-        this.composite   = new CompositeEphemerisProvider(this.spk, {
+        this.spk = loadSpkFromBytes(bytes);
+        this.composite = new CompositeEphemerisProvider(this.spk, {
             policy: this.ephemerisPolicy,
-            longRange: this.chunkStore
-                ? { getChunk: this.chunkStore.asGetter() }
-                : undefined,
+            longRange: this.chunkStore ? { getChunk: this.chunkStore.asGetter() } : undefined,
         });
-        this.source      = this.composite;
+        this.source = this.composite;
+        // Apparent True Citra needs Earth's barycentric velocity (aberration)
+        // and the Sun's direction (deflection of Spica), from the same
+        // ephemeris source the planets use.
+        const source = this.source;
+        setStarKinematicsProvider((jdUT) => {
+            const et = jdUTtoET(jdUT);
+            const earth = source.getBarycentric(NAIF.Earth, et);
+            const sun = source.getBarycentric(NAIF.Sun, et);
+            return {
+                velocityKmS: [earth.vx, earth.vy, earth.vz],
+                sunToObserverKm: [earth.x - sun.x, earth.y - sun.y, earth.z - sun.z],
+                observerAU: [earth.x / AU_KM, earth.y / AU_KM, earth.z / AU_KM],
+            };
+        });
         this.initialized = true;
     }
 
@@ -335,10 +350,19 @@ export class EphemerisEngine {
      *              explicitly when a caller has already used a per-call
      *              `ayanamsaOrder` for planets, so the reported ayanamsa cannot
      *              drift out of step with the positions it belongs to.
+     * @param frame 'geometric' (default, JHora: the value subtracted from
+     *              geometric places and house angles) or opt-in 'apparent'
+     *              (what SE's swe_get_ayanamsa_ut reports, and what apparent
+     *              `positionMode` subtracts).
      */
-    public getAyanamsa(jd: number, mode?: number, offsetDeg = 0): number {
+    public getAyanamsa(
+        jd: number,
+        mode?: number,
+        offsetDeg = 0,
+        frame: AyanamsaFrame = 'geometric',
+    ): number {
         this.checkInit();
-        return computeAyanamsa(mode ?? this.ayanamsaMode, jd) + offsetDeg;
+        return computeAyanamsa(mode ?? this.ayanamsaMode, jd, frame) + offsetDeg;
     }
 
     // -----------------------------------------------------------------------
@@ -353,13 +377,13 @@ export class EphemerisEngine {
      * @param options   ayanamsaOrder overrides the instance setting for this call
      */
     public getPlanets(
-        date:     DateTime,
+        date: DateTime,
         location?: GeoLocation,
         options: {
             ayanamsaOrder?: number;
-            topocentric?:   boolean;
-            nodeType?:      'mean' | 'true';
-            positionMode?:  PositionMode;
+            topocentric?: boolean;
+            nodeType?: 'mean' | 'true';
+            positionMode?: PositionMode;
             /** Constant added to the ayanamsa, degrees. */
             ayanamsaOffset?: number;
         } = {},
@@ -368,40 +392,44 @@ export class EphemerisEngine {
 
         const {
             ayanamsaOrder,
-            topocentric  = false,
-            nodeType     = DEFAULT_NODE_TYPE,
+            topocentric = false,
+            nodeType = DEFAULT_NODE_TYPE,
             positionMode = DEFAULT_POSITION_MODE,
             ayanamsaOffset = 0,
         } = options;
         const effectiveMode = ayanamsaOrder ?? this.ayanamsaMode;
-        const corrections   = correctionsFor(positionMode);
+        const corrections = correctionsFor(positionMode);
 
-        const jd   = this.julday(date);
-        const ayan = computeAyanamsa(effectiveMode, jd) + ayanamsaOffset;
+        const jd = this.julday(date);
+        // Geometric (TRUEPOS) sidereal positions subtract the geometric star
+        // place. Apparent positions subtract the same apparent ayanamsa
+        // getAyanamsa() reports, so adding it back recovers the tropical place.
+        const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
+        const ayan = computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset;
 
         const planets: PlanetPosition[] = [];
 
         for (const pid of SPK_BODY_IDS) {
             const naifId = ID_TO_NAIF[pid];
 
-            const loc    = topocentric ? location : undefined;
-            const here   = this.meanEclipticOfDate(jd, naifId, corrections, loc);
+            const loc = topocentric ? location : undefined;
+            const here = this.meanEclipticOfDate(jd, naifId, corrections, loc);
             // Daily motion by central difference on the final longitude, so
             // retrogression reflects the motion actually being reported.
             const before = this.meanEclipticOfDate(jd - SPEED_STEP_DAYS, naifId, corrections, loc);
-            const after  = this.meanEclipticOfDate(jd + SPEED_STEP_DAYS, naifId, corrections, loc);
+            const after = this.meanEclipticOfDate(jd + SPEED_STEP_DAYS, naifId, corrections, loc);
 
             let dLon = after.lon - before.lon;
-            if (dLon >  180) dLon -= 360;
+            if (dLon > 180) dLon -= 360;
             if (dLon < -180) dLon += 360;
 
             planets.push({
                 id: pid,
-                name:        PLANET_NAMES[pid] ?? `P${pid}`,
-                longitude:   toSidereal(here.lon, ayan),
-                latitude:    here.lat,
-                distance:    here.dist,
-                speed:       dLon / (2 * SPEED_STEP_DAYS),
+                name: PLANET_NAMES[pid] ?? `P${pid}`,
+                longitude: toSidereal(here.lon, ayan),
+                latitude: here.lat,
+                distance: here.dist,
+                speed: dLon / (2 * SPEED_STEP_DAYS),
                 declination: this.declinationOf(jd, here.lon, here.lat),
             });
         }
@@ -409,21 +437,23 @@ export class EphemerisEngine {
         // ── Lunar nodes ─────────────────────────────────────────────────────
         const node = this.lunarNode(jd, nodeType);
         planets.push({
-            id: Body.Rahu, name: 'Rahu',
-            longitude:   toSidereal(node.lon, ayan),
-            latitude:    0,
-            distance:    node.dist,
-            speed:       node.speed,
+            id: Body.Rahu,
+            name: 'Rahu',
+            longitude: toSidereal(node.lon, ayan),
+            latitude: 0,
+            distance: node.dist,
+            speed: node.speed,
             declination: this.declinationOf(jd, node.lon, 0),
         });
 
         const rahu = planets[planets.length - 1];
         planets.push({
-            id: Body.Ketu, name: 'Ketu',
-            longitude:   mod360(rahu.longitude + 180),
-            latitude:    0,
-            distance:    rahu.distance,
-            speed:       rahu.speed,
+            id: Body.Ketu,
+            name: 'Ketu',
+            longitude: mod360(rahu.longitude + 180),
+            latitude: 0,
+            distance: rahu.distance,
+            speed: rahu.speed,
             declination: -rahu.declination,
         });
 
@@ -446,13 +476,18 @@ export class EphemerisEngine {
         const et = jdUTtoET(jdUT);
 
         const offset = location
-            ? observerGeocentricVector(jdUT, location.latitude, location.longitude, location.altitude ?? 0)
+            ? observerGeocentricVector(
+                  jdUT,
+                  location.latitude,
+                  location.longitude,
+                  location.altitude ?? 0,
+              )
             : undefined;
 
         const observer = observerState(this.source, NAIF.Earth, et, offset);
-        const place    = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
+        const place = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
 
-        const T   = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
         const ecl = toSpherical(icrfToMeanEclipticOfDate(place.direction as Vec, T));
 
         return { lon: ecl.lon, lat: ecl.lat, dist: place.distanceAU };
@@ -465,8 +500,13 @@ export class EphemerisEngine {
      * The `nodeType` option was previously accepted and silently ignored, so
      * requesting true nodes returned mean ones.
      */
-    private lunarNode(jdUT: number, nodeType: 'mean' | 'true'): {
-        lon: number; dist: number; speed: number;
+    private lunarNode(
+        jdUT: number,
+        nodeType: 'mean' | 'true',
+    ): {
+        lon: number;
+        dist: number;
+        speed: number;
     } {
         const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
 
@@ -477,9 +517,9 @@ export class EphemerisEngine {
         }
 
         const lon = this.trueNodeLongitude(jdUT);
-        const h   = 0.25;
+        const h = 0.25;
         let d = this.trueNodeLongitude(jdUT + h) - this.trueNodeLongitude(jdUT - h);
-        if (d >  180) d -= 360;
+        if (d > 180) d -= 360;
         if (d < -180) d += 360;
 
         return { lon, dist: 0.002569, speed: d / (2 * h) };
@@ -495,9 +535,9 @@ export class EphemerisEngine {
      */
     private trueNodeLongitude(jdUT: number): number {
         const et = jdUTtoET(jdUT);
-        const T  = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
 
-        const moon  = this.source.getBarycentric(NAIF.Moon,  et);
+        const moon = this.source.getBarycentric(NAIF.Moon, et);
         const earth = this.source.getBarycentric(NAIF.Earth, et);
 
         const r: Vec = [moon.x - earth.x, moon.y - earth.y, moon.z - earth.z];
@@ -512,18 +552,20 @@ export class EphemerisEngine {
         const hy = rEcl[2] * vEcl[0] - rEcl[0] * vEcl[2];
 
         // Ascending node direction = ẑ × h = (−h_y, h_x, 0)
-        return mod360(Math.atan2(hx, -hy) * 180 / Math.PI);
+        return mod360((Math.atan2(hx, -hy) * 180) / Math.PI);
     }
 
     /** Equatorial declination from mean-of-date ecliptic longitude and latitude. */
     private declinationOf(jdUT: number, lon: number, lat: number): number {
-        const T   = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-        const eps = meanObliquity(T) * Math.PI / 180;
-        const l   = lon * Math.PI / 180;
-        const b   = lat * Math.PI / 180;
-        return Math.asin(
-            Math.sin(b) * Math.cos(eps) + Math.cos(b) * Math.sin(eps) * Math.sin(l),
-        ) * 180 / Math.PI;
+        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+        const eps = (meanObliquity(T) * Math.PI) / 180;
+        const l = (lon * Math.PI) / 180;
+        const b = (lat * Math.PI) / 180;
+        return (
+            (Math.asin(Math.sin(b) * Math.cos(eps) + Math.cos(b) * Math.sin(eps) * Math.sin(l)) *
+                180) /
+            Math.PI
+        );
     }
 
     // -----------------------------------------------------------------------
@@ -537,48 +579,81 @@ export class EphemerisEngine {
      * @param jd       Julian Day (UT)
      * @param lat      Geographic latitude
      * @param lon      Geographic longitude
-     * @param method   'W' = Whole Sign (default); others treated as Whole Sign
+     * @param method   'W' whole sign, 'E' equal, 'P' Placidus, 'O' Porphyry
      * @param sidereal When true (default), all angles have ayanamsa subtracted
+     * @param ayanamsaMode   SE_SIDM_* code; defaults to the instance setting
+     * @param ayanamsaOffset Constant added to the ayanamsa, degrees
+     * @param siderealFrame  How the tropical angles are made sidereal.
+     *   • `'jhora'` (default) — subtract the geometric star-defined ayanamsa,
+     *     the same zero point the planets use. This is what JHora does: it
+     *     takes `swe_houses` tropical angles and subtracts its ayanamsa.
+     *   • `'se-apparent'` — opt-in Swiss Ephemeris `swe_houses_ex(SEFLG_SIDEREAL)`
+     *     frame: apparent star place (aberration, deflection) plus Δψ.
      */
     public getHouses(
-        jd: number, lat: number, lon: number,
-        method = 'W', sidereal = true, ayanamsaMode?: number, ayanamsaOffset = 0,
+        jd: number,
+        lat: number,
+        lon: number,
+        method = 'W',
+        sidereal = true,
+        ayanamsaMode?: number,
+        ayanamsaOffset = 0,
+        siderealFrame: 'jhora' | 'se-apparent' = 'jhora',
     ): HouseData {
         this.checkInit();
 
-        // The angles are Earth-rotation quantities, so they are built on
-        // *apparent* sidereal time and the *true* obliquity — unlike planetary
-        // longitudes, which stop at the mean equinox. Subtracting the ayanamsa
-        // afterwards then reproduces Swiss Ephemeris' sidereal house behaviour.
-        const eps  = trueObliquity(jd);
+        // Angles are built on apparent sidereal time and the true obliquity,
+        // as swe_houses does. Whole Sign cusps are the sign boundaries of the
+        // sidereal ascendant, not the tropical cusps shifted by ayanamsa.
+        const eps = trueObliquity(jd);
         const ramc = mod360(getGAST(jd) + lon);
 
-        const tropAsc    = computeAscendant(ramc, lat, eps);
-        const tropMC     = computeMC(ramc, eps);
+        const tropAsc = computeAscendant(ramc, lat, eps);
+        const tropMC = computeMC(ramc, eps);
         const tropVertex = computeVertex(ramc, lat, eps);
 
-        const cuspsFor = (asc: number) =>
-            method === 'E' ? equalHouseCusps(asc) : wholeSignCusps(asc);
+        const tropicalCusps = (): number[] => {
+            if (method === 'E') return equalHouseCusps(tropAsc);
+            // Placidus is undefined beyond the polar circle; like swe_houses
+            // (SE general documentation §6.4) fall back to Porphyry there.
+            if (method === 'P') {
+                return Math.abs(lat) >= 90 - eps
+                    ? porphyryCusps(tropAsc, tropMC)
+                    : placidusCusps(ramc, lat, eps, tropAsc, tropMC);
+            }
+            if (method === 'O') return porphyryCusps(tropAsc, tropMC);
+            return wholeSignCusps(tropAsc);
+        };
 
-        if (sidereal) {
-            const ayan = computeAyanamsa(ayanamsaMode ?? this.ayanamsaMode, jd) + ayanamsaOffset;
-            const sub  = (d: number) => mod360(d - ayan);
-            const sidAsc = sub(tropAsc);
+        if (!sidereal) {
             return {
-                cusps:     cuspsFor(sidAsc),
-                ascendant: sidAsc,
-                mc:        sub(tropMC),
-                armc:      ramc,
-                vertex:    sub(tropVertex),
+                cusps: tropicalCusps(),
+                ascendant: tropAsc,
+                mc: tropMC,
+                armc: ramc,
+                vertex: tropVertex,
             };
         }
 
+        const mode = ayanamsaMode ?? this.ayanamsaMode;
+        let ayaEx: number;
+        if (siderealFrame === 'se-apparent') {
+            // aya_ex = apparent ayanamsa (no nutation) + Δψ, the value
+            // swe_get_ayanamsa_ex_ut reports for a star-defined mode.
+            const T = julianCenturies(jd + deltaT(jd) / 86400.0);
+            ayaEx = computeAyanamsa(mode, jd, 'apparent') + ayanamsaOffset + nutation(T).dpsi;
+        } else {
+            ayaEx = computeAyanamsa(mode, jd, 'geometric') + ayanamsaOffset;
+        }
+        const sub = (d: number) => mod360(d - ayaEx);
+        const sidAsc = sub(tropAsc);
+
         return {
-            cusps:     cuspsFor(tropAsc),
-            ascendant: tropAsc,
-            mc:        tropMC,
-            armc:      ramc,
-            vertex:    tropVertex,
+            cusps: method === 'W' ? wholeSignCusps(sidAsc) : tropicalCusps().map(sub),
+            ascendant: sidAsc,
+            mc: sub(tropMC),
+            armc: ramc,
+            vertex: sub(tropVertex),
         };
     }
 

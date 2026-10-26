@@ -2,170 +2,154 @@
  * deltat.ts — ΔT = TT − UT1, the offset between uniform dynamical time and
  * Earth-rotation-based civil time.
  *
- * Ephemerides (DE440) are indexed by TDB; birth data is given in UT. Ignoring
- * ΔT shifts every body by its motion over ~60 s, which for the Moon is ~35″ —
- * far larger than everything else in this engine combined.
+ * Ephemerides (DE440s) are indexed by TDB; birth data is given in UT. One
+ * second of ΔT moves the Moon by ~0.55″ and the Sun by ~0.041″.
  *
- * Implementation: the Espenak & Meeus polynomial expressions published by NASA
- * (https://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html), the same family of
- * fits Swiss Ephemeris uses outside its tabulated range. For 1600–2150 — which
- * covers all of de440s.bsp — these are accurate to ~1 s or better, i.e. under
- * 0.6″ of lunar motion.
+ * Precision profile 'jhora' (the default) reproduces the ΔT model of
+ * Swiss Ephemeris 2.02.01, the release bundled with Jagannatha Hora. It is
+ * built here from the published formulas and the observed record only;
+ * nothing is sampled from Swiss Ephemeris or JHora output:
+ *
+ *   • year ≤ −500 — Morrison & Stephenson (2004), J. Hist. Astron. 35, 327:
+ *       ΔT = −20 + 32 u², u = (y − 1820)/100;
+ *   • −500 < y < 1633 — Espenak & Meeus (2006), "Polynomial expressions for
+ *     Delta T", NASA Five Millennium Canon of Solar Eclipses (TP-2006-214141),
+ *     https://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html — the −500…500,
+ *     500…1600 and 1600…1700 polynomials;
+ *   • 1633 ≤ y ≤ 2019 — the observed annual record (deltat-observed.ts:
+ *     Astronomical Almanac K8–K9, then USNO), interpolated with Bessel's
+ *     central-difference formula through fourth differences (Abramowitz &
+ *     Stegun, Handbook of Mathematical Functions, §25.2);
+ *   • y > 2019 — Stephenson (1997), Historical Eclipses and Earth's
+ *     Rotation, p. 507: ΔT = −20 + 31 u², joined to the last observation by
+ *     a correction that decays linearly to zero over 100 years.
+ *
+ * Before 1955 the record and the polynomials refer to the lunar tidal
+ * acceleration ṅ = −26″/cy². They are moved to the ephemeris value with the
+ * correction of Morrison & Ward / Espenak & Meeus,
+ *     δ(ΔT) = −0.000091 (ṅ + 26) (y − 1955)²  seconds,
+ * using ṅ = −25.8″/cy², the DE431 lunar tidal acceleration that the Swiss
+ * Ephemeris general documentation (ch. 7, "ΔT") gives as the default for its
+ * DE431-based files.
+ *
+ * The decimal year is y = 2000 + (JD − 2451545)/365.2425 (mean Gregorian
+ * year), and the observed-record branch indexes 1 January values by that
+ * same decimal year.
  */
 
-/** Decimal year from a Julian Day (sufficient precision for a ΔT fit). */
+import { OBSERVED_DELTAT_JAN1, OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
+
+/** Supported precision profiles. See CalculationSettings.precisionProfile. */
+export type PrecisionProfile = 'jhora';
+
+/** Identifier recorded in result envelopes for the ΔT model in use. */
+export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997';
+
+/** Lunar tidal acceleration of the ephemeris, ″/cy² (DE430/DE431). */
+export const TIDAL_ACCELERATION = -25.8;
+
+const RECORD_FIRST = OBSERVED_DELTAT_YEAR0;
+const RECORD_LAST = OBSERVED_DELTAT_YEAR0 + OBSERVED_DELTAT_JAN1.length - 1;
+/** First year interpolated from the observed record rather than a polynomial. */
+const RECORD_START = 1633;
+
+/** Last year whose ΔT comes from an observation rather than extrapolation. */
+export const LAST_OBSERVED_YEAR = RECORD_LAST;
+
 function decimalYear(jd: number): number {
-    return 2000.0 + (jd - 2451545.0) / 365.25;
+    return 2000.0 + (jd - 2451545.0) / 365.2425;
 }
 
-// ---------------------------------------------------------------------------
-// Observed ΔT
-// ---------------------------------------------------------------------------
-
-/** First year of the observation table. */
-const OBS_START = 2005;
-
-/**
- * Observed ΔT at the start of each year, seconds.
- *
- * ΔT = 32.184 + (TAI − UTC) − (UT1 − UTC), from IERS Bulletin A / USNO.
- *
- * These are measurements, and they matter: the Espenak & Meeus 2005–2050 fit was
- * made in 2006 and assumed Earth's rotation would keep slowing. It did not —
- * the planet has run slightly *fast* since ~2016. By 2024 the polynomial
- * over-predicts ΔT by ~5 s, which is 2.5″ of lunar motion, enough on its own to
- * blow the engine's 1″ budget. Swiss Ephemeris tabulates observations for the
- * same reason.
- */
-const OBSERVED_DELTA_T: readonly number[] = [
-    64.69, // 2005
-    64.85, // 2006
-    65.15, // 2007
-    65.46, // 2008
-    65.78, // 2009
-    66.07, // 2010
-    66.32, // 2011
-    66.60, // 2012
-    66.91, // 2013
-    67.28, // 2014
-    67.64, // 2015
-    68.10, // 2016
-    68.59, // 2017
-    68.97, // 2018
-    69.22, // 2019
-    69.36, // 2020
-    69.36, // 2021
-    69.29, // 2022
-    69.22, // 2023
-    69.18, // 2024
-    69.20, // 2025
-];
-
-/** Last year covered by {@link OBSERVED_DELTA_T}. */
-export const LAST_OBSERVED_YEAR = OBS_START + OBSERVED_DELTA_T.length - 1;
-
-/** Linear interpolation within the observation table. */
-function observedDeltaT(y: number): number {
-    const idx = Math.floor(y - OBS_START);
-    const f   = y - OBS_START - idx;
-    const a   = OBSERVED_DELTA_T[idx];
-    const b   = OBSERVED_DELTA_T[Math.min(idx + 1, OBSERVED_DELTA_T.length - 1)];
-    return a + (b - a) * f;
+function recordAt(year: number): number {
+    const y = Math.min(Math.max(year, RECORD_FIRST), RECORD_LAST);
+    return OBSERVED_DELTAT_JAN1[y - RECORD_FIRST];
 }
 
-/**
- * Espenak & Meeus fit for 2005–2050, retained as the *shape* of the future
- * curve. It is offset to join the observation table continuously at
- * {@link LAST_OBSERVED_YEAR}, and the offset is tapered out by 2150 so the
- * long-term parabola is recovered at the far end of the ephemeris range.
- *
- * Future ΔT is not predictable to better than tens of seconds by anyone; this
- * simply avoids a discontinuity at the end of the observed record.
- */
-function extrapolatedDeltaT(y: number): number {
-    const poly = (yy: number) => {
-        const u = yy - 2000;
-        return 62.92 + 0.32217 * u + 0.005589 * u ** 2;
-    };
+/** Bessel's interpolation formula through fourth differences. */
+function interpolateRecord(y: number): number {
+    let i = Math.floor(y);
+    if (i < RECORD_START) i = RECORD_START;
+    if (i > RECORD_LAST - 1) i = RECORD_LAST - 1;
+    const p = y - i;
+    const fm2 = recordAt(i - 2),
+        fm1 = recordAt(i - 1),
+        f0 = recordAt(i);
+    const f1 = recordAt(i + 1),
+        f2 = recordAt(i + 2),
+        f3 = recordAt(i + 3);
+    const d1 = f1 - f0;
+    const d2sum = f2 - f1 - (f0 - fm1); // δ²₀ + δ²₁
+    const d3 = f2 - 3 * f1 + 3 * f0 - fm1; // δ³½
+    const d4sum = fm2 - 4 * fm1 + 6 * f0 - 4 * f1 + f2 + (fm1 - 4 * f0 + 6 * f1 - 4 * f2 + f3); // δ⁴₀ + δ⁴₁
+    return (
+        f0 +
+        p * d1 +
+        ((p * (p - 1)) / 4) * d2sum +
+        ((p * (p - 1) * (p - 0.5)) / 6) * d3 +
+        (((p + 1) * p * (p - 1) * (p - 2)) / 48) * d4sum
+    );
+}
 
-    const offset = OBSERVED_DELTA_T[OBSERVED_DELTA_T.length - 1] - poly(LAST_OBSERVED_YEAR);
-    const taper  = Math.max(0, 1 - (y - LAST_OBSERVED_YEAR) / (2150 - LAST_OBSERVED_YEAR));
+/** Stephenson (1997) long-term parabola. */
+function stephenson1997(y: number): number {
+    const u = (y - 1820) / 100;
+    return -20 + 31 * u * u;
+}
 
-    return poly(y) + offset * taper;
+/** ΔT on the ṅ = −26″/cy² system (before the tidal correction). */
+function deltaTRaw(y: number): number {
+    if (y <= -500) {
+        const u = (y - 1820) / 100;
+        return -20 + 32 * u * u;
+    }
+    if (y <= 500) {
+        const u = y / 100;
+        return (
+            10583.6 -
+            1014.41 * u +
+            33.78311 * u ** 2 -
+            5.952053 * u ** 3 -
+            0.1798452 * u ** 4 +
+            0.022174192 * u ** 5 +
+            0.0090316521 * u ** 6
+        );
+    }
+    if (y < 1600) {
+        const u = (y - 1000) / 100;
+        return (
+            1574.2 -
+            556.01 * u +
+            71.23472 * u ** 2 +
+            0.319781 * u ** 3 -
+            0.8503463 * u ** 4 -
+            0.005050998 * u ** 5 +
+            0.0083572073 * u ** 6
+        );
+    }
+    if (y < RECORD_START) {
+        const t = y - 1600;
+        return 120 - 0.9808 * t - 0.01532 * t * t + t ** 3 / 7129;
+    }
+    if (y <= RECORD_LAST) return interpolateRecord(y);
+    let v = stephenson1997(y);
+    if (y < RECORD_LAST + 100) {
+        v += (recordAt(RECORD_LAST) - stephenson1997(RECORD_LAST)) * (1 - (y - RECORD_LAST) / 100);
+    }
+    return v;
 }
 
 /**
  * ΔT = TT − UT1 in seconds for the given Julian Day (UT).
  *
- * @param jdUT  Julian Day in UT
+ * @param jdUT     Julian Day in UT
+ * @param profile  precision profile (only 'jhora' in this release)
  */
-export function deltaT(jdUT: number): number {
+export function deltaT(jdUT: number, profile: PrecisionProfile = 'jhora'): number {
+    void profile;
     const y = decimalYear(jdUT);
-    let u: number;
-
-    if (y < -500) {
-        u = (y - 1820) / 100;
-        return -20 + 32 * u * u;
-    }
-    if (y < 500) {
-        u = y / 100;
-        return 10583.6 - 1014.41 * u + 33.78311 * u ** 2 - 5.952053 * u ** 3
-             - 0.1798452 * u ** 4 + 0.022174192 * u ** 5 + 0.0090316521 * u ** 6;
-    }
-    if (y < 1600) {
-        u = (y - 1000) / 100;
-        return 1574.2 - 556.01 * u + 71.23472 * u ** 2 + 0.319781 * u ** 3
-             - 0.8503463 * u ** 4 - 0.005050998 * u ** 5 + 0.0083572073 * u ** 6;
-    }
-    if (y < 1700) {
-        u = y - 1600;
-        return 120 - 0.9808 * u - 0.01532 * u ** 2 + u ** 3 / 7129;
-    }
-    if (y < 1800) {
-        u = y - 1700;
-        return 8.83 + 0.1603 * u - 0.0059285 * u ** 2 + 0.00013336 * u ** 3 - u ** 4 / 1174000;
-    }
-    if (y < 1860) {
-        u = y - 1800;
-        return 13.72 - 0.332447 * u + 0.0068612 * u ** 2 + 0.0041116 * u ** 3
-             - 0.00037436 * u ** 4 + 0.0000121272 * u ** 5
-             - 0.0000001699 * u ** 6 + 0.000000000875 * u ** 7;
-    }
-    if (y < 1900) {
-        u = y - 1860;
-        return 7.62 + 0.5737 * u - 0.251754 * u ** 2 + 0.01680668 * u ** 3
-             - 0.0004473624 * u ** 4 + u ** 5 / 233174;
-    }
-    if (y < 1920) {
-        u = y - 1900;
-        return -2.79 + 1.494119 * u - 0.0598939 * u ** 2 + 0.0061966 * u ** 3 - 0.000197 * u ** 4;
-    }
-    if (y < 1941) {
-        u = y - 1920;
-        return 21.20 + 0.84493 * u - 0.076100 * u ** 2 + 0.0020936 * u ** 3;
-    }
-    if (y < 1961) {
-        u = y - 1950;
-        return 29.07 + 0.407 * u - u ** 2 / 233 + u ** 3 / 2547;
-    }
-    if (y < 1986) {
-        u = y - 1975;
-        return 45.45 + 1.067 * u - u ** 2 / 260 - u ** 3 / 718;
-    }
-    if (y < OBS_START) {
-        u = y - 2000;
-        return 63.86 + 0.3345 * u - 0.060374 * u ** 2 + 0.0017275 * u ** 3
-             + 0.000651814 * u ** 4 + 0.00002373599 * u ** 5;
-    }
-    if (y <= LAST_OBSERVED_YEAR) {
-        return observedDeltaT(y);
-    }
-    if (y < 2150) {
-        return extrapolatedDeltaT(y);
-    }
-
-    u = (y - 1820) / 100;
-    return -20 + 32 * u * u;
+    let v = deltaTRaw(y);
+    if (y < 1955) v += -0.000091 * (TIDAL_ACCELERATION + 26) * (y - 1955) ** 2;
+    return v;
 }
 
 /**

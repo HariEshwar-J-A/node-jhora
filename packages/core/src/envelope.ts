@@ -6,18 +6,27 @@
  * without changing numeric results.
  */
 
+import { DELTA_T_MODEL_JHORA, type PrecisionProfile } from './engine/deltat.js';
 import { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 
-// TODO(provider): EPHEMERIS_PROVIDER and DELTA_T_MODEL are fixed for now. Once a
-// long-range provider lands, take both from the active provider and settings.
+export type { PrecisionProfile };
+
+// TODO(provider): EPHEMERIS_PROVIDER is fixed for now. Once a long-range
+// provider lands, take it from the active provider and settings.
 /** JPL DE440s kernel served by {@link @node-jhora/ephe}. */
 export const EPHEMERIS_PROVIDER = 'jpl-de440s';
 
 /**
- * ΔT model id — matches `packages/core/src/engine/deltat.ts`
- * (Espenak & Meeus polynomials, NASA eclipse catalog family).
+ * ΔT model id — matches `packages/core/src/engine/deltat.ts` (the clean-room
+ * reconstruction of the model in the Swiss Ephemeris 2.02 build JHora ships).
  */
-export const DELTA_T_MODEL = 'espenak-meeus';
+export const DELTA_T_MODEL = DELTA_T_MODEL_JHORA;
+
+/**
+ * Precision profile stamped on results. `'jhora'` (the default) reproduces
+ * Jagannatha Hora's conventions; a `'modern'` profile is planned as a follow-up.
+ */
+export const DEFAULT_PRECISION_PROFILE: PrecisionProfile = 'jhora';
 
 export type SettingsHashValue = string | Record<string, string>;
 
@@ -27,6 +36,8 @@ export interface ResultEnvelope {
     ephemerisProvider: string;
     tzdbVersion: string;
     deltaTModel: string;
+    /** Precision profile the numbers were computed under. */
+    precisionProfile: PrecisionProfile;
     warnings: string[];
     /** Present only when explicitly requested; keeps goldens stable when omitted. */
     computedAt?: string;
@@ -34,6 +45,7 @@ export interface ResultEnvelope {
 
 export interface ResultEnvelopeOptions {
     settingsHash: SettingsHashValue;
+    precisionProfile?: PrecisionProfile;
     warnings?: readonly string[];
     /** ISO-8601 timestamp; omit for deterministic output. */
     computedAt?: string;
@@ -48,6 +60,7 @@ export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnve
         ephemerisProvider: EPHEMERIS_PROVIDER,
         tzdbVersion: TZDB_VERSION,
         deltaTModel: DELTA_T_MODEL,
+        precisionProfile: options.precisionProfile ?? DEFAULT_PRECISION_PROFILE,
         warnings,
     };
     if (options.computedAt !== undefined) {
@@ -63,6 +76,7 @@ export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnve
  */
 export interface WithResultEnvelopeOptions {
     settingsHash?: SettingsHashValue;
+    precisionProfile?: PrecisionProfile;
     warnings?: readonly string[];
     computedAt?: string;
 }
@@ -85,6 +99,7 @@ export function withResultEnvelope<T extends Record<string, unknown>>(
         ...payload,
         ...createResultEnvelope({
             settingsHash,
+            precisionProfile: options.precisionProfile,
             warnings: options.warnings,
             computedAt: options.computedAt,
         }),

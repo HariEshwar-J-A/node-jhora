@@ -34,7 +34,7 @@ export const AU_KM = 149597870.7;
  * Schwarzschild radius factor 2·GM☉/c², in km.
  * GM☉ = 1.32712440018e11 km³/s² (IAU 2009).
  */
-const SUN_2GM_C2 = 2 * 1.32712440018e11 / (C_KM_S * C_KM_S);
+const SUN_2GM_C2 = (2 * 1.32712440018e11) / (C_KM_S * C_KM_S);
 
 /** Minimal slice of SpkFile that this module needs. */
 export interface BarycentricSource {
@@ -68,26 +68,30 @@ export interface ObserverState {
  * has to be an explicit choice rather than an assumption.
  */
 export interface PlaceCorrections {
-    lightTime?:  boolean;
+    lightTime?: boolean;
     deflection?: boolean;
     aberration?: boolean;
 }
 
 /** Geometric place: where the body *is*, ignoring how its light reaches us. */
 export const GEOMETRIC: Required<PlaceCorrections> = {
-    lightTime: false, deflection: false, aberration: false,
+    lightTime: false,
+    deflection: false,
+    aberration: false,
 };
 
 /** Apparent place: where the body is *seen*. Matches JPL Horizons. */
 export const APPARENT: Required<PlaceCorrections> = {
-    lightTime: true, deflection: true, aberration: true,
+    lightTime: true,
+    deflection: true,
+    aberration: true,
 };
 
 // ---------------------------------------------------------------------------
 // Vector helpers (local, unrolled — these run in the hot path)
 // ---------------------------------------------------------------------------
 
-const dot  = (a: Vec, b: Vec): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const dot = (a: Vec, b: Vec): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const norm = (a: Vec): number => Math.hypot(a[0], a[1], a[2]);
 
 function unit(a: Vec): Vec {
@@ -137,15 +141,11 @@ export function observerState(
  */
 function aberrate(u: Vec, v: Vec): Vec {
     const v2 = dot(v, v);
-    const bm1 = Math.sqrt(Math.max(0, 1 - v2));   // 1/γ
+    const bm1 = Math.sqrt(Math.max(0, 1 - v2)); // 1/γ
     const pdv = dot(u, v);
-    const w1  = 1 + pdv / (1 + bm1);
+    const w1 = 1 + pdv / (1 + bm1);
 
-    return unit([
-        u[0] * bm1 + w1 * v[0],
-        u[1] * bm1 + w1 * v[1],
-        u[2] * bm1 + w1 * v[2],
-    ]);
+    return unit([u[0] * bm1 + w1 * v[0], u[1] * bm1 + w1 * v[1], u[2] * bm1 + w1 * v[2]]);
 }
 
 /**
@@ -165,11 +165,11 @@ function deflect(u: Vec, e: Vec, q: Vec): Vec {
 
     const g1 = SUN_2GM_C2 / eDist;
     const g2 = 1 + dot(qHat, eHat);
-    if (g2 <= 1e-12) return u;   // body exactly behind the Sun — deflection undefined
+    if (g2 <= 1e-12) return u; // body exactly behind the Sun — deflection undefined
 
     const uq = dot(u, qHat);
     const eu = dot(eHat, u);
-    const k  = g1 / g2;
+    const k = g1 / g2;
 
     return unit([
         u[0] + k * (uq * eHat[0] - eu * qHat[0]),
@@ -250,4 +250,35 @@ export function computePlace(
     }
 
     return { direction: dir, distanceAU: distanceKm / AU_KM, lightTimeSec: tau };
+}
+
+/**
+ * Apparent direction of a star, given its geometric ICRF unit vector.
+ *
+ * The same two corrections planets use, cited the same way:
+ *   • gravitational deflection — Explanatory Supplement eq. 3.317-1;
+ *   • relativistic aberration — the stellar form of SOFA `iauAb`
+ *     (IERS Conventions).
+ *
+ * For a star the Sun→star direction is indistinguishable from the
+ * observer→star direction (annual parallax is applied by the caller, on the
+ * geometric vector, before this). Deflection of Spica reaches a few tenths of
+ * an arcsecond when the Sun passes it, which is inside the 1″ budget, so it
+ * is not optional for a star-defined ayanamsa.
+ *
+ * @param geometricUnit   Observer → star, ICRF, unit length
+ * @param velocityKmS     Observer barycentric velocity, km/s
+ * @param sunToObserverKm Sun → observer, km
+ */
+export function apparentStarDirection(
+    geometricUnit: Vec,
+    velocityKmS: Vec,
+    sunToObserverKm: Vec,
+): Vec {
+    const deflected = deflect(geometricUnit, sunToObserverKm, geometricUnit);
+    return aberrate(deflected, [
+        velocityKmS[0] / C_KM_S,
+        velocityKmS[1] / C_KM_S,
+        velocityKmS[2] / C_KM_S,
+    ]);
 }
