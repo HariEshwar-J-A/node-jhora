@@ -1,3 +1,4 @@
+import { UnknownAyanamsaModeError, UnsupportedAyanamsaModeError } from '@node-jhora/core';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
 
@@ -26,6 +27,20 @@ export function registerErrorHandler(app: FastifyInstance): void {
                 title: error.message,
                 status: 400,
                 suggestions: error.suggestions,
+            });
+        }
+
+        if (
+            error instanceof UnsupportedAyanamsaModeError ||
+            error instanceof UnknownAyanamsaModeError
+        ) {
+            return reply.status(400).send({
+                type: 'invalid_ayanamsa_mode',
+                title: 'Invalid ayanamsa mode',
+                status: 400,
+                detail: error.message,
+                mode: error.mode,
+                ...('code' in error ? { code: error.code } : {}),
             });
         }
 

@@ -63,5 +63,5 @@ Raw JSON: `tools/ayanamsa-era-max.json` (regenerate with the script above).
 |    8 | `SIDM_JN_BHASIN`   | No citable primary anchor reproducing SE 2.10 within 1″                                 |
 |   28 | `SIDM_TRUE_REVATI` | Published ζ Psc pin + Hipparcos astrometry misses SE 2.10 at kernel edges by arcminutes |
 
-`getAyanamsa` throws {@link UnsupportedAyanamsaModeError} for these modes. Other unknown
-SE mode numbers fall back to True Chitrapaksha (27).
+`getAyanamsa` throws {@link UnsupportedAyanamsaModeError} for these modes. Any other
+unregistered SE_SIDM code throws {@link UnknownAyanamsaModeError}.

@@ -59,6 +59,7 @@ import {
     type PlaceCorrections,
 } from './apparent.js';
 import {
+    assertValidAyanamsaMode,
     type AyanamsaFrame,
     ayanamsaName,
     getAyanamsa as computeAyanamsa,
@@ -351,6 +352,7 @@ export class EphemerisEngine {
     /** Set ayanamsa mode. Accepts AYANAMSA.* constants. */
     public setAyanamsa(mode: number): void {
         this.checkInit();
+        assertValidAyanamsaMode(mode);
         this.ayanamsaMode = mode;
     }
 
