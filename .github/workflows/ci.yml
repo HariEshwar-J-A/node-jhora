@@ -231,5 +231,5 @@ jobs:
                   restore-keys: |
                       turbo-ubuntu-latest-node22.23.4-
             - run: pnpm install --frozen-lockfile
-            - run: pnpm run build
+            - run: pnpm exec turbo run build --force --filter=./packages/*
             - run: pnpm run api:check

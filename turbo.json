@@ -3,7 +3,7 @@
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": ["dist/**", ".tsbuildinfo"]
+            "outputs": ["dist/**", "tsconfig.tsbuildinfo"]
         },
         "typecheck": {
             "dependsOn": ["^build"],
@@ -26,11 +26,11 @@
             "outputs": []
         },
         "api:report": {
-            "dependsOn": ["build"],
+            "dependsOn": ["^build", "build"],
             "inputs": [
                 "$TURBO_DEFAULT$",
                 "dist/**",
-                "index.d.ts",
+                "tsconfig.tsbuildinfo",
                 "api-extractor.json",
                 "api-extractor-tsconfig.json",
                 "$TURBO_ROOT$/config/api-extractor.common.json"
@@ -38,11 +38,11 @@
             "outputs": []
         },
         "api:check": {
-            "dependsOn": ["build"],
+            "dependsOn": ["^build", "build"],
             "inputs": [
                 "$TURBO_DEFAULT$",
                 "dist/**",
-                "index.d.ts",
+                "tsconfig.tsbuildinfo",
                 "api-extractor.json",
                 "api-extractor-tsconfig.json",
                 "$TURBO_ROOT$/config/api-extractor.common.json",
@@ -53,7 +53,12 @@
         "@node-jhora/core#build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", "scripts/write-build-constants.mjs", "package.json"],
-            "outputs": ["dist/**", ".tsbuildinfo", "src/generated/**"]
+            "outputs": ["dist/**", "tsconfig.tsbuildinfo", "src/generated/**"]
+        },
+        "@node-jhora/format#build": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/core/dist/**"],
+            "outputs": ["dist/**", "tsconfig.tsbuildinfo"]
         },
         "@node-jhora/ephe#build": {
             "outputs": []
