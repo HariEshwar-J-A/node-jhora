@@ -29,6 +29,28 @@ export { buildGoldenCaseJsonSchema, formatJsonSchema } from './json-schema.js';
 export { formatGoldenJson, formatGoldenJsonl, parseGoldenCorpus } from './corpus.js';
 
 export {
+    angleDeltaArcsec,
+    compareGoldenCase,
+    compareGoldenPaths,
+    signedAngleDeltaDegrees,
+    type CompareGoldenOptions,
+    type FeatureWorstOffender,
+    type GoldenActual,
+    type GoldenCompareResult,
+    type PathCompareResult,
+} from './compare.js';
+
+export {
+    formatGoldenReportHtml,
+    formatGoldenReportMarkdown,
+    formatGoldenReportText,
+    goldenCompareResultToJson,
+    type GoldenReportJson,
+} from './report.js';
+
+export { expectGolden, installGoldenMatchers } from './jest.js';
+
+export {
     HORIZONS_PRESET_ID,
     JHORA_CASE_ID,
     JHORA_PRESET_ID,

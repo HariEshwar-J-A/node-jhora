@@ -42,3 +42,18 @@ The legacy modules do not record altitude, an IANA zone, a tool version, or a ca
 Panchanga percents are exact oracle numbers. Their comparison slack is `meta.panchanga.tolerancePercent`, because the schema has no percent tolerance kind. Vimshottari `toleranceDays` is stored as seconds on each `dasa.vimshottari[n].end`. Horizons body order is `meta.epoch.bodies[n]`; the legacy rows are not Sun-to-Saturn.
 
 Regenerate the JSON Schema and the converted fixtures with `pnpm --filter @node-jhora/testkit generate` (the testkit Jest project with `WRITE_GOLDENS=1`). Plain `pnpm test` fails if either file has drifted from the generator. Do not loosen a tolerance without a decision record.
+
+## Comparator
+
+`@node-jhora/testkit` compares a golden case to a flat `actual` map keyed by feature path:
+
+| API | Role |
+| :--- | :--- |
+| `compareGoldenCase` / `compareGoldenPaths` | Per-path pass/fail, signed Δ in arcseconds or seconds |
+| `formatGoldenReportText` / `Markdown` / `Html` | CI and PR-readable diff artifacts |
+| `goldenCompareResultToJson` | Structured JSON report |
+| `expectGolden` | Jest helper that throws the text report on failure |
+
+Angles use shortest-arc difference (359°59′59″ vs 0°00′01″ → 2″). `siderealTime.hours` compares slack in seconds of time. Dasa `end` strings compare as UTC midnights. Failed paths are ranked by feature id in `worstByFeature`. Optional `{ only: string[] }` limits which expected paths run (useful when the engine fills a subset).
+
+Example: `packages/core/tests/golden/horizons-comparator.golden.test.ts`.
