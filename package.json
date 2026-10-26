@@ -17,9 +17,11 @@
         "docs:dev": "pnpm --filter @node-jhora/docs dev",
         "docs:build": "pnpm --filter @node-jhora/docs build",
         "postinstall": "node packages/ephe/download.mjs",
-        "format:check": "node scripts/format-check-changed.mjs"
+        "format:check": "node scripts/format-check-changed.mjs",
+        "changeset": "changeset"
     },
     "devDependencies": {
+        "@changesets/cli": "^2.31.1",
         "@eslint/js": "^9.39.1",
         "@node-jhora/ephe": "workspace:*",
         "@types/jest": "^30.0.0",

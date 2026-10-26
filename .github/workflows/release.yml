@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview the release (no version bumps committed, no npm publish)
+        type: boolean
+        default: true
+      publish:
+        description: Publish to npm (requires NPM_TOKEN; ignored when dry_run is true)
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Apply changesets (version packages)
+        if: ${{ inputs.publish && !inputs.dry_run }}
+        run: pnpm changeset version
+
+      - name: Preview npm publish (dry run)
+        if: ${{ inputs.dry_run || !inputs.publish }}
+        run: >-
+          pnpm -r --filter "./packages/*" --filter "!@node-jhora/testkit"
+          publish --dry-run --no-git-checks
+
+      - name: Publish to npm
+        if: ${{ inputs.publish && !inputs.dry_run }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm changeset publish
