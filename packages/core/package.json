@@ -28,7 +28,7 @@
         "zod": "^3.25.51"
     },
     "peerDependencies": {
-        "@node-jhora/ephe": "^440.2.0"
+        "@node-jhora/ephe": "workspace:*"
     },
     "peerDependenciesMeta": {
         "@node-jhora/ephe": {
@@ -39,7 +39,8 @@
         "@types/jest": "^30.0.0",
         "jest": "^30.2.0",
         "ts-jest": "^29.4.6",
-        "typescript": "*"
+        "@node-jhora/ephe": "workspace:*",
+        "typescript": "^5.9.3"
     },
     "keywords": [
         "vedic-astrology",

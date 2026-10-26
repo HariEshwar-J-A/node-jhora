@@ -36,7 +36,7 @@ forbids copying the expression of JHora. The full rule is
 - JHora numbers are allowed only as expected values in tests, with provenance.
 - UI layout may follow general Jyotish conventions. Code, art, and wording are
   original.
-- `npm run check:clean-room` (`tools/check-forbidden-assets.mjs`) fails the
+- `pnpm run check:clean-room` (`tools/check-forbidden-assets.mjs`) fails the
   tree on help files (`.chm`, `.hlp`), `.ico` and `.bmp`, `.exe` and `.dll`,
   `.jhd` files outside the fixture allowlist, and the decompiler markers
   `Decompiled by`, `Ghidra`, and `undefined4`.

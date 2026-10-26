@@ -6,7 +6,7 @@ by P.V.R. Narasimha Rao is a behavioural reference: we may study what the
 program *does* and which numbers it prints. We do not copy how it is built.
 
 This policy is binding. [ADR 0002](decisions/0002-clean-room-policy.md) records
-the decision. `npm run check:clean-room` enforces the mechanical part.
+the decision. `pnpm run check:clean-room` enforces the mechanical part.
 
 ## What must never enter the repository
 
@@ -44,7 +44,7 @@ When a golden fixture records a JHora number:
 - Prefer a small transcribed fixture over a large captured directory. Capture
   pipelines (Wine or otherwise) stay outside the repo and commit numbers only.
 
-`.jhd` files anywhere else fail `npm run check:clean-room`.
+`.jhd` files anywhere else fail `pnpm run check:clean-room`.
 
 ## User interface
 
@@ -126,7 +126,7 @@ version that produced them.
 
 On every pull request:
 
-1. `npm run check:clean-room` passes. The script fails the tree when it finds
+1. `pnpm run check:clean-room` passes. The script fails the tree when it finds
    `.chm`, `.hlp`, `.ico`, `.bmp`, `.exe`, or `.dll` files; a `.jhd` file
    outside the fixture allowlist; or the decompiler markers `Decompiled by`,
    `Ghidra`, and `undefined4`.
@@ -147,9 +147,9 @@ On every pull request:
 ## Running the check
 
 ```bash
-npm run check:clean-room
+pnpm run check:clean-room
 node --test tools/check-forbidden-assets.test.mjs
 ```
 
-`npm test` runs the guard's unit tests after Jest. The unit tests build a
+`pnpm test` runs the guard's unit tests after Jest. The unit tests build a
 temporary tree; they do not need a JHora install.

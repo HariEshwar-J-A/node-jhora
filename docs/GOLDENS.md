@@ -41,4 +41,4 @@ The legacy modules do not record altitude, an IANA zone, a tool version, or a ca
 
 Panchanga percents are exact oracle numbers. Their comparison slack is `meta.panchanga.tolerancePercent`, because the schema has no percent tolerance kind. Vimshottari `toleranceDays` is stored as seconds on each `dasa.vimshottari[n].end`. Horizons body order is `meta.epoch.bodies[n]`; the legacy rows are not Sun-to-Saturn.
 
-Regenerate the JSON Schema and the converted fixtures with `npm run generate -w @node-jhora/testkit` (the testkit Jest project with `WRITE_GOLDENS=1`). Plain `npm test` fails if either file has drifted from the generator. Do not loosen a tolerance without a decision record.
+Regenerate the JSON Schema and the converted fixtures with `pnpm --filter @node-jhora/testkit generate` (the testkit Jest project with `WRITE_GOLDENS=1`). Plain `pnpm test` fails if either file has drifted from the generator. Do not loosen a tolerance without a decision record.

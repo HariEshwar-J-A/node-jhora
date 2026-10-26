@@ -37,7 +37,12 @@ npm install @node-jhora/ephe
 ```
 
 The kernel is fetched from JPL by a `postinstall` script rather than being
-committed, to keep the package tarball small.
+committed, to keep the package tarball small. The script pins the file's
+SHA-256 (the same bytes whose MD5 NAIF publishes as
+`3917ee56769db332790c751e2168843d`). A file that already matches is not
+downloaded again. In this monorepo the root `postinstall` runs that script
+as well, because pnpm does not run a dependency's lifecycle scripts unless
+`allowBuilds` in `pnpm-workspace.yaml` approves them.
 
 ## Resolution order
 

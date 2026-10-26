@@ -1,8 +1,8 @@
 # Architecture
 
-Node-Jhora is an npm-workspaces monorepo. **`packages/` holds libraries. `apps/` is for applications.** No `apps/` directory is checked in. A React UI is planned under `apps/` and should depend on package entry points, not on files inside `packages/*/src`.
+Node-Jhora is a pnpm-workspaces monorepo. **`packages/` holds libraries. `apps/` is for applications.** No `apps/` directory is checked in. A React UI is planned under `apps/` and should depend on package entry points, not on files inside `packages/*/src`.
 
-The root `package.json` workspace glob is `packages/*`. Every package is ESM (`"type": "module"`).
+`pnpm-workspace.yaml` globs `packages/*` and `apps/*`. Every package is ESM (`"type": "module"`). Internal dependencies use `workspace:*`.
 
 ## Layout
 
@@ -37,7 +37,7 @@ graph TD
 
 `@node-jhora/ephe` is a data package (a downloader plus `de440s.bsp`). `@node-jhora/core` lists it as a required peer dependency and resolves the kernel at runtime. The dotted edge is that runtime lookup, not a TypeScript project reference.
 
-Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, `testkit`, so `npm run build` (`tsc -b`) compiles every TypeScript workspace. `tools/check-tsrefs.test.ts` fails if a `packages/*/tsconfig.json` is missing from that list. `ephe` is not a TypeScript project.
+Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, `testkit`, so `pnpm build` (`tsc -b`) compiles every TypeScript workspace. `tools/check-tsrefs.test.ts` fails if a `packages/*/tsconfig.json` is missing from that list. `ephe` is not a TypeScript project.
 
 ## Packages
 
@@ -92,7 +92,7 @@ Depends on core, analytics, and prediction. `generateFullReport` returns a PDF `
 
 ### `@node-jhora/api`
 
-Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-provider-zod`, Pino logging. Routes in `src/server.ts`:
+Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-provider-zod`, Pino logging. Zod stays on 3 (`^3.25.51`); `fastify-type-provider-zod` 4 peers that major. Routes in `src/server.ts`:
 
 | Method | Path |
 | :--- | :--- |
@@ -111,7 +111,7 @@ Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-prov
 
 ### `@node-jhora/testkit`
 
-Private. No dependency on the engine. `GoldenCaseSchema` and `schema/golden-case.schema.json` describe one accuracy case. `FEATURE_PATH_RULES` is the allow-list of feature paths (`d1.planets.Sun.lon`, `dasa.vimshottari[0].start`, and the other patterns in [docs/GOLDENS.md](./GOLDENS.md)). Converters in `src/convert.ts` map `jhora_golden.ts` and `horizons_golden.ts` onto that schema. The package is in the root TypeScript project references.
+Private. No dependency on the engine. Depends on `zod@4.6.7` only. pnpm's isolated `node_modules` keeps that copy separate from `@node-jhora/api`'s Zod 3. `GoldenCaseSchema` and `schema/golden-case.schema.json` describe one accuracy case. `FEATURE_PATH_RULES` is the allow-list of feature paths (`d1.planets.Sun.lon`, `dasa.vimshottari[0].start`, and the other patterns in [docs/GOLDENS.md](./GOLDENS.md)). Converters in `src/convert.ts` map `jhora_golden.ts` and `horizons_golden.ts` onto that schema. The package is in the root TypeScript project references.
 
 ## `apps/`
 
@@ -123,11 +123,12 @@ From the repository root:
 
 | Script | What it runs |
 | :--- | :--- |
-| `npm run build` | `tsc -b` (all root references) |
-| `npm test` | `node --experimental-vm-modules node_modules/jest/bin/jest.js && node --test tools/check-forbidden-assets.test.mjs` |
-| `npm run check:links` | `node tools/check-markdown-links.mjs` |
-| `npm run check:clean-room` | `node tools/check-forbidden-assets.mjs` |
-| `npm run lint` | `eslint packages/**/src --ext .ts` — ESLint is not a root `devDependency` |
+| `pnpm build` | `tsc -b` (all root references) |
+| `pnpm test` | `node --experimental-vm-modules node_modules/jest/bin/jest.js && node --test tools/check-forbidden-assets.test.mjs` |
+| `pnpm run check:links` | `node tools/check-markdown-links.mjs` |
+| `pnpm run check:clean-room` | `node tools/check-forbidden-assets.mjs` |
+| `pnpm run validate-github-templates` | `node scripts/validate-github-templates.mjs` |
+| `pnpm run lint` | `eslint packages/**/src --ext .ts` — ESLint is not a root `devDependency` |
 
 Jest's root config loads `packages/*/jest.config.js` and `tools/jest.config.js`. `ephe` has no Jest config. Package tests use `ts-jest` ESM. `moduleNameMapper` strips a trailing `.js` so TypeScript source can be imported with NodeNext specifiers.
 

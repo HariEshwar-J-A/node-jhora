@@ -18,11 +18,11 @@ The `@node-jhora/api` package provides a production-ready REST API server built 
 
 ```bash
 # From monorepo root
-npm run build
+pnpm build
 
 # Start the API server
 cd packages/api
-npm run start
+pnpm run start
 # → Listening on http://0.0.0.0:3000
 ```
 
