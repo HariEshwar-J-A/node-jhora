@@ -13,7 +13,8 @@ import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
 import { EphemerisInterpolator } from './engine/interpolator.js';
 import { VargaDeities } from './vedic/deities.js';
 import { AYANAMSA } from './engine/ephemeris.js';
-import { DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS, type JyotishConfig } from './config.js';
+import { type JyotishConfig } from './config.js';
+import { describeCalculation, isSettingsShape, type CalculationSettings, type SettingsInput } from './settings/index.js';
 
 // Re-export Interfaces
 export type {
@@ -38,6 +39,18 @@ export {
     DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS,
 } from './config.js';
 export type { JyotishConfig, HouseSystem, NodeType } from './config.js';
+export {
+    AYANAMSA_IDS, AYANAMSA_MODE_BY_ID, CalculationSettingsSchema, DASA_YEAR_KINDS,
+    HOUSE_SYSTEM_IDS, LEGACY_DASHA_YEAR_DAYS, LEGACY_DASHA_YEAR_DAYS_TEXT,
+    PRESET_IDS, PRESETS, SETTINGS_HASH_HEX_LENGTH, SUNRISE_LIMBS,
+    canonicalJson, describeCalculation, expandCalculationBody, expandRequestBody,
+    flatFromSettings, getPreset, hashSettings, inferDasaYearKind, isPresetId,
+    isSettingsShape, resolveCalculationInput, settingsFromFlat, settingsToJyotishConfig,
+} from './settings/index.js';
+export type {
+    AyanamsaId, CalculationSettings, DasaYearKind, HouseSystemId, PresetId,
+    ResolvedCalculation, SettingsInput, SunriseLimb,
+} from './settings/index.js';
 export { parseJhd, jhdToUtcISO, hasPositions, sexagesimalToDecimal, JHD_BODY_ORDER } from './io/jhd.js';
 export type { JhdChart, JhdBody } from './io/jhd.js';
 
@@ -47,6 +60,8 @@ export interface ChartData {
     houses: HouseData;
     ascendant: number;
     ayanamsa: string;
+    /** Hash of the calculation settings that produced this chart. */
+    settingsHash?: string;
 }
 
 /**
@@ -82,15 +97,6 @@ export interface NodeJHoraConfig extends Partial<JyotishConfig> {
     ayanamsaOrder?: number;
 }
 
-/** Normalise the deprecated alias into a full config. */
-function toConfig(c: NodeJHoraConfig = {}): JyotishConfig {
-    const { ayanamsaOrder, ...rest } = c;
-    return resolveConfig({
-        ...rest,
-        ayanamsaMode: rest.ayanamsaMode ?? ayanamsaOrder,
-    });
-}
-
 const defaultEphemeris = new EphemerisEngine();
 
 export async function init(): Promise<void> {
@@ -105,24 +111,29 @@ export class NodeJHora {
     private location: { latitude: number, longitude: number, altitude?: number };
     /** Instance defaults. Every method accepts a per-call override. */
     public readonly config: JyotishConfig;
+    /** Validated settings bundle. Legacy config objects are mapped onto this. */
+    public readonly settings: CalculationSettings;
+    /** {@link hashSettings} of {@link settings}. */
+    public readonly settingsHash: string;
 
     constructor(
         location: { latitude: number, longitude: number, altitude?: number },
-        config: NodeJHoraConfig = {},
+        config: SettingsInput = {},
     ) {
-        this.location  = location;
+        this.location = location;
         this.ephemeris = EphemerisEngine.getInstance();
-        this.config    = toConfig(config);
+        const resolved = describeCalculation(config);
+        this.config = resolved.config;
+        this.settings = resolved.settings;
+        this.settingsHash = resolved.settingsHash;
     }
 
     /** Resolve a per-call override against this instance's defaults. */
-    private cfg(override?: NodeJHoraConfig): JyotishConfig {
-        if (!override) return this.config;
-        const { ayanamsaOrder, ...rest } = override;
-        return resolveConfig(
-            { ...rest, ayanamsaMode: rest.ayanamsaMode ?? ayanamsaOrder },
-            this.config,
-        );
+    private bind(override?: SettingsInput) {
+        if (override === undefined) {
+            return { config: this.config, settings: this.settings, settingsHash: this.settingsHash };
+        }
+        return describeCalculation(override, this.settings);
     }
 
     async init() {
@@ -146,13 +157,17 @@ export class NodeJHora {
         date: Date,
         location: { latitude: number, longitude: number, altitude?: number },
         ayanamsaName: Ayanamsa = 'TrueChitra',
-        config: NodeJHoraConfig = {},
-    ): Promise<ChartData & { panchanga: PanchangaResult }> {
-        // An explicit ayanamsaMode in the config wins over the name argument.
-        const c = toConfig({
-            ayanamsaMode: config.ayanamsaMode ?? config.ayanamsaOrder ?? AYANAMSA_BY_NAME[ayanamsaName],
-            ...config,
-        });
+        config: SettingsInput = {},
+    ): Promise<ChartData & { panchanga: PanchangaResult; settingsHash: string }> {
+        // A preset id or a settings object replaces the name. A legacy config
+        // still lets an explicit mode win over the name, as before.
+        const requested: SettingsInput = typeof config === 'string' || isSettingsShape(config)
+            ? config
+            : {
+                ayanamsaMode: config.ayanamsaMode ?? config.ayanamsaOrder ?? AYANAMSA_BY_NAME[ayanamsaName],
+                ...config,
+            };
+        const { config: c, settingsHash } = describeCalculation(requested);
 
         const engine = EphemerisEngine.getInstance();
         await engine.initialize();
@@ -194,14 +209,15 @@ export class NodeJHora {
             houses,
             panchanga,
             ascendant: houses.ascendant,
-            ayanamsa: ayanamsaName
+            ayanamsa: ayanamsaName,
+            settingsHash,
         };
     }
 
     // ========== INSTANCE METHODS ==========
 
-    public getPlanets(date: DateTime, override?: NodeJHoraConfig): PlanetPosition[] {
-        const c = this.cfg(override);
+    public getPlanets(date: DateTime, override?: SettingsInput): PlanetPosition[] {
+        const { config: c } = this.bind(override);
         return this.ephemeris.getPlanets(
             date,
             { ...this.location, altitude: this.location.altitude ?? c.altitudeMetres },
@@ -215,8 +231,8 @@ export class NodeJHora {
         );
     }
 
-    getHouses(date: DateTime, override?: NodeJHoraConfig): HouseData {
-        const c = this.cfg(override);
+    getHouses(date: DateTime, override?: SettingsInput): HouseData & { settingsHash: string } {
+        const { config: c, settingsHash } = this.bind(override);
         const res = calculateHouseCusps(
             date, this.location.latitude, this.location.longitude,
             c.houseSystem as HouseSystemMethod, this.ephemeris,
@@ -228,30 +244,38 @@ export class NodeJHora {
             mc: res.mc,
             armc: res.armc,
             vertex: res.vertex || 0,
+            settingsHash,
         };
     }
 
-    getChart(date: DateTime, override?: NodeJHoraConfig): { planets: PlanetPosition[], houses: HouseData } {
-        const c = this.cfg(override);
-        return { planets: this.getPlanets(date, c), houses: this.getHouses(date, c) };
+    getChart(date: DateTime, override?: SettingsInput): { planets: PlanetPosition[]; houses: HouseData; settingsHash: string } {
+        const { settingsHash } = this.bind(override);
+        return {
+            planets: this.getPlanets(date, override),
+            houses: this.getHouses(date, override),
+            settingsHash,
+        };
     }
 
-    getPanchanga(date: DateTime, override?: NodeJHoraConfig): PanchangaResult {
-        const c = this.cfg(override);
-        const planets = this.getPlanets(date, c);
+    getPanchanga(date: DateTime, override?: SettingsInput): PanchangaResult & { settingsHash: string } {
+        const { config: c, settingsHash } = this.bind(override);
+        const planets = this.getPlanets(date, override);
         const sun  = planets.find(p => p.id === 0);
         const moon = planets.find(p => p.id === 1);
         if (!sun || !moon) throw new Error('Sun or Moon data missing');
-        return calculatePanchanga(sun.longitude, moon.longitude, date, c.sunriseHour);
+        return { ...calculatePanchanga(sun.longitude, moon.longitude, date, c.sunriseHour), settingsHash };
     }
 
     /** Divisional chart for one longitude, honouring the configured varga rules. */
-    getVarga(longitude: number, division: number, override?: NodeJHoraConfig): VargaPoint {
-        const c = this.cfg(override);
-        return calculateVarga(longitude, division, {
-            dasamsaScheme: c.dasamsaScheme,
-            horaScheme:    c.horaScheme,
-        });
+    getVarga(longitude: number, division: number, override?: SettingsInput): VargaPoint & { settingsHash: string } {
+        const { config: c, settingsHash } = this.bind(override);
+        return {
+            ...calculateVarga(longitude, division, {
+                dasamsaScheme: c.dasamsaScheme,
+                horaScheme:    c.horaScheme,
+            }),
+            settingsHash,
+        };
     }
 
 }

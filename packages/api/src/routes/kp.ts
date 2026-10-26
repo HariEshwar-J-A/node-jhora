@@ -14,7 +14,7 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/kp/significators', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, settingsHash } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
@@ -32,6 +32,6 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
             };
         });
 
-        return reply.status(200).send({ significators });
+        return reply.status(200).send({ significators, settingsHash });
     });
 }

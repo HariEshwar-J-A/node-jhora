@@ -133,7 +133,32 @@ sunrise for the birth place; the default is a nominal 6 a.m.
 **Default: `365.242189623`** (tropical year)
 
 Length of a Vimshottari dasha year. Some traditions use 360 (savana) or 365.25
-(Julian).
+(Julian). `generateVimshottari` reads this when you pass a settings object, a
+preset id, or `yearDays`. A call that passes none of those still uses
+365.256364 days, which is the length that function has always used.
+
+### Settings presets
+
+`CalculationSettingsSchema` in `@node-jhora/core` validates one object for the
+choices above, plus sunrise limb (`disc_centre` or `upper_limb`) and whether
+refraction is applied. `hashSettings` is the first 16 hex digits of SHA-256
+over canonical JSON (keys sorted at every level), so key order does not change
+the hash. The implementation is pure TypeScript and runs in the browser.
+
+| Preset id | What it selects |
+|---|---|
+| `node-jhora-default` | Library defaults (`DEFAULT_CONFIG`) |
+| `jhora-default@8.0` | Factory defaults: true Chitrapaksha, geometric places, mean node, equal houses with the cusp recorded in the middle, disc-centre sunrise without refraction, mean tropical year of 365.24219 days |
+| `kp` | Krishnamurti ayanamsa and Placidus houses |
+| `raman` | Raman ayanamsa |
+| `lahiri-mean` | Lahiri ayanamsa and the mean node |
+
+`jhora-default@8.0` is not `JHORA_PRESET`. The preset used for the verified
+chart export keeps the true node and `dasamsaScheme: 'jhora_5_8'`. Pass either
+a preset id or a settings object to `new NodeJHora`, `NodeJHora.calculate`, or
+`generateVimshottari`. Chart results include `settingsHash`. `vargaVariants`
+is stored and hashed, and the varga routines still follow `horaScheme` and
+`dasamsaScheme`.
 
 ---
 
@@ -206,8 +231,11 @@ Every option is a field on the request body:
 }
 ```
 
-`ayanamsa` accepts: `true_chitra`, `true_pushya`, `true_revati`, `true_mula`,
-`lahiri`, `lahiri_icrc`, `raman`, `kp`, `yukteshwar`, `fagan_bradley`.
+`ayanamsa` accepts: `true_chitra` (same mode as the settings id `true_citra`), `true_pushya`, `true_revati`, `true_mula`,
+`lahiri`, `lahiri_icrc`, `raman`, `kp`, `yukteshwar`, `fagan_bradley`,
+`jn_bhasin`, `j2000`. A `preset` id (`jhora-default@8.0`, `node-jhora-default`,
+`kp`, `raman`, `lahiri-mean`) or a `settings` object fills any calculation
+field you omit; a field you send still wins. Responses include `settingsHash`.
 
 ---
 

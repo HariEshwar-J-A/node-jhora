@@ -42,7 +42,7 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
     typed.post('/transits', { schema: { body: TransitInputSchema } }, async (req, reply) => {
         const body = req.body as TransitInput;
         const { dt, location, ayanamsaOrder, nodeType, positionMode,
-                topocentric, ayanamsaOffset, houseSystem } = parseBirthInput(body);
+                topocentric, ayanamsaOffset, houseSystem, settingsHash } = parseBirthInput(body);
         const engine = getEngine();
 
         const asOf = body.asOf
@@ -129,6 +129,7 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
 
         return reply.status(200).send({
             asOf: asOf.toISO(),
+            settingsHash,
             natal: {
                 ascendantSign: natalAscSign,
                 ascendantSignName: SIGNS[natalAscSign - 1],

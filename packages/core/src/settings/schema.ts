@@ -1,0 +1,111 @@
+/**
+ * Calculation settings: one validated object for every choice that changes
+ * a number (ayanamsa, nodes, houses, sunrise, dasa year, varga rules).
+ *
+ * Display choices are not part of this object. `vargaVariants` is stored and
+ * hashed, and is not read by the varga routines yet — those still follow
+ * `horaScheme` and `dasamsaScheme`.
+ */
+
+import { z } from 'zod';
+
+export const SETTINGS_SCHEMA_VERSION = 1 as const;
+
+/** Hex digits kept from SHA-256. 16 digits is 64 bits, enough to tell presets apart. */
+export const SETTINGS_HASH_HEX_LENGTH = 16;
+
+/**
+ * Civil days `generateVimshottari` uses when the caller does not pass a year
+ * length. Kept so existing dasha dates do not move.
+ */
+export const LEGACY_DASHA_YEAR_DAYS_TEXT = '365.256364';
+export const LEGACY_DASHA_YEAR_DAYS = Number(LEGACY_DASHA_YEAR_DAYS_TEXT);
+
+export const AYANAMSA_IDS = [
+    'true_citra', 'true_pushya', 'true_revati', 'true_mula',
+    'fagan_bradley', 'lahiri', 'lahiri_icrc', 'raman', 'kp',
+    'yukteshwar', 'jn_bhasin', 'j2000',
+] as const;
+
+export const AYANAMSA_MODE_BY_ID = {
+    fagan_bradley: 0,
+    lahiri: 1,
+    lahiri_icrc: 2,
+    raman: 3,
+    kp: 5,
+    yukteshwar: 7,
+    jn_bhasin: 8,
+    j2000: 18,
+    true_citra: 27,
+    true_pushya: 29,
+    true_revati: 30,
+    true_mula: 35,
+} as const satisfies Record<(typeof AYANAMSA_IDS)[number], number>;
+
+export const HOUSE_SYSTEM_IDS = ['whole_sign', 'equal', 'placidus', 'porphyry'] as const;
+export const SUNRISE_LIMBS = ['disc_centre', 'upper_limb'] as const;
+export const DASA_YEAR_KINDS = [
+    'mean_tropical', 'true_tropical', 'mean_sidereal', 'true_sidereal',
+    'savana', 'tithi_360', 'user',
+] as const;
+
+export type AyanamsaId = (typeof AYANAMSA_IDS)[number];
+export type HouseSystemId = (typeof HOUSE_SYSTEM_IDS)[number];
+export type SunriseLimb = (typeof SUNRISE_LIMBS)[number];
+export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
+
+const finite = z.number().finite();
+
+export const SunriseSchema = z.object({
+    limb: z.enum(SUNRISE_LIMBS),
+    refraction: z.boolean(),
+    /** Local clock hour used for the weekday until a rise/set solver is wired. */
+    nominalHour: finite.min(0).max(24),
+}).strict();
+
+export const DasaYearSchema = z.object({
+    kind: z.enum(DASA_YEAR_KINDS),
+    /** Civil days actually added for one dasa year. */
+    days: finite.positive(),
+}).strict();
+
+export const CalculationSettingsSchema = z.object({
+    schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
+    ayanamsa: z.enum(AYANAMSA_IDS),
+    ayanamsaOffsetDeg: finite,
+    /**
+     * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
+     * has no name in {@link AYANAMSA_IDS}.
+     */
+    customAyanamsaMode: z.number().int().optional(),
+    nodeType: z.enum(['mean', 'true']),
+    houseSystem: z.enum(HOUSE_SYSTEM_IDS),
+    /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
+    cuspsInMiddle: z.boolean(),
+    positionMode: z.enum(['geometric', 'apparent']),
+    topocentric: z.boolean(),
+    altitudeMetres: finite,
+    sunrise: SunriseSchema,
+    dasaYear: DasaYearSchema,
+    dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
+    horaScheme: z.enum(['parashara', 'parivritti']),
+    /** Placeholder division → variant id. Not applied by `calculateVarga`. */
+    vargaVariants: z.record(z.string(), z.string()).default({}),
+}).strict();
+
+export type CalculationSettings = z.infer<typeof CalculationSettingsSchema>;
+
+const MODE_TO_ID = new Map<number, AyanamsaId>(
+    Object.entries(AYANAMSA_MODE_BY_ID).map(([id, mode]) => [mode, id as AyanamsaId]),
+);
+
+export function ayanamsaIdForMode(mode: number): AyanamsaId | undefined {
+    return MODE_TO_ID.get(mode);
+}
+
+export function inferDasaYearKind(days: number): DasaYearKind {
+    if (days === 360) return 'savana';
+    if (days === LEGACY_DASHA_YEAR_DAYS) return 'mean_sidereal';
+    if (days === 365.24219 || Math.abs(days - 365.242189623) < 1e-12) return 'mean_tropical';
+    return 'user';
+}

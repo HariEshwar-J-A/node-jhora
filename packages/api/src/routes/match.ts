@@ -40,6 +40,7 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
             person1MoonSign:      sign1,
             person2MoonSign:      sign2,
             ...result,
+            settingsHash: { person1: p1.settingsHash, person2: p2.settingsHash },
         });
     });
 }

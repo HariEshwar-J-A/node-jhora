@@ -6,14 +6,16 @@
  *
  * Precision:
  *   - All balance arithmetic uses Decimal.js (34-digit precision)
- *   - Year definition: Sidereal Year = 365.256364 days (JHora/PyJHora standard)
- *   - Date addition uses integer days to avoid Luxon calendar-year ambiguity
+ *   - Year length: 365.256364 days unless `options.yearDays` or `options.settings`
+ *     supplies another length. `config.dashaYearDays` used to be ignored.
+ *   - Date addition uses integer milliseconds to avoid Luxon calendar-year ambiguity
  *
  * Hierarchy: Mahadasha → Antardasha → Pratyantar → Sookshma → Prana (5 levels)
  */
 
 import { DateTime } from 'luxon';
 import { Decimal } from 'decimal.js';
+import { LEGACY_DASHA_YEAR_DAYS_TEXT, describeCalculation, type SettingsInput } from '@node-jhora/core';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,16 +32,18 @@ export const DASHA_ORDER: string[] = [
 ];
 
 /**
- * Sidereal Year in days (365.256364 days/year).
- *
- * CRITICAL FIX: PyJHora and JHora both use sidereal year for Dasha date calculations.
- * Our previous constant (365.242189623 — tropical year) introduced ~3.6 hours of drift
- * per 10-year Mahadasha period due to the ~0.0141-day/year difference.
- *
- * Reference: PyJHora const.py line 192 specifies sidereal_year = 365.256364
- * (comment: "From JHora"), confirming this is the JHora standard.
+ * Year length used when the caller does not pass one. Callers that omit
+ * `options` keep the dates this function has always produced.
  */
-const TROPICAL_YEAR_DAYS = new Decimal('365.256364');
+const LEGACY_YEAR_DAYS = new Decimal(LEGACY_DASHA_YEAR_DAYS_TEXT);
+
+/** Optional year length. Omit both fields to keep {@link LEGACY_YEAR_DAYS}. */
+export interface VimshottariOptions {
+    /** Civil days in one dasa year. Wins over `settings` when both are set. */
+    yearDays?: number;
+    /** Full settings object or a preset id. The dasa year is `dasaYear.days`. */
+    settings?: SettingsInput;
+}
 
 /** Exact Nakshatra span: 360/27 degrees. */
 const NAKSHATRA_SPAN = new Decimal(360).div(27);
@@ -58,6 +62,8 @@ export interface DashaPeriod {
     end:           DateTime;
     durationYears: number;
     subPeriods?:   DashaPeriod[];
+    /** Set when `options.settings` was passed. */
+    settingsHash?: string;
 }
 
 interface DashaBalance {
@@ -76,9 +82,34 @@ interface DashaBalance {
  * Add a Decimal number of years to a DateTime.
  * Uses integer milliseconds to avoid Luxon's calendar-year ambiguity.
  */
-function addYears(date: DateTime, years: Decimal): DateTime {
-    const ms = years.times(TROPICAL_YEAR_DAYS).times(MS_PER_DAY).round();
+function addYears(date: DateTime, years: Decimal, yearDays: Decimal): DateTime {
+    const ms = years.times(yearDays).times(MS_PER_DAY).round();
     return date.plus({ milliseconds: ms.toNumber() });
+}
+
+function yearLength(options?: VimshottariOptions): { days: Decimal; settingsHash?: string } {
+    if (!options || (options.yearDays == null && options.settings == null)) {
+        return { days: LEGACY_YEAR_DAYS };
+    }
+    if (options.settings == null) return { days: asYearDays(options.yearDays!) };
+    const resolved = describeCalculation(options.settings);
+    const days = options.yearDays ?? resolved.settings.dasaYear.days;
+    return { days: asYearDays(days), settingsHash: resolved.settingsHash };
+}
+
+function asYearDays(days: number): Decimal {
+    if (!Number.isFinite(days) || days <= 0) {
+        throw new Error('yearDays must be a positive finite number');
+    }
+    if (String(days) === LEGACY_DASHA_YEAR_DAYS_TEXT) return LEGACY_YEAR_DAYS;
+    return new Decimal(String(days));
+}
+
+function stampHash(periods: DashaPeriod[], settingsHash: string): void {
+    for (const period of periods) {
+        period.settingsHash = settingsHash;
+        if (period.subPeriods?.length) stampHash(period.subPeriods, settingsHash);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -128,7 +159,9 @@ export function generateVimshottari(
     birthDate:     DateTime,
     moonLongitude: number,
     depth:         number = 2,
+    options?:      VimshottariOptions,
 ): DashaPeriod[] {
+    const { days: yearDays, settingsHash } = yearLength(options);
     const balance     = calculateDashaBalance(moonLongitude);
     const periods:    DashaPeriod[] = [];
     let currentDate   = birthDate;
@@ -144,7 +177,7 @@ export function generateVimshottari(
         const duration     = isFirst ? new Decimal(balance.yearsRemaining) : fullDuration;
 
         const start = currentDate;
-        const end   = addYears(start, duration);
+        const end   = addYears(start, duration, yearDays);
 
         const period: DashaPeriod = {
             planet,
@@ -157,7 +190,7 @@ export function generateVimshottari(
 
         if (depth >= 2) {
             period.subPeriods = generateSubPeriods(
-                period, fullDuration, depth, 2,
+                period, fullDuration, depth, 2, yearDays,
             );
         }
 
@@ -167,6 +200,7 @@ export function generateVimshottari(
         currentIndex++;
     }
 
+    if (settingsHash) stampHash(periods, settingsHash);
     return periods;
 }
 
@@ -183,12 +217,13 @@ function generateSubPeriods(
     parentStandardYears:  Decimal,
     maxDepth:             number,
     currentDepth:         number,
+    yearDays:             Decimal,
 ): DashaPeriod[] {
     const traversedYears = parentStandardYears.minus(parent.durationYears);
     const isPartial      = traversedYears.abs().gt(new Decimal('0.0001'));
 
     const conceptualStart = isPartial
-        ? addYears(parent.start, traversedYears.negated())
+        ? addYears(parent.start, traversedYears.negated(), yearDays)
         : parent.start;
 
     const parentLordIdx = DASHA_ORDER.indexOf(parent.planet);
@@ -199,7 +234,7 @@ function generateSubPeriods(
         const subLord          = DASHA_ORDER[(parentLordIdx + i) % 9];
         const childStdYears    = new Decimal(DASHA_DURATIONS[subLord]);
         const subDuration      = parentStandardYears.times(childStdYears).div(120);
-        const subEnd           = addYears(currentP, subDuration);
+        const subEnd           = addYears(currentP, subDuration, yearDays);
 
         // Skip sub-periods that ended before birth
         if (subEnd <= parent.start) {
@@ -210,7 +245,7 @@ function generateSubPeriods(
         // Clip start to birth date if this sub-period overlaps birth
         const actualStart    = currentP < parent.start ? parent.start : currentP;
         const actualDuration = new Decimal(subEnd.toMillis() - actualStart.toMillis())
-            .div(TROPICAL_YEAR_DAYS.times(MS_PER_DAY));
+            .div(yearDays.times(MS_PER_DAY));
 
         const subPeriod: DashaPeriod = {
             planet:        subLord,
@@ -223,7 +258,7 @@ function generateSubPeriods(
 
         if (currentDepth < maxDepth) {
             subPeriod.subPeriods = generateSubPeriods(
-                subPeriod, subDuration, maxDepth, currentDepth + 1,
+                subPeriod, subDuration, maxDepth, currentDepth + 1, yearDays,
             );
         }
 

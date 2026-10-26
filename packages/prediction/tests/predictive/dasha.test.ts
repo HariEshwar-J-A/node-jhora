@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { getPreset, hashSettings } from '@node-jhora/core';
 import { calculateDashaBalance, generateVimshottari, DashaPeriod } from '../../src/dasha.js';
 
 describe('Vimshottari Dasha Engine', () => {
@@ -97,5 +98,22 @@ describe('Vimshottari Dasha Engine', () => {
         if (first.subPeriods && first.subPeriods.length > 0) {
             expect(first.subPeriods[0].start.toISO()).toBe(birthDate.toISO());
         }
+    });
+
+    test('omitted year length matches an explicit 365.256364-day year', () => {
+        const birth = DateTime.fromISO('2000-01-01T00:00:00Z');
+        const implicit = generateVimshottari(birth, 0, 1);
+        const explicit = generateVimshottari(birth, 0, 1, { yearDays: 365.256364 });
+        expect(implicit[0].end.toMillis()).toBe(explicit[0].end.toMillis());
+        expect(implicit[0].settingsHash).toBeUndefined();
+    });
+
+    test('a preset supplies the dasa year and stamps settingsHash', () => {
+        const birth = DateTime.fromISO('2000-01-01T00:00:00Z');
+        const legacy = generateVimshottari(birth, 0, 1);
+        const preset = generateVimshottari(birth, 0, 1, { settings: 'jhora-default@8.0' });
+        expect(preset[0].planet).toBe('Ketu');
+        expect(preset[0].end.toMillis()).not.toBe(legacy[0].end.toMillis());
+        expect(preset[0].settingsHash).toBe(hashSettings(getPreset('jhora-default@8.0')));
     });
 });

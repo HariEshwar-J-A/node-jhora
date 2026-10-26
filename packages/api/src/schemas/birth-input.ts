@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DASA_YEAR_KINDS, HOUSE_SYSTEM_IDS, PRESET_IDS, SUNRISE_LIMBS } from '@node-jhora/core';
 
 /**
  * API ayanamsa names → Swiss Ephemeris SE_SIDM_* mode numbers.
@@ -10,6 +11,7 @@ import { z } from 'zod';
  */
 export const AYANAMSA_MAP = {
     true_chitra: 27,   // True Chitrapaksha — Spica at 180° (Drik Siddhanta)
+    true_citra:  27,   // same mode; spelling used by calculation settings and presets
     true_pushya: 29,   // δ Cancri at 106°
     true_revati: 30,   // ζ Piscium at 359°50′
     true_mula:   35,   // λ Scorpii at 240°
@@ -19,6 +21,8 @@ export const AYANAMSA_MAP = {
     kp:           5,
     yukteshwar:   7,
     fagan_bradley: 0,
+    jn_bhasin:    8,
+    j2000:       18,
 } as const;
 
 export type AyanamsaKey = keyof typeof AYANAMSA_MAP;
@@ -53,7 +57,21 @@ const BirthBaseSchema = z.object({
     horaScheme: z.enum(['parashara', 'parivritti']).default('parashara'),
     /** Local sunrise as a decimal hour; the Vedic weekday begins at sunrise. */
     sunriseHour: z.number().min(0).max(24).default(6),
-    houseSystem: z.enum(['whole_sign', 'equal', 'placidus', 'porphyry']).default('whole_sign'),
+    houseSystem: z.enum(HOUSE_SYSTEM_IDS).default('whole_sign'),
+    /**
+     * Preset id. Explicit fields on the same body win. Consumed before
+     * validation by `expandRequestBody`, which also accepts a `settings` object.
+     */
+    preset: z.enum(PRESET_IDS).optional(),
+    /** Set when a preset, settings object, or `dasaYearDays` was sent. */
+    applyDasaYear: z.boolean().optional(),
+    dasaYearKind: z.enum(DASA_YEAR_KINDS).optional(),
+    dasaYearDays: z.number().positive().optional(),
+    cuspsInMiddle: z.boolean().optional(),
+    sunriseLimb: z.enum(SUNRISE_LIMBS).optional(),
+    sunriseRefraction: z.boolean().optional(),
+    vargaVariants: z.record(z.string(), z.string()).optional(),
+    customAyanamsaMode: z.number().int().optional(),
     // Location — provide city OR all three coordinate fields
     city:        z.string().min(1).optional(),
     latitude:    z.number().min(-90).max(90).optional(),
