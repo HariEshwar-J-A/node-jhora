@@ -1,4 +1,5 @@
 import {
+    assertValidAyanamsaMode,
     type AyanamsaId,
     type CalculationSettings,
     type DasaYearKind,
@@ -109,6 +110,7 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
     }
 
     const ayanamsaOrder = input.customAyanamsaMode ?? AYANAMSA_MAP[input.ayanamsa as AyanamsaKey];
+    assertValidAyanamsaMode(ayanamsaOrder);
     const location = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
     const settings = settingsFromFlat({
         calendar,

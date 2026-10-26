@@ -136,8 +136,7 @@ describe('presets', () => {
             nodeType: 'mean',
             houseSystem: DEFAULT_CONFIG.houseSystem,
         });
-        expect(describeCalculation({ ayanamsaMode: 99 }).config.ayanamsaMode).toBe(99);
-        expect(describeCalculation({ ayanamsaMode: 99 }).settings.customAyanamsaMode).toBe(99);
+        expect(() => describeCalculation({ ayanamsaMode: 99 })).toThrow();
     });
 
     test('NodeJHora accepts a preset id or the existing config object', () => {

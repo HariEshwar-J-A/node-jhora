@@ -117,14 +117,17 @@ Use the `Body` enum (`Body.Rahu === 10`, `Body.Ketu === 99`) rather than literal
 ```typescript
 import { AYANAMSA } from '@node-jhora/core';
 
-// Available constants:
-AYANAMSA.LAHIRI; // 1 — Chitra Paksha (default)
-AYANAMSA.RAMAN; // 3
-AYANAMSA.KRISHNAMURTI; // 5 — KP System
-AYANAMSA.YUKTESHWAR; // 7
-AYANAMSA.JN_BHASIN; // 8
+// Registry modes (AYANAMSA_MODELS):
+AYANAMSA.TRUE_CITRA; // 27 — True Chitrapaksha (default)
 AYANAMSA.TRUE_PUSHYA; // 29
-AYANAMSA.GALACTIC_CTR; // 28
+AYANAMSA.TRUE_MULA; // 35
+AYANAMSA.LAHIRI; // 1
+AYANAMSA.LAHIRI_ICRC; // 46
+AYANAMSA.RAMAN; // 3
+AYANAMSA.KRISHNAMURTI; // 5 — KP
+AYANAMSA.FAGAN_BRADLEY; // 0
+AYANAMSA.J2000; // 18
+// SE constants 2, 7, 8, 28 exist on AYANAMSA.* but throw UnsupportedAyanamsaModeError.
 ```
 
 ### Additional Engine Methods

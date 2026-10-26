@@ -1,5 +1,28 @@
-import { DASA_YEAR_KINDS, HOUSE_SYSTEM_IDS, PRESET_IDS, SUNRISE_LIMBS } from '@node-jhora/core';
+import {
+    assertValidAyanamsaMode,
+    DASA_YEAR_KINDS,
+    HOUSE_SYSTEM_IDS,
+    PRESET_IDS,
+    SUNRISE_LIMBS,
+    UnknownAyanamsaModeError,
+    UnsupportedAyanamsaModeError,
+} from '@node-jhora/core';
 import { z } from 'zod';
+
+function refineSeAyanamsaMode(mode: number, ctx: z.RefinementCtx): void {
+    try {
+        assertValidAyanamsaMode(mode);
+    } catch (error) {
+        if (
+            error instanceof UnsupportedAyanamsaModeError ||
+            error instanceof UnknownAyanamsaModeError
+        ) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: error.message });
+            return;
+        }
+        throw error;
+    }
+}
 
 /**
  * API ayanamsa names → Swiss Ephemeris SE_SIDM_* mode numbers.
@@ -77,7 +100,12 @@ const BirthBaseSchema = z.object({
     sunriseLimb: z.enum(SUNRISE_LIMBS).optional(),
     sunriseRefraction: z.boolean().optional(),
     vargaVariants: z.record(z.string(), z.string()).optional(),
-    customAyanamsaMode: z.number().int().optional(),
+    customAyanamsaMode: z
+        .number()
+        .finite()
+        .int()
+        .superRefine((mode, ctx) => refineSeAyanamsaMode(mode, ctx))
+        .optional(),
     // Location — provide city OR all three coordinate fields
     city: z.string().min(1).optional(),
     latitude: z.number().min(-90).max(90).optional(),

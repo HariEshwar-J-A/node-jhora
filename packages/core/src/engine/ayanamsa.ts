@@ -68,6 +68,51 @@ export class UnsupportedAyanamsaModeError extends Error {
     }
 }
 
+export type UnknownAyanamsaModeCode = 'not_finite' | 'not_integer' | 'unknown';
+
+/** Thrown for SE_SIDM codes that are neither in {@link AYANAMSA_MODELS} nor {@link UNSUPPORTED_AYANAMSA_MODES}. */
+export class UnknownAyanamsaModeError extends Error {
+    readonly mode: number;
+    readonly code: UnknownAyanamsaModeCode;
+
+    constructor(mode: number, code: UnknownAyanamsaModeCode) {
+        const detail =
+            code === 'not_finite'
+                ? 'must be a finite number'
+                : code === 'not_integer'
+                  ? 'must be an integer SE_SIDM code'
+                  : 'is not a supported SE_SIDM mode';
+        super(`ayanamsa: mode ${String(mode)} ${detail}`);
+        this.name = 'UnknownAyanamsaModeError';
+        this.mode = mode;
+        this.code = code;
+    }
+}
+
+/** SE_SIDM mode numbers implemented in {@link AYANAMSA_MODELS}. */
+export function isRegisteredAyanamsaMode(mode: number): boolean {
+    return AYANAMSA_MODELS[mode] !== undefined;
+}
+
+/**
+ * Reject invalid, unknown, and intentionally unsupported SE_SIDM mode numbers.
+ * @throws {UnknownAyanamsaModeError} | {@link UnsupportedAyanamsaModeError}
+ */
+export function assertValidAyanamsaMode(mode: number): void {
+    if (!Number.isFinite(mode)) {
+        throw new UnknownAyanamsaModeError(mode, 'not_finite');
+    }
+    if (!Number.isInteger(mode)) {
+        throw new UnknownAyanamsaModeError(mode, 'not_integer');
+    }
+    if (UNSUPPORTED_AYANAMSA_MODES.has(mode)) {
+        throw new UnsupportedAyanamsaModeError(mode);
+    }
+    if (!isRegisteredAyanamsaMode(mode)) {
+        throw new UnknownAyanamsaModeError(mode, 'unknown');
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Fixed-star catalogue (only the stars used to define ayanamsas)
 // ---------------------------------------------------------------------------
@@ -491,17 +536,8 @@ export type AyanamsaFrame = 'apparent' | 'geometric';
  *               subtracts; 'apparent' is the swe_get_ayanamsa_ut value (opt-in).
  */
 export function getAyanamsa(mode: number, jd: number, frame: AyanamsaFrame = 'geometric'): number {
-    const model = AYANAMSA_MODELS[mode];
-
-    if (!model) {
-        if (UNSUPPORTED_AYANAMSA_MODES.has(mode)) {
-            throw new UnsupportedAyanamsaModeError(mode);
-        }
-        // Fall back to True Chitrapaksha — the project's reference model —
-        // rather than silently substituting an unrelated zero point.
-        if (mode !== 27) return getAyanamsa(27, jd, frame);
-        throw new Error('ayanamsa: True Chitrapaksha model missing from registry');
-    }
+    assertValidAyanamsaMode(mode);
+    const model = AYANAMSA_MODELS[mode]!;
 
     if (model.kind === 'star') {
         const lon =

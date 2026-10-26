@@ -9,6 +9,12 @@
 
 import { z } from 'zod';
 
+import {
+    assertValidAyanamsaMode,
+    UnknownAyanamsaModeError,
+    UnsupportedAyanamsaModeError,
+} from '../engine/ayanamsa.js';
+
 export const SETTINGS_SCHEMA_VERSION = 1 as const;
 
 /** Hex digits kept from SHA-256. 16 digits is 64 bits, enough to tell presets apart. */
@@ -125,7 +131,7 @@ export const CalculationSettingsSchema = z
          * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
          * has no name in {@link AYANAMSA_IDS}.
          */
-        customAyanamsaMode: z.number().int().optional(),
+        customAyanamsaMode: z.number().finite().int().optional(),
         nodeType: z.enum(['mean', 'true']),
         houseSystem: z.enum(HOUSE_SYSTEM_IDS),
         /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
@@ -140,7 +146,24 @@ export const CalculationSettingsSchema = z
         /** Placeholder division → variant id. Not applied by `calculateVarga`. */
         vargaVariants: z.record(z.string(), z.string()).default({}),
     })
-    .strict();
+    .strict()
+    .superRefine((data, ctx) => {
+        const mode = data.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[data.ayanamsa];
+        try {
+            assertValidAyanamsaMode(mode);
+        } catch (error) {
+            const message =
+                error instanceof UnsupportedAyanamsaModeError ||
+                error instanceof UnknownAyanamsaModeError
+                    ? error.message
+                    : 'Invalid ayanamsa mode';
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message,
+                path: data.customAyanamsaMode !== undefined ? ['customAyanamsaMode'] : ['ayanamsa'],
+            });
+        }
+    });
 
 export type CalculationSettings = z.infer<typeof CalculationSettingsSchema>;
 

@@ -12,6 +12,9 @@ import { z } from 'zod';
 export type AmbiguousLocalPolicy = 'earlier' | 'later' | 'reject';
 
 // @public
+export function assertValidAyanamsaMode(mode: number): void;
+
+// @public
 export function assertValidCivilDate(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>, calendar?: CalendarMode): void;
 
 // @public
@@ -666,6 +669,9 @@ export function isGregorianReformGap(parts: Pick<HistoricalDateTime, 'astronomic
 // @public (undocumented)
 export function isPresetId(value: string): value is PresetId;
 
+// @public
+export function isRegisteredAyanamsaMode(mode: number): boolean;
+
 // @public (undocumented)
 export function isSettingsShape(value: object): value is Partial<CalculationSettings>;
 
@@ -1114,6 +1120,18 @@ export interface TzResolutionTrace {
 
 // @public (undocumented)
 export function unixMsToJulianDay(ms: number): number;
+
+// @public (undocumented)
+export type UnknownAyanamsaModeCode = 'not_finite' | 'not_integer' | 'unknown';
+
+// @public
+export class UnknownAyanamsaModeError extends Error {
+    constructor(mode: number, code: UnknownAyanamsaModeCode);
+    // (undocumented)
+    readonly code: UnknownAyanamsaModeCode;
+    // (undocumented)
+    readonly mode: number;
+}
 
 // @public
 export const UNSUPPORTED_AYANAMSA_MODES: Set<number>;
