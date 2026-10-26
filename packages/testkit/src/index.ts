@@ -1,45 +1,39 @@
 export {
-    FEATURE_PATH_RULES,
-    anchoredPattern,
-    matchFeaturePath,
-    type FeaturePathRule,
-    type ToleranceType,
-    type ValueKind,
-} from './paths.js';
-
-export {
-    ArcsecEntrySchema,
-    ExactEntrySchema,
-    ExpectedEntrySchema,
-    GoldenCaseSchema,
-    GoldenInputSchema,
-    ProvenanceSchema,
-    SecondsEntrySchema,
-    SettingsSchema,
-    canonicalJson,
-    hashSettings,
-    parseGoldenCase,
-    type ExpectedEntry,
-    type GoldenCase,
-    type SettingsDocument,
-} from './schema.js';
-
-export { buildGoldenCaseJsonSchema, formatJsonSchema } from './json-schema.js';
-
-export { formatGoldenJson, formatGoldenJsonl, parseGoldenCorpus } from './corpus.js';
-
-export {
     angleDeltaArcsec,
     compareGoldenCase,
-    compareGoldenPaths,
-    signedAngleDeltaDegrees,
     type CompareGoldenOptions,
+    compareGoldenPaths,
     type FeatureWorstOffender,
     type GoldenActual,
     type GoldenCompareResult,
     type PathCompareResult,
+    signedAngleDeltaDegrees,
 } from './compare.js';
-
+export {
+    type DateParts,
+    fromHorizonsGoldenCases,
+    fromJhoraGoldenCase,
+    HORIZONS_PRESET_ID,
+    type HorizonsFixture,
+    JHORA_CASE_ID,
+    JHORA_PRESET_ID,
+    JHORA_TIMEZONE,
+    type JhoraFixture,
+    LEGACY_ALTITUDE_M,
+    toHorizonsGoldenCases,
+    toJhoraGoldenCase,
+} from './convert.js';
+export { formatGoldenJson, formatGoldenJsonl, parseGoldenCorpus } from './corpus.js';
+export { expectGolden, installGoldenMatchers } from './jest.js';
+export { buildGoldenCaseJsonSchema, formatJsonSchema } from './json-schema.js';
+export {
+    anchoredPattern,
+    FEATURE_PATH_RULES,
+    type FeaturePathRule,
+    matchFeaturePath,
+    type ToleranceType,
+    type ValueKind,
+} from './paths.js';
 export {
     formatGoldenReportHtml,
     formatGoldenReportMarkdown,
@@ -47,20 +41,19 @@ export {
     goldenCompareResultToJson,
     type GoldenReportJson,
 } from './report.js';
-
-export { expectGolden, installGoldenMatchers } from './jest.js';
-
 export {
-    HORIZONS_PRESET_ID,
-    JHORA_CASE_ID,
-    JHORA_PRESET_ID,
-    JHORA_TIMEZONE,
-    LEGACY_ALTITUDE_M,
-    fromHorizonsGoldenCases,
-    fromJhoraGoldenCase,
-    toHorizonsGoldenCases,
-    toJhoraGoldenCase,
-    type DateParts,
-    type HorizonsFixture,
-    type JhoraFixture,
-} from './convert.js';
+    ArcsecEntrySchema,
+    canonicalJson,
+    ExactEntrySchema,
+    type ExpectedEntry,
+    ExpectedEntrySchema,
+    type GoldenCase,
+    GoldenCaseSchema,
+    GoldenInputSchema,
+    hashSettings,
+    parseGoldenCase,
+    ProvenanceSchema,
+    SecondsEntrySchema,
+    type SettingsDocument,
+    SettingsSchema,
+} from './schema.js';

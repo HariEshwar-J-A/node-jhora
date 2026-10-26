@@ -44,21 +44,32 @@
  */
 
 import { DateTime }          from 'luxon';
-import { loadSpk, NAIF }     from './spk.js';
-import type { SpkFile }      from './spk.js';
+
 import {
-    julday as juldayFn,
-    julianCenturies,
-    meanObliquity,
-    trueObliquity,
-    getGAST,
+APPARENT,
+    computePlace,     GEOMETRIC, observerState,
+    type PlaceCorrections,
+} from './apparent.js';
+import {
+    ayanamsaName,
+    getAyanamsa as computeAyanamsa,
+    meanLunarNode,
+    toSidereal,
+} from './ayanamsa.js';
+import { getBspBytesLoader } from './bsp-bytes-provider.js';
+import {
     computeAscendant,
     computeMC,
     computeVertex,
-    wholeSignCusps,
     equalHouseCusps,
-    observerGeocentricVector,
+    getGAST,
+    julday as juldayFn,
+    julianCenturies,
+    meanObliquity,
     mod360,
+    observerGeocentricVector,
+    trueObliquity,
+    wholeSignCusps,
 } from './coordinates.js';
 import { deltaT, jdUTtoET }  from './deltat.js';
 import { nutation }          from './nutation.js';
@@ -67,17 +78,8 @@ import {
     toSpherical,
     type Vec,
 } from './precession.js';
-import {
-    computePlace, observerState,
-    GEOMETRIC, APPARENT,
-    type PlaceCorrections,
-} from './apparent.js';
-import {
-    getAyanamsa as computeAyanamsa,
-    ayanamsaName,
-    meanLunarNode,
-    toSidereal,
-} from './ayanamsa.js';
+import type { SpkFile }      from './spk.js';
+import { loadSpkFromBytes, NAIF } from './spk.js';
 
 // ---------------------------------------------------------------------------
 // Ayanamsa constants — identical to previous version for API compatibility
@@ -217,49 +219,29 @@ export class EphemerisEngine {
     // -----------------------------------------------------------------------
 
     /**
-     * Load de440s.bsp from @node-jhora/ephe (or NODE_JHORA_EPHE_PATH env var).
+     * Load de440s.bsp kernel bytes.
      * Idempotent — subsequent calls are instant no-ops.
+     *
+     * Pass `kernel` in browsers. In Node, import `@node-jhora/core/node/register`
+     * once before initialize, or call `registerNodeBspLoaderFromCore()` after build.
      */
-    public async initialize(): Promise<void> {
+    public async initialize(options?: { kernel?: Uint8Array }): Promise<void> {
         if (this.initialized) return;
 
-        const bspPath    = await this.resolveBspPath();
-        this.spk         = loadSpk(bspPath);
-        this.initialized = true;
-    }
+        const bytes =
+            options?.kernel ??
+            (await getBspBytesLoader()?.());
 
-    private async resolveEphePath(): Promise<string> {
-        return this.resolveBspPath();
-    }
-
-    private async resolveBspPath(): Promise<string> {
-        // 1. Environment variable override
-        if (process.env.NODE_JHORA_EPHE_PATH) {
-            return process.env.NODE_JHORA_EPHE_PATH;
+        if (!bytes) {
+            throw new Error(
+                'EphemerisEngine: de440s.bsp bytes not available.\n' +
+                    '  Browser: pass initialize({ kernel: Uint8Array }) from fetch/arrayBuffer.\n' +
+                    '  Node: import and run registerNodeBspLoaderFromCore() from @node-jhora/core/node/register.mjs',
+            );
         }
 
-        const { existsSync }    = await import('fs');
-        const { join, dirname } = await import('path');
-
-        // 2. @node-jhora/ephe package (primary path)
-        try {
-            const { createRequire } = await import('module');
-            const req       = createRequire(import.meta.url);
-            const pkgJson   = req.resolve('@node-jhora/ephe/package.json');
-            const candidate = join(dirname(pkgJson), 'de440s.bsp');
-            if (existsSync(candidate)) return candidate;
-        } catch (_) { /* package not installed */ }
-
-        // 3. Dev fallback — look for de440s.bsp next to the packages/ dir
-        const devCandidate = new URL('../../../../de440s.bsp', import.meta.url);
-        const devPath = devCandidate.pathname.replace(/^\/([A-Z]:)/, '$1'); // Windows fix
-        if (existsSync(devPath)) return devPath;
-
-        throw new Error(
-            'EphemerisEngine: de440s.bsp not found.\n' +
-            '  Install the data package:  npm install @node-jhora/ephe\n' +
-            '  Or set:  NODE_JHORA_EPHE_PATH=/path/to/de440s.bsp',
-        );
+        this.spk = loadSpkFromBytes(bytes);
+        this.initialized = true;
     }
 
     // -----------------------------------------------------------------------

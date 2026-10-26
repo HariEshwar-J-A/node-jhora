@@ -26,9 +26,9 @@
  *   - a per-call override, on the individual function
  */
 
-import { AYANAMSA, DEFAULT_POSITION_MODE, DEFAULT_NODE_TYPE, type PositionMode } from './engine/ephemeris.js';
-import { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME,
-         type DasamsaScheme, type HoraScheme }                                  from './vedic/vargas.js';
+import { AYANAMSA, DEFAULT_NODE_TYPE, DEFAULT_POSITION_MODE, type PositionMode } from './engine/ephemeris.js';
+import {          type DasamsaScheme, DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME,
+type HoraScheme }                                  from './vedic/vargas.js';
 
 /** House systems the engine can produce. */
 export type HouseSystem = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';

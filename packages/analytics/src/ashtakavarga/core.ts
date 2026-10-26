@@ -1,4 +1,5 @@
 import { PlanetPosition } from '@node-jhora/core';
+
 import { ASHTAKAVARGA_RULES } from './rules.js';
 
 export interface AshtakavargaResult {

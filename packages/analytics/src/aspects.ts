@@ -1,4 +1,4 @@
-import { normalize360, getShortestDistance, PlanetPosition } from '@node-jhora/core';
+import { getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
 
 const SUN = 0;
 const MOON = 1;
@@ -178,7 +178,7 @@ export function calculateDrigBala(targetPlanet: PlanetPosition, allPlanets: Plan
 
         // Calculate Angle: (Aspected - Aspecting)
         // Ensure 0-360 positive
-        let angle = normalize360(targetPlanet.longitude - aspectingPlanet.longitude);
+        const angle = normalize360(targetPlanet.longitude - aspectingPlanet.longitude);
 
         const drishtiValue = calculateDrishtiValue(angle, aspectingPlanet.id);
 

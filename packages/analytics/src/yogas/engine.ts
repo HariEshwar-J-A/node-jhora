@@ -1,5 +1,6 @@
-import { PlanetPosition, normalize360 } from '@node-jhora/core';
-import { YogaDef, YogaResult, Condition } from '../types/rules.js';
+import { normalize360,PlanetPosition } from '@node-jhora/core';
+
+import { Condition,YogaDef, YogaResult } from '../types/rules.js';
 
 export interface ChartData {
     planets: PlanetPosition[];

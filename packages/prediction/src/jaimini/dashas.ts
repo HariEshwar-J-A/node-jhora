@@ -1,5 +1,5 @@
 
-import { PlanetPosition, normalize360 } from '@node-jhora/core';
+import { normalize360,PlanetPosition } from '@node-jhora/core';
 
 export interface CharaDashaPeriod {
     signIndex: number; // 0-11

@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc",
         "typecheck": "tsc --noEmit --pretty false",
-        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "lint": "eslint .",
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js",
         "start": "node dist/index.js",
         "dev": "node --watch dist/index.js"

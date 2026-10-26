@@ -153,8 +153,12 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
             };
         }
         default: {
-            const never: never = entry.tolerance;
-            return { ...base, pass: false, message: `unknown tolerance ${never}` };
+            const unknown = entry.tolerance as { type?: string };
+            return {
+                ...base,
+                pass: false,
+                message: `unknown tolerance ${unknown.type ?? '?'}`,
+            };
         }
     }
 }

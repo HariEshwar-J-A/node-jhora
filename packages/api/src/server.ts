@@ -1,17 +1,18 @@
-import Fastify, { FastifyInstance } from 'fastify';
-import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import cors from '@fastify/cors';
 import { EphemerisEngine, expandRequestBody } from '@node-jhora/core';
+import Fastify, { FastifyInstance } from 'fastify';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+
 import { registerErrorHandler } from './plugins/error-handler.js';
-import { healthRoutes } from './routes/health.js';
 import { chartRoutes } from './routes/chart.js';
-import { panchangaRoutes } from './routes/panchanga.js';
 import { dashaRoutes } from './routes/dasha.js';
-import { shadbalaRoutes } from './routes/shadbala.js';
+import { healthRoutes } from './routes/health.js';
 import { kpRoutes } from './routes/kp.js';
 import { matchRoutes } from './routes/match.js';
-import { transitRoutes } from './routes/transits.js';
+import { panchangaRoutes } from './routes/panchanga.js';
 import { readingRoutes } from './routes/reading.js';
+import { shadbalaRoutes } from './routes/shadbala.js';
+import { transitRoutes } from './routes/transits.js';
 
 // ---------------------------------------------------------------------------
 // Singleton WASM engine — initialized once at startup.
@@ -28,6 +29,8 @@ export function getEngine(): EphemerisEngine {
 
 export async function initEngine(): Promise<void> {
     if (_engine) return;
+    const { registerNodeBspLoaderFromCore } = await import('@node-jhora/core/node/register');
+    await registerNodeBspLoaderFromCore();
     _engine = EphemerisEngine.getInstance();
     await _engine.initialize();
 }

@@ -11,8 +11,9 @@
  */
 
 import { Decimal } from 'decimal.js';
-import { normalize360D, NAKSHATRA_SPAN_D, D, toNum } from '../core/precise.js';
 import { DateTime } from 'luxon';
+
+import { D, NAKSHATRA_SPAN_D, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Public types

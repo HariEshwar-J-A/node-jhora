@@ -4,9 +4,9 @@
  *
  * Data: NASA/JPL DE440s — U.S. Government public domain.
  */
-import { fileURLToPath } from 'url';
+import { existsSync, statSync } from 'fs';
 import { dirname, join } from 'path';
-import { existsSync }    from 'fs';
+import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,6 +16,5 @@ export const DE440S_PATH = join(__dirname, 'de440s.bsp');
 /** Returns true if de440s.bsp is present and at least 30 MB. */
 export function isAvailable() {
     if (!existsSync(DE440S_PATH)) return false;
-    const { statSync } = await import('fs');
     return statSync(DE440S_PATH).size > 30 * 1024 * 1024;
 }

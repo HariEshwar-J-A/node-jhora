@@ -1,4 +1,4 @@
-import { normalize360, getShortestDistance, PlanetPosition } from '@node-jhora/core';
+import { getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
 import { Decimal } from 'decimal.js';
 
 const SUN = 0;

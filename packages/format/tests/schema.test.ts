@@ -4,11 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { CalculationSettingsSchema } from '@node-jhora/core';
 
-import {
-    formatNjhJsonSchema,
-    NjhChartV2Schema,
-    parseNjh,
-} from '../src/index.js';
+import { formatNjhJsonSchema, NjhChartV2Schema, parseNjh } from '../src/index.js';
 
 const schemaPath = join(dirname(fileURLToPath(import.meta.url)), '../schema/njh-chart.schema.json');
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), 'fixtures/sample-v2.json');
@@ -44,10 +40,12 @@ describe('NjhChartV2Schema', () => {
 
     it('rejects unknown preset ids and malformed UUIDs', () => {
         const chart = parseNjh(readFileSync(fixturePath, 'utf8'));
-        expect(NjhChartV2Schema.safeParse({
-            ...chart,
-            settingsOverride: { kind: 'preset', presetId: 'not-a-preset' },
-        }).success).toBe(false);
+        expect(
+            NjhChartV2Schema.safeParse({
+                ...chart,
+                settingsOverride: { kind: 'preset', presetId: 'not-a-preset' },
+            }).success,
+        ).toBe(false);
         expect(NjhChartV2Schema.safeParse({ ...chart, id: 'not-uuid' }).success).toBe(false);
     });
 });
@@ -60,7 +58,10 @@ describe('JSON Schema', () => {
             writeFileSync(schemaPath, text);
         }
         expect(readFileSync(schemaPath, 'utf8')).toBe(text);
-        const json = JSON.parse(text) as { title: string; properties: { schemaVersion: { const: number } } };
+        const json = JSON.parse(text) as {
+            title: string;
+            properties: { schemaVersion: { const: number } };
+        };
         expect(json.title).toBe('NjhChartV2');
         expect(json.properties.schemaVersion.const).toBe(2);
     });

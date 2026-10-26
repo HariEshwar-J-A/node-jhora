@@ -1,4 +1,4 @@
-import { lookupViaCity, findFromCityStateProvince, type CityData } from 'city-timezones';
+import { type CityData,findFromCityStateProvince, lookupViaCity } from 'city-timezones';
 
 export interface ResolvedLocation {
     city:      string;

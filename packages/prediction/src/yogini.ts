@@ -1,6 +1,7 @@
 
-import { DashaPeriod } from './dasha.js';
 import { DateTime } from 'luxon';
+
+import { DashaPeriod } from './dasha.js';
 
 // Yogini Dasha Cycle
 // 8 Yoginis
@@ -46,7 +47,7 @@ export class YoginiDasha {
         if (seed === 0) seed = 8;
         
         // Map 1-8 to 0-7 array index
-        let yoginiIndex = seed - 1;
+        const yoginiIndex = seed - 1;
 
         // Balance Calculation
         // Proportion of Nakshatra remaining
@@ -57,7 +58,7 @@ export class YoginiDasha {
         const balanceYears = startYogini.years * remaining;
 
         const periods: DashaPeriod[] = [];
-        let currentStart = birthDate;
+        const currentStart = birthDate;
         let runningDate = birthDate.plus({ years: balanceYears }); // End of first period
         
         // Add First Period (Partial)

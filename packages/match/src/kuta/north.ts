@@ -1,5 +1,5 @@
-import { MatchResult, KutaScore, Gana, YoniAnimal, Nadi, Varna } from '../types.js';
-import { GANA_TABLE, YONI_TABLE, YONI_MATRIX, NADI_TABLE, GRAHA_MAITRI, SIGN_LORDS, VASHYA_PAIRS, VASHYA_SIGNS } from './data.js';
+import { Gana, KutaScore, MatchResult, Nadi, Varna,YoniAnimal } from '../types.js';
+import { GANA_TABLE, GRAHA_MAITRI, NADI_TABLE, SIGN_LORDS, VASHYA_PAIRS, VASHYA_SIGNS,YONI_MATRIX, YONI_TABLE } from './data.js';
 
 export function calculateAshtaKuta(
     boyStar: number, // 0-26

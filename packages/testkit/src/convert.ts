@@ -13,10 +13,10 @@
  */
 
 import {
-    GoldenCaseSchema,
-    hashSettings,
     type ExpectedEntry,
     type GoldenCase,
+    GoldenCaseSchema,
+    hashSettings,
     type SettingsDocument,
 } from './schema.js';
 

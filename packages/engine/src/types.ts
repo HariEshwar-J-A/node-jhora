@@ -2,14 +2,7 @@ import type { CalculationSettings, ResultEnvelope } from '@node-jhora/core';
 
 /** Lazy section ids supported by {@link ChartSession}. */
 export type ChartSectionId =
-    | 'planets'
-    | 'houses'
-    | 'panchanga'
-    | 'vargas'
-    | 'dasha'
-    | 'shadbala'
-    | 'yogas'
-    | 'ashtakavarga';
+    'planets' | 'houses' | 'panchanga' | 'vargas' | 'dasha' | 'shadbala' | 'yogas' | 'ashtakavarga';
 
 export const CHART_SECTION_IDS: readonly ChartSectionId[] = [
     'planets',

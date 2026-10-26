@@ -1,6 +1,7 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance, FastifyReply,FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
-import { CityNotFoundError, AmbiguousCityError } from '../services/geocoder.js';
+
+import { AmbiguousCityError,CityNotFoundError } from '../services/geocoder.js';
 
 /**
  * Global error handler — emits RFC 7807 Problem Details JSON.

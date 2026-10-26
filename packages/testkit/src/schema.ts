@@ -1,8 +1,7 @@
-import { createHash } from 'node:crypto';
-
 import { z } from 'zod';
 
 import { matchFeaturePath, type ToleranceType, type ValueKind } from './paths.js';
+import { sha256Utf8 } from './sha256.js';
 
 /** SHA-256 hex of canonical JSON. Object keys are sorted at every level. */
 export function canonicalJson(value: unknown): string {
@@ -19,7 +18,7 @@ export function canonicalJson(value: unknown): string {
 export type SettingsDocument = Record<string, string | number | boolean>;
 
 export function hashSettings(settings: SettingsDocument): string {
-    return createHash('sha256').update(canonicalJson(settings)).digest('hex');
+    return sha256Utf8(canonicalJson(settings));
 }
 
 const finite = z.number().finite();

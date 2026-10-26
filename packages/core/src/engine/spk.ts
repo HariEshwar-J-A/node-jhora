@@ -15,7 +15,6 @@
  *   https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
  */
 
-import { readFileSync } from 'fs';
 import { evalRecord, type Vec3 } from './chebyshev.js';
 
 // ---------------------------------------------------------------------------
@@ -74,12 +73,14 @@ const SUMMARY_BYTES    = SUMMARY_SIZE_F64 * 8;      // 40
 // ---------------------------------------------------------------------------
 
 export class SpkFile {
-    private readonly buf:      Buffer;
+    private readonly buf: Uint8Array;
+    private readonly view: DataView;
     private readonly littleEnd: boolean;
     private readonly segments: SpkSegment[] = [];
 
-    constructor(filePath: string) {
-        this.buf      = readFileSync(filePath);
+    constructor(bytes: Uint8Array) {
+        this.buf = bytes;
+        this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         this.littleEnd = this.detectEndian();
         this.parseSegments();
     }
@@ -88,7 +89,10 @@ export class SpkFile {
 
     private detectEndian(): boolean {
         // File record offset 88–95: "LTL-IEEE" (LE) or "BIG-IEEE" (BE)
-        const tag = this.buf.toString('ascii', 88, 96).trim().replace(/\0/g, '');
+        const tag = new TextDecoder('ascii')
+            .decode(this.buf.subarray(88, 96))
+            .trim()
+            .replace(/\0/g, '');
         if (tag === 'LTL-IEEE') return true;
         if (tag === 'BIG-IEEE') return false;
         // Fallback: modern JPL files are little-endian
@@ -96,17 +100,11 @@ export class SpkFile {
     }
 
     private readF64(byteOffset: number): number {
-        return this.littleEnd
-            ? this.buf.readDoubleBE !== undefined
-                ? this.buf.readDoubleLE(byteOffset)
-                : new DataView(this.buf.buffer, this.buf.byteOffset + byteOffset, 8).getFloat64(0, true)
-            : new DataView(this.buf.buffer, this.buf.byteOffset + byteOffset, 8).getFloat64(0, false);
+        return this.view.getFloat64(byteOffset, this.littleEnd);
     }
 
     private readI32(byteOffset: number): number {
-        return this.littleEnd
-            ? this.buf.readInt32LE(byteOffset)
-            : this.buf.readInt32BE(byteOffset);
+        return this.view.getInt32(byteOffset, this.littleEnd);
     }
 
     /** Parse the linked list of summary records and build segment index. */
@@ -287,12 +285,12 @@ export class SpkFile {
 let _instance: SpkFile | undefined;
 
 /**
- * Load (and cache) a SpkFile from the given path.
- * Subsequent calls with the same path return the cached instance.
+ * Load (and cache) a SpkFile from in-memory DE440s bytes.
+ * Subsequent calls return the cached instance until {@link resetSpkCache}.
  */
-export function loadSpk(filePath: string): SpkFile {
+export function loadSpkFromBytes(bytes: Uint8Array): SpkFile {
     if (!_instance) {
-        _instance = new SpkFile(filePath);
+        _instance = new SpkFile(bytes);
     }
     return _instance;
 }

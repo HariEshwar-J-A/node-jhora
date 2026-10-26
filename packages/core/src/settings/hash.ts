@@ -5,8 +5,8 @@
  * Arrays keep their order. `undefined` values are dropped.
  */
 
+import { type CalculationSettings,CalculationSettingsSchema, SETTINGS_HASH_HEX_LENGTH } from './schema.js';
 import { sha256Utf8 } from './sha256.js';
-import { CalculationSettingsSchema, SETTINGS_HASH_HEX_LENGTH, type CalculationSettings } from './schema.js';
 
 export function canonicalJson(value: unknown): string {
     return JSON.stringify(sortValue(value));

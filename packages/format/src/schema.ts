@@ -6,29 +6,24 @@ import { isValidIanaTimeZone } from './iana.js';
 
 const finite = z.number().finite();
 
-const utcInstant = z.string().regex(
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/,
-    'UTC instant must end with Z',
-);
+const utcInstant = z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/, 'UTC instant must end with Z');
 
-const uuid = z.string().regex(
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-);
+const uuid = z
+    .string()
+    .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 
-const ianaZone = z.string().min(1).superRefine((tz, ctx) => {
-    if (!isValidIanaTimeZone(tz)) {
-        ctx.addIssue({ code: 'custom', message: `Unknown IANA time zone: ${tz}` });
-    }
-});
+const ianaZone = z
+    .string()
+    .min(1)
+    .superRefine((tz, ctx) => {
+        if (!isValidIanaTimeZone(tz)) {
+            ctx.addIssue({ code: 'custom', message: `Unknown IANA time zone: ${tz}` });
+        }
+    });
 
-export const ChartKindSchema = z.enum([
-    'natal',
-    'event',
-    'mundane',
-    'prasna',
-    'return',
-    'other',
-]);
+export const ChartKindSchema = z.enum(['natal', 'event', 'mundane', 'prasna', 'return', 'other']);
 
 export const ChartMetadataSchema = z.strictObject({
     kind: ChartKindSchema,
@@ -79,7 +74,10 @@ export const BirthDataSchema = z.strictObject({
     longitude: finite.min(-180).max(180),
     altitudeMetres: finite,
     placeName: z.string().min(1).optional(),
-    countryCode: z.string().regex(/^[A-Z]{2}$/).optional(),
+    countryCode: z
+        .string()
+        .regex(/^[A-Z]{2}$/)
+        .optional(),
     tzResolution: TzResolutionTraceSchema,
 });
 

@@ -34,7 +34,7 @@ export function installGoldenMatchers(): void {
     jestExpect.extend({
         toMatchGoldenCase(received: GoldenActual, goldenCase: GoldenCase, options?: CompareGoldenOptions) {
             const result = compareGoldenCase(goldenCase, received, options);
-            const state = { result } satisfies GoldenMatcherState;
+            void ({ result } satisfies GoldenMatcherState);
             if (result.pass) {
                 return {
                     pass: true,
@@ -49,6 +49,7 @@ export function installGoldenMatchers(): void {
     });
 }
 
+ 
 declare global {
     namespace jest {
         interface Matchers<R> {

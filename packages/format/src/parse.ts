@@ -15,7 +15,7 @@ function validateInlineSettings(chart: NjhChartV2): void {
  * Applies migrations when `schemaVersion` is below the current version.
  */
 export function parseNjh(input: string | unknown): NjhChartV2 {
-    const value = typeof input === 'string' ? JSON.parse(input) as unknown : input;
+    const value = typeof input === 'string' ? (JSON.parse(input) as unknown) : input;
     const chart = migrateNjh(value);
     validateInlineSettings(chart);
     return chart;

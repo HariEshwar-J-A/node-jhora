@@ -15,10 +15,10 @@ const eph = EphemerisEngine.getInstance();
 await eph.initialize();
 
 const session = new ChartSession({
-  instant: DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' }),
-  location: { latitude: 13.0827, longitude: 80.2707 },
-  settings: 'node-jhora-default',
-  ephemeris: eph,
+    instant: DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' }),
+    location: { latitude: 13.0827, longitude: 80.2707 },
+    settings: 'node-jhora-default',
+    ephemeris: eph,
 });
 
 const planets = session.getPlanets();

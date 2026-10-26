@@ -1,8 +1,9 @@
-import PDFDocument from 'pdfkit';
+import { calculateShadbala, ChartData,YOGA_LIBRARY, YogaEngine } from '@node-jhora/analytics';
 import { PlanetPosition } from '@node-jhora/core';
-import { YogaEngine, YOGA_LIBRARY, calculateShadbala, ChartData } from '@node-jhora/analytics';
-import { ChartDrawer } from './drawers/ChartDrawer.js';
 import { DateTime } from 'luxon';
+import PDFDocument from 'pdfkit';
+
+import { ChartDrawer } from './drawers/ChartDrawer.js';
 
 // Define interface for input options if needed, e.g. Subject Details
 export interface ReportOptions {
@@ -112,7 +113,7 @@ export async function generateFullReport(chart: ChartData, options: ReportOption
                     doc.font('Helvetica').fontSize(10).fillColor('black');
                     
                     // Format Description
-                    let desc = yDef.description_template || 'Special planetary combination.';
+                    const desc = yDef.description_template || 'Special planetary combination.';
                     doc.text(desc);
                     doc.text(`Triggering Planets: ${[...yogaRes.triggeringPlanets].join(', ')}`, { oblique: true });
                     doc.moveDown(0.5);

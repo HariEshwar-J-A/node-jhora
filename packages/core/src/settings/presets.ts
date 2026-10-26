@@ -13,8 +13,8 @@
 
 import { TROPICAL_YEAR_DAYS } from '../config.js';
 import {
-    CalculationSettingsSchema,
     type CalculationSettings,
+    CalculationSettingsSchema,
 } from './schema.js';
 
 const NODE_JHORA_RAW = {
