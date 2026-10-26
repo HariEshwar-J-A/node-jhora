@@ -40,6 +40,8 @@ pnpm test              # turbo run test — one Jest project per library package
 pnpm generate          # turbo run generate — @node-jhora/testkit WRITE_GOLDENS (schema + core *.golden.json)
 pnpm --filter @node-jhora/core test
 pnpm run check:links   # relative Markdown links, no network
+pnpm run check:browser-bundle  # @node-jhora/core/browser gzip budget (excl. de440s.bsp)
+pnpm run test:browser  # Playwright worker parity (apps/browser-harness)
 pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
 pnpm run check:licenses    # no AGPL/GPL in production dependency graph
 pnpm run validate-github-templates

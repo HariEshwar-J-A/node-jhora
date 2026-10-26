@@ -9,6 +9,9 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
         },
+        "./browser": "./dist/browser/index.js",
+        "./browser/worker-entry": "./dist/browser/worker-entry.js",
+        "./browser/worker-api": "./dist/browser/worker-api.js",
         "./package.json": "./package.json"
     },
     "license": "LicenseRef-NodeJHora-Source-Available",
@@ -35,6 +38,7 @@
         "@node-jhora/analytics": "workspace:*",
         "@node-jhora/core": "workspace:*",
         "@node-jhora/prediction": "workspace:*",
+        "comlink": "^4.4.2",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
