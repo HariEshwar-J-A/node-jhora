@@ -1,0 +1,20 @@
+{
+  "provenance": {
+    "oracle": "pyswisseph 2.10.03, swe_houses_ex(SEFLG_SIDEREAL), SE_SIDM_TRUE_CITRA",
+    "chart": "2000-01-01 12:00 UT, lon 0°",
+    "jdUT": 2451545.0,
+    "use": "modern profile sidereal vertex oracle only; test fixture"
+  },
+  "samples": [
+    { "lat": 0, "vertex": 156.1638548180066 },
+    { "lat": 0.0001, "vertex": 156.16390044905103 },
+    { "lat": -0.0001, "vertex": 156.16380918660082 },
+    { "lat": 0.5, "vertex": 156.38758659639876 },
+    { "lat": -0.5, "vertex": 155.93108628563607 },
+    { "lat": 60, "vertex": 165.27364283237148 },
+    { "lat": -60, "vertex": 171.26495767416665 },
+    { "lat": 70, "vertex": 165.9981923749904 },
+    { "lat": -70, "vertex": 169.63829893007335 },
+    { "lat": 89.9, "vertex": 167.5292375818844 }
+  ]
+}

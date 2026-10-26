@@ -31,6 +31,7 @@
 
 import { apparentStarDirection, AU_KM } from './apparent.js';
 import { deltaT } from './deltat.js';
+import { nutation } from './nutation.js';
 import {
     icrfToMeanEclipticOfDate,
     julianCenturies,
@@ -47,6 +48,25 @@ const PC_IN_AU = 206264.806247;
 const KMS_TO_AU_YR = (86400 * 365.25) / AU_KM;
 
 const mod360 = (x: number): number => ((x % 360) + 360) % 360;
+
+/** SE_SIDM modes that are known but intentionally not implemented (see docs/DATA-SOURCES.md). */
+export const UNSUPPORTED_AYANAMSA_MODES = new Set<number>([
+    2, // De Luce — published anchor does not match SE 2.10 within 1″; not embedded.
+    7, // Yukteshwar — published spring-1894 anchor + IAU precession misses SE/JHora by arcminutes.
+    8, // J.N. Bhasin — no citable primary anchor that tracks SE 2.10 within 1″.
+    28, // True Revati — ζ Psc catalogue + IAU precession misses SE 2.10 at DE440s kernel edges.
+]);
+
+/** Thrown when {@link getAyanamsa} is called for a known-but-unimplemented SE_SIDM mode. */
+export class UnsupportedAyanamsaModeError extends Error {
+    readonly mode: number;
+
+    constructor(mode: number) {
+        super(`ayanamsa: SE_SIDM mode ${mode} is not implemented in this engine`);
+        this.name = 'UnsupportedAyanamsaModeError';
+        this.mode = mode;
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Fixed-star catalogue (only the stars used to define ayanamsas)
@@ -284,7 +304,34 @@ interface EpochModel {
     source: 'definition' | 'jhora' | 'provisional';
 }
 
-export type AyanamsaModel = StarModel | EpochModel;
+/**
+ * True ayanamsa at a reference epoch, stored as mean by subtracting IAU 1980
+ * nutation in longitude at that instant, then propagated with IAU 2006 precession
+ * (same rotation as other epoch modes). Matches Swiss Ephemeris `SIDM_LAHIRI_ICRC`.
+ */
+interface TrueEpochModel {
+    kind: 'true_epoch';
+    jd: number;
+    /** True (nutation-bearing) ayanamsa at `jd`, degrees. */
+    trueValue: number;
+    label: string;
+    source: 'definition';
+}
+
+export type AyanamsaModel = StarModel | EpochModel | TrueEpochModel;
+
+/** B.V. Raman, *Hindu Predictive Astrology*, App. A: (year − 397) × 50⅓″ at 1900 January 0.5. */
+const RAMAN_AYANAMSA_1900_DEG = ((1900 - 397) * (50 + 1 / 3)) / 3600;
+
+function nutationLongitudeDegrees(jdUT: number): number {
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    return nutation(julianCenturies(jdTT)).dpsi;
+}
+
+function meanAyanamsaFromTrueEpoch(trueValue: number, anchorJd: number, jd: number): number {
+    const meanAtAnchor = trueValue - nutationLongitudeDegrees(anchorJd);
+    return meanAtAnchor + accumulatedPrecession(anchorJd, jd);
+}
 
 /**
  * Swiss Ephemeris `SE_SIDM_*` mode number → model.
@@ -332,12 +379,6 @@ export const AYANAMSA_MODELS: Record<number, AyanamsaModel> = {
         atLongitude: 106,
         label: 'True Pushya (δ Cnc at 106°)',
     },
-    30: {
-        kind: 'star',
-        star: 'ZetaPiscium',
-        atLongitude: 359 + 50 / 60,
-        label: 'True Revati (ζ Psc at 359°50′)',
-    },
     35: {
         kind: 'star',
         star: 'LambdaScorpii',
@@ -354,36 +395,43 @@ export const AYANAMSA_MODELS: Record<number, AyanamsaModel> = {
         label: 'Fagan/Bradley',
         source: 'definition',
     },
-    // Lahiri: 23°15′00″ at 1956-03-21 0h UT (Indian Calendar Reform Committee).
+    // Lahiri (SE_SIDM_LAHIRI = 1). See docs/DATA-SOURCES.md.
     1: {
         kind: 'epoch',
-        jd: 2435553.5,
-        value: 23.250182,
-        label: 'Lahiri (ICRC)',
+        jd: 2415020.0,
+        value: 22 + 27 / 60 + 37.76 / 3600,
+        label: 'Lahiri',
         source: 'definition',
     },
-    // Raman: 21°00′00″ at 1900-01-01.
-    3: { kind: 'epoch', jd: 2415020.0, value: 21.0, label: 'Raman', source: 'definition' },
+    // Raman (SE_SIDM_RAMAN = 3). See docs/DATA-SOURCES.md.
+    3: {
+        kind: 'epoch',
+        jd: 2415020.0,
+        value: RAMAN_AYANAMSA_1900_DEG,
+        label: 'Raman',
+        source: 'definition',
+    },
+    // Krishnamurti / KP (SE_SIDM_KRISHNAMURTI = 5). See docs/DATA-SOURCES.md.
     5: {
         kind: 'epoch',
-        jd: 2435553.5,
-        value: 23.1602778,
+        jd: 2415020.0,
+        value: 22 + 21 / 60 + 50 / 3600,
         label: 'Krishnamurti (KP)',
-        source: 'provisional',
+        source: 'definition',
     },
-    7: {
-        kind: 'epoch',
-        jd: 2412543.5,
-        value: 20.8194444,
-        label: 'Yukteshwar',
-        source: 'provisional',
-    },
-    8: { kind: 'epoch', jd: 2415020.0, value: 21.0, label: 'JN Bhasin', source: 'provisional' },
     18: {
         kind: 'epoch',
         jd: 2451545.0,
         value: 0.0,
         label: 'J2000 (no ayanamsa)',
+        source: 'definition',
+    },
+    // Lahiri ICRC (SE_SIDM_LAHIRI_ICRC = 46). CRC 1955 true ayanamsa; see docs/DATA-SOURCES.md.
+    46: {
+        kind: 'true_epoch',
+        jd: 2435553.5,
+        trueValue: 23 + 15 / 60,
+        label: 'Lahiri ICRC',
         source: 'definition',
     },
 };
@@ -428,7 +476,9 @@ export function accumulatedPrecession(jdFrom: number, jdTo: number): number {
  *     subtracted from TRUEPOS sidereal planets, and the number JHora prints
  *     for the 1998 reference chart (`23-51-11.00`).
  *
- * Epoch-defined modes have no star, so the two frames are the same value.
+ * Epoch-defined modes have no star-dependent aberration; `apparent` and
+ * `geometric` return the same mean propagated value (matching
+ * `swe_get_ayanamsa_ut` for fixed-epoch systems).
  */
 export type AyanamsaFrame = 'apparent' | 'geometric';
 
@@ -444,6 +494,9 @@ export function getAyanamsa(mode: number, jd: number, frame: AyanamsaFrame = 'ge
     const model = AYANAMSA_MODELS[mode];
 
     if (!model) {
+        if (UNSUPPORTED_AYANAMSA_MODES.has(mode)) {
+            throw new UnsupportedAyanamsaModeError(mode);
+        }
         // Fall back to True Chitrapaksha — the project's reference model —
         // rather than silently substituting an unrelated zero point.
         if (mode !== 27) return getAyanamsa(27, jd, frame);
@@ -458,7 +511,18 @@ export function getAyanamsa(mode: number, jd: number, frame: AyanamsaFrame = 'ge
         return mod360(lon - model.atLongitude);
     }
 
-    return model.value + accumulatedPrecession(model.jd, jd);
+    if (model.kind === 'true_epoch') {
+        return mod360(meanAyanamsaFromTrueEpoch(model.trueValue, model.jd, jd));
+    }
+
+    return mod360(model.value + accumulatedPrecession(model.jd, jd));
+}
+
+/** True ayanamsa (mean + nutation in longitude) for a `true_epoch` model at `jd` UT. */
+export function trueAyanamsaFromModel(model: TrueEpochModel, jd: number): number {
+    return mod360(
+        meanAyanamsaFromTrueEpoch(model.trueValue, model.jd, jd) + nutationLongitudeDegrees(jd),
+    );
 }
 
 /**

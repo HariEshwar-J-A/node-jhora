@@ -18,7 +18,7 @@ export function assertValidCivilDate(parts: Pick<HistoricalDateTime, 'astronomic
 export const AYANAMSA: {
     readonly FAGAN_BRADLEY: 0;
     readonly LAHIRI: 1;
-    readonly LAHIRI_ICRC: 2;
+    readonly DE_LUCE: 2;
     readonly RAMAN: 3;
     readonly KRISHNAMURTI: 5;
     readonly YUKTESHWAR: 7;
@@ -26,29 +26,27 @@ export const AYANAMSA: {
     readonly J2000: 18;
     readonly TRUE_CITRA: 27;
     readonly TRUE_PUSHYA: 29;
-    readonly TRUE_REVATI: 30;
+    readonly TRUE_REVATI: 28;
     readonly TRUE_MULA: 35;
+    readonly LAHIRI_ICRC: 46;
 };
 
 // @public
 export type Ayanamsa = 'TrueChitra' | 'TruePushya' | 'TrueRevati' | 'TrueMula' | 'Lahiri' | 'LahiriICRC' | 'Raman' | 'KP' | 'Yukteshwar' | 'FaganBradley';
 
 // @public (undocumented)
-export const AYANAMSA_IDS: readonly ["true_citra", "true_pushya", "true_revati", "true_mula", "fagan_bradley", "lahiri", "lahiri_icrc", "raman", "kp", "yukteshwar", "jn_bhasin", "j2000"];
+export const AYANAMSA_IDS: readonly ["true_citra", "true_pushya", "true_mula", "fagan_bradley", "lahiri", "lahiri_icrc", "raman", "kp", "j2000"];
 
 // @public (undocumented)
 export const AYANAMSA_MODE_BY_ID: {
     readonly fagan_bradley: 0;
     readonly lahiri: 1;
-    readonly lahiri_icrc: 2;
+    readonly lahiri_icrc: 46;
     readonly raman: 3;
     readonly kp: 5;
-    readonly yukteshwar: 7;
-    readonly jn_bhasin: 8;
     readonly j2000: 18;
     readonly true_citra: 27;
     readonly true_pushya: 29;
-    readonly true_revati: 30;
     readonly true_mula: 35;
 };
 
@@ -168,15 +166,12 @@ export const CalculationSettingsSchema: z.ZodObject<{
     ayanamsa: z.ZodEnum<{
         true_citra: "true_citra";
         true_pushya: "true_pushya";
-        true_revati: "true_revati";
         true_mula: "true_mula";
         fagan_bradley: "fagan_bradley";
         lahiri: "lahiri";
         lahiri_icrc: "lahiri_icrc";
         raman: "raman";
         kp: "kp";
-        yukteshwar: "yukteshwar";
-        jn_bhasin: "jn_bhasin";
         j2000: "j2000";
     }>;
     ayanamsaOffsetDeg: z.ZodNumber;
@@ -1083,6 +1078,11 @@ export function toNum(d: Decimal): number;
 // @public
 export const TROPICAL_YEAR_DAYS = 365.242189623;
 
+// Warning: (ae-forgotten-export) The symbol "TrueEpochModel" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function trueAyanamsaFromModel(model: TrueEpochModel, jd: number): number;
+
 // @public
 export const TZDB_VERSION = "luxon-3.7.2";
 
@@ -1114,6 +1114,16 @@ export interface TzResolutionTrace {
 
 // @public (undocumented)
 export function unixMsToJulianDay(ms: number): number;
+
+// @public
+export const UNSUPPORTED_AYANAMSA_MODES: Set<number>;
+
+// @public
+export class UnsupportedAyanamsaModeError extends Error {
+    constructor(mode: number);
+    // (undocumented)
+    readonly mode: number;
+}
 
 // @public (undocumented)
 export interface UpagrahaPositions {

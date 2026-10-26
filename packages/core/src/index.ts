@@ -69,7 +69,13 @@ export {
 };
 export type { HouseSystem, JyotishConfig, NodeType } from './config.js';
 export { DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS } from './config.js';
-export { AYANAMSA_MODELS, ayanamsaName } from './engine/ayanamsa.js';
+export {
+    AYANAMSA_MODELS,
+    ayanamsaName,
+    trueAyanamsaFromModel,
+    UNSUPPORTED_AYANAMSA_MODES,
+    UnsupportedAyanamsaModeError,
+} from './engine/ayanamsa.js';
 export {
     DELTA_T_MODEL_MODERN,
     deltaTModelId,

@@ -6,22 +6,18 @@ import { z } from 'zod';
  *
  * The `true_*` models are defined by pinning a named star to an exact sidereal
  * longitude, so they carry no fitted constant and are exact at every date.
- * `lahiri` reproduces JHora's Lahiri, which sits ~4.8′ above the Indian Calendar
- * Reform Committee definition available as `lahiri_icrc`.
+ * `lahiri` is SE_SIDM_LAHIRI (mode 1). `lahiri_icrc` is SE_SIDM_LAHIRI_ICRC (mode 46).
  */
 export const AYANAMSA_MAP = {
     true_chitra: 27, // True Chitrapaksha — Spica at 180° (Drik Siddhanta)
     true_citra: 27, // same mode; spelling used by calculation settings and presets
     true_pushya: 29, // δ Cancri at 106°
-    true_revati: 30, // ζ Piscium at 359°50′
     true_mula: 35, // λ Scorpii at 240°
-    lahiri: 1, // as JHora reports it
-    lahiri_icrc: 2, // Indian Calendar Reform Committee definition
+    lahiri: 1,
+    lahiri_icrc: 46,
     raman: 3,
     kp: 5,
-    yukteshwar: 7,
     fagan_bradley: 0,
-    jn_bhasin: 8,
     j2000: 18,
 } as const;
 

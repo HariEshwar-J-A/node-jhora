@@ -285,8 +285,11 @@ export function computeAscendant(ramc: number, lat: number, eps: number): number
     const R = ramc * DEG;
     const E = eps * DEG;
 
-    // Clamp latitude away from the poles, where the ascendant is undefined.
-    const L = Math.max(-89.9999, Math.min(89.9999, lat)) * DEG;
+    // Near the poles the Meeus ascendant formula is singular. Clamp to ±(90° − ε)
+    // with ε small enough that the equatorial Vertex limit (co-latitude → ±90°)
+    // matches Swiss Ephemeris / JHora to sub-arcsecond (see computeVertex).
+    const POLE_CLAMP_DEG = 89.999999;
+    const L = Math.max(-POLE_CLAMP_DEG, Math.min(POLE_CLAMP_DEG, lat)) * DEG;
 
     const asc = mod360(
         Math.atan2(Math.cos(R), -(Math.sin(E) * Math.tan(L) + Math.cos(E) * Math.sin(R))) * RAD,
@@ -334,6 +337,11 @@ function azimuthFromSouth(ra: number, dec: number, ramc: number, lat: number): n
  * Tropical Vertex — western intersection of the ecliptic with the prime
  * vertical (`ascmc[3]`). The southern co-latitude ascendant gives one
  * intersection; the other is 180° away. Keep the point whose azimuth is west.
+ *
+ * At φ = 0 the co-latitude is exactly ±90° (a geographic pole), which is a
+ * removable singularity of the ascendant formula. {@link computeAscendant} uses
+ * a tight pole clamp (89.999999°) so the φ → 0 limit matches SE/JHora rather
+ * than the older 89.9999° clamp that left ~0.9″ error at the equator.
  */
 export function computeVertex(ramc: number, lat: number, eps: number): number {
     const southColatAsLat = lat >= 0 ? lat - 90 : lat + 90;

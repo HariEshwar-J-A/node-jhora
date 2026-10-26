@@ -1,0 +1,58 @@
+{
+  "provenance": {
+    "source": "full-range sweep oracles (oracle_jhora.json / oracle_modern.json), sidereal W vertex",
+    "use": "test fixture; values are black-box oracle outputs at listed JD/lat/lon"
+  },
+  "samples": [
+    {
+      "id": 154,
+      "jd": 2400581.608564815,
+      "lat": 0,
+      "lon": -30.404,
+      "deltaTJhora": 7.713379,
+      "deltaTModern": 8.958551251703835,
+      "jhoraVertex": 158.10547879925,
+      "modernVertex": 158.09933752086204
+    },
+    {
+      "id": 157,
+      "jd": 2415136.7961805556,
+      "lat": 60,
+      "lon": 0,
+      "deltaTJhora": -2.432026,
+      "deltaTModern": -1.6170375557944732,
+      "jhoraVertex": 201.838144875517,
+      "modernVertex": 201.8283710852783
+    },
+    {
+      "id": 158,
+      "jd": 2415448.7056828705,
+      "lat": -60,
+      "lon": 53.034,
+      "deltaTJhora": -1.337863,
+      "deltaTModern": -0.5318525243097928,
+      "jhoraVertex": 185.03194826126,
+      "modernVertex": 185.02319909951765
+    },
+    {
+      "id": 161,
+      "jd": 2434948.390046296,
+      "lat": 70,
+      "lon": -180,
+      "deltaTJhora": 30.922234,
+      "deltaTModern": 30.864479465497936,
+      "jhoraVertex": 327.07762778476,
+      "modernVertex": 327.07359737361094
+    },
+    {
+      "id": 173,
+      "jd": 2461488.0736342594,
+      "lat": -70,
+      "lon": 77.2,
+      "deltaTJhora": 82.590718,
+      "deltaTModern": 68.8,
+      "jhoraVertex": 349.436688647578,
+      "modernVertex": 349.4283181385102
+    }
+  ]
+}

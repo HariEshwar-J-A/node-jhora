@@ -46,21 +46,20 @@ All fields are optional. Defaults come from `DEFAULT_CONFIG`.
 The sidereal zero point. Star-defined models are _derived_ from a computed star
 position and so carry no fitted constant — prefer them.
 
-| Code | Model                                   | Basis                              |
-| ---- | --------------------------------------- | ---------------------------------- |
-| `27` | **True Chitrapaksha** — Spica at 180°   | star-defined, exact                |
-| `29` | True Pushya — δ Cancri at 106°          | star-defined, exact                |
-| `30` | True Revati — ζ Piscium at 359°50′      | star-defined, exact                |
-| `35` | True Mula — λ Scorpii at 240°           | star-defined, exact                |
-| `0`  | Fagan/Bradley                           | epoch anchor, published definition |
-| `1`  | Lahiri (ICRC) — 23°15′00″ at 1956-03-21 | epoch anchor, published definition |
-| `3`  | Raman — 21°00′00″ at 1900-01-01         | epoch anchor, published definition |
-| `5`  | Krishnamurti (KP)                       | epoch anchor, **provisional**      |
-| `7`  | Yukteshwar                              | epoch anchor, **provisional**      |
-| `18` | J2000 (no ayanamsa)                     | —                                  |
+| Code | Model                                  | Basis                              |
+| ---- | -------------------------------------- | ---------------------------------- |
+| `27` | **True Chitrapaksha** — Spica at 180°  | star-defined, exact                |
+| `29` | True Pushya — δ Cancri at 106°         | star-defined, exact                |
+| `35` | True Mula — λ Scorpii at 240°          | star-defined, exact                |
+| `0`  | Fagan/Bradley                          | epoch anchor, published definition |
+| `1`  | Lahiri — 22°27′37.76″ @ 1900-01-01     | epoch anchor, published definition |
+| `46` | Lahiri ICRC — true 23°15′ @ 1956-03-21 | true-epoch, published definition   |
+| `3`  | Raman — (1900−397)×50⅓″ @ 1900-01-01   | epoch anchor, published definition |
+| `5`  | Krishnamurti (KP)                      | epoch anchor, published definition |
+| `18` | J2000 (no ayanamsa)                    | —                                  |
 
-Entries marked _provisional_ have not been verified against a primary source and
-may be off by arcminutes. `AYANAMSA_MODELS[mode].source` records provenance.
+Modes `2`, `7`, `8`, and `28` are not in the registry (`UnsupportedAyanamsaModeError`).
+`AYANAMSA_MODELS[mode].source` records provenance for supported modes.
 
 ### `ayanamsaOffset`
 
@@ -241,9 +240,8 @@ Every option is a field on the request body:
 }
 ```
 
-`ayanamsa` accepts: `true_chitra` (same mode as the settings id `true_citra`), `true_pushya`, `true_revati`, `true_mula`,
-`lahiri`, `lahiri_icrc`, `raman`, `kp`, `yukteshwar`, `fagan_bradley`,
-`jn_bhasin`, `j2000`. A `preset` id (`jhora-default@8.0`, `node-jhora-default`,
+`ayanamsa` accepts: `true_chitra` (same mode as the settings id `true_citra`), `true_pushya`, `true_mula`,
+`lahiri`, `lahiri_icrc`, `raman`, `kp`, `fagan_bradley`, `j2000`. A `preset` id (`jhora-default@8.0`, `node-jhora-default`,
 `kp`, `raman`, `lahiri-mean`) or a `settings` object fills any calculation
 field you omit; a field you send still wins. Responses include `settingsHash`.
 
