@@ -32,20 +32,10 @@
  * Ephemeris general documentation (ch. 7, "ΔT") gives as the default for its
  * DE431-based files.
  *
- * Precision profile 'modern' follows the sources Swiss Ephemeris 2.10
- * documents, again built from the published tables only:
- *
- *   • y < −720 — the SMH2016 long-term parabola ΔT = −320 + 32.5 u²,
- *     u = (y − 1825)/100 (Stephenson, Morrison & Hohenkerk 2016);
- *   • −720 ≤ y < 1955 — SMH2016 Table S15 cubic spline (deltat-smh2016.ts),
- *     moved from the authors' ṅ = −25.85″/cy² to the ephemeris ṅ;
- *   • 1955 ≤ y ≤ 2026 — the observed record (AA K8–K9, USNO / IERS Bulletin
- *     B) through 1 January 2026, with the same Bessel interpolation;
- *   • y > 2026 — Stephenson (1997) with the same 100-year linear join, a
- *     published extrapolation (the one 'jhora' also uses after its record).
- *     SE 2.10's own undocumented post-2028 polynomial is NOT used,
- *     so 'modern' predictions differ from SE 2.10 after the record ends. Any
- *     future ΔT is a prediction; see docs/precision-profiles.md.
+ * Precision profile 'modern' follows the ΔT layout Swiss Ephemeris 2.10
+ * documents (SMH2016 Table S15 + parabola join, AA/USNO monthly record, SE annual
+ * oracle bridge through 2028, UKHO cubic + SMH2016 long-term parabola, van Gent tidal n′
+ * correction). See deltat-modern.ts and ADR 0007.
  *
  * Either profile can be pinned to a fixed ΔT with deltaTOverrideSeconds
  * (CalculationSettings), applied through withDeltaTContext().
@@ -56,19 +46,18 @@
  */
 
 import {
-    OBSERVED_DELTAT_JAN1,
-    OBSERVED_DELTAT_JAN1_MODERN_EXT,
-    OBSERVED_DELTAT_YEAR0,
-} from './deltat-observed.js';
-import { SMH2016_S15 } from './deltat-smh2016.js';
+    DELTA_T_MODEL_MODERN,
+    deltaTModern,
+    LAST_OBSERVED_YEAR_MODERN as LAST_OBSERVED_YEAR_MODERN_PROFILE,
+} from './deltat-modern.js';
+import { OBSERVED_DELTAT_JAN1, OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
 
 /** Supported precision profiles. See CalculationSettings.precisionProfile. */
 export type PrecisionProfile = 'jhora' | 'modern';
 
 /** Identifier recorded in result envelopes for the ΔT model in use. */
 export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997';
-/** Identifier recorded in result envelopes for the 'modern' ΔT model. */
-export const DELTA_T_MODEL_MODERN = 'modern:smh2016-s15+aa-usno-obs2026+st1997';
+export { DELTA_T_MODEL_MODERN };
 
 /** Envelope identifier for a profile (or for a pinned override). */
 export function deltaTModelId(
@@ -90,18 +79,10 @@ const RECORD_FIRST = OBSERVED_DELTAT_YEAR0;
 const RECORD_START = 1633;
 
 const JHORA_RECORD: readonly number[] = OBSERVED_DELTAT_JAN1;
-const MODERN_RECORD: readonly number[] = [
-    ...OBSERVED_DELTAT_JAN1,
-    ...OBSERVED_DELTAT_JAN1_MODERN_EXT,
-];
-
 /** Last year whose ΔT comes from an observation ('jhora' profile). */
 export const LAST_OBSERVED_YEAR = RECORD_FIRST + JHORA_RECORD.length - 1;
 /** Last year whose ΔT comes from an observation ('modern' profile). */
-export const LAST_OBSERVED_YEAR_MODERN = RECORD_FIRST + MODERN_RECORD.length - 1;
-
-/** First year the 'modern' profile takes from the observed record. */
-const MODERN_RECORD_START = 1955;
+export const LAST_OBSERVED_YEAR_MODERN = LAST_OBSERVED_YEAR_MODERN_PROFILE;
 
 /** Last observed year for a profile. Later dates use a predicted ΔT. */
 export function lastObservedDeltaTYear(profile: PrecisionProfile = 'jhora'): number {
@@ -198,35 +179,6 @@ function deltaTRaw(y: number): number {
     return extrapolate(JHORA_RECORD, y);
 }
 
-/** SMH2016 Table S15 spline, on the authors' ṅ (−25.85″/cy²). */
-function smh2016(y: number): number {
-    const first = SMH2016_S15[0][0];
-    if (y < first) {
-        const u = (y - 1825) / 100;
-        return -320 + 32.5 * u * u;
-    }
-    for (const [k0, k1, a0, a1, a2, a3] of SMH2016_S15) {
-        if (y < k1) {
-            const t = (y - k0) / (k1 - k0);
-            return a0 + t * (a1 + t * (a2 + t * a3));
-        }
-    }
-    const [k0, k1, a0, a1, a2, a3] = SMH2016_S15[SMH2016_S15.length - 1];
-    const t = (y - k0) / (k1 - k0);
-    return a0 + t * (a1 + t * (a2 + t * a3));
-}
-
-function deltaTModern(y: number): number {
-    if (y < MODERN_RECORD_START) {
-        return (
-            smh2016(y) -
-            0.000091 * (TIDAL_ACCELERATION - SMH2016_TIDAL_ACCELERATION) * (y - 1955) ** 2
-        );
-    }
-    if (y <= LAST_OBSERVED_YEAR_MODERN) return interpolateRecord(MODERN_RECORD, y);
-    return extrapolate(MODERN_RECORD, y);
-}
-
 /** The ΔT model in force for engine calls that do not name one. */
 export interface DeltaTContext {
     profile: PrecisionProfile;
@@ -274,7 +226,7 @@ export function deltaT(jdUT: number, profile?: PrecisionProfile): number {
         profile = active.profile;
     }
     const y = decimalYear(jdUT);
-    if (profile === 'modern') return deltaTModern(y);
+    if (profile === 'modern') return deltaTModern(jdUT);
     let v = deltaTRaw(y);
     if (y < 1955) v += -0.000091 * (TIDAL_ACCELERATION + 26) * (y - 1955) ** 2;
     return v;
