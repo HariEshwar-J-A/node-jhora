@@ -12,6 +12,7 @@
         "check:clean-room": "node tools/check-forbidden-assets.mjs",
         "horizons:refresh": "pnpm exec tsx tools/oracles/horizons.ts",
         "check:links": "node tools/check-markdown-links.mjs",
+        "check:determinism": "node scripts/check-determinism.mjs",
         "check:licenses": "node tools/check-runtime-licenses.mjs",
         "validate-github-templates": "node scripts/validate-github-templates.mjs",
         "docs:dev": "pnpm --filter @node-jhora/docs dev",
