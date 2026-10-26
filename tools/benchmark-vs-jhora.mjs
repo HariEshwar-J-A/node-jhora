@@ -30,7 +30,7 @@ import { join }                      from 'path';
 import { DateTime }                  from 'luxon';
 
 import { EphemerisEngine } from '../packages/core/dist/engine/ephemeris.js';
-import { parseJhd, jhdToUtcISO } from '../packages/core/dist/io/jhd.js';
+import { parseJhd, jhdToUtcISO } from '../packages/format/dist/jhd/index.js';
 
 // ---------------------------------------------------------------------------
 // JPL Horizons reference — apparent geocentric ecliptic longitude of date.

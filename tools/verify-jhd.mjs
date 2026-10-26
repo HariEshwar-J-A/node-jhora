@@ -22,7 +22,7 @@ import { join, extname, basename }             from 'path';
 import { DateTime }                            from 'luxon';
 
 import { EphemerisEngine }        from '../packages/core/dist/engine/ephemeris.js';
-import { parseJhd, jhdToUtcISO, JHD_BODY_ORDER } from '../packages/core/dist/io/jhd.js';
+import { parseJhd, jhdToUtcISO, JHD_BODY_ORDER } from '../packages/format/dist/jhd/index.js';
 
 // ---------------------------------------------------------------------------
 // CLI

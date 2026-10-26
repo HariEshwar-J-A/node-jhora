@@ -50,8 +50,6 @@ export {
     withResultEnvelope,
 } from './envelope.js';
 export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
-export type { JhdBody,JhdChart } from './io/jhd.js';
-export { hasPositions, JHD_BODY_ORDER,jhdToUtcISO, parseJhd, sexagesimalToDecimal } from './io/jhd.js';
 export type {
     AyanamsaId, CalculationSettings, DasaYearKind, HouseSystemId, PresetId,
     ResolvedCalculation, SettingsInput, SunriseLimb,

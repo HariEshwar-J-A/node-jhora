@@ -32,6 +32,18 @@ export {
     suggestCsvColumnMappings,
 } from './csv/index.js';
 export { isValidIanaTimeZone } from './iana.js';
+export type { JhdBody, JhdChart, JhdFileMeta, JhdLine8AltitudeMode, JhdParseOptions, JhdParseResult } from './jhd/index.js';
+export {
+    hasPositions,
+    JHD_BODY_ORDER,
+    jhdErrorMessage,
+    JhdParseError,
+    jhdToUtcISO,
+    parseJhd,
+    parseJhdDetailed,
+    sexagesimalToDecimal,
+    writeJhd,
+} from './jhd/index.js';
 export { buildNjhChartJsonSchema, formatNjhJsonSchema } from './json-schema.js';
 export type { MigrationFn } from './migrate.js';
 export { migrateNjh, migrateV1ToV2 } from './migrate.js';
