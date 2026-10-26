@@ -1,68 +1,72 @@
 # Node-Jhora: Professional Vedic Astrology SDK
 
-Node-Jhora is a high-precision, performance-oriented **Vedic Astrology (Jyotish)** engine for Node.js and TypeScript. It is structured as a monorepo containing specialized, lightweight packages for professional-grade astrology software.
+Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It is an npm-workspaces monorepo. Libraries live in `packages/`. Applications belong in `apps/` (none are checked in; a React UI is planned there).
 
-## ✨ Features
+## Features
 
-*   **Precision Astronomy**: Swiss Ephemeris (WASM) for planetary positions with 0.0001″ accuracy.
-*   **Vedic Core**: Ayanamsa support (Lahiri, Raman, KP, and more), Panchanga (Tithi/Nakshatra/Yoga/Karana/Vara), and all 16 Divisional Charts (Vargas D1–D60).
-*   **House Systems**: Whole Sign, Placidus, and Porphyry with trigonometric Ascendant/MC calculation.
-*   **Special Lagnas**: Pranapada, Indu Lagna, Hora Lagna, Ghati Lagna, Bhava Lagna, and Varnada Lagna.
-*   **Upagrahas**: Gulikadi (time-based: Gulika, Mandi, Kaala, etc.) and Dhumadi (angular: Dhuma, Vyatipata, etc.).
-*   **Jaimini System**: 7 Chara Karakas, Rashi Drishti, Arudha Padas, and Chara Dasha.
-*   **KP System**: Sign, Star, Sub, and Sub-Sub Lords with Ruling Planets and KP Engine significators.
-*   **Yoga Engine**: Extensible, rule-based engine to detect hundreds of planetary combinations.
-*   **Predictive**: Vimshottari (5-level recursive), Yogini, and Narayana Dasha systems.
-*   **Analytics**: Complete Shadbala (6-fold strength) and Ashtakavarga (BAV/SAV) calculation.
-*   **Matchmaking**: North Indian Ashta Kuta (36 points), South Indian Dasha Kuta (10 Poruthams), and Mangal Dosha analysis.
-*   **REST API**: Production-ready Fastify server with Zod validation for all calculations.
-*   **Event Detection**: Precision event scanners for sign ingresses, retrograde stations, and custom conditions.
-*   **PDF Reports**: Full birth chart reports with Shadbala, Yogas, and chart drawings via PDFKit.
-*   **Precision Math**: All core calculations use `Decimal.js` to eliminate floating-point drift.
-*   **Real-time Streams**: Observable streams for live planetary position updates.
+*   **Ephemeris**: Pure TypeScript reader for the JPL DE440s SPK kernel (`de440s.bsp`), loaded by `@node-jhora/ephe`. The downloader and the engine record that kernel's coverage as **1849-12-26 through 2150-01-22**. A time that falls in no Type-2 segment throws from `SpkFile.getState`. There is no Swiss Ephemeris dependency and no WASM binary.
+*   **Ayanamsa**: The default is **True Chitrapaksha** (mode `27`, convenience name `'TrueChitra'`, API key `'true_chitra'`), derived from Spica at 180°. `AYANAMSA_MODELS` also implements True Pushya (29), True Revati (30), True Mula (35), Fagan/Bradley (0), Lahiri (1, label `Lahiri (ICRC)`), Raman (3), Krishnamurti/KP (5), Yukteshwar (7), JN Bhasin (8), and J2000 (18). `AYANAMSA.LAHIRI_ICRC` is mode `2` and has no registry entry; `getAyanamsa` uses mode 27 for any mode that is missing from `AYANAMSA_MODELS`.
+*   **Vedic core**: Panchanga (Tithi, Nakshatra, Yoga, Karana, Vara) and the 16 divisional charts D1, D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, and D60.
+*   **House systems**: Whole Sign (the `houseSystem` default) and Equal (`wholeSignCusps` / `equalHouseCusps`). The `HouseSystem` type also names `Placidus` and `Porphyry`; `EphemerisEngine.getHouses` uses the Whole Sign cusp formula for every method other than `'E'`.
+*   **Special lagnas**: Pranapada, Indu, Shree, Hora, Ghati, Bhava, and Varnada (exported from `@node-jhora/core`).
+*   **Upagrahas**: `calculateTimeUpagrahas` and `calculateDhumadiUpagrahas`.
+*   **Jaimini**: `JaiminiCore.calculateCharaKarakas` and `JaiminiCore.calculateArudha`, plus `JaiminiDashas.calculateCharaDasha`, in `@node-jhora/prediction`.
+*   **KP**: `KPSubLord` and `KPRuling` in core; `KPEngine` in analytics.
+*   **Yogas**: `YogaEngine.findYogas` evaluates a `YogaDef` list. The shipped `YOGA_LIBRARY` contains 7 yogas.
+*   **Predictive**: `generateVimshottari`, `YoginiDasha`, and `NarayanaDasha`.
+*   **Analytics**: `calculateShadbala` and Ashtakavarga BAV/SAV (`Ashtakavarga.calculateBAV`, `Ashtakavarga.calculateSAV`).
+*   **Matchmaking**: `calculateAshtaKuta`, `calculateDashaKuta`, and `checkMangalDosha`.
+*   **REST API**: Fastify server with Zod request schemas (`@node-jhora/api`).
+*   **Events**: `TransitScanner` for ingresses, stations, and a generic time solver.
+*   **PDF reports**: `generateFullReport` (PDFKit) in `@node-jhora/reporting`.
+*   **Decimal.js**: Vargas, panchanga, KP sub-lords, and `packages/core/src/core/precise.ts` use `decimal.js`. SPK state and the coordinate chain in `ephemeris.ts` use ordinary floating-point numbers.
 
-## 📦 Packages
+Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md](./docs/ACCURACY.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 1998, and 2024 sample epochs.
+
+## Packages
 
 | Package | Description |
 | :--- | :--- |
-| [`@node-jhora/core`](./packages/core) | Ephemeris engine, Vedic math, Panchanga, Vargas, KP, houses, and streams. ([Docs](./docs/CORE.md)) |
-| [`@node-jhora/analytics`](./packages/analytics) | Shadbala, Ashtakavarga, Yoga engine, and KP Engine. ([Docs](./docs/ANALYTICS.md)) |
-| [`@node-jhora/prediction`](./packages/prediction) | Dashas (Vimshottari, Yogini, Narayana), transits, and Jaimini predictive tools. ([Docs](./docs/PREDICTION.md)) |
-| [`@node-jhora/match`](./packages/match) | Ashta Kuta, Dasha Kuta (Porutham), and Mangal Dosha compatibility. ([Docs](./docs/MATCHMAKING.md)) |
-| [`@node-jhora/events`](./packages/events) | Precision transit scanner for ingresses, stations, and custom events. ([Docs](./docs/EVENTS.md)) |
-| [`@node-jhora/reporting`](./packages/reporting) | PDF report generation with chart drawings, Shadbala, and Yogas. ([Docs](./docs/REPORTING.md)) |
-| [`@node-jhora/api`](./packages/api) | Production-ready REST API server (Fastify + Zod). ([Docs](./docs/API.md)) |
+| [`@node-jhora/core`](./packages/core) | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md)) |
+| [`@node-jhora/ephe`](./packages/ephe) | JPL `de440s.bsp` downloader. Data only; calculation stays in core. |
+| [`@node-jhora/analytics`](./packages/analytics) | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md)) |
+| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md)) |
+| [`@node-jhora/match`](./packages/match) | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md)) |
+| [`@node-jhora/events`](./packages/events) | `TransitScanner`. ([Docs](./docs/EVENTS.md)) |
+| [`@node-jhora/reporting`](./packages/reporting) | PDF reports. ([Docs](./docs/REPORTING.md)) |
+| [`@node-jhora/api`](./packages/api) | Fastify + Zod HTTP API. ([Docs](./docs/API.md)) |
 
-## 📖 Detailed Technical Documentation
+`npm run build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, and `reporting`. `ephe` is a data package with no `tsconfig.json`.
 
-*   **[Architecture Overview](./docs/ARCHITECTURE.md)**: Monorepo design, package boundaries, and build system.
-*   **[Mathematical Foundation](./docs/MATH.md)**: Spherical geometry, precision math, interpolation, and event detection algorithms.
-*   **[Core Engine Guide](./docs/CORE.md)**: Swiss Ephemeris (WASM) setup, NodeJHora facade, Panchanga, Special Lagnas, and Upagrahas.
-*   **[Analytics & Strengths](./docs/ANALYTICS.md)**: Shadbala, Ashtakavarga, Yoga Rule Engine, and KP Engine.
-*   **[Predictive Logic](./docs/PREDICTION.md)**: Dasha systems, Transit scanners, and Jaimini astrology.
-*   **[Matchmaking (Kuta)](./docs/MATCHMAKING.md)**: Ashta Kuta (North), Dasha Kuta (South), and Mangal Dosha.
-*   **[REST API Reference](./docs/API.md)**: Fastify endpoints, Zod schemas, and request/response examples.
-*   **[Event Detection](./docs/EVENTS.md)**: TransitScanner for ingresses, retrograde stations, and custom event solving.
-*   **[PDF Reporting](./docs/REPORTING.md)**: Full birth chart PDF report generation.
-*   **[Market Positioning](./docs/MARKET_POSITION.md)**: Comparison with standard libraries and enterprise APIs.
+## Documentation
 
-## 🚀 Installation
+*   **[Architecture](./docs/ARCHITECTURE.md)** — workspaces, package boundaries, build.
+*   **[Accuracy](./docs/ACCURACY.md)** — Horizons and JHora-export comparisons recorded in-repo.
+*   **[Mathematical notes](./docs/MATH.md)**
+*   **[Core](./docs/CORE.md)** — `EphemerisEngine`, `NodeJHora`, panchanga, lagnas, upagrahas.
+*   **[Analytics](./docs/ANALYTICS.md)** — Shadbala, Ashtakavarga, yogas, KP engine.
+*   **[Prediction](./docs/PREDICTION.md)** — dashas, transits, Jaimini.
+*   **[Matchmaking](./docs/MATCHMAKING.md)** — Ashta Kuta, Dasha Kuta, Mangal Dosha.
+*   **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
+*   **[Events](./docs/EVENTS.md)** — `TransitScanner`.
+*   **[PDF reporting](./docs/REPORTING.md)**
+*   **[Market notes](./docs/MARKET_POSITION.md)**
+
+## Installation
 
 ```bash
-# Core engine (Required)
-npm install @node-jhora/core
-
-# Feature packages (Optional)
-npm install @node-jhora/analytics @node-jhora/prediction @node-jhora/match
-npm install @node-jhora/events @node-jhora/reporting @node-jhora/api
+npm install @node-jhora/core @node-jhora/ephe
 ```
 
-> [!NOTE]
-> This project is pure ESM. Ensure your `package.json` has `"type": "module"`.
+`@node-jhora/core` declares `@node-jhora/ephe` as a required peer dependency. The `ephe` `postinstall` script downloads `de440s.bsp` from JPL. Override the path with `NODE_JHORA_EPHE_PATH`.
 
-## ⚡ Quick Start
+Optional workspaces: `@node-jhora/analytics`, `@node-jhora/prediction`, `@node-jhora/match`, `@node-jhora/events`, `@node-jhora/reporting`, `@node-jhora/api`.
 
-### Static API (Simplest — One Call)
+This repository is pure ESM (`"type": "module"`).
+
+## Quick start
+
+`NodeJHora.calculate` defaults the ayanamsa name to `'TrueChitra'` (`AYANAMSA.TRUE_CITRA`, mode 27). Library defaults in `DEFAULT_CONFIG` are the same mode, `positionMode: 'geometric'`, `nodeType: 'true'`, and `houseSystem: 'WholeSign'`.
 
 ```typescript
 import { NodeJHora } from '@node-jhora/core';
@@ -70,32 +74,27 @@ import { NodeJHora } from '@node-jhora/core';
 const chart = await NodeJHora.calculate(
     new Date('2000-01-01T12:00:00Z'),
     { latitude: 13.08, longitude: 80.27 }, // Chennai
-    'Lahiri' // Ayanamsa: 'Lahiri' | 'Raman' | 'KP'
+    'TrueChitra',
 );
 
-console.log("Ascendant:", chart.ascendant);
-console.log("Sun:", chart.planets.find(p => p.id === 0)?.longitude);
-console.log("Moon Nakshatra:", chart.panchanga.nakshatra);
+console.log('Ascendant:', chart.ascendant);
+console.log('Sun:', chart.planets.find(p => p.id === 0)?.longitude);
+console.log('Moon nakshatra:', chart.panchanga.nakshatra);
 ```
 
-### Instance API (Full Control)
+Other names accepted by that argument: `'TruePushya'`, `'TrueRevati'`, `'TrueMula'`, `'Lahiri'`, `'LahiriICRC'`, `'Raman'`, `'KP'`, `'Yukteshwar'`, `'FaganBradley'`. `'LahiriICRC'` maps to mode 2, which is not in `AYANAMSA_MODELS` (see above).
 
 ```typescript
 import { NodeJHora } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
-const jhora = new NodeJHora(
-    { latitude: 13.08, longitude: 80.27 },
-    { ayanamsaOrder: 1, topocentric: true }
-);
+const jhora = new NodeJHora({ latitude: 13.08, longitude: 80.27 });
 await jhora.init();
 
 const date = DateTime.fromISO('2000-01-01T12:00:00Z');
-const chart = jhora.getChart(date);       // Planets + Houses
-const panchanga = jhora.getPanchanga(date); // Tithi, Nakshatra, Yoga, Karana, Vara
+const chart = jhora.getChart(date);
+const panchanga = jhora.getPanchanga(date);
 ```
-
-### Functional API (Granular)
 
 ```typescript
 import { EphemerisEngine, calculateHouseCusps, calculatePanchanga } from '@node-jhora/core';
@@ -105,147 +104,145 @@ const engine = EphemerisEngine.getInstance();
 await engine.initialize();
 
 const dt = DateTime.now();
-const planets = engine.getPlanets(dt, { latitude: 13.08, longitude: 80.27 }, { ayanamsaOrder: 1 });
-const houses = calculateHouseCusps(dt, 13.08, 80.27, 'WholeSign', engine);
+const location = { latitude: 13.08, longitude: 80.27 };
+const planets = engine.getPlanets(dt, location); // ayanamsa: instance default, mode 27
+const houses = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
 ```
 
-## 📐 Modules Guide
+`de440s.bsp` is resolved in this order: `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then `de440s.bsp` next to the `packages/` directory.
 
-### 1. Analytics (Shadbala, Ashtakavarga & Yogas)
+## Modules
+
+### Analytics
 
 ```typescript
-import { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY, KPEngine } from '@node-jhora/analytics';
+import { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
 
-// Shadbala — 6-fold planetary strength
 const strength = calculateShadbala({
     planet, allPlanets, houses, sun, moon,
     timeDetails: { sunrise, sunset, birthHour },
-    vargaPositions
+    vargaPositions,
 });
-console.log(`Total: ${strength.total} Virupas`);
 
-// Ashtakavarga — BAV/SAV grids
-const avResult = Ashtakavarga.calculate(planets, ascendantSign);
+const av = Ashtakavarga.calculateSAV(planets);
+const bavSun = Ashtakavarga.calculateBAV(planets, 0);
 
-// Yogas — detect planetary combinations
 const yogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 ```
 
-### 2. Predictive (Dashas, Transits & Jaimini)
+### Prediction
 
 ```typescript
 import {
-    generateVimshottari, calculateDashaBalance,
+    generateVimshottari,
     YoginiDasha, NarayanaDasha,
-    TransitEngine, JaiminiCore, JaiminiDashas
+    JaiminiCore, JaiminiDashas,
 } from '@node-jhora/prediction';
 
-// Vimshottari — 120-year cycle, 5 recursive levels
 const dashas = generateVimshottari(birthDate, moonLongitude, 5);
-
-// Yogini — 8-year recurring cycles
 const yogini = YoginiDasha.calculate(moonLongitude, birthDate, 80);
-
-// Jaimini — Chara Karakas and Chara Dasha
-const karakas = JaiminiCore.calculateKarakas(planets);
+const karakas = JaiminiCore.calculateCharaKarakas(planets);
 const charaDasha = JaiminiDashas.calculateCharaDasha(lagnaSign, planets);
-
-// Transit scanning with Newton-Raphson precision
-const engine = new TransitEngine();
-const events = await engine.findTransits(0, startDate, endDate);
 ```
 
-### 3. Matchmaking (Ashta Kuta, Dasha Kuta & Mangal Dosha)
+### Matchmaking
 
 ```typescript
-import { calculateAshtaKuta, calculateDashaKuta, PoruthamMatch, checkMangalDosha } from '@node-jhora/match';
+import { calculateAshtaKuta, calculateDashaKuta, checkMangalDosha } from '@node-jhora/match';
 
-// North Indian — Ashta Kuta (36 points max)
 const north = calculateAshtaKuta(boyStar, girlStar, boySign, girlSign);
-console.log(`Score: ${north.totalScore}/36 — ${north.isCompatible ? 'Compatible' : 'Incompatible'}`);
-
-// South Indian — Dasha Kuta (10 Poruthams)
 const south = calculateDashaKuta(boyStar, girlStar, boySign, girlSign);
-
-// Mangal Dosha
 const dosha = checkMangalDosha(boyChart, girlChart);
-console.log(`Status: ${dosha.matchStatus}`); // 'None' | 'Present' | 'Cancel'
 ```
 
-### 4. Event Detection (Ingress, Stations & Custom)
+### Events
 
 ```typescript
 import { TransitScanner } from '@node-jhora/events';
 
 const scanner = new TransitScanner();
-
-// Find when Jupiter enters Aries
 const ingress = await scanner.findIngress(5, 0, startDate);
-
-// Find next retrograde station for Saturn
 const station = await scanner.findStationaryPoint(6, startDate);
-
-// Generic event solver (binary search)
 const event = await scanner.findEventTime(start, end, (date) => someCondition(date));
 ```
 
-### 5. PDF Reports
+### PDF reports
 
 ```typescript
 import { generateFullReport } from '@node-jhora/reporting';
 
 const pdfBuffer = await generateFullReport(chartData, {
-    subjectName: 'John Doe',
+    subjectName: 'Example',
     birthDate: '2000-01-01',
     birthPlace: 'Chennai, India',
-    chartStyle: 'North' // or 'South'
+    chartStyle: 'North', // or 'South'
 });
 ```
 
-### 6. REST API Server
+### REST API
 
 ```bash
-# Start the API server
 cd packages/api
 npm run start
-# → http://localhost:3000
+# listens on 0.0.0.0:3000 unless HOST / PORT are set
 ```
 
 ```bash
-# Example request
 curl -X POST http://localhost:3000/v1/chart \
   -H "Content-Type: application/json" \
-  -d '{"datetime": "2000-01-01T12:00:00Z", "latitude": 13.08, "longitude": 80.27}'
+  -d '{"date":"2000-01-01","time":"12:00:00","latitude":13.08,"longitude":80.27,"timezone":"Asia/Kolkata"}'
 ```
 
-**Available endpoints:** `/v1/chart`, `/v1/chart/vargas`, `/v1/panchanga`, `/v1/dasha`, `/v1/shadbala`, `/v1/kp`, `/v1/match` ([Full API Docs](./docs/API.md))
+Routes registered in `packages/api/src/server.ts`:
 
-## 🛠️ Contributing
+| Method | Path |
+| :--- | :--- |
+| GET | `/health` |
+| POST | `/v1/chart` |
+| POST | `/v1/chart/vargas` |
+| POST | `/v1/panchanga` |
+| POST | `/v1/dasha` |
+| POST | `/v1/transits` |
+| POST | `/v1/reading` |
+| POST | `/v1/shadbala` |
+| POST | `/v1/kp/significators` |
+| POST | `/v1/match` |
 
-We welcome contributions! The project uses an NPM workspaces monorepo structure. Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CONTRIBUTING.md).
+The chart body schema is `BirthInputSchema` in `packages/api/src/schemas/birth-input.ts` (date, time, and either a city or latitude/longitude/timezone). Omitted `ayanamsa` defaults to `true_chitra`. See [docs/API.md](./docs/API.md) for the field list. That page still shows an older request shape in places; the schema file is the source of truth.
+
+## Contributing
+
+Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CONTRIBUTING.md). The clean-room policy is in [docs/CLEAN_ROOM.md](./docs/CLEAN_ROOM.md).
+
+Commands are from the monorepo root.
 
 ```bash
-# Install all dependencies
 npm install
 
-# Build all packages (incremental via TypeScript Project References)
+# tsc -b over the root tsconfig references:
+# core, analytics, prediction, match, api, events, reporting.
 npm run build
 
-# Run all tests
+# Jest 30: one project per packages/*/jest.config.js (ephe has none) plus
+# tools/jest.config.js, then node --test for the clean-room guard.
 npm test
 
-# Run tests for a specific package
 npx jest --config packages/core/jest.config.js
 
-# Lint TypeScript source files
-npm run lint
+# Relative links in tracked and untracked Markdown (no network).
+npm run check:links
+
+# Forbidden help/image/binary files, stray .jhd charts, decompiler markers (docs/CLEAN_ROOM.md).
+npm run check:clean-room
 ```
 
-## 📄 License
+`npm run lint` is `eslint packages/**/src --ext .ts`. ESLint is not listed in the root `devDependencies`, so that script cannot run until ESLint is installed.
 
-**Source Available — Commercial License Required**.
+## License
+
+**Source available — commercial license required.**
 Copyright (c) 2026 Harieshwar Jagan Abirami. All Rights Reserved.
 
-*   **Public Access**: Source code is available for inspection and education.
-*   **Restricted Use**: Usage, distribution, and **derivative works** are strictly prohibited without a Commercial License.
-*   Contact the owner to negotiate licensing terms. See [LICENSE](LICENSE).
+*   **Public access**: source is available for inspection and education.
+*   **Restricted use**: usage, distribution, and derivative works require a commercial license.
+*   See [LICENSE](LICENSE).

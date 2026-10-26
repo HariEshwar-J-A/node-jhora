@@ -1,14 +1,15 @@
-# Architecture Overview
+# Architecture
 
-Node-Jhora is architected as a **Tiered Monorepo**. This structure allows for a clean separation between raw astronomical calculations, high-level astrological analytics, predictive logic, compatibility matching, event detection, reporting, and API exposure.
+Node-Jhora is an npm-workspaces monorepo. **`packages/` holds libraries. `apps/` is for applications.** No `apps/` directory is checked in. A React UI is planned under `apps/` and should depend on package entry points, not on files inside `packages/*/src`.
 
-## Monorepo Structure
+The root `package.json` workspace glob is `packages/*`. Every package is ESM (`"type": "module"`).
 
-The project uses NPM Workspaces and is split into seven specialized packages plus a demo application:
+## Layout
 
 ```mermaid
 graph TD
-    subgraph Packages
+    subgraph packages ["packages/ (libraries)"]
+        Ephe["@node-jhora/ephe"]
         Core["@node-jhora/core"]
         Analytics["@node-jhora/analytics"]
         Prediction["@node-jhora/prediction"]
@@ -18,10 +19,7 @@ graph TD
         API["@node-jhora/api"]
     end
 
-    subgraph Apps
-        Portal["apps/portal (Vite + React)"]
-    end
-
+    Core -.-> Ephe
     Analytics --> Core
     Prediction --> Core
     Prediction --> Analytics
@@ -34,92 +32,98 @@ graph TD
     API --> Analytics
     API --> Prediction
     API --> Match
-    Portal --> Core
-    Portal --> Match
 ```
 
----
+`@node-jhora/ephe` is a data package (a downloader plus `de440s.bsp`). `@node-jhora/core` lists it as a required peer dependency and resolves the kernel at runtime. The dotted edge is that runtime lookup, not a TypeScript project reference.
 
-### 📦 `@node-jhora/core`
-The foundation of the engine.
-- **Astronomy**: WASM-based Swiss Ephemeris with topocentric parallax correction.
-- **Math**: Spherical geometry, angular normalization, and `Decimal.js` precision utilities.
-- **Vedic Fundamentals**: Panchanga (5 limbs), all 16 divisional charts (Vargas D1–D60), and house systems (Whole Sign, Placidus, Porphyry).
-- **Special Lagnas**: Pranapada, Indu Lagna, Hora Lagna, Ghati Lagna, Bhava Lagna, Varnada Lagna.
-- **Upagrahas**: Gulikadi (time-based) and Dhumadi (angular) sub-planetary points.
-- **KP System**: Sub-lord tables and Ruling Planets calculation.
-- **Streaming**: Real-time `PlanetaryStream` for live planetary updates.
-- **Data**: Geocoder with local CSV city database for coordinates and timezones.
-- **Facade**: `NodeJHora` class with static `calculate()` and instance methods for ergonomic usage.
+Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, so `npm run build` (`tsc -b`) compiles every TypeScript workspace. `tools/check-tsrefs.test.ts` fails if a `packages/*/tsconfig.json` is missing from that list. `ephe` is not a TypeScript project.
 
-### 📦 `@node-jhora/analytics`
-The engine for depth and strength.
-- **Shadbala**: Complete implementation of the 6-fold planetary strength system (Sthana, Dig, Kaala, Chesta, Naisargika, Drig Bala).
-- **Ashtakavarga**: Bhinnashtakavarga (BAV) and Sarvashtakavarga (SAV) score calculation.
-- **Yoga Engine**: Rule-based engine for detecting hundreds of planetary Yogas with JSON-compatible definitions.
-- **KP Engine**: Extended KP significator calculations (`KPPlanetSignificator`, `KPHouseSignificator`).
+## Packages
 
-### 📦 `@node-jhora/prediction`
-Dynamic time-based predictive logic.
-- **Dashas**: Multiple systems including Vimshottari (5-level recursive), Yogini (8-year cycles), and Narayana (Rashi-based).
-- **Transits**: Event-based scanners for planet ingresses and aspects using Newton-Raphson refinement.
-- **Jaimini**: `JaiminiCore` for Chara Karakas (7-karaka system) and Arudha Padas, `JaiminiDashas` for Chara Dasha timing.
+### `@node-jhora/core`
 
-### 📦 `@node-jhora/match`
-Comprehensive compatibility and dosha analysis.
-- **Ashta Kuta (North Indian)**: Full 8-point system (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi) with 36-point scoring.
-- **Dasha Kuta (South Indian)**: 10 Poruthams with Vedha pair analysis, Rajju dosha check, and mandatory rules.
-- **Mangal Dosha**: Mars-position analysis from Lagna, Moon, and Venus with exception handling (own house, exalted).
+- **Ephemeris**: `EphemerisEngine` in `src/engine/ephemeris.ts`. Pure TypeScript SPK reader for JPL DE440s. No Swiss Ephemeris package and no WASM binary. Kernel coverage recorded in `packages/ephe/download.mjs` and in the engine header: **1849-12-26 to 2150-01-22**. `SpkFile.getState` throws when no Type-2 segment covers the requested ephemeris time.
+- **Resolution order** for `de440s.bsp`: `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then `de440s.bsp` beside the `packages/` directory.
+- **Ayanamsa**: `DEFAULT_AYANAMSA` and `DEFAULT_CONFIG.ayanamsaMode` are `AYANAMSA.TRUE_CITRA` (`27`), True Chitrapaksha, from Spica at 180°. `NodeJHora.calculate` defaults its name argument to `'TrueChitra'`. The HTTP schema defaults to `'true_chitra'`.
+- **Registry**: `AYANAMSA_MODELS` in `src/engine/ayanamsa.ts` has modes 27, 29, 30, 35, 0, 1, 3, 5, 7, 8, and 18. Mode `2` (`AYANAMSA.LAHIRI_ICRC`) is not in that map. `getAyanamsa` uses mode 27 when the requested mode has no model.
+- **Other defaults** (`DEFAULT_CONFIG`): `positionMode: 'geometric'`, `nodeType: 'true'`, `houseSystem: 'WholeSign'`, `topocentric: false`.
+- **Houses**: `wholeSignCusps` and `equalHouseCusps` in `src/engine/coordinates.ts`. `getHouses` selects Equal only when `method === 'E'`; every other method, including the `'P'` and `'O'` codes `calculateHouseCusps` passes for Placidus and Porphyry, gets Whole Sign cusps.
+- **Vargas**: D1, D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, D60 via `calculateVarga`. D2 and D10 take scheme options; other unknown divisors use the harmonic fallback.
+- **Also exported**: panchanga, KP sub-lord and ruling planets, time-based and dhumadi upagrahas, and the special-lagna functions (Pranapada, Indu, Shree, Hora, Ghati, Bhava, Varnada).
+- **`decimal.js`**: `src/core/precise.ts`, vargas, panchanga, and KP sub-lords. The SPK evaluation and the coordinate chain use JavaScript numbers.
+- **Facade**: `NodeJHora`.
 
-### 📦 `@node-jhora/events`
-Precision astronomical event detection.
-- **TransitScanner**: Generic binary-search solver for finding exact moments when conditions change.
-- **Ingress Detection**: `findIngress()` and `findNextIngress()` for sign boundary crossings.
-- **Stationary Points**: `findStationaryPoint()` for retrograde/direct station detection.
+`PlanetaryStream` (`src/stream/planetary_stream.ts`) is a stub that throws. It is imported by `src/index.ts` and is not re-exported.
 
-### 📦 `@node-jhora/reporting`
-PDF report generation for professional output.
-- **Full Reports**: Complete birth chart PDF with planetary positions, house cusps, Yogas, and Shadbala.
-- **Chart Drawing**: `ChartDrawer` for rendering North/South Indian chart diagrams.
-- **Output**: Returns a `Buffer` suitable for file saving or HTTP responses.
+### `@node-jhora/ephe`
 
-### 📦 `@node-jhora/api`
-Production-ready REST API layer.
-- **Framework**: Fastify with Zod type-provider for compile-time safe schemas.
-- **Validation**: Zod schemas for all birth input parameters (datetime, coordinates, ayanamsa, house system).
-- **Routes**: `/v1/chart`, `/v1/chart/vargas`, `/v1/panchanga`, `/v1/dasha`, `/v1/shadbala`, `/v1/kp`, `/v1/match`.
-- **Logging**: Structured logging via Pino with pretty-print in development.
-- **CORS**: Configurable cross-origin support via environment variables.
+Downloads `de440s.bsp` in `postinstall` (`download.mjs`). No calculation code.
 
-### 🖥️ `apps/portal`
-Demo application (React + Vite).
-- Interactive Vedic astrology portal using `@node-jhora/core` and `@node-jhora/match`.
-- WASM support via `vite-plugin-wasm` and `vite-plugin-top-level-await`.
+### `@node-jhora/analytics`
 
----
+Depends on core.
 
-## Design Principles
+- `calculateShadbala`
+- `Ashtakavarga.calculateBAV` / `calculateSAV` (export name `Ashtakavarga`, class `AshtakavargaCalculator`)
+- `YogaEngine` plus `YOGA_LIBRARY` (7 `YogaDef` entries in `src/yogas/library.ts`)
+- `KPEngine`
 
-1.  **Pure ESM**: All packages are strictly ESM (`"type": "module"`) to leverage modern tree-shaking and module resolution.
-2.  **Stateless Logic**: Most calculation functions are pure, taking a state (like `ChartData`) and returning results.
-3.  **High-Precision**: Core calculations use `Decimal.js` to eliminate floating-point drift. WASM provides Swiss Ephemeris accuracy (0.0001″).
-4.  **Extensible Yogas**: The Yoga engine uses a JSON-compatible rule definition (`YogaDef`), allowing developers to add custom Yogas without changing engine code.
-5.  **Tiered Dependencies**: Each package has a clear dependency scope — import only what you need, nothing more.
+### `@node-jhora/prediction`
 
-## Build System
+Depends on core and analytics.
 
-The monorepo uses **TypeScript Project References**.
-- **`composite: true`**: Enables incremental builds across packages.
-- **References**: Each package's `tsconfig.json` explicitly references its dependencies, allowing `tsc -b` to build only what's necessary in the correct order.
-- **Output**: Each package compiles to its own `dist/` directory.
+- `generateVimshottari`, `calculateDashaBalance`
+- `YoginiDasha`, `NarayanaDasha`
+- `TransitEngine`
+- `JaiminiCore.calculateCharaKarakas`, `JaiminiCore.calculateArudha`, `JaiminiDashas.calculateCharaDasha`
 
-## Testing
+### `@node-jhora/match`
 
-Jest 30 with `ts-jest` ESM preset. The `moduleNameMapper` strips `.js` extensions for ESM resolution. Tests live in `packages/<name>/tests/` as `*.test.ts`.
+Depends on core. `calculateAshtaKuta`, `calculateDashaKuta`, `checkMangalDosha`, `PoruthamMatch`.
 
-## ESM Import Convention
+### `@node-jhora/events`
 
-All internal imports use `.js` extensions even for TypeScript source files (NodeNext resolution):
-```typescript
-import { normalize } from './math.js'; // Not ./math.ts
-```
+Depends on core. `TransitScanner` (`findIngress`, `findStationaryPoint`, `findEventTime`). Not in the root TypeScript project references.
+
+### `@node-jhora/reporting`
+
+Depends on core, analytics, and prediction. `generateFullReport` returns a PDF `Buffer` via PDFKit. Not in the root TypeScript project references.
+
+### `@node-jhora/api`
+
+Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-provider-zod`, Pino logging. Routes in `src/server.ts`:
+
+| Method | Path |
+| :--- | :--- |
+| GET | `/health` |
+| POST | `/v1/chart` |
+| POST | `/v1/chart/vargas` |
+| POST | `/v1/panchanga` |
+| POST | `/v1/dasha` |
+| POST | `/v1/transits` |
+| POST | `/v1/reading` |
+| POST | `/v1/shadbala` |
+| POST | `/v1/kp/significators` |
+| POST | `/v1/match` |
+
+`BirthInputSchema` defaults `ayanamsa` to `'true_chitra'`.
+
+## `apps/`
+
+Not present in this tree. Application code (the planned React UI, and any later shell around it) goes under `apps/`. Libraries stay in `packages/` and do not depend on `apps/`.
+
+## Build and test
+
+From the repository root:
+
+| Script | What it runs |
+| :--- | :--- |
+| `npm run build` | `tsc -b` (all root references) |
+| `npm test` | `node --experimental-vm-modules node_modules/jest/bin/jest.js && node --test tools/check-forbidden-assets.test.mjs` |
+| `npm run check:links` | `node tools/check-markdown-links.mjs` |
+| `npm run check:clean-room` | `node tools/check-forbidden-assets.mjs` |
+| `npm run lint` | `eslint packages/**/src --ext .ts` — ESLint is not a root `devDependency` |
+
+Jest's root config loads `packages/*/jest.config.js` and `tools/jest.config.js`. `ephe` has no Jest config. Package tests use `ts-jest` ESM. `moduleNameMapper` strips a trailing `.js` so TypeScript source can be imported with NodeNext specifiers.
+
+Internal imports use a `.js` suffix even when the source file is `.ts`.
