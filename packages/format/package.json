@@ -1,0 +1,46 @@
+{
+    "name": "@node-jhora/format",
+    "version": "3.1.0",
+    "type": "module",
+    "description": "Versioned .njh JSON chart file schema, migrations, and lossless serialization.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./schema/njh-chart.schema.json": "./schema/njh-chart.schema.json"
+    },
+    "files": [
+        "dist",
+        "schema",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit --pretty false",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js",
+        "generate": "WRITE_GOLDENS=1 node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js tests/schema.test.ts"
+    },
+    "dependencies": {
+        "@node-jhora/core": "workspace:*",
+        "luxon": "^3.7.2",
+        "zod": "4.6.7"
+    },
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "@types/luxon": "^3.7.1",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
+        "typescript": "^5.9.3"
+    },
+    "license": "LicenseRef-NodeJHora-Source-Available",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/format"
+    }
+}
