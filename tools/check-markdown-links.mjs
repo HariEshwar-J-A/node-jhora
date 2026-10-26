@@ -26,6 +26,10 @@ function isExternal(target) {
     return /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(target);
 }
 
+// Starlight content uses site-root routes (e.g. /api-reference/); those are
+// validated by starlight-links-validator during `pnpm run docs:build`.
+const SITE_CONTENT_PREFIX = 'apps/docs/src/content/';
+
 function checkTarget(file, line, raw) {
     let target = raw.trim();
     if (target.startsWith('<') && target.endsWith('>')) {
@@ -37,6 +41,7 @@ function checkTarget(file, line, raw) {
     const hash = target.indexOf('#');
     const pathPart = hash >= 0 ? target.slice(0, hash) : target;
     if (!pathPart) return;
+    if (pathPart.startsWith('/') && file.split(sep).join('/').startsWith(SITE_CONTENT_PREFIX)) return;
 
     let decoded;
     try {

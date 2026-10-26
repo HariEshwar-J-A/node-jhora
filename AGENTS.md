@@ -11,7 +11,7 @@ pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeS
 | Path | What belongs here |
 | :--- | :--- |
 | `packages/` | Libraries. One package per directory. Public imports go through each package's `exports`. |
-| `apps/` | Applications. **Nothing is checked in today.** A React UI app is planned here. Libraries must not depend on `apps/`. Application code must not be added under `packages/`. |
+| `apps/` | Applications. `apps/docs` is the Starlight documentation site. A React UI app is planned here. Libraries must not depend on `apps/`. Application code must not be added under `packages/`. |
 | `docs/` | Technical documentation. |
 | `tools/` | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test. |
 
@@ -40,6 +40,8 @@ pnpm --filter @node-jhora/core test
 pnpm run check:links   # relative Markdown links, no network
 pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
 pnpm run validate-github-templates
+pnpm run docs:build   # Starlight site in apps/docs (synced guides + TypeDoc)
+pnpm run docs:dev
 ```
 
 Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `testkit`) share one script shape:

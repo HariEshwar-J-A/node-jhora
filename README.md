@@ -41,6 +41,8 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 
 ## Documentation
 
+The [documentation site](./apps/docs) (Astro Starlight) is built with `pnpm run docs:build` from the repository root. Guides are synced from this README and `docs/` at build time; the API reference is generated with TypeDoc.
+
 *   **[Architecture](./docs/ARCHITECTURE.md)** — workspaces, package boundaries, build.
 *   **[Accuracy](./docs/ACCURACY.md)** — Horizons and JHora-export comparisons recorded in-repo.
 *   **[Mathematical notes](./docs/MATH.md)**

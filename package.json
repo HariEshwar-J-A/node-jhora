@@ -9,6 +9,8 @@
         "check:clean-room": "node tools/check-forbidden-assets.mjs",
         "check:links": "node tools/check-markdown-links.mjs",
         "validate-github-templates": "node scripts/validate-github-templates.mjs",
+        "docs:dev": "pnpm --filter @node-jhora/docs dev",
+        "docs:build": "pnpm --filter @node-jhora/docs build",
         "postinstall": "node packages/ephe/download.mjs",
         "lint": "eslint packages/**/src --ext .ts"
     },
