@@ -16,6 +16,7 @@
         { "path": "../core" },
         { "path": "../analytics" },
         { "path": "../prediction" },
-        { "path": "../match" }
+        { "path": "../match" },
+        { "path": "../engine" }
     ]
 }

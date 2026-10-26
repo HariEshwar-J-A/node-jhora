@@ -20,6 +20,7 @@
         "@fastify/cors": "^10.0.2",
         "@node-jhora/analytics": "workspace:*",
         "@node-jhora/core": "workspace:*",
+        "@node-jhora/engine": "workspace:*",
         "@node-jhora/match": "workspace:*",
         "@node-jhora/prediction": "workspace:*",
         "city-timezones": "^1.2.1",

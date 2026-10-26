@@ -1,0 +1,49 @@
+{
+    "name": "@node-jhora/engine",
+    "version": "3.1.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "license": "LicenseRef-NodeJHora-Source-Available",
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit --pretty false",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js"
+    },
+    "dependencies": {
+        "@node-jhora/analytics": "workspace:*",
+        "@node-jhora/core": "workspace:*",
+        "@node-jhora/prediction": "workspace:*",
+        "luxon": "^3.7.2"
+    },
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "@types/luxon": "^3.7.1",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
+        "typescript": "^5.9.3"
+    },
+    "keywords": [
+        "vedic-astrology",
+        "jyotish",
+        "chart-session",
+        "astrology-engine"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/engine"
+    }
+}
