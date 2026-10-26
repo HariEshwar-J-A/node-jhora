@@ -28,6 +28,12 @@
         },
         {
             "path": "./packages/api"
+        },
+        {
+            "path": "./packages/events"
+        },
+        {
+            "path": "./packages/reporting"
         }
     ]
 }
