@@ -6,6 +6,10 @@
     "license": "LicenseRef-NASA-Open-Government",
     "main": "index.mjs",
     "scripts": {
+        "build": "node -e \"process.exit(0)\"",
+        "typecheck": "node -e \"process.exit(0)\"",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config ../../tools/jest.config.js && node --test ../../tools/check-forbidden-assets.test.mjs",
         "postinstall": "node download.mjs"
     },
     "files": [

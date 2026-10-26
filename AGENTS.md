@@ -35,12 +35,25 @@ From the repository root:
 npm install
 npm run build          # tsc -b — root references: core, analytics, prediction, match, api, events, reporting
 npm test               # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
-npx jest --config packages/core/jest.config.js
+npm test -w @node-jhora/core
 npm run check:links    # relative Markdown links, no network
 npm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
 ```
 
-`npm run lint` calls ESLint, which is not a root `devDependency`.
+Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporting`, `api`) share one script shape:
+
+| Script | Shape |
+| :--- | :--- |
+| `build` | `tsc` |
+| `typecheck` | `tsc --noEmit --pretty false` |
+| `lint` | exits 0. `TODO(E1-S3-T1)`: ESLint is not installed yet. |
+| `test` | `node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js` |
+
+`typecheck` reads referenced projects from `dist/`. Run `npm run build` first.
+
+`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `npm test` runs those same suites, so the sum of `npm test -w <pkg>` matches the root pass count.
+
+Root `npm run lint` still calls ESLint, which is not a root `devDependency`.
 
 Call `await EphemerisEngine.getInstance().initialize()` before planetary calculations. The kernel is `NODE_JHORA_EPHE_PATH`, else `@node-jhora/ephe`, else `de440s.bsp` beside `packages/`.
 
