@@ -4,11 +4,11 @@ Every divisional chart in `packages/core/src/vedic/vargas.ts`, checked against
 the text rather than against another implementation.
 
 **Source:** Brihat Parasara Hora Sastra, tr. R. Santhanam (Ranjan Publications),
-chapter 6, *The Sixteen Divisions Of A Sign*. Citations are to the sloka numbers
+chapter 6, _The Sixteen Divisions Of A Sign_. Citations are to the sloka numbers
 as printed in that edition.
 
-**Why this audit exists.** BPHS is the authority for *rules*; JPL is the
-authority for *astronomy*; the ayanamsa is a named choice. Conflating those is
+**Why this audit exists.** BPHS is the authority for _rules_; JPL is the
+authority for _astronomy_; the ayanamsa is a named choice. Conflating those is
 how this project previously ended up with an engine that reproduced another
 program's quirks and called it correctness. Two vargas turned out to follow a
 different source than the text.
@@ -17,24 +17,24 @@ different source than the text.
 
 ## Findings
 
-| Varga | BPHS rule (sloka) | Implementation | Verdict |
-|---|---|---|---|
-| **D1** Rasi | — | identity | ✅ |
-| **D2** Hora | 5-6 | *was* Parivritti Dwaya | ⚠️ **corrected** — see below |
-| **D3** Drekkana | 7-8 | offsets 1st/5th/9th | ✅ |
-| **D4** Chaturthamsa | 9 | offsets 1st/4th/7th/10th | ✅ |
-| **D7** Saptamsa | 10-11 | odd → itself, even → 7th | ✅ |
-| **D9** Navamsa | 12 | harmonic ×9 | ✅ equivalent |
-| **D10** Dasamsa | 13-14 | odd → itself, even → 9th | ✅ **default corrected** |
-| **D12** Dvadasamsa | 15 | from the same sign | ✅ |
-| **D16** Shodasamsa | 16 | Ar / Le / Sg by movable-fixed-dual | ✅ |
-| **D20** Vimsamsa | 17-21 | Ar / Sg / Le | ✅ |
-| **D24** Siddhamsa | 22-23 | odd → Leo, even → Cancer | ✅ |
-| **D27** Bhamsa | 24-26 | element-based start | ✅ |
-| **D30** Trimsamsa | 27-28 | 5/5/8/7/5 Ma-Sa-Ju-Me-Ve, reversed for even | ✅ |
-| **D40** Khavedamsa | 29-30 | odd → Aries, even → Libra | ✅ |
-| **D45** Akshavedamsa | 31-32 | Ar / Le / Sg | ✅ |
-| **D60** Shashtiamsa | 33-41 | deg ×2, ÷12, remainder +1 | ✅ |
+| Varga                | BPHS rule (sloka) | Implementation                              | Verdict                      |
+| -------------------- | ----------------- | ------------------------------------------- | ---------------------------- |
+| **D1** Rasi          | —                 | identity                                    | ✅                           |
+| **D2** Hora          | 5-6               | _was_ Parivritti Dwaya                      | ⚠️ **corrected** — see below |
+| **D3** Drekkana      | 7-8               | offsets 1st/5th/9th                         | ✅                           |
+| **D4** Chaturthamsa  | 9                 | offsets 1st/4th/7th/10th                    | ✅                           |
+| **D7** Saptamsa      | 10-11             | odd → itself, even → 7th                    | ✅                           |
+| **D9** Navamsa       | 12                | harmonic ×9                                 | ✅ equivalent                |
+| **D10** Dasamsa      | 13-14             | odd → itself, even → 9th                    | ✅ **default corrected**     |
+| **D12** Dvadasamsa   | 15                | from the same sign                          | ✅                           |
+| **D16** Shodasamsa   | 16                | Ar / Le / Sg by movable-fixed-dual          | ✅                           |
+| **D20** Vimsamsa     | 17-21             | Ar / Sg / Le                                | ✅                           |
+| **D24** Siddhamsa    | 22-23             | odd → Leo, even → Cancer                    | ✅                           |
+| **D27** Bhamsa       | 24-26             | element-based start                         | ✅                           |
+| **D30** Trimsamsa    | 27-28             | 5/5/8/7/5 Ma-Sa-Ju-Me-Ve, reversed for even | ✅                           |
+| **D40** Khavedamsa   | 29-30             | odd → Aries, even → Libra                   | ✅                           |
+| **D45** Akshavedamsa | 31-32             | Ar / Le / Sg                                | ✅                           |
+| **D60** Shashtiamsa  | 33-41             | deg ×2, ÷12, remainder +1                   | ✅                           |
 
 Fourteen of sixteen matched the text as written. Two did not.
 
@@ -64,8 +64,8 @@ describes.
 old behaviour.
 
 ```ts
-calculateVarga(lon, 2);                                  // Leo or Cancer
-calculateVarga(lon, 2, { horaScheme: 'parivritti' });    // all twelve signs
+calculateVarga(lon, 2); // Leo or Cancer
+calculateVarga(lon, 2, { horaScheme: 'parivritti' }); // all twelve signs
 ```
 
 ## D10 Dasamsa — default corrected
@@ -75,7 +75,7 @@ calculateVarga(lon, 2, { horaScheme: 'parivritti' });    // all twelve signs
 > ninth thereof."
 
 JHora prints this chart's D10 under the header **"D-10 (5-8)"**, which counts an
-even sign's parts *backward from the 5th sign* with the degree reversed. That is
+even sign's parts _backward from the 5th sign_ with the degree reversed. That is
 not the BPHS rule. Measured against a real JHora export, all five bodies in odd
 signs agree under either rule and all five in even signs agree only under
 JHora's — and for every even-sign body, Parashara degree + JHora degree = exactly

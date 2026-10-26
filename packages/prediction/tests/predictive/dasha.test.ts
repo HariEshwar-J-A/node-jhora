@@ -3,7 +3,6 @@ import { getPreset, hashSettings } from '@node-jhora/core';
 import { calculateDashaBalance, generateVimshottari, DashaPeriod } from '../../src/dasha.js';
 
 describe('Vimshottari Dasha Engine', () => {
-
     // Test 1: Balance Calculation
     test('Calculates Correct Dasha Balance at 0 Aries (Ketu)', () => {
         // 0 Aries is Start of Ashwini.
@@ -17,13 +16,13 @@ describe('Vimshottari Dasha Engine', () => {
 
     test('Calculates Correct Dasha Balance at End of Ashwini (13.333...)', () => {
         // End of Ashwini. 13 deg 20 min = 13 + 1/3 = 13.333...
-        const endAshwini = 13 + (20 / 60);
+        const endAshwini = 13 + 20 / 60;
         const balance = calculateDashaBalance(endAshwini - 0.0001); // Just before end
         expect(balance.lord).toBe('Ketu');
         expect(balance.yearsRemaining).toBeCloseTo(0, 2);
 
         // Start of Bharani
-        const startBharani = 13 + (20 / 60) + 0.0001;
+        const startBharani = 13 + 20 / 60 + 0.0001;
         const balance2 = calculateDashaBalance(startBharani);
         expect(balance2.lord).toBe('Venus');
         expect(balance2.yearsRemaining).toBeCloseTo(20, 2); // Full 20 years
@@ -69,7 +68,7 @@ describe('Vimshottari Dasha Engine', () => {
         const birthDate = DateTime.fromISO('2000-01-01T00:00:00Z');
         // Moon at middle of Ashwini (6deg 40min) -> 50% traversed.
         // Ketu Balance = 3.5 years.
-        const midAshwini = 6 + (40 / 60);
+        const midAshwini = 6 + 40 / 60;
         const dashas = generateVimshottari(birthDate, midAshwini, 2);
 
         const first = dashas[0];
@@ -89,7 +88,7 @@ describe('Vimshottari Dasha Engine', () => {
 
         let totalSubDuration = 0;
         if (first.subPeriods) {
-            first.subPeriods.forEach(sub => totalSubDuration += sub.durationYears);
+            first.subPeriods.forEach((sub) => (totalSubDuration += sub.durationYears));
         }
         expect(totalSubDuration).toBeCloseTo(3.5, 1); // Allow heuristic flex
 

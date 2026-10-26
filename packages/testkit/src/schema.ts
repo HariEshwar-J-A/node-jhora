@@ -81,71 +81,76 @@ export const SettingsSchema = z.record(
     z.union([z.string(), finite, z.boolean()]),
 );
 
-export const GoldenCaseSchema = z.strictObject({
-    id: z.string().regex(/^[a-z0-9][a-z0-9._+-]{0,127}$/),
-    provenance: ProvenanceSchema,
-    input: GoldenInputSchema,
-    settings: SettingsSchema,
-    expected: z.record(z.string(), ExpectedEntrySchema),
-}).superRefine((data, ctx) => {
-    const hash = hashSettings(data.settings);
-    if (data.input.settingsHash !== hash) {
-        ctx.addIssue({
-            code: 'custom',
-            path: ['input', 'settingsHash'],
-            message: `settingsHash must be the SHA-256 of canonical settings JSON (${hash})`,
-        });
-    }
-    if (!isUtcInstant(data.input.instant)) {
-        ctx.addIssue({
-            code: 'custom',
-            path: ['input', 'instant'],
-            message: 'instant must be a real UTC timestamp',
-        });
-    }
-    if (!isIanaTimeZone(data.input.timezone)) {
-        ctx.addIssue({
-            code: 'custom',
-            path: ['input', 'timezone'],
-            message: `Unknown IANA time zone ${JSON.stringify(data.input.timezone)}`,
-        });
-    }
-    const paths = Object.keys(data.expected);
-    if (paths.length === 0) {
-        ctx.addIssue({
-            code: 'custom',
-            path: ['expected'],
-            message: 'expected must contain at least one feature path',
-        });
-    }
-    for (const path of paths) {
-        const rule = matchFeaturePath(path);
-        const entry = data.expected[path];
-        if (!entry) continue;
-        if (!rule) {
+export const GoldenCaseSchema = z
+    .strictObject({
+        id: z.string().regex(/^[a-z0-9][a-z0-9._+-]{0,127}$/),
+        provenance: ProvenanceSchema,
+        input: GoldenInputSchema,
+        settings: SettingsSchema,
+        expected: z.record(z.string(), ExpectedEntrySchema),
+    })
+    .superRefine((data, ctx) => {
+        const hash = hashSettings(data.settings);
+        if (data.input.settingsHash !== hash) {
             ctx.addIssue({
                 code: 'custom',
-                path: ['expected', path],
-                message: `Unknown feature path ${JSON.stringify(path)}`,
+                path: ['input', 'settingsHash'],
+                message: `settingsHash must be the SHA-256 of canonical settings JSON (${hash})`,
             });
-            continue;
         }
-        if (entry.tolerance.type !== rule.tolerance) {
+        if (!isUtcInstant(data.input.instant)) {
             ctx.addIssue({
                 code: 'custom',
-                path: ['expected', path, 'tolerance', 'type'],
-                message: `${path} requires tolerance ${rule.tolerance}`,
+                path: ['input', 'instant'],
+                message: 'instant must be a real UTC timestamp',
             });
         }
-        if (!valueOk(rule.valueKind, entry.value) || (path.endsWith('.sign') && !validSign(entry.value))) {
+        if (!isIanaTimeZone(data.input.timezone)) {
             ctx.addIssue({
                 code: 'custom',
-                path: ['expected', path, 'value'],
-                message: `${path} requires a ${rule.valueKind} value`,
+                path: ['input', 'timezone'],
+                message: `Unknown IANA time zone ${JSON.stringify(data.input.timezone)}`,
             });
         }
-    }
-});
+        const paths = Object.keys(data.expected);
+        if (paths.length === 0) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['expected'],
+                message: 'expected must contain at least one feature path',
+            });
+        }
+        for (const path of paths) {
+            const rule = matchFeaturePath(path);
+            const entry = data.expected[path];
+            if (!entry) continue;
+            if (!rule) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['expected', path],
+                    message: `Unknown feature path ${JSON.stringify(path)}`,
+                });
+                continue;
+            }
+            if (entry.tolerance.type !== rule.tolerance) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['expected', path, 'tolerance', 'type'],
+                    message: `${path} requires tolerance ${rule.tolerance}`,
+                });
+            }
+            if (
+                !valueOk(rule.valueKind, entry.value) ||
+                (path.endsWith('.sign') && !validSign(entry.value))
+            ) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['expected', path, 'value'],
+                    message: `${path} requires a ${rule.valueKind} value`,
+                });
+            }
+        }
+    });
 
 export type GoldenCase = z.infer<typeof GoldenCaseSchema>;
 export type ExpectedEntry = z.infer<typeof ExpectedEntrySchema>;

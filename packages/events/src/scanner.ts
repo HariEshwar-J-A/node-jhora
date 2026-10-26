@@ -1,4 +1,4 @@
-import { EphemerisEngine, normalize360,PlanetPosition } from '@node-jhora/core';
+import { EphemerisEngine, normalize360, PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 export interface TransitSearchConfig {
@@ -21,7 +21,7 @@ export class TransitScanner {
         start: DateTime,
         end: DateTime,
         check: (date: DateTime) => boolean,
-        config: TransitSearchConfig = {}
+        config: TransitSearchConfig = {},
     ): Promise<DateTime | null> {
         const precision = config.precisionSeconds || 60;
         const startVal = check(start);
@@ -61,11 +61,11 @@ export class TransitScanner {
         planetId: number,
         targetSignIndex: number, // 0-11
         searchStart: DateTime,
-        searchEnd?: DateTime
+        searchEnd?: DateTime,
     ): Promise<DateTime | null> {
         // Initial window: 1 month if not specified
         const end = searchEnd || searchStart.plus({ months: 1 });
-        
+
         const check = (date: DateTime) => {
             const pos = this.getPlanetPos(planetId, date);
             const sign = Math.floor(pos.longitude / 30);
@@ -84,12 +84,13 @@ export class TransitScanner {
         const nextSignIdx = (currentSignIdx + (pos.speed > 0 ? 1 : -1) + 12) % 12;
 
         // Linear Interpolation for initial guess
-        const distToBoundary = pos.speed > 0
-            ? (currentSignIdx + 1) * 30 - pos.longitude
-            : pos.longitude - currentSignIdx * 30;
-        
+        const distToBoundary =
+            pos.speed > 0
+                ? (currentSignIdx + 1) * 30 - pos.longitude
+                : pos.longitude - currentSignIdx * 30;
+
         const daysToEvent = Math.abs(distToBoundary / pos.speed);
-        
+
         // Search in a window around the estimate (+/- 20%)
         const estimate = startDate.plus({ days: daysToEvent });
         const startSearch = estimate.minus({ days: Math.max(1, daysToEvent * 0.2) });
@@ -105,10 +106,10 @@ export class TransitScanner {
     public async findStationaryPoint(
         planetId: number,
         searchStart: DateTime,
-        searchEnd?: DateTime
+        searchEnd?: DateTime,
     ): Promise<DateTime | null> {
         const end = searchEnd || searchStart.plus({ months: 6 }); // Stations can be far
-        
+
         const initialPos = this.getPlanetPos(planetId, searchStart);
         const isCurrentlyDirect = initialPos.speed > 0;
 
@@ -130,8 +131,12 @@ export class TransitScanner {
      * motion for slow planets (see TransitEngine in @node-jhora/core).
      */
     private getPlanetPos(planetId: number, date: DateTime): PlanetPosition {
-        const planets = this.ephemeris.getPlanets(date, { latitude: 0, longitude: 0 }, { topocentric: false });
-        const target = planets.find(p => p.id === planetId);
+        const planets = this.ephemeris.getPlanets(
+            date,
+            { latitude: 0, longitude: 0 },
+            { topocentric: false },
+        );
+        const target = planets.find((p) => p.id === planetId);
         if (!target) throw new Error(`Planet ID ${planetId} not found`);
         return target;
     }

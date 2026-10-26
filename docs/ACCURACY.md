@@ -9,11 +9,11 @@ A sidereal longitude is `astrometry − ayanamsa`. Those two halves are
 independently wrong-able, so they are validated **separately, against different
 sources**:
 
-| What | Reference | Fixture |
-|---|---|---|
-| Astrometry | **JPL Horizons** | `packages/core/tests/fixtures/horizons_golden.ts` |
-| JHora conventions | a real **JHora export** | `packages/core/tests/fixtures/jhora_golden.ts` |
-| Regression only | this engine's own output | `packages/core/tests/fixtures/reference_charts.ts` |
+| What              | Reference                | Fixture                                            |
+| ----------------- | ------------------------ | -------------------------------------------------- |
+| Astrometry        | **JPL Horizons**         | `packages/core/tests/fixtures/horizons_golden.ts`  |
+| JHora conventions | a real **JHora export**  | `packages/core/tests/fixtures/jhora_golden.ts`     |
+| Regression only   | this engine's own output | `packages/core/tests/fixtures/reference_charts.ts` |
 
 Collapsing these is the failure mode this project has already lived through: an
 earlier revision back-fitted ayanamsa constants until one chart reproduced one
@@ -29,12 +29,12 @@ stays within orbital bounds. Those are what catch a bad re-baseline.
 
 Tropical apparent longitude, all bodies, spanning the DE440s range:
 
-| Epoch | Worst error |
-|---|---|
-| 1900-01-01 | 0.28″ |
-| 1970-07-08 | 0.05″ |
-| 2000-01-01 | 0.20″ |
-| 2024-06-15 | 0.23″ |
+| Epoch      | Worst error                |
+| ---------- | -------------------------- |
+| 1900-01-01 | 0.28″                      |
+| 1970-07-08 | 0.05″                      |
+| 2000-01-01 | 0.20″                      |
+| 2024-06-15 | 0.23″                      |
 | 2100-01-01 | 46″ — ΔT forecast gap only |
 
 For scale: 1″ is three orders of magnitude below any varga or nakshatra-pada
@@ -45,27 +45,27 @@ boundary. It cannot change a chart reading.
 Against a real JHora natal export (2000-01-01 12:00 IST, Chennai), using
 `JHORA_PRESET`:
 
-| Quantity | Delta |
-|---|---|
-| Ayanamsa (True Chitrapaksha) | 0.015″ |
-| Sun, Mercury, Venus, Mars, Saturn | 0.01″ |
-| Moon, Jupiter, **Ascendant** | 0.00″ |
-| Rahu / Ketu | 0.12″ |
-| D9 Navamsa, all bodies | 0.1″ |
-| D10 Dasamsa (`jhora_5_8`) | 0.5″ |
-| Local sidereal time | 0.24 s |
-| Panchanga (tithi, nakshatra, yoga, karana, vara) | exact |
-| Vimshottari dasha | ~1 day over the full 120-year cycle |
+| Quantity                                         | Delta                               |
+| ------------------------------------------------ | ----------------------------------- |
+| Ayanamsa (True Chitrapaksha)                     | 0.015″                              |
+| Sun, Mercury, Venus, Mars, Saturn                | 0.01″                               |
+| Moon, Jupiter, **Ascendant**                     | 0.00″                               |
+| Rahu / Ketu                                      | 0.12″                               |
+| D9 Navamsa, all bodies                           | 0.1″                                |
+| D10 Dasamsa (`jhora_5_8`)                        | 0.5″                                |
+| Local sidereal time                              | 0.24 s                              |
+| Panchanga (tithi, nakshatra, yoga, karana, vara) | exact                               |
+| Vimshottari dasha                                | ~1 day over the full 120-year cycle |
 
 Reproducing JHora requires four **conventions**, not just correct astronomy —
 each confirmed by that export:
 
-| Convention | Setting | Evidence |
-|---|---|---|
-| True Chitrapaksha | `ayanamsaMode: 27` | JHora prints `23-51-11.00`; engine 0.015″ away |
-| Geometric places | `positionMode: 'geometric'` | removing light-time + aberration moves Venus 43.9″, Sun 20.8″, Saturn 7.4″ — each onto JHora to 0.01″ |
-| True node | `nodeType: 'true'` | mean node misses Rahu by 0.97°; osculating node by 0.12″ |
-| JHora Dasamsa | `dasamsaScheme: 'jhora_5_8'` | odd signs agree either way; all five even-sign bodies agree only under this rule |
+| Convention        | Setting                      | Evidence                                                                                              |
+| ----------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| True Chitrapaksha | `ayanamsaMode: 27`           | JHora prints `23-51-11.00`; engine 0.015″ away                                                        |
+| Geometric places  | `positionMode: 'geometric'`  | removing light-time + aberration moves Venus 43.9″, Sun 20.8″, Saturn 7.4″ — each onto JHora to 0.01″ |
+| True node         | `nodeType: 'true'`           | mean node misses Rahu by 0.97°; osculating node by 0.12″                                              |
+| JHora Dasamsa     | `dasamsaScheme: 'jhora_5_8'` | odd signs agree either way; all five even-sign bodies agree only under this rule                      |
 
 ## Is node-jhora more accurate than JHora?
 
@@ -77,19 +77,19 @@ cancel exactly, leaving pure astrometry.
 Source data is JHora's own legacy `.jhd` files, which embed the longitudes JHora
 computed.
 
-| Chart | Year | node-jhora | JHora | Factor |
-|---|---|---|---|---|
-| Prof. B. Suryanarain Rao | 1856 | 0.68″ rms | 2.22″ | 3× |
-| Swami Vivekananda | 1863 | 0.33″ rms | 1.82″ | 5× |
-| Prof. B. V. Raman | 1912 | 0.14″ rms | 10.38″ | 74× |
-| Swami Jayendra Saraswati | 1935 | 0.08″ rms | 8.53″ | 113× |
+| Chart                    | Year | node-jhora | JHora  | Factor |
+| ------------------------ | ---- | ---------- | ------ | ------ |
+| Prof. B. Suryanarain Rao | 1856 | 0.68″ rms  | 2.22″  | 3×     |
+| Swami Vivekananda        | 1863 | 0.33″ rms  | 1.82″  | 5×     |
+| Prof. B. V. Raman        | 1912 | 0.14″ rms  | 10.38″ | 74×    |
+| Swami Jayendra Saraswati | 1935 | 0.08″ rms  | 8.53″  | 113×   |
 
 node-jhora is closer on **4/4**. Worst single separation error: node-jhora
 **1.63″**, JHora **25.15″**. JHora's error concentrates in the **Moon**, where
 lunar theory is hardest.
 
 > **Read this claim carefully.** Those `.jhd` files were written by JHora circa
-> 1999–2003 and embed an older ephemeris. Against a *current* JHora export the
+> 1999–2003 and embed an older ephemeris. Against a _current_ JHora export the
 > two agree to 0.01″. The defensible statement is "more accurate than the JHora
 > builds that wrote these files", not "more accurate than JHora today".
 

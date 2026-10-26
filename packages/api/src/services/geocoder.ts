@@ -1,13 +1,13 @@
-import { type CityData,findFromCityStateProvince, lookupViaCity } from 'city-timezones';
+import { type CityData, findFromCityStateProvince, lookupViaCity } from 'city-timezones';
 
 export interface ResolvedLocation {
-    city:      string;
-    province:  string;
-    country:   string;
-    latitude:  number;
+    city: string;
+    province: string;
+    country: string;
+    latitude: number;
     longitude: number;
-    timezone:  string;
-    pop:       number;
+    timezone: string;
+    pop: number;
 }
 
 export class CityNotFoundError extends Error {
@@ -22,8 +22,8 @@ export class AmbiguousCityError extends Error {
     constructor(query: string, results: CityData[]) {
         super(`Multiple timezones found for "${query}". Please be more specific.`);
         this.name = 'AmbiguousCityError';
-        this.suggestions = results.map(r =>
-            [r.city, r.province, r.country].filter(Boolean).join(', ')
+        this.suggestions = results.map((r) =>
+            [r.city, r.province, r.country].filter(Boolean).join(', '),
         );
     }
 }
@@ -45,7 +45,7 @@ export function lookupCity(query: string): ResolvedLocation {
     if (results.length === 1) return toResolved(results[0]);
 
     // Multiple matches — check whether all share the same timezone
-    const timezones = new Set(results.map(r => r.timezone));
+    const timezones = new Set(results.map((r) => r.timezone));
     if (timezones.size === 1) {
         // Same timezone: auto-pick highest-population entry (chart output is identical)
         results = [...results].sort((a, b) => (b.pop ?? 0) - (a.pop ?? 0));
@@ -58,12 +58,12 @@ export function lookupCity(query: string): ResolvedLocation {
 
 function toResolved(r: CityData): ResolvedLocation {
     return {
-        city:      r.city,
-        province:  r.province ?? '',
-        country:   r.country  ?? '',
-        latitude:  r.lat,
+        city: r.city,
+        province: r.province ?? '',
+        country: r.country ?? '',
+        latitude: r.lat,
         longitude: r.lng,
-        timezone:  r.timezone,
-        pop:       r.pop ?? 0,
+        timezone: r.timezone,
+        pop: r.pop ?? 0,
     };
 }

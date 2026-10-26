@@ -1,8 +1,8 @@
 export { detectJhdVariant } from './detect.js';
 export type { JhdErrorCode } from './errors.js';
-export { jhdErrorMessage,JhdParseError } from './errors.js';
-export { hasPositions,parseJhd, parseJhdDetailed } from './parse.js';
-export { decimalToSexagesimal,sexagesimalToDecimal } from './sexagesimal.js';
+export { jhdErrorMessage, JhdParseError } from './errors.js';
+export { hasPositions, parseJhd, parseJhdDetailed } from './parse.js';
+export { decimalToSexagesimal, sexagesimalToDecimal } from './sexagesimal.js';
 export type {
     JhdBody,
     JhdChart,

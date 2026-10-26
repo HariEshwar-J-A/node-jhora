@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readUtf8Lf } from '../../../tools/read-utf8-lf.mjs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,7 +58,7 @@ describe('JSON Schema', () => {
             mkdirSync(dirname(schemaPath), { recursive: true });
             writeFileSync(schemaPath, text);
         }
-        expect(readFileSync(schemaPath, 'utf8')).toBe(text);
+        expect(readUtf8Lf(schemaPath)).toBe(text);
         const json = JSON.parse(text) as {
             title: string;
             properties: { schemaVersion: { const: number } };

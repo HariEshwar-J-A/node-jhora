@@ -12,8 +12,10 @@ Native JavaScript `Number` (IEEE 754 double-precision) introduces floating-point
 
 ```typescript
 // Native JS floating-point drift:
-0.1 + 0.2               // 0.30000000000000004
-(360 / 27) * 27          // 360.00000000000006
+0.1 +
+    0.2 // 0.30000000000000004
+    (360 / 27) *
+        27; // 360.00000000000006
 ```
 
 ### The Solution
@@ -21,23 +23,23 @@ Native JavaScript `Number` (IEEE 754 double-precision) introduces floating-point
 ```typescript
 import { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from '@node-jhora/core';
 
-const lon = D('123.456789012345');      // Full-precision Decimal
-const norm = normalize360D(lon);         // Normalize [0, 360) with no drift
-const num = toNum(norm);                 // Convert to JS number for output
+const lon = D('123.456789012345'); // Full-precision Decimal
+const norm = normalize360D(lon); // Normalize [0, 360) with no drift
+const num = toNum(norm); // Convert to JS number for output
 
 // Pre-computed constants:
-NAKSHATRA_SPAN_D  // Decimal(360/27) = 13.333... (exact)
-DASHA_YEAR_DAYS   // Decimal(365.25) — Julian year
+NAKSHATRA_SPAN_D; // Decimal(360/27) = 13.333... (exact)
+DASHA_YEAR_DAYS; // Decimal(365.25) — Julian year
 ```
 
 ### Where Precision Matters
 
-| Module | Why Decimal.js is Essential |
-| :--- | :--- |
-| Varga Calculations | D9, D60 require dividing 30° into tiny sub-arcs (0.5° for D60) |
-| Nakshatra Padas | Each Pada is 3°20′ — rounding errors cascade across 108 Padas |
-| Dasha Balance | Birth Nakshatra balance depends on exact Moon position within 13.33° span |
-| Arudha Padas | Sign-counting arithmetic must be exact to avoid off-by-one errors |
+| Module             | Why Decimal.js is Essential                                               |
+| :----------------- | :------------------------------------------------------------------------ |
+| Varga Calculations | D9, D60 require dividing 30° into tiny sub-arcs (0.5° for D60)            |
+| Nakshatra Padas    | Each Pada is 3°20′ — rounding errors cascade across 108 Padas             |
+| Dasha Balance      | Birth Nakshatra balance depends on exact Moon position within 13.33° span |
+| Arudha Padas       | Sign-counting arithmetic must be exact to avoid off-by-one errors         |
 
 ---
 
@@ -46,8 +48,8 @@ DASHA_YEAR_DAYS   // Decimal(365.25) — Julian year
 In JS/TS, the standard `%` operator (remainder) behaves inconsistently with negative numbers:
 
 ```typescript
--10 % 360   // Returns -10 (WRONG for astronomy)
-370 % 360   // Returns 10 (OK)
+-10 % 360; // Returns -10 (WRONG for astronomy)
+370 % 360; // Returns 10 (OK)
 ```
 
 Node-Jhora provides two normalization functions:
@@ -62,9 +64,9 @@ export function normalize360(angle: number): number {
     return res;
 }
 
-normalize360(370);   // 10
-normalize360(-10);   // 350
-normalize360(720);   // 0
+normalize360(370); // 10
+normalize360(-10); // 350
+normalize360(720); // 0
 ```
 
 ### Precision (Decimal.js)
@@ -72,8 +74,8 @@ normalize360(720);   // 0
 ```typescript
 import { normalize360D, D } from '@node-jhora/core';
 
-normalize360D(D(-10));    // Decimal(350) — no floating-point drift
-normalize360D(D(370.5));  // Decimal(10.5)
+normalize360D(D(-10)); // Decimal(350) — no floating-point drift
+normalize360D(D(370.5)); // Decimal(10.5)
 ```
 
 ### Shortest Arc Distance
@@ -83,8 +85,8 @@ For interpolation and transit detection, the engine computes the shortest arc be
 ```typescript
 import { getShortestDistance } from '@node-jhora/core';
 
-getShortestDistance(350, 10);  // 20  (not 340)
-getShortestDistance(10, 350);  // -20 (shortest path backward)
+getShortestDistance(350, 10); // 20  (not 340)
+getShortestDistance(10, 350); // -20 (shortest path backward)
 ```
 
 ---
@@ -106,18 +108,18 @@ The parallax correction transforms geocentric ecliptic coordinates to topocentri
 ```typescript
 // Enable topocentric correction for Moon-sensitive calculations:
 const planets = engine.getPlanets(date, location, {
-    topocentric: true  // Corrects Moon by up to 1°
+    topocentric: true, // Corrects Moon by up to 1°
 });
 ```
 
 **Impact by planet:**
 
-| Planet | Max Parallax Shift | Significance |
-| :--- | :---: | :--- |
-| Moon | ~1° | **Critical** — affects Nakshatra, Tithi, Dasha balance |
-| Sun | ~0.002° | Negligible |
-| Mars | ~0.005° | Negligible |
-| Others | < 0.001° | Negligible |
+| Planet | Max Parallax Shift | Significance                                           |
+| :----- | :----------------: | :----------------------------------------------------- |
+| Moon   |        ~1°         | **Critical** — affects Nakshatra, Tithi, Dasha balance |
+| Sun    |      ~0.002°       | Negligible                                             |
+| Mars   |      ~0.005°       | Negligible                                             |
+| Others |      < 0.001°      | Negligible                                             |
 
 ---
 
@@ -150,7 +152,7 @@ This enables smooth 60fps planet animations without visible jumps at sign bounda
 
 ## 🎯 Newton-Raphson Refinement
 
-When scanning for transits or aspects (e.g., *"Exactly when does Mars conjunct Saturn?"*), the engine uses the **Newton-Raphson** method for high-precision time-finding.
+When scanning for transits or aspects (e.g., _"Exactly when does Mars conjunct Saturn?"_), the engine uses the **Newton-Raphson** method for high-precision time-finding.
 
 ### Algorithm
 
@@ -159,26 +161,27 @@ t_{n+1} = t_n - f(t_n) / f'(t_n)
 ```
 
 Where:
+
 - `f(t)` = angular distance between two planets at time `t`
 - `f'(t)` = rate of change of angular distance (relative speed)
 
 ### Properties
 
-| Property | Value |
-| :--- | :--- |
-| Convergence | Quadratic (doubles precision each iteration) |
-| Tolerance | `1e-7` degrees |
-| Typical iterations | 4–6 |
-| Applications | Exact conjunctions, oppositions, trine timings |
+| Property           | Value                                          |
+| :----------------- | :--------------------------------------------- |
+| Convergence        | Quadratic (doubles precision each iteration)   |
+| Tolerance          | `1e-7` degrees                                 |
+| Typical iterations | 4–6                                            |
+| Applications       | Exact conjunctions, oppositions, trine timings |
 
 ### Compared to Binary Search
 
 The `TransitScanner` in `@node-jhora/events` uses binary search (bisection) for event detection, while the `TransitEngine` in `@node-jhora/prediction` uses Newton-Raphson. The approaches serve different needs:
 
-| Method | Where Used | Best For |
-| :--- | :--- | :--- |
-| **Binary Search** | `@node-jhora/events` | Generic condition flips (ingress, station) |
-| **Newton-Raphson** | `@node-jhora/prediction` | Exact angular aspect timing |
+| Method             | Where Used               | Best For                                   |
+| :----------------- | :----------------------- | :----------------------------------------- |
+| **Binary Search**  | `@node-jhora/events`     | Generic condition flips (ingress, station) |
+| **Newton-Raphson** | `@node-jhora/prediction` | Exact angular aspect timing                |
 
 ---
 
@@ -189,6 +192,6 @@ Convert between decimal degrees and Degrees/Minutes/Seconds:
 ```typescript
 import { dmsToDecimal, decimalToDms } from '@node-jhora/core';
 
-dmsToDecimal(13, 4, 58);  // 13.08277...
-decimalToDms(13.08277);    // { degrees: 13, minutes: 4, seconds: 58, ... }
+dmsToDecimal(13, 4, 58); // 13.08277...
+decimalToDms(13.08277); // { degrees: 13, minutes: 4, seconds: 58, ... }
 ```

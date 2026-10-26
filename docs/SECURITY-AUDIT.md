@@ -6,12 +6,12 @@ This document records `pnpm audit` triage for the node-jhora monorepo. CI runs
 
 ## 2026-10-26 — E1-S5-T4 baseline
 
-| Severity | Count (before) | Count (after) | Action |
-| --- | ---: | ---: | --- |
-| critical | 0 | 0 | — |
-| high | 1 | 0 | Resolved |
-| moderate | 0 | 0 | — |
-| low | 0 | 0 | — |
+| Severity | Count (before) | Count (after) | Action   |
+| -------- | -------------: | ------------: | -------- |
+| critical |              0 |             0 | —        |
+| high     |              1 |             0 | Resolved |
+| moderate |              0 |             0 | —        |
+| low      |              0 |             0 | —        |
 
 ### Resolved: GHSA-mrhx-c7xc-m3w5 (Zod memory exhaustion)
 

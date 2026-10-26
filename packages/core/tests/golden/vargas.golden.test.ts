@@ -10,7 +10,6 @@
 import { calculateVarga } from '../../src/vedic/vargas.js';
 
 describe('Golden: Divisional Charts (Vargas)', () => {
-
     // ---------------------------------------------------------------------------
     // D1 — Identity (trivial)
     // ---------------------------------------------------------------------------
@@ -125,8 +124,8 @@ describe('Golden: Divisional Charts (Vargas)', () => {
             const v = calculateVarga(0, 9);
             expect(v.sign).toBe(1);
         });
-        test('3°20\' Aries → Taurus (sign 2)', () => {
-            const v = calculateVarga(3 + 21/60, 9); // just past 3°20'
+        test("3°20' Aries → Taurus (sign 2)", () => {
+            const v = calculateVarga(3 + 21 / 60, 9); // just past 3°20'
             expect(v.sign).toBe(2);
         });
         // Taurus is Fixed: Navamsa starts from 9th sign = Capricorn (sign 10)

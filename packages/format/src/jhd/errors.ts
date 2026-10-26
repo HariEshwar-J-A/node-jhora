@@ -1,9 +1,6 @@
 /** Structured parse failure for a single `.jhd` line or file. */
 export type JhdErrorCode =
-    | 'too_few_lines'
-    | 'invalid_number'
-    | 'invalid_legacy_tail'
-    | 'invalid_flags';
+    'too_few_lines' | 'invalid_number' | 'invalid_legacy_tail' | 'invalid_flags';
 
 export class JhdParseError extends Error {
     readonly code: JhdErrorCode;

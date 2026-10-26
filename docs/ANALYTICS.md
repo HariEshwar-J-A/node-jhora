@@ -10,14 +10,14 @@ A complete implementation of the Parashari Shadbala system, calculating planetar
 
 ### Calculation Components
 
-| # | Bala | Description |
-| :---: | :--- | :--- |
-| 1 | **Sthana Bala** (Positional) | Uchcha, Saptavargaja (7 Varga strengths), Kendra, Ojayugma |
-| 2 | **Dig Bala** (Directional) | Strength based on proximity to specific house cusps |
-| 3 | **Kaala Bala** (Temporal) | Natonata, Paksha, Tribhaga, Ayanabala, Yuddha Bala |
-| 4 | **Chesta Bala** (Motional) | Based on planetary speed, retrograde, and combustion status |
-| 5 | **Naisargika Bala** (Natural) | Constant inherent strength for each planet |
-| 6 | **Drig Bala** (Aspect) | Net strength from benefic and malefic planetary aspects |
+|  #  | Bala                          | Description                                                 |
+| :-: | :---------------------------- | :---------------------------------------------------------- |
+|  1  | **Sthana Bala** (Positional)  | Uchcha, Saptavargaja (7 Varga strengths), Kendra, Ojayugma  |
+|  2  | **Dig Bala** (Directional)    | Strength based on proximity to specific house cusps         |
+|  3  | **Kaala Bala** (Temporal)     | Natonata, Paksha, Tribhaga, Ayanabala, Yuddha Bala          |
+|  4  | **Chesta Bala** (Motional)    | Based on planetary speed, retrograde, and combustion status |
+|  5  | **Naisargika Bala** (Natural) | Constant inherent strength for each planet                  |
+|  6  | **Drig Bala** (Aspect)        | Net strength from benefic and malefic planetary aspects     |
 
 ### Usage
 
@@ -36,17 +36,17 @@ const vargaPositions: VargaInfo[] = [
 ];
 
 const result: ShadbalaResult = calculateShadbala({
-    planet,         // PlanetPosition — target planet
-    allPlanets,     // PlanetPosition[] — all 9 planets
-    houses,         // HouseData — house cusps
-    sun,            // PlanetPosition — Sun data
-    moon,           // PlanetPosition — Moon data
+    planet, // PlanetPosition — target planet
+    allPlanets, // PlanetPosition[] — all 9 planets
+    houses, // HouseData — house cusps
+    sun, // PlanetPosition — Sun data
+    moon, // PlanetPosition — Moon data
     timeDetails: {
-        sunrise: 6,   // Hour (24h format)
+        sunrise: 6, // Hour (24h format)
         sunset: 18,
-        birthHour: 14
+        birthHour: 14,
     },
-    vargaPositions  // VargaInfo[] — D1, D2, D3, D7, D9, D12, D30
+    vargaPositions, // VargaInfo[] — D1, D2, D3, D7, D9, D12, D30
 });
 
 console.log(`Total Shadbala: ${result.total.toFixed(2)} Virupas`);
@@ -66,10 +66,10 @@ import type { AshtakavargaResult } from '@node-jhora/analytics';
 const result: AshtakavargaResult = Ashtakavarga.calculate(planets, ascendantSign);
 
 // BAV for Sun (12 sign scores)
-console.log("Sun BAV:", result.bav[0]);
+console.log('Sun BAV:', result.bav[0]);
 
 // Sarvashtakavarga — combined scores per sign
-console.log("SAV Points:", result.sav); // number[12]
+console.log('SAV Points:', result.sav); // number[12]
 ```
 
 ---
@@ -93,6 +93,7 @@ interface YogaDef {
 ```
 
 **Supported Conditions:**
+
 - `placement`: Planet in specific house or sign.
 - `aspect`: Aspect from Planet A to Planet B.
 - `conjunction`: Multiple planets in the same sign.
@@ -107,7 +108,7 @@ import type { ChartData } from '@node-jhora/analytics';
 // Use the built-in library of yoga definitions
 const foundYogas: YogaResult[] = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 
-foundYogas.forEach(yoga => {
+foundYogas.forEach((yoga) => {
     console.log(`${yoga.name} (${yoga.category}): ${yoga.description}`);
 });
 ```
@@ -122,8 +123,8 @@ const customYoga: YogaDef = {
     category: 'Raja',
     conditions: [
         { type: 'placement', planetId: 5, houses: [1, 5, 9] }, // Jupiter in trine
-        { type: 'lordship', houseFrom: 9, houseTo: 1 }          // 9th lord in 1st
-    ]
+        { type: 'lordship', houseFrom: 9, houseTo: 1 }, // 9th lord in 1st
+    ],
 };
 
 const results = YogaEngine.findYogas(chartData, [...YOGA_LIBRARY, customYoga]);
@@ -144,6 +145,7 @@ import type { KPPlanetSignificator, KPHouseSignificator } from '@node-jhora/anal
 ```
 
 The `KPEngine` provides:
+
 - **Planet Significators** (`KPPlanetSignificator`): Houses signified by each planet through ownership, occupation, and star-lordship.
 - **House Significators** (`KPHouseSignificator`): Planets signifying each house through the same chain.
 

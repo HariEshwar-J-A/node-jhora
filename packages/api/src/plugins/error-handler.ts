@@ -1,7 +1,7 @@
-import { FastifyInstance, FastifyReply,FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
 
-import { AmbiguousCityError,CityNotFoundError } from '../services/geocoder.js';
+import { AmbiguousCityError, CityNotFoundError } from '../services/geocoder.js';
 
 /**
  * Global error handler — emits RFC 7807 Problem Details JSON.
@@ -13,8 +13,8 @@ export function registerErrorHandler(app: FastifyInstance): void {
         // City not found (geocoder) → 404
         if (error instanceof CityNotFoundError) {
             return reply.status(404).send({
-                type:   'city_not_found',
-                title:  error.message,
+                type: 'city_not_found',
+                title: error.message,
                 status: 404,
             });
         }
@@ -22,9 +22,9 @@ export function registerErrorHandler(app: FastifyInstance): void {
         // Ambiguous city (geocoder) → 400 with suggestions
         if (error instanceof AmbiguousCityError) {
             return reply.status(400).send({
-                type:        'ambiguous_city',
-                title:       error.message,
-                status:      400,
+                type: 'ambiguous_city',
+                title: error.message,
+                status: 400,
                 suggestions: error.suggestions,
             });
         }
@@ -32,12 +32,12 @@ export function registerErrorHandler(app: FastifyInstance): void {
         // Zod validation errors from direct .parse() calls → 422
         if (error instanceof ZodError) {
             return reply.status(422).send({
-                type:    'https://httpstatuses.com/422',
-                title:   'Validation Error',
-                status:  422,
-                detail:  'Input validation failed',
-                errors:  error.issues.map(e => ({
-                    path:    e.path.join('.'),
+                type: 'https://httpstatuses.com/422',
+                title: 'Validation Error',
+                status: 422,
+                detail: 'Input validation failed',
+                errors: error.issues.map((e) => ({
+                    path: e.path.join('.'),
                     message: e.message,
                 })),
             });
@@ -46,14 +46,20 @@ export function registerErrorHandler(app: FastifyInstance): void {
         // Fastify schema validation errors (from fastify-type-provider-zod) → 422
         // These carry a .validation array of ZodIssue-like objects.
         if ((error as any).validation) {
-            const issues = (error as any).validation as Array<{ instancePath?: string; message?: string; path?: string | string[] }>;
+            const issues = (error as any).validation as Array<{
+                instancePath?: string;
+                message?: string;
+                path?: string | string[];
+            }>;
             return reply.status(422).send({
-                type:   'https://httpstatuses.com/422',
-                title:  'Validation Error',
+                type: 'https://httpstatuses.com/422',
+                title: 'Validation Error',
                 status: 422,
                 detail: 'Input validation failed',
-                errors: issues.map(e => ({
-                    path:    e.instancePath ?? (Array.isArray(e.path) ? e.path.join('.') : (e.path ?? '')),
+                errors: issues.map((e) => ({
+                    path:
+                        e.instancePath ??
+                        (Array.isArray(e.path) ? e.path.join('.') : (e.path ?? '')),
                     message: e.message ?? '',
                 })),
             });
@@ -62,8 +68,8 @@ export function registerErrorHandler(app: FastifyInstance): void {
         // Other Fastify errors with explicit 400 status → 400
         if ((error as any).statusCode === 400) {
             return reply.status(400).send({
-                type:   'https://httpstatuses.com/400',
-                title:  'Bad Request',
+                type: 'https://httpstatuses.com/400',
+                title: 'Bad Request',
                 status: 400,
                 detail: error.message,
             });
@@ -71,10 +77,13 @@ export function registerErrorHandler(app: FastifyInstance): void {
 
         // All other errors → 500
         return reply.status(500).send({
-            type:   'https://httpstatuses.com/500',
-            title:  'Internal Server Error',
+            type: 'https://httpstatuses.com/500',
+            title: 'Internal Server Error',
             status: 500,
-            detail: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred',
+            detail:
+                process.env.NODE_ENV === 'development'
+                    ? error.message
+                    : 'An unexpected error occurred',
         });
     });
 }

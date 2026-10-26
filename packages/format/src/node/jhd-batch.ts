@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { jhdErrorMessage,JhdParseError } from '../jhd/errors.js';
+import { jhdErrorMessage, JhdParseError } from '../jhd/errors.js';
 import { parseJhdDetailed } from '../jhd/parse.js';
 import type { JhdParseOptions, JhdParseResult } from '../jhd/types.js';
 
@@ -44,9 +44,10 @@ function parseOneFile(path: string, options: JhdParseOptions): JhdFileImportResu
         const result = parseJhdDetailed(text, options);
         return { path, ok: true, result };
     } catch (err) {
-        const errors = err instanceof JhdParseError
-            ? [{ message: err.message, line: err.line, code: err.code }]
-            : [{ message: jhdErrorMessage(err) }];
+        const errors =
+            err instanceof JhdParseError
+                ? [{ message: err.message, line: err.line, code: err.code }]
+                : [{ message: jhdErrorMessage(err) }];
         return { path, ok: false, errors };
     }
 }

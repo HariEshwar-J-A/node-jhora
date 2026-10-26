@@ -10,16 +10,16 @@ The **Ashta Kuta** (Eight Kutas) system is the standard North Indian compatibili
 
 ### The 8 Kutas
 
-| # | Kuta | Max Points | What it Assesses |
-| :---: | :--- | :---: | :--- |
-| 1 | **Varna** | 1 | Spiritual compatibility (Brahmin > Kshatriya > Vaishya > Shudra) |
-| 2 | **Vashya** | 2 | Mutual attraction and dominance |
-| 3 | **Tara** | 3 | Birth star harmony (Nakshatra distance mod 9) |
-| 4 | **Yoni** | 4 | Physical / sexual compatibility (14 symbolic animals) |
-| 5 | **Graha Maitri** | 5 | Planetary friendship between Moon-sign lords |
-| 6 | **Gana** | 6 | Temperamental match (Deva, Manushya, Rakshasa) |
-| 7 | **Bhakoot** | 7 | Financial prosperity and family welfare (sign distance) |
-| 8 | **Nadi** | 8 | Health and genetic compatibility (Adi, Madhya, Antya) |
+|  #  | Kuta             | Max Points | What it Assesses                                                 |
+| :-: | :--------------- | :--------: | :--------------------------------------------------------------- |
+|  1  | **Varna**        |     1      | Spiritual compatibility (Brahmin > Kshatriya > Vaishya > Shudra) |
+|  2  | **Vashya**       |     2      | Mutual attraction and dominance                                  |
+|  3  | **Tara**         |     3      | Birth star harmony (Nakshatra distance mod 9)                    |
+|  4  | **Yoni**         |     4      | Physical / sexual compatibility (14 symbolic animals)            |
+|  5  | **Graha Maitri** |     5      | Planetary friendship between Moon-sign lords                     |
+|  6  | **Gana**         |     6      | Temperamental match (Deva, Manushya, Rakshasa)                   |
+|  7  | **Bhakoot**      |     7      | Financial prosperity and family welfare (sign distance)          |
+|  8  | **Nadi**         |     8      | Health and genetic compatibility (Adi, Madhya, Antya)            |
 
 ### Usage
 
@@ -28,17 +28,17 @@ import { calculateAshtaKuta } from '@node-jhora/match';
 import type { MatchResult } from '@node-jhora/match';
 
 const result: MatchResult = calculateAshtaKuta(
-    boyStar,   // Nakshatra index (0-26, Ashwini to Revati)
-    girlStar,  // Nakshatra index (0-26)
-    boySign,   // Moon sign (1-12, Aries to Pisces)
-    girlSign   // Moon sign (1-12)
+    boyStar, // Nakshatra index (0-26, Ashwini to Revati)
+    girlStar, // Nakshatra index (0-26)
+    boySign, // Moon sign (1-12, Aries to Pisces)
+    girlSign, // Moon sign (1-12)
 );
 
-console.log(`System: ${result.system}`);       // 'AshtaKuta'
+console.log(`System: ${result.system}`); // 'AshtaKuta'
 console.log(`Score: ${result.totalScore}/36`);
 console.log(`Compatible: ${result.isCompatible}`); // true if score >= 18
 
-result.matches.forEach(kuta => {
+result.matches.forEach((kuta) => {
     console.log(`  ${kuta.name}: ${kuta.score}/${kuta.maxScore} — ${kuta.description}`);
 });
 ```
@@ -55,18 +55,18 @@ The **Dasha Kuta** system evaluates 10 compatibility factors with additional cri
 
 ### The 10 Poruthams
 
-| # | Kuta | What it Assesses |
-| :---: | :--- | :--- |
-| 1 | **Dina** | Health and general prosperity |
-| 2 | **Gana** | Temperamental compatibility (Deva, Manushya, Rakshasa) |
-| 3 | **Yoni** | Physical / sexual compatibility |
-| 4 | **Rasi** | Rasi-based harmony (Moon sign distance) |
-| 5 | **Rasyadhipathi** | Lord friendship |
-| 6 | **Vashya** | Attraction and loyalty |
-| 7 | **Mahendra** | Prosperity and progeny |
-| 8 | **Stree Deergha** | Marital bliss (boy's star count from girl's star) |
-| 9 | **Rajju** | ⚠️ **Mandatory** — longevity of couple (body region match) |
-| 10 | **Vedha** | ⚠️ **Mutual obstruction** — Nakshatra pair check |
+|  #  | Kuta              | What it Assesses                                           |
+| :-: | :---------------- | :--------------------------------------------------------- |
+|  1  | **Dina**          | Health and general prosperity                              |
+|  2  | **Gana**          | Temperamental compatibility (Deva, Manushya, Rakshasa)     |
+|  3  | **Yoni**          | Physical / sexual compatibility                            |
+|  4  | **Rasi**          | Rasi-based harmony (Moon sign distance)                    |
+|  5  | **Rasyadhipathi** | Lord friendship                                            |
+|  6  | **Vashya**        | Attraction and loyalty                                     |
+|  7  | **Mahendra**      | Prosperity and progeny                                     |
+|  8  | **Stree Deergha** | Marital bliss (boy's star count from girl's star)          |
+|  9  | **Rajju**         | ⚠️ **Mandatory** — longevity of couple (body region match) |
+| 10  | **Vedha**         | ⚠️ **Mutual obstruction** — Nakshatra pair check           |
 
 ### Usage
 
@@ -75,16 +75,16 @@ import { calculateDashaKuta } from '@node-jhora/match';
 import type { MatchResult } from '@node-jhora/match';
 
 const result: MatchResult = calculateDashaKuta(
-    boyStar,   // 0-26
-    girlStar,  // 0-26
-    boySign,   // 1-12
-    girlSign   // 1-12
+    boyStar, // 0-26
+    girlStar, // 0-26
+    boySign, // 1-12
+    girlSign, // 1-12
 );
 
-console.log(`System: ${result.system}`);           // 'DashaKuta'
+console.log(`System: ${result.system}`); // 'DashaKuta'
 console.log(`Score: ${result.totalScore}/${result.maxScore}`);
-console.log(`Rajju Mismatch: ${result.isRajjuMismatch}`);  // Critical!
-console.log(`Vedha Mismatch: ${result.isVedhaMismatch}`);  // Critical!
+console.log(`Rajju Mismatch: ${result.isRajjuMismatch}`); // Critical!
+console.log(`Vedha Mismatch: ${result.isVedhaMismatch}`); // Critical!
 console.log(`Compatible: ${result.isCompatible}`);
 ```
 
@@ -97,13 +97,13 @@ console.log(`Compatible: ${result.isCompatible}`);
 
 The 27 Nakshatras are mapped in a zig-zag pattern across 5 body regions:
 
-| Region | Pattern | Stars (1-based) |
-| :--- | :--- | :--- |
-| Pada (Feet) | ↑ | 1, 10, 19 |
-| Kati (Hip) | ↑ | 2, 11, 20 |
-| Nabhi (Navel) | ↑ | 3, 12, 21 |
-| Kanta (Neck) | ↑ | 4, 13, 22 |
-| Shiro (Head) | ↑↓ | 5, 6, 14, 15, 23, 24 |
+| Region        | Pattern | Stars (1-based)      |
+| :------------ | :------ | :------------------- |
+| Pada (Feet)   | ↑       | 1, 10, 19            |
+| Kati (Hip)    | ↑       | 2, 11, 20            |
+| Nabhi (Navel) | ↑       | 3, 12, 21            |
+| Kanta (Neck)  | ↑       | 4, 13, 22            |
+| Shiro (Head)  | ↑↓      | 5, 6, 14, 15, 23, 24 |
 
 ---
 
@@ -116,16 +116,16 @@ import { PoruthamMatch } from '@node-jhora/match';
 import type { CompatibilityResult, KutaScore } from '@node-jhora/match';
 
 const result: CompatibilityResult = PoruthamMatch.match(
-    boyNak,    // 0-26
-    girlNak,   // 0-26
-    boySign,   // 1-12
-    girlSign   // 1-12
+    boyNak, // 0-26
+    girlNak, // 0-26
+    boySign, // 1-12
+    girlSign, // 1-12
 );
 
 console.log(`Score: ${result.totalScore}/${result.maxTotal}`);
 console.log(`Recommended: ${result.isRecommended}`); // Score > 50% AND Rajju pass
 
-result.matches.forEach(kuta => {
+result.matches.forEach((kuta) => {
     console.log(`  ${kuta.name}: ${kuta.score}/${kuta.maxScore} — ${kuta.description}`);
 });
 ```
@@ -156,6 +156,7 @@ console.log(`Details: ${result.exceptions?.join(', ')}`);
 ### Exception Rules
 
 The following conditions **cancel** Mangal Dosha even if Mars is in a dosha house:
+
 - **Own House**: Mars in Aries (1) or Scorpio (8).
 - **Exalted**: Mars in Capricorn (10).
 - **Both Match**: If both partners have Mangal Dosha, the doshas neutralize each other.

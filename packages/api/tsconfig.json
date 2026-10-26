@@ -5,13 +5,8 @@
         "rootDir": "src",
         "composite": true
     },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "**/*.test.ts",
-        "**/*.spec.ts"
-    ],
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
         { "path": "../core" },
         { "path": "../analytics" },

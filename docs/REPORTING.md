@@ -7,6 +7,7 @@ The `@node-jhora/reporting` package generates professional **PDF birth chart rep
 ## 🏗️ Architecture
 
 The package depends on:
+
 - `@node-jhora/core` — Planetary positions and house data.
 - `@node-jhora/analytics` — Shadbala calculation, Yoga detection, and YOGA_LIBRARY.
 - `pdfkit` — PDF document generation.
@@ -24,17 +25,17 @@ import { generateFullReport } from '@node-jhora/reporting';
 import type { ChartData } from '@node-jhora/core';
 
 const chartData: ChartData = {
-    planets,    // PlanetPosition[]
-    houses,     // HouseData
-    ascendant,  // number (degrees)
-    ayanamsa    // string ('Lahiri', 'Raman', etc.)
+    planets, // PlanetPosition[]
+    houses, // HouseData
+    ascendant, // number (degrees)
+    ayanamsa, // string ('Lahiri', 'Raman', etc.)
 };
 
 const pdfBuffer: Buffer = await generateFullReport(chartData, {
     subjectName: 'Ravi Shankar',
     birthDate: '1990-05-15',
     birthPlace: 'Chennai, Tamil Nadu',
-    chartStyle: 'North'  // or 'South'
+    chartStyle: 'North', // or 'South'
 });
 
 // Save to file
@@ -50,9 +51,9 @@ res.send(pdfBuffer);
 
 ```typescript
 interface ReportOptions {
-    subjectName?: string;        // Name displayed on the report
-    birthDate?: string;          // Birth date string for the header
-    birthPlace?: string;         // Birth place for the header
+    subjectName?: string; // Name displayed on the report
+    birthDate?: string; // Birth date string for the header
+    birthPlace?: string; // Birth place for the header
     chartStyle?: 'North' | 'South'; // Chart diagram style
 }
 ```
@@ -64,29 +65,35 @@ interface ReportOptions {
 The generated PDF includes the following sections:
 
 ### 1. Header
+
 - Subject name, birth date, and birth place.
 
 ### 2. Planetary Positions Table
+
 - All 9 planets (Sun through Ketu) with:
-  - Sidereal longitude
-  - Sign and degree within sign
-  - Speed (deg/day)
-  - Retrograde indicator
+    - Sidereal longitude
+    - Sign and degree within sign
+    - Speed (deg/day)
+    - Retrograde indicator
 
 ### 3. House Cusps
+
 - Ascendant, MC, and all 12 house cusp longitudes.
 - House system used (Whole Sign, Placidus, etc.)
 
 ### 4. Chart Diagram
+
 - Visual representation of the birth chart.
 - Supports both North Indian (diamond) and South Indian (grid) styles.
 - Rendered using the `ChartDrawer` module.
 
 ### 5. Yoga Analysis
+
 - Detected Yogas from the built-in `YOGA_LIBRARY`.
 - Category, name, and brief description for each.
 
 ### 6. Shadbala Strengths
+
 - 6-fold strength breakdown for each planet.
 - Total Virupas and Ishta Phala values.
 

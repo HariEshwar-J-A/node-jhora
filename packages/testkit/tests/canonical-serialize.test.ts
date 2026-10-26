@@ -45,7 +45,9 @@ describe('canonicalSerialize', () => {
 
     test('hash is stable for the same value', () => {
         const value = { settingsHash: 'abc', n: 3.141592653589793 };
-        expect(hashCanonicalSerialize(value)).toBe(hashCanonicalSerialize({ n: 3.141592653589793, settingsHash: 'abc' }));
+        expect(hashCanonicalSerialize(value)).toBe(
+            hashCanonicalSerialize({ n: 3.141592653589793, settingsHash: 'abc' }),
+        );
         expect(hashCanonicalSerialize(value)).toMatch(/^[a-f0-9]{64}$/);
     });
 });

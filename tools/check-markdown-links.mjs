@@ -10,8 +10,9 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = fileURLToPath(new URL('..', import.meta.url));
 
 const listed = execFileSync(
     'git',
@@ -41,7 +42,8 @@ function checkTarget(file, line, raw) {
     const hash = target.indexOf('#');
     const pathPart = hash >= 0 ? target.slice(0, hash) : target;
     if (!pathPart) return;
-    if (pathPart.startsWith('/') && file.split(sep).join('/').startsWith(SITE_CONTENT_PREFIX)) return;
+    if (pathPart.startsWith('/') && file.split(sep).join('/').startsWith(SITE_CONTENT_PREFIX))
+        return;
 
     let decoded;
     try {
@@ -90,7 +92,9 @@ if (files.length === 0) {
 }
 
 if (failures.length > 0) {
-    console.error(`check-markdown-links: ${failures.length} broken relative link(s) in ${files.length} file(s)`);
+    console.error(
+        `check-markdown-links: ${failures.length} broken relative link(s) in ${files.length} file(s)`,
+    );
     for (const failure of failures) console.error(`  ${failure}`);
     process.exit(1);
 }

@@ -56,7 +56,11 @@ function walkPnpmTree(node, out) {
     if (!node || typeof node !== 'object') {
         return;
     }
-    if (typeof node.name === 'string' && typeof node.version === 'string' && typeof node.path === 'string') {
+    if (
+        typeof node.name === 'string' &&
+        typeof node.version === 'string' &&
+        typeof node.path === 'string'
+    ) {
         const key = `${node.name}@${node.version}`;
         if (!out.has(key)) {
             out.set(key, {
@@ -80,11 +84,11 @@ function walkPnpmTree(node, out) {
  * @returns {Map<string, RuntimePackage>}
  */
 export function collectProductionPackages(repoRoot) {
-    const json = execFileSync(
-        'pnpm',
-        ['list', '-r', '--prod', '--depth=Infinity', '--json'],
-        { cwd: repoRoot, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
-    );
+    const json = execFileSync('pnpm', ['list', '-r', '--prod', '--depth=Infinity', '--json'], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+    });
     const trees = JSON.parse(json);
     const packages = new Map();
     for (const tree of trees) {
@@ -106,7 +110,9 @@ export function collectProductionPackages(repoRoot) {
         try {
             const manifest = JSON.parse(readFileSync(join(pkg.path, 'package.json'), 'utf8'));
             const license = manifest.license;
-            pkg.license = Array.isArray(license) ? license.join(' OR ') : String(license ?? 'UNKNOWN');
+            pkg.license = Array.isArray(license)
+                ? license.join(' OR ')
+                : String(license ?? 'UNKNOWN');
         } catch {
             pkg.license = 'UNKNOWN';
         }
@@ -161,7 +167,9 @@ export function main(repoRoot = resolve(__dirname, '..')) {
     for (const v of violations) {
         console.error(`  - ${v.name}@${v.version} (${v.license})`);
     }
-    console.error('Add an explicit allowlist entry in tools/runtime-license-allowlist.json only with security review.');
+    console.error(
+        'Add an explicit allowlist entry in tools/runtime-license-allowlist.json only with security review.',
+    );
     return 1;
 }
 

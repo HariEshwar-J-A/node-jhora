@@ -13,9 +13,9 @@
  * worst kind of wrong, because it invites being quoted exactly.
  */
 
-import { DateTime }         from 'luxon';
-import { EphemerisEngine }  from '@node-jhora/core';
-import { TransitEngine }    from '../../src/transits.js';
+import { DateTime } from 'luxon';
+import { EphemerisEngine } from '@node-jhora/core';
+import { TransitEngine } from '../../src/transits.js';
 
 let engine: EphemerisEngine;
 
@@ -27,17 +27,24 @@ beforeAll(async () => {
 /** Longitude of a body at an instant, in a given zodiac. */
 function lon(planetId: number, t: DateTime, ayanamsaOrder: number): number {
     const ps = engine.getPlanets(t, { latitude: 0, longitude: 0 }, { ayanamsaOrder });
-    return ps.find(p => p.id === planetId)!.longitude;
+    return ps.find((p) => p.id === planetId)!.longitude;
 }
 
 /** Independently bisect the true moment a body crosses a 30° sign boundary. */
-function trueSignIngress(planetId: number, lo: DateTime, hi: DateTime, ayanamsaOrder: number): DateTime {
+function trueSignIngress(
+    planetId: number,
+    lo: DateTime,
+    hi: DateTime,
+    ayanamsaOrder: number,
+): DateTime {
     const bucket = (t: DateTime) => Math.floor(lon(planetId, t, ayanamsaOrder) / 30);
     const start = bucket(lo);
-    let a = lo, b = hi;
+    let a = lo,
+        b = hi;
     for (let i = 0; i < 40; i++) {
         const mid = DateTime.fromMillis((a.toMillis() + b.toMillis()) / 2, { zone: a.zone });
-        if (bucket(mid) === start) a = mid; else b = mid;
+        if (bucket(mid) === start) a = mid;
+        else b = mid;
     }
     return b;
 }
@@ -48,11 +55,12 @@ describe('TransitEngine: sign ingress timing', () => {
 
     test('ingress is accurate to within a minute, not a step', async () => {
         const start = DateTime.fromISO('2027-05-20T00:00:00+05:30');
-        const end   = DateTime.fromISO('2027-06-20T00:00:00+05:30');
+        const end = DateTime.fromISO('2027-06-20T00:00:00+05:30');
 
         const te = new TransitEngine(engine, { ayanamsaOrder: TRUE_CHITRA });
-        const events = (await te.findTransits(SATURN, start, end, 24))
-            .filter(e => e.type === 'Sign');
+        const events = (await te.findTransits(SATURN, start, end, 24)).filter(
+            (e) => e.type === 'Sign',
+        );
 
         expect(events.length).toBeGreaterThan(0);
 
@@ -65,27 +73,31 @@ describe('TransitEngine: sign ingress timing', () => {
 
     test('the reported instant actually sits on the boundary', async () => {
         const start = DateTime.fromISO('2027-05-20T00:00:00+05:30');
-        const end   = DateTime.fromISO('2027-06-20T00:00:00+05:30');
+        const end = DateTime.fromISO('2027-06-20T00:00:00+05:30');
 
         const te = new TransitEngine(engine, { ayanamsaOrder: TRUE_CHITRA });
-        const ev = (await te.findTransits(SATURN, start, end, 24)).find(e => e.type === 'Sign')!;
+        const ev = (await te.findTransits(SATURN, start, end, 24)).find((e) => e.type === 'Sign')!;
 
         // Just before, still in the old sign; just after, in the new one.
         const before = lon(SATURN, ev.time.minus({ hours: 2 }), TRUE_CHITRA);
-        const after  = lon(SATURN, ev.time.plus({ hours: 2 }),  TRUE_CHITRA);
+        const after = lon(SATURN, ev.time.plus({ hours: 2 }), TRUE_CHITRA);
         expect(Math.floor(before / 30)).toBe(ev.prevValue);
-        expect(Math.floor(after  / 30)).toBe(ev.newValue);
+        expect(Math.floor(after / 30)).toBe(ev.newValue);
     }, 120_000);
 
-    test('the ayanamsa is the caller\'s, not a hardcoded Lahiri', async () => {
+    test("the ayanamsa is the caller's, not a hardcoded Lahiri", async () => {
         const start = DateTime.fromISO('2027-05-01T00:00:00+05:30');
-        const end   = DateTime.fromISO('2027-07-15T00:00:00+05:30');
+        const end = DateTime.fromISO('2027-07-15T00:00:00+05:30');
 
         const chitra = new TransitEngine(engine, { ayanamsaOrder: 27 });
         const lahiri = new TransitEngine(engine, { ayanamsaOrder: 1 });
 
-        const a = (await chitra.findTransits(SATURN, start, end, 24)).find(e => e.type === 'Sign')!;
-        const b = (await lahiri.findTransits(SATURN, start, end, 24)).find(e => e.type === 'Sign')!;
+        const a = (await chitra.findTransits(SATURN, start, end, 24)).find(
+            (e) => e.type === 'Sign',
+        )!;
+        const b = (await lahiri.findTransits(SATURN, start, end, 24)).find(
+            (e) => e.type === 'Sign',
+        )!;
 
         // The two zodiacs differ by ~0.02°, which for Saturn is hours. If the
         // engine ignored the option these would be identical.

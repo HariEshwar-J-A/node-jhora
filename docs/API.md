@@ -28,13 +28,13 @@ pnpm run start
 
 ### Environment Variables
 
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `HOST` | `0.0.0.0` | Server bind address |
-| `PORT` | `3000` | Server port |
-| `LOG_LEVEL` | `info` | Pino log level (`debug`, `info`, `warn`, `error`) |
-| `NODE_ENV` | — | Set to `development` for pretty-printed logs |
-| `CORS_ORIGIN` | `true` (all) | CORS allowed origins |
+| Variable      | Default      | Description                                       |
+| :------------ | :----------- | :------------------------------------------------ |
+| `HOST`        | `0.0.0.0`    | Server bind address                               |
+| `PORT`        | `3000`       | Server port                                       |
+| `LOG_LEVEL`   | `info`       | Pino log level (`debug`, `info`, `warn`, `error`) |
+| `NODE_ENV`    | —            | Set to `development` for pretty-printed logs      |
+| `CORS_ORIGIN` | `true` (all) | CORS allowed origins                              |
 
 ---
 
@@ -84,10 +84,15 @@ Alternatively, use a city name:
 {
     "planets": [
         {
-            "id": 0, "name": "Sun",
-            "longitude": 255.23, "latitude": 0.0002,
-            "speed": 1.019, "distance": 0.983,
-            "declination": -23.03, "sign": 9, "degree": 15.23
+            "id": 0,
+            "name": "Sun",
+            "longitude": 255.23,
+            "latitude": 0.0002,
+            "speed": 1.019,
+            "distance": 0.983,
+            "declination": -23.03,
+            "sign": 9,
+            "degree": 15.23
         }
     ],
     "houses": {
@@ -188,13 +193,23 @@ BPHS passages and the wording of a reading belong to the layer above.
 
 ```json
 {
-  "dashaStack": [
-    { "levelName": "Mahadasha", "lord": "Saturn", "start": "2009-07-08", "end": "2028-07-08",
-      "houseFromLordAbove": null, "classicalBranch": null,
-      "lordNatal": { "signName": "Aries", "dignity": "debilitated", "rulesHouses": [1, 2] } },
-    { "levelName": "Antardasha", "lord": "Jupiter", "houseFromLordAbove": 11,
-      "classicalBranch": "favourable" }
-  ]
+    "dashaStack": [
+        {
+            "levelName": "Mahadasha",
+            "lord": "Saturn",
+            "start": "2009-07-08",
+            "end": "2028-07-08",
+            "houseFromLordAbove": null,
+            "classicalBranch": null,
+            "lordNatal": { "signName": "Aries", "dignity": "debilitated", "rulesHouses": [1, 2] }
+        },
+        {
+            "levelName": "Antardasha",
+            "lord": "Jupiter",
+            "houseFromLordAbove": 11,
+            "classicalBranch": "favourable"
+        }
+    ]
 }
 ```
 
@@ -255,13 +270,13 @@ All errors are returned as structured JSON with appropriate HTTP status codes:
 
 ## 📦 Dependencies
 
-| Package | Purpose |
-| :--- | :--- |
-| `fastify` | Web server framework |
-| `fastify-type-provider-zod` | Zod schema integration |
-| `@fastify/cors` | CORS support |
-| `zod` | Input validation |
-| `pino` | Structured logging |
-| `city-timezones` | City-to-coordinates resolution |
-| `luxon` | DateTime handling |
-| `decimal.js` | Precision arithmetic |
+| Package                     | Purpose                        |
+| :-------------------------- | :----------------------------- |
+| `fastify`                   | Web server framework           |
+| `fastify-type-provider-zod` | Zod schema integration         |
+| `@fastify/cors`             | CORS support                   |
+| `zod`                       | Input validation               |
+| `pino`                      | Structured logging             |
+| `city-timezones`            | City-to-coordinates resolution |
+| `luxon`                     | DateTime handling              |
+| `decimal.js`                | Precision arithmetic           |

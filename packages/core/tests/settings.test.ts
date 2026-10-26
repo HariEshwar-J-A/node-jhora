@@ -68,9 +68,16 @@ describe('CalculationSettingsSchema', () => {
 
     test('rejects an unknown node type and an unknown field', () => {
         const preset = getPreset('node-jhora-default');
-        expect(CalculationSettingsSchema.safeParse({ ...preset, nodeType: 'osculating' }).success).toBe(false);
+        expect(
+            CalculationSettingsSchema.safeParse({ ...preset, nodeType: 'osculating' }).success,
+        ).toBe(false);
         expect(CalculationSettingsSchema.safeParse({ ...preset, extra: true }).success).toBe(false);
-        expect(CalculationSettingsSchema.safeParse({ ...preset, dasaYear: { kind: 'mean_tropical', days: -1 } }).success).toBe(false);
+        expect(
+            CalculationSettingsSchema.safeParse({
+                ...preset,
+                dasaYear: { kind: 'mean_tropical', days: -1 },
+            }).success,
+        ).toBe(false);
     });
 });
 
@@ -133,8 +140,12 @@ describe('presets', () => {
         expect(new NodeJHora(location, 'lahiri-mean').settings.nodeType).toBe('mean');
         expect(new NodeJHora(location, 'kp').config.houseSystem).toBe('Placidus');
         const over = new NodeJHora(location, 'kp');
-        expect(describeCalculation({ nodeType: 'mean' }, over.settings).config.nodeType).toBe('mean');
-        expect(describeCalculation({ nodeType: 'mean' }, over.settings).config.ayanamsaMode).toBe(AYANAMSA.KRISHNAMURTI);
+        expect(describeCalculation({ nodeType: 'mean' }, over.settings).config.nodeType).toBe(
+            'mean',
+        );
+        expect(describeCalculation({ nodeType: 'mean' }, over.settings).config.ayanamsaMode).toBe(
+            AYANAMSA.KRISHNAMURTI,
+        );
     });
 });
 

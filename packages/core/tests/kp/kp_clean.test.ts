@@ -1,18 +1,15 @@
-
 import { KPSubLord } from '../../src/kp/sublord.js';
 import { KPRuling } from '../../src/kp/ruling.js';
 
 describe('KP System (Clean Room)', () => {
-
     describe('Sub-Lord Calculation', () => {
-        
         test('Ashwini (0 deg) -> Ketu Star, Ketu Sub', () => {
             // 0 - 13.33 deg = Ashwini (Ketu Star).
             // First sub of Ketu Star is Ketu.
             const sig = KPSubLord.calculateKPSignificators(0);
             expect(sig.signLord).toBe(4); // Mars (Aries)
             expect(sig.starLord).toBe(8); // Ketu
-            expect(sig.subLord).toBe(8);  // Ketu
+            expect(sig.subLord).toBe(8); // Ketu
             expect(sig.subSubLord).toBe(8); // Ketu
         });
 
@@ -24,7 +21,7 @@ describe('KP System (Clean Room)', () => {
             expect(sig.signLord).toBe(4); // Mars (Aries)
             expect(sig.starLord).toBe(3); // Venus (Bharani)
             // First sub of Venus Star is Venus.
-            expect(sig.subLord).toBe(3); 
+            expect(sig.subLord).toBe(3);
         });
 
         test('Sign Lord check (Leo)', () => {
@@ -44,5 +41,4 @@ describe('KP System (Clean Room)', () => {
             expect(rp.dayLord).toBe(0); // Sun
         });
     });
-
 });

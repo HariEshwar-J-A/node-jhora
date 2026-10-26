@@ -63,12 +63,12 @@ export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
     const n = coeffs.length;
     if (n <= 1) return 0;
 
-    let tPrev = 1.0;      // T₀
-    let tCurr = tau;      // T₁
-    let dPrev = 0.0;      // T′₀
-    let dCurr = 1.0;      // T′₁
+    let tPrev = 1.0; // T₀
+    let tCurr = tau; // T₁
+    let dPrev = 0.0; // T′₀
+    let dCurr = 1.0; // T′₁
 
-    let sum = coeffs[1] * dCurr;   // k = 0 contributes nothing (T′₀ = 0)
+    let sum = coeffs[1] * dCurr; // k = 0 contributes nothing (T′₀ = 0)
 
     for (let k = 2; k < n; k++) {
         const tNext = 2.0 * tau * tCurr - tPrev;
@@ -76,8 +76,10 @@ export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
 
         sum += coeffs[k] * dNext;
 
-        tPrev = tCurr; tCurr = tNext;
-        dPrev = dCurr; dCurr = dNext;
+        tPrev = tCurr;
+        tCurr = tNext;
+        dPrev = dCurr;
+        dCurr = dNext;
     }
 
     return sum;
@@ -110,9 +112,9 @@ export interface Vec3 {
  * @param et       Ephemeris time (seconds from J2000.0 TDB)
  */
 export function evalRecord(record: Float64Array | number[], et: number): Vec3 {
-    const mid    = record[0];   // midpoint of interval (s from J2000)
-    const radius = record[1];   // half-interval (s)
-    const tau    = (et - mid) / radius;   // ∈ [-1, +1]
+    const mid = record[0]; // midpoint of interval (s from J2000)
+    const radius = record[1]; // half-interval (s)
+    const tau = (et - mid) / radius; // ∈ [-1, +1]
 
     const nCoeff = (record.length - 2) / 3;
 

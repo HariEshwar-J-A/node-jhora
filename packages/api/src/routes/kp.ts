@@ -23,24 +23,41 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/kp/significators', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, settingsHash } = parseBirthInput(req.body);
+        const {
+            dt,
+            location,
+            ayanamsaOrder,
+            nodeType,
+            positionMode,
+            topocentric,
+            ayanamsaOffset,
+            settingsHash,
+        } = parseBirthInput(req.body);
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
+        const planets = engine.getPlanets(dt, location, {
+            ayanamsaOrder,
+            nodeType,
+            positionMode,
+            topocentric,
+            ayanamsaOffset,
+        });
 
-        const significators = planets.map(p => {
+        const significators = planets.map((p) => {
             const kp = KPSubLord.calculateKPSignificators(p.longitude);
             return {
-                planetId:     p.id,
-                planetName:   p.name,
-                longitude:    p.longitude,
-                signLord:     { id: kp.signLord,   name: PLANET_NAMES[kp.signLord]   ?? 'Unknown' },
-                starLord:     { id: kp.starLord,   name: PLANET_NAMES[kp.starLord]   ?? 'Unknown' },
-                subLord:      { id: kp.subLord,    name: PLANET_NAMES[kp.subLord]    ?? 'Unknown' },
-                subSubLord:   { id: kp.subSubLord, name: PLANET_NAMES[kp.subSubLord] ?? 'Unknown' },
+                planetId: p.id,
+                planetName: p.name,
+                longitude: p.longitude,
+                signLord: { id: kp.signLord, name: PLANET_NAMES[kp.signLord] ?? 'Unknown' },
+                starLord: { id: kp.starLord, name: PLANET_NAMES[kp.starLord] ?? 'Unknown' },
+                subLord: { id: kp.subLord, name: PLANET_NAMES[kp.subLord] ?? 'Unknown' },
+                subSubLord: { id: kp.subSubLord, name: PLANET_NAMES[kp.subSubLord] ?? 'Unknown' },
             };
         });
 
-        return reply.status(200).send(attachResultEnvelope({ significators, settingsHash }, { settingsHash }));
+        return reply
+            .status(200)
+            .send(attachResultEnvelope({ significators, settingsHash }, { settingsHash }));
     });
 }

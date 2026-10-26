@@ -10,13 +10,13 @@ import type { FastifyInstance } from 'fastify';
 
 // Reference Chart B — verified against Swiss Ephemeris output
 const CHART_B_BODY = {
-    date:      '1985-07-12',
-    time:      '00:30:00',
-    latitude:  28.6139,
-    longitude: 77.2090,
-    timezone:  'Asia/Kolkata',
-    ayanamsa:  'lahiri',
-    nodeType:  'mean',
+    date: '1985-07-12',
+    time: '00:30:00',
+    latitude: 28.6139,
+    longitude: 77.209,
+    timezone: 'Asia/Kolkata',
+    ayanamsa: 'lahiri',
+    nodeType: 'mean',
     houseSystem: 'whole_sign',
 };
 
@@ -54,7 +54,7 @@ describe('POST /v1/chart', () => {
     test('returns 200 with planets, houses, panchanga', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: CHART_B_BODY,
         });
         expect(res.statusCode).toBe(200);
@@ -107,10 +107,31 @@ describe('POST /v1/chart', () => {
 
 describe('POST /v1/chart/vargas', () => {
     test('returns all 16 divisional charts', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/chart/vargas', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/chart/vargas',
+            payload: CHART_B_BODY,
+        });
         expect(res.statusCode).toBe(200);
         const { vargas } = res.json();
-        const DIVISIONS = ['D1','D2','D3','D4','D7','D9','D10','D12','D16','D20','D24','D27','D30','D40','D45','D60'];
+        const DIVISIONS = [
+            'D1',
+            'D2',
+            'D3',
+            'D4',
+            'D7',
+            'D9',
+            'D10',
+            'D12',
+            'D16',
+            'D20',
+            'D24',
+            'D27',
+            'D30',
+            'D40',
+            'D45',
+            'D60',
+        ];
         for (const d of DIVISIONS) {
             expect(vargas[d]).toBeDefined();
             expect(Array.isArray(vargas[d])).toBe(true);
@@ -124,7 +145,11 @@ describe('POST /v1/chart/vargas', () => {
 
 describe('POST /v1/panchanga', () => {
     test('returns all 5 panchanga elements', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/panchanga', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/panchanga',
+            payload: CHART_B_BODY,
+        });
         expect(res.statusCode).toBe(200);
         const p = res.json();
         expect(p.tithi).toBeDefined();
@@ -142,7 +167,8 @@ describe('POST /v1/panchanga', () => {
 describe('POST /v1/dasha', () => {
     test('returns balance and mahadashas with depth 1', async () => {
         const res = await app.inject({
-            method: 'POST', url: '/v1/dasha',
+            method: 'POST',
+            url: '/v1/dasha',
             payload: { ...CHART_B_BODY, depth: 1 },
         });
         expect(res.statusCode).toBe(200);
@@ -155,7 +181,8 @@ describe('POST /v1/dasha', () => {
 
     test('returns antardasha with depth 2', async () => {
         const res = await app.inject({
-            method: 'POST', url: '/v1/dasha',
+            method: 'POST',
+            url: '/v1/dasha',
             payload: { ...CHART_B_BODY, depth: 2 },
         });
         const { periods } = res.json();
@@ -164,7 +191,8 @@ describe('POST /v1/dasha', () => {
 
     test('start/end are ISO strings', async () => {
         const res = await app.inject({
-            method: 'POST', url: '/v1/dasha',
+            method: 'POST',
+            url: '/v1/dasha',
             payload: { ...CHART_B_BODY, depth: 1 },
         });
         const { periods } = res.json();
@@ -180,7 +208,11 @@ describe('POST /v1/dasha', () => {
 
 describe('POST /v1/shadbala', () => {
     test('returns shadbala for 7 classical planets', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/shadbala', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/shadbala',
+            payload: CHART_B_BODY,
+        });
         expect(res.statusCode).toBe(200);
         const { shadbala } = res.json();
         expect(Array.isArray(shadbala)).toBe(true);
@@ -188,7 +220,11 @@ describe('POST /v1/shadbala', () => {
     });
 
     test('each planet has all 6 Shadbala components', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/shadbala', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/shadbala',
+            payload: CHART_B_BODY,
+        });
         const { shadbala } = res.json();
         const sun = shadbala.find((p: any) => p.planetId === 0);
         expect(sun.components.sthana).toBeDefined();
@@ -206,7 +242,11 @@ describe('POST /v1/shadbala', () => {
 
 describe('POST /v1/kp/significators', () => {
     test('returns KP lords for all planets', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/kp/significators', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/kp/significators',
+            payload: CHART_B_BODY,
+        });
         expect(res.statusCode).toBe(200);
         const { significators } = res.json();
         expect(Array.isArray(significators)).toBe(true);
@@ -214,7 +254,11 @@ describe('POST /v1/kp/significators', () => {
     });
 
     test('each significator has sign/star/sub/subsub lords', async () => {
-        const res = await app.inject({ method: 'POST', url: '/v1/kp/significators', payload: CHART_B_BODY });
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/kp/significators',
+            payload: CHART_B_BODY,
+        });
         const { significators } = res.json();
         for (const sig of significators) {
             expect(sig.signLord).toBeDefined();

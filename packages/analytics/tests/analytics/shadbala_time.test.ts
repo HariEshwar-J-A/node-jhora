@@ -4,12 +4,11 @@ import {
     calculatePakshaBala,
     calculateTribhagaBala,
     calculateAyanabala,
-    calculateChestaBala
+    calculateChestaBala,
 } from '../../src/shadbala_time.js';
 import { PlanetPosition } from '@node-jhora/core';
 
 describe('Shadbala - Dig, Kaala, Chesta', () => {
-
     describe('Dig Bala (Directional)', () => {
         // Sun Power Point: South (MC).
         test('Sun at MC gets 60', () => {
@@ -49,7 +48,7 @@ describe('Shadbala - Dig, Kaala, Chesta', () => {
             const sunLon = 0; // Midnight (IC)
             const mcLon = 180; // Noon
             // Moon (1) is Midnight Strong.
-            // If Sun is at IC (Midnight), Moon gets Max Strength? 
+            // If Sun is at IC (Midnight), Moon gets Max Strength?
             // Formula depends on TIME (Sun position).
             // If Sun is at IC (Midnight), then Time is Midnight.
             // Moon gets 60.

@@ -6,14 +6,22 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** `./packages/events` and `./packages/events/tsconfig.json` both become `packages/events`. */
 function referencePath(path: string): string {
-    return path.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/tsconfig\.json$/, '').replace(/\/$/, '');
+    return path
+        .replace(/\\/g, '/')
+        .replace(/^\.\//, '')
+        .replace(/\/tsconfig\.json$/, '')
+        .replace(/\/$/, '');
 }
 
 describe('TypeScript project references', () => {
     it('references every packages/*/tsconfig.json from the root tsconfig', () => {
         const packagesDir = join(repoRoot, 'packages');
         const packagesWithTsconfig = readdirSync(packagesDir, { withFileTypes: true })
-            .filter((entry) => entry.isDirectory() && existsSync(join(packagesDir, entry.name, 'tsconfig.json')))
+            .filter(
+                (entry) =>
+                    entry.isDirectory() &&
+                    existsSync(join(packagesDir, entry.name, 'tsconfig.json')),
+            )
             .map((entry) => `packages/${entry.name}`)
             .sort();
 

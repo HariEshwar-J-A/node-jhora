@@ -1,0 +1,5 @@
+# Normalize text files to LF in the working tree on every OS (CI Windows matrix).
+* text=auto eol=lf
+
+# Ephemeris kernel is binary.
+*.bsp -text

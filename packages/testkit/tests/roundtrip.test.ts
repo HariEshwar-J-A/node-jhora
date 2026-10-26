@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
+import { readUtf8Lf } from '../../../tools/read-utf8-lf.mjs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,11 +26,13 @@ const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), '../../core/tes
 
 function expectFile(path: string, text: string): void {
     if (process.env.WRITE_GOLDENS === '1') writeFileSync(path, text);
-    expect(readFileSync(path, 'utf8')).toBe(text);
+    expect(readUtf8Lf(path)).toBe(text);
 }
 
 function dataKeys(mod: Record<string, unknown>): string[] {
-    return Object.keys(mod).filter((key) => typeof mod[key] !== 'function').sort();
+    return Object.keys(mod)
+        .filter((key) => typeof mod[key] !== 'function')
+        .sort();
 }
 
 function jhoraFixture(): JhoraFixture {
@@ -128,8 +131,12 @@ describe('legacy fixture conversion', () => {
                 return `horizons-${date[1]}`;
             }),
         );
-        expect(cases.every((item) => item.input.timezone === 'UTC' && item.input.alt === 0)).toBe(true);
-        expect(cases.every((item) => item.input.settingsPresetId === HORIZONS_PRESET_ID)).toBe(true);
+        expect(cases.every((item) => item.input.timezone === 'UTC' && item.input.alt === 0)).toBe(
+            true,
+        );
+        expect(cases.every((item) => item.input.settingsPresetId === HORIZONS_PRESET_ID)).toBe(
+            true,
+        );
         const future = cases.find((item) => item.id === 'horizons-2100-01-01');
         expect(future?.expected['horizons.planets.Moon.lon']).toMatchObject({
             tolerance: { type: 'arcsec', arcsec: horizons.FUTURE_TOLERANCE_ARCSEC.longitude },

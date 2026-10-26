@@ -35,7 +35,9 @@ async function main(): Promise<void> {
     }
 
     writeFileSync(fixturePath, normalized, 'utf8');
-    console.log(`Wrote ${fixturePath} (${epochs.length} epochs, ephemeris ${provenance.ephemeris})`);
+    console.log(
+        `Wrote ${fixturePath} (${epochs.length} epochs, ephemeris ${provenance.ephemeris})`,
+    );
     console.log('Run: pnpm --filter @node-jhora/testkit generate');
 }
 

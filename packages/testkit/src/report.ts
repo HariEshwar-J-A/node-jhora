@@ -26,8 +26,14 @@ function formatPathLine(row: PathCompareResult): string {
     if (row.pass) {
         return `  ✓ ${row.path}`;
     }
-    const delta = row.delta === null ? '' : ` Δ=${row.delta.toFixed(4)}${row.toleranceType === 'arcsec' ? '″' : row.toleranceType === 'seconds' ? ' s' : ''}`;
-    const limit = row.toleranceLimit === null ? '' : ` (limit ${row.toleranceLimit}${row.toleranceType === 'arcsec' ? '″' : row.toleranceType === 'seconds' ? ' s' : ''})`;
+    const delta =
+        row.delta === null
+            ? ''
+            : ` Δ=${row.delta.toFixed(4)}${row.toleranceType === 'arcsec' ? '″' : row.toleranceType === 'seconds' ? ' s' : ''}`;
+    const limit =
+        row.toleranceLimit === null
+            ? ''
+            : ` (limit ${row.toleranceLimit}${row.toleranceType === 'arcsec' ? '″' : row.toleranceType === 'seconds' ? ' s' : ''})`;
     return `  ✗ ${row.path}${delta}${limit} — ${row.message}\n      expected ${JSON.stringify(row.expected)} actual ${JSON.stringify(row.actual)}`;
 }
 
@@ -62,7 +68,13 @@ export function formatGoldenReportMarkdown(result: GoldenCompareResult): string 
         `**${result.pass ? 'PASS' : 'FAIL'}** — ${result.failures.length} path(s) out of tolerance.`,
     ];
     if (result.worstByFeature.length > 0) {
-        lines.push('', '### Worst offenders by feature', '', '| Feature | Path | |Δ| | Limit | Ratio |', '| --- | --- | ---: | ---: | ---: |');
+        lines.push(
+            '',
+            '### Worst offenders by feature',
+            '',
+            '| Feature | Path | |Δ| | Limit | Ratio |',
+            '| --- | --- | ---: | ---: | ---: |',
+        );
         for (const row of result.worstByFeature) {
             lines.push(
                 `| \`${row.featureId}\` | \`${row.path}\` | ${Math.abs(row.delta).toFixed(4)} | ${row.toleranceLimit} | ${row.ratio.toFixed(2)}× |`,
@@ -70,7 +82,13 @@ export function formatGoldenReportMarkdown(result: GoldenCompareResult): string 
         }
     }
     if (!result.pass) {
-        lines.push('', '### Failures', '', '| Path | Message | Expected | Actual |', '| --- | --- | --- | --- |');
+        lines.push(
+            '',
+            '### Failures',
+            '',
+            '| Path | Message | Expected | Actual |',
+            '| --- | --- | --- | --- |',
+        );
         for (const row of result.failures) {
             lines.push(
                 `| \`${row.path}\` | ${row.message} | ${JSON.stringify(row.expected)} | ${JSON.stringify(row.actual)} |`,
@@ -82,18 +100,24 @@ export function formatGoldenReportMarkdown(result: GoldenCompareResult): string 
 
 /** Minimal HTML table for CI artifact upload. */
 export function formatGoldenReportHtml(result: GoldenCompareResult): string {
-    const esc = (s: string) => s
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    const rows = result.paths.map((row) => {
-        const status = row.pass ? 'pass' : 'fail';
-        return `<tr class="${status}"><td>${esc(row.path)}</td><td>${status}</td><td>${esc(String(row.delta ?? ''))}</td><td>${esc(row.message)}</td><td>${esc(JSON.stringify(row.expected))}</td><td>${esc(JSON.stringify(row.actual))}</td></tr>`;
-    }).join('\n');
-    const worst = result.worstByFeature.map((row) =>
-        `<li><strong>${esc(row.featureId)}</strong> <code>${esc(row.path)}</code> ratio ${row.ratio.toFixed(2)}×</li>`,
-    ).join('\n');
+    const esc = (s: string) =>
+        s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    const rows = result.paths
+        .map((row) => {
+            const status = row.pass ? 'pass' : 'fail';
+            return `<tr class="${status}"><td>${esc(row.path)}</td><td>${status}</td><td>${esc(String(row.delta ?? ''))}</td><td>${esc(row.message)}</td><td>${esc(JSON.stringify(row.expected))}</td><td>${esc(JSON.stringify(row.actual))}</td></tr>`;
+        })
+        .join('\n');
+    const worst = result.worstByFeature
+        .map(
+            (row) =>
+                `<li><strong>${esc(row.featureId)}</strong> <code>${esc(row.path)}</code> ratio ${row.ratio.toFixed(2)}×</li>`,
+        )
+        .join('\n');
     return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"/><title>Golden ${esc(result.id)}</title>
 <style>body{font-family:system-ui,sans-serif;margin:1rem} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ccc;padding:.35rem .5rem;font-size:.9rem} tr.fail{background:#fee} tr.pass{color:#363}</style>

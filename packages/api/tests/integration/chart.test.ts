@@ -21,15 +21,14 @@ afterAll(async () => {
 });
 
 describe('POST /v1/chart — city-based geocoding', () => {
-
     test('Hamilton, Ontario resolves to America/Toronto', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: {
-                city:     'Hamilton, Ontario',
-                date:     '1990-06-15',
-                time:     '08:30:00',
+                city: 'Hamilton, Ontario',
+                date: '1990-06-15',
+                time: '08:30:00',
                 ayanamsa: 'lahiri',
             },
         });
@@ -46,7 +45,7 @@ describe('POST /v1/chart — city-based geocoding', () => {
     test('Bare "Hamilton" returns 400 with suggestions (multiple timezones) or 200 (auto-picked)', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: { city: 'Hamilton', date: '1990-06-15', time: '08:30:00' },
         });
 
@@ -66,7 +65,7 @@ describe('POST /v1/chart — city-based geocoding', () => {
     test('Missing both city and coordinates returns 422', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: { date: '1990-06-15', time: '08:30:00' },
         });
         // Zod .refine() fails — treated as validation error → 422
@@ -76,7 +75,7 @@ describe('POST /v1/chart — city-based geocoding', () => {
     test('Unknown city returns 404', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: {
                 city: 'Xyznonexistentcity12345',
                 date: '1990-06-15',
@@ -91,14 +90,14 @@ describe('POST /v1/chart — city-based geocoding', () => {
     test('Explicit lat/lon/tz still works (no regression)', async () => {
         const res = await app.inject({
             method: 'POST',
-            url:    '/v1/chart',
+            url: '/v1/chart',
             payload: {
-                date:      '1985-07-12',
-                time:      '00:30:00',
-                latitude:  28.6139,
-                longitude: 77.2090,
-                timezone:  'Asia/Kolkata',
-                ayanamsa:  'lahiri',
+                date: '1985-07-12',
+                time: '00:30:00',
+                latitude: 28.6139,
+                longitude: 77.209,
+                timezone: 'Asia/Kolkata',
+                ayanamsa: 'lahiri',
             },
         });
         expect(res.statusCode).toBe(200);

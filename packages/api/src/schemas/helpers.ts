@@ -10,27 +10,27 @@ import {
 import { DateTime } from 'luxon';
 
 import { lookupCity } from '../services/geocoder.js';
-import { AYANAMSA_MAP, AyanamsaKey,BirthInput } from './birth-input.js';
+import { AYANAMSA_MAP, AyanamsaKey, BirthInput } from './birth-input.js';
 
 export interface ParsedBirth {
-    dt:               DateTime;
-    location:         { latitude: number; longitude: number };
-    ayanamsaOrder:    number;
-    nodeType:         'mean' | 'true';
-    dasamsaScheme:    'parashara' | 'jhora_5_8';
-    horaScheme:       'parashara' | 'parivritti';
-    positionMode:     'geometric' | 'apparent';
-    topocentric:      boolean;
-    altitudeMetres:   number;
-    ayanamsaOffset:   number;
-    sunriseHour:      number;
-    houseSystem:      string;
-    settings:         CalculationSettings;
-    settingsHash:     string;
+    dt: DateTime;
+    location: { latitude: number; longitude: number };
+    ayanamsaOrder: number;
+    nodeType: 'mean' | 'true';
+    dasamsaScheme: 'parashara' | 'jhora_5_8';
+    horaScheme: 'parashara' | 'parivritti';
+    positionMode: 'geometric' | 'apparent';
+    topocentric: boolean;
+    altitudeMetres: number;
+    ayanamsaOffset: number;
+    sunriseHour: number;
+    houseSystem: string;
+    settings: CalculationSettings;
+    settingsHash: string;
     /** True when the client asked for a dasa year other than the historical default. */
-    applyDasaYear:    boolean;
-    dashaYearDays?:   number;
-    resolvedCity?:     string;
+    applyDasaYear: boolean;
+    dashaYearDays?: number;
+    resolvedCity?: string;
     resolvedTimezone?: string;
 }
 
@@ -42,16 +42,16 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
     let resolvedTimezone: string | undefined;
 
     if (input.city !== undefined) {
-        const loc = lookupCity(input.city);   // throws CityNotFoundError or AmbiguousCityError
+        const loc = lookupCity(input.city); // throws CityNotFoundError or AmbiguousCityError
         lat = loc.latitude;
         lon = loc.longitude;
-        tz  = loc.timezone;
-        resolvedCity     = [loc.city, loc.province, loc.country].filter(Boolean).join(', ');
+        tz = loc.timezone;
+        resolvedCity = [loc.city, loc.province, loc.country].filter(Boolean).join(', ');
         resolvedTimezone = loc.timezone;
     } else {
         lat = input.latitude!;
         lon = input.longitude!;
-        tz  = input.timezone!;
+        tz = input.timezone!;
     }
 
     const dt = DateTime.fromISO(`${input.date}T${input.time}`, { zone: tz });
@@ -60,7 +60,7 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
     }
 
     const ayanamsaOrder = input.customAyanamsaMode ?? AYANAMSA_MAP[input.ayanamsa as AyanamsaKey];
-    const location      = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
+    const location = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
     const settings = settingsFromFlat({
         // The HTTP name `true_chitra` and the settings id `true_citra` are one mode.
         ayanamsa: (input.ayanamsa === 'true_chitra' ? 'true_citra' : input.ayanamsa) as AyanamsaId,
@@ -82,14 +82,24 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
         vargaVariants: input.vargaVariants,
     });
 
-    return { dt, location, ayanamsaOrder, nodeType: input.nodeType,
-             dasamsaScheme: input.dasamsaScheme, horaScheme: input.horaScheme,
-             houseSystem: input.houseSystem,
-             positionMode: input.positionMode, topocentric: input.topocentric,
-             altitudeMetres: input.altitudeMetres, ayanamsaOffset: input.ayanamsaOffset,
-             sunriseHour: input.sunriseHour,
-             settings, settingsHash: hashSettings(settings),
-             applyDasaYear: input.applyDasaYear === true,
-             dashaYearDays: input.dasaYearDays,
-             resolvedCity, resolvedTimezone };
+    return {
+        dt,
+        location,
+        ayanamsaOrder,
+        nodeType: input.nodeType,
+        dasamsaScheme: input.dasamsaScheme,
+        horaScheme: input.horaScheme,
+        houseSystem: input.houseSystem,
+        positionMode: input.positionMode,
+        topocentric: input.topocentric,
+        altitudeMetres: input.altitudeMetres,
+        ayanamsaOffset: input.ayanamsaOffset,
+        sunriseHour: input.sunriseHour,
+        settings,
+        settingsHash: hashSettings(settings),
+        applyDasaYear: input.applyDasaYear === true,
+        dashaYearDays: input.dasaYearDays,
+        resolvedCity,
+        resolvedTimezone,
+    };
 }

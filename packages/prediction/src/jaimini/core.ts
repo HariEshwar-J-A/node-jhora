@@ -1,5 +1,4 @@
-
-import { normalize360,PlanetPosition } from '@node-jhora/core';
+import { normalize360, PlanetPosition } from '@node-jhora/core';
 
 export interface JaiminiKaraka {
     planetId: number;
@@ -14,7 +13,6 @@ export interface ArudhaPada {
 }
 
 export class JaiminiCore {
-
     /**
      * Calculates the 7 Chara Karakas.
      * Rule: Sort 7 planets (Sun to Sat) by degrees (Sign is ignored).
@@ -22,14 +20,14 @@ export class JaiminiCore {
      */
     public static calculateCharaKarakas(planets: PlanetPosition[]): JaiminiKaraka[] {
         // Filter out Rahu/Ketu/Uranus etc. Only Sun(0)..Sat(6).
-        const candidates = planets.filter(p => p.id >= 0 && p.id <= 6);
+        const candidates = planets.filter((p) => p.id >= 0 && p.id <= 6);
 
         // Normalize to 0-30 degrees
-        const data = candidates.map(p => {
+        const data = candidates.map((p) => {
             return {
                 id: p.id,
                 degInSign: p.longitude % 30,
-                absoluteLon: p.longitude
+                absoluteLon: p.longitude,
             };
         });
 
@@ -37,12 +35,18 @@ export class JaiminiCore {
         data.sort((a, b) => {
             const diff = b.degInSign - a.degInSign;
             if (Math.abs(diff) > 0.000001) return diff;
-            
+
             // Tie-break: specific natural order
             // Sun(0), Mon(1), Mar(4), Mer(2), Jup(5), Ven(3), Sat(6)
             // Lets define strength map
-            const strength: {[key: number]: number} = {
-                0: 7, 1: 6, 4: 5, 2: 4, 5: 3, 3: 2, 6: 1
+            const strength: { [key: number]: number } = {
+                0: 7,
+                1: 6,
+                4: 5,
+                2: 4,
+                5: 3,
+                3: 2,
+                6: 1,
             };
             return strength[b.id] - strength[a.id];
         });
@@ -51,7 +55,7 @@ export class JaiminiCore {
         return data.map((p, i) => ({
             planetId: p.id,
             karaka: names[i] || 'None',
-            longitude: p.absoluteLon
+            longitude: p.absoluteLon,
         }));
     }
 
@@ -68,13 +72,13 @@ export class JaiminiCore {
 
         if (type === 2) {
             // Dual (3,6,9,12). Aspects other duals (3,6,9,12).
-            return [2, 5, 8, 11].filter(s => s !== signIndex);
+            return [2, 5, 8, 11].filter((s) => s !== signIndex);
         }
 
         const aspected: number[] = [];
         if (type === 0) {
             // Movable (1,4,7,10) aspects Fixed (2,5,8,11)
-            // Exception: Adjacent. 
+            // Exception: Adjacent.
             // Aries(1-Mov) aspects Leo(5), Scorp(8), Aqua(11). Skips Tau(2).
             // Cancer(4-Mov) aspects Sco(8), Aqu(11), Tau(2). Skips Leo(5).
             // Libra(7-Mov) aspects Aqu(11), Tau(2), Leo(5). Skips Sco(8).
@@ -83,14 +87,14 @@ export class JaiminiCore {
             // Wait: 0=Ari(Mov), 1=Tau(Fix), 2=Gem(Dual).
             // Movable Indices: 0, 3, 6, 9.
             // Fixed Indices: 1, 4, 7, 10.
-            
+
             // Adjacent to Aries(0) is Taurus(1).
             // Adjacent to Cancer(3) is Leo(4).
             // ...
             // So adjacent is ALWAYS (signIndex + 1).
             const adjacent = (signIndex + 1) % 12;
-            
-            [1, 4, 7, 10].forEach(f => {
+
+            [1, 4, 7, 10].forEach((f) => {
                 if (f !== adjacent) aspected.push(f);
             });
         } else {
@@ -99,10 +103,10 @@ export class JaiminiCore {
             // Taurus(1-Fix) aspects Can(3), Lib(6), Cap(9). Skips Ari(0).
             // Leo(4-Fix) aspects Lib(6), Cap(9), Ari(0). Skips Can(3).
             // Adjacent is (signIndex - 1).
-            let adjacent = (signIndex - 1);
+            let adjacent = signIndex - 1;
             if (adjacent < 0) adjacent += 12;
 
-            [0, 3, 6, 9].forEach(m => {
+            [0, 3, 6, 9].forEach((m) => {
                 if (m !== adjacent) aspected.push(m);
             });
         }
@@ -115,12 +119,16 @@ export class JaiminiCore {
      * @param lordSignIndex 0-11 (Where the lord is placed)
      * @param houseSignIndex 0-11 (Sign at house cusp)
      */
-    public static calculateArudha(houseNumber: number, houseSignIndex: number, lordSignIndex: number): number {
+    public static calculateArudha(
+        houseNumber: number,
+        houseSignIndex: number,
+        lordSignIndex: number,
+    ): number {
         // Distance from House to Lord (inclusive vs count steps)
         // Standard: Count signs from House to Lord.
         // e.g. Ari(0) to Gem(2). Ari(1), Tau(2), Gem(3). Count = 3.
         // Or simple subtraction: (Lord - House) + 1.
-        let dist = (lordSignIndex - houseSignIndex) + 1;
+        let dist = lordSignIndex - houseSignIndex + 1;
         if (dist <= 0) dist += 12;
 
         // Count same distance from Lord
@@ -130,7 +138,7 @@ export class JaiminiCore {
         // Exceptions (Swastheeya)
         // Check relative position of Arudha from Original House
         // Arudha - House
-        let finalDist = (arudhaIndex - houseSignIndex) + 1;
+        let finalDist = arudhaIndex - houseSignIndex + 1;
         if (finalDist <= 0) finalDist += 12;
 
         // If in same house (1st) -> Move to 10th

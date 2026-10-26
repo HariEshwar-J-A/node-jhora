@@ -71,11 +71,9 @@ async function measureFullChartWarmMedian(
     await bench.run();
 
     const task = bench.getTask('full-chart-warm-node');
-    const samplesMs =
-        task?.result?.latency.samples ?? task?.result?.samples ?? [];
+    const samplesMs = task?.result?.latency.samples ?? task?.result?.samples ?? [];
     const medianMs =
-        task?.result?.latency.p50 ??
-        (samplesMs.length > 0 ? median(samplesMs) : Number.NaN);
+        task?.result?.latency.p50 ?? (samplesMs.length > 0 ? median(samplesMs) : Number.NaN);
 
     if (!Number.isFinite(medianMs) || samplesMs.length === 0) {
         const fallbackSamples: number[] = [];

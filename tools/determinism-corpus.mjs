@@ -11,13 +11,15 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'packages/engine/package.json'));
 
-const { registerNodeBspLoaderFromCore } = await import(join(root, 'packages/core/node/register.mjs'));
+const { registerNodeBspLoaderFromCore } = await import(
+    join(root, 'packages/core/node/register.mjs')
+);
 await registerNodeBspLoaderFromCore();
 
 const { EphemerisEngine } = await import(join(root, 'packages/core/dist/index.js'));
 const { ChartSession } = await import(join(root, 'packages/engine/dist/index.js'));
 const { canonicalSerialize, DETERMINISM_CORPUS, hashCanonicalSerialize } = await import(
-    join(root, 'packages/testkit/dist/index.js'),
+    join(root, 'packages/testkit/dist/index.js')
 );
 const { DateTime } = await import(require.resolve('luxon'));
 

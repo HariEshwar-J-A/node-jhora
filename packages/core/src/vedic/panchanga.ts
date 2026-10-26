@@ -20,11 +20,11 @@ import { D, NAKSHATRA_SPAN_D, normalize360D, toNum } from '../core/precise.js';
 // ---------------------------------------------------------------------------
 
 export interface PanchangaResult {
-    tithi:     { index: number; name: string; percent: number };
+    tithi: { index: number; name: string; percent: number };
     nakshatra: { index: number; name: string; pada: number; percent: number };
-    yoga:      { index: number; name: string };
-    karana:    { index: number; name: string };
-    vara:      { index: number; name: string };
+    yoga: { index: number; name: string };
+    karana: { index: number; name: string };
+    vara: { index: number; name: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -32,27 +32,84 @@ export interface PanchangaResult {
 // ---------------------------------------------------------------------------
 
 const NAKSHATRAS: string[] = [
-    'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-    'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-    'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-    'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta',
-    'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
+    'Ashwini',
+    'Bharani',
+    'Krittika',
+    'Rohini',
+    'Mrigashira',
+    'Ardra',
+    'Punarvasu',
+    'Pushya',
+    'Ashlesha',
+    'Magha',
+    'Purva Phalguni',
+    'Uttara Phalguni',
+    'Hasta',
+    'Chitra',
+    'Swati',
+    'Vishakha',
+    'Anuradha',
+    'Jyeshtha',
+    'Mula',
+    'Purva Ashadha',
+    'Uttara Ashadha',
+    'Shravana',
+    'Dhanishta',
+    'Shatabhisha',
+    'Purva Bhadrapada',
+    'Uttara Bhadrapada',
+    'Revati',
 ];
 
 const YOGAS: string[] = [
-    'Vishkumbha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda',
-    'Sukarma', 'Dhriti', 'Shula', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata',
-    'Harshana', 'Vajra', 'Siddhi', 'Vyatipata', 'Variyan', 'Parigha', 'Shiva',
-    'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma', 'Indra', 'Vaidhriti',
+    'Vishkumbha',
+    'Priti',
+    'Ayushman',
+    'Saubhagya',
+    'Shobhana',
+    'Atiganda',
+    'Sukarma',
+    'Dhriti',
+    'Shula',
+    'Ganda',
+    'Vriddhi',
+    'Dhruva',
+    'Vyaghata',
+    'Harshana',
+    'Vajra',
+    'Siddhi',
+    'Vyatipata',
+    'Variyan',
+    'Parigha',
+    'Shiva',
+    'Siddha',
+    'Sadhya',
+    'Shubha',
+    'Shukla',
+    'Brahma',
+    'Indra',
+    'Vaidhriti',
 ];
 
 // Movable Karanas (7, cyclic): positions 2-57 in the 60-Karana cycle
 const KARANAS_MOVABLE: string[] = [
-    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava',
+    'Balava',
+    'Kaulava',
+    'Taitila',
+    'Gara',
+    'Vanija',
+    'Vishti',
 ];
 
 const VARAS: string[] = [
-    'Ravivara', 'Somavara', 'Mangalavara', 'Budhavara', 'Guruvara', 'Shukravara', 'Shanivara',
+    'Ravivara',
+    'Somavara',
+    'Mangalavara',
+    'Budhavara',
+    'Guruvara',
+    'Shukravara',
+    'Shanivara',
 ];
 
 // ---------------------------------------------------------------------------
@@ -70,7 +127,7 @@ const VARAS: string[] = [
  *   Position 60     : Naga (fixed)
  */
 function karanaName(index: number): string {
-    if (index === 1)  return 'Kimstughna';
+    if (index === 1) return 'Kimstughna';
     if (index === 58) return 'Shakuni';
     if (index === 59) return 'Chatushpada';
     if (index === 60) return 'Naga';
@@ -93,24 +150,23 @@ function karanaName(index: number): string {
  *                     If the current hour is before this, Vara shifts to the previous day.
  */
 export function calculatePanchanga(
-    sunLong:     number,
-    moonLong:    number,
-    date:        DateTime,
+    sunLong: number,
+    moonLong: number,
+    date: DateTime,
     sunriseHour: number = 6.0,
 ): PanchangaResult {
-
-    const dSun  = new Decimal(sunLong);
+    const dSun = new Decimal(sunLong);
     const dMoon = new Decimal(moonLong);
-    const D12   = new Decimal(12);
-    const D6    = new Decimal(6);
+    const D12 = new Decimal(12);
+    const D6 = new Decimal(6);
 
     // -------------------------------------------------------------------------
     // 1. Tithi — (Moon - Sun elongation) / 12, each Tithi = 12°
     // -------------------------------------------------------------------------
-    const elongation  = normalize360D(dMoon.minus(dSun));
-    const tithiVal    = elongation.div(D12);
-    const tithiIdx    = tithiVal.floor().toNumber();              // 0-29
-    const tithiIndex  = tithiIdx + 1;                             // 1-30
+    const elongation = normalize360D(dMoon.minus(dSun));
+    const tithiVal = elongation.div(D12);
+    const tithiIdx = tithiVal.floor().toNumber(); // 0-29
+    const tithiIndex = tithiIdx + 1; // 1-30
     const tithiPercent = toNum(tithiVal.minus(tithiIdx).times(100));
 
     let tithiName: string;
@@ -119,7 +175,7 @@ export function calculatePanchanga(
     } else if (tithiIndex === 30) {
         tithiName = 'Amavasya';
     } else {
-        const paksha   = tithiIndex <= 15 ? 'Shukla' : 'Krishna';
+        const paksha = tithiIndex <= 15 ? 'Shukla' : 'Krishna';
         const tithiNum = tithiIndex <= 15 ? tithiIndex : tithiIndex - 15;
         tithiName = `${paksha} ${tithiNum}`;
     }
@@ -127,10 +183,10 @@ export function calculatePanchanga(
     // -------------------------------------------------------------------------
     // 2. Nakshatra — Moon / (360/27)
     // -------------------------------------------------------------------------
-    const nakVal    = dMoon.div(NAKSHATRA_SPAN_D);
-    const nakIdx    = nakVal.floor().toNumber();                  // 0-26
+    const nakVal = dMoon.div(NAKSHATRA_SPAN_D);
+    const nakIdx = nakVal.floor().toNumber(); // 0-26
     const nakPercent = toNum(nakVal.minus(nakIdx).times(100));
-    const pada       = Math.floor(nakPercent / 25) + 1;          // 1-4
+    const pada = Math.floor(nakPercent / 25) + 1; // 1-4
 
     // -------------------------------------------------------------------------
     // 3. Yoga — (Moon + Sun) / (360/27)
@@ -148,8 +204,8 @@ export function calculatePanchanga(
     // 5. Vara — weekday from sunrise
     // -------------------------------------------------------------------------
     // Luxon: weekday 1=Mon … 7=Sun. Vedic: 0=Sun, 1=Mon … 6=Sat.
-    const luxonDay    = date.weekday; // 1-7
-    let vedicWeekday  = luxonDay === 7 ? 0 : luxonDay; // 0=Sun, 1=Mon … 6=Sat
+    const luxonDay = date.weekday; // 1-7
+    let vedicWeekday = luxonDay === 7 ? 0 : luxonDay; // 0=Sun, 1=Mon … 6=Sat
 
     const hour = date.hour + date.minute / 60;
     if (hour < sunriseHour) {
@@ -162,27 +218,27 @@ export function calculatePanchanga(
     // -------------------------------------------------------------------------
     return {
         tithi: {
-            index:   tithiIndex,
-            name:    tithiName,
+            index: tithiIndex,
+            name: tithiName,
             percent: tithiPercent,
         },
         nakshatra: {
-            index:   nakIdx + 1, // 1-27
-            name:    NAKSHATRAS[nakIdx] ?? 'Unknown',
+            index: nakIdx + 1, // 1-27
+            name: NAKSHATRAS[nakIdx] ?? 'Unknown',
             pada,
             percent: nakPercent,
         },
         yoga: {
             index: yogaIdx + 1, // 1-27
-            name:  YOGAS[yogaIdx] ?? 'Unknown',
+            name: YOGAS[yogaIdx] ?? 'Unknown',
         },
         karana: {
             index: karanaSeq,
-            name:  karanaName(karanaSeq),
+            name: karanaName(karanaSeq),
         },
         vara: {
             index: vedicWeekday,
-            name:  VARAS[vedicWeekday],
+            name: VARAS[vedicWeekday],
         },
     };
 }

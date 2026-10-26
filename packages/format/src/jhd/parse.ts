@@ -46,7 +46,10 @@ function applyLine8Altitude(
         case 'kilometres':
         case 'auto':
         default:
-            return { altitudeMetres: raw * 1000, applied: mode === 'auto' ? 'kilometres' : 'kilometres' };
+            return {
+                altitudeMetres: raw * 1000,
+                applied: mode === 'auto' ? 'kilometres' : 'kilometres',
+            };
     }
 }
 
@@ -55,7 +58,10 @@ function applyLine8Altitude(
  */
 export function parseJhdDetailed(text: string, options: JhdParseOptions = {}): JhdParseResult {
     const line8Mode: JhdLine8AltitudeMode = options.line8Altitude ?? 'auto';
-    const lines = text.replace(/\r/g, '').split('\n').map((l) => l.trim());
+    const lines = text
+        .replace(/\r/g, '')
+        .split('\n')
+        .map((l) => l.trim());
 
     if (lines.length < 7) {
         throw new JhdParseError(

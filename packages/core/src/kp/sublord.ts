@@ -74,10 +74,10 @@ const SIGN_RULERS: number[] = [
 // ---------------------------------------------------------------------------
 
 export interface KPSignificator {
-    longitude:  number;
-    signLord:   number; // planet ID
-    starLord:   number; // planet ID
-    subLord:    number; // planet ID
+    longitude: number;
+    signLord: number; // planet ID
+    starLord: number; // planet ID
+    subLord: number; // planet ID
     subSubLord: number; // planet ID
 }
 
@@ -86,7 +86,6 @@ export interface KPSignificator {
 // ---------------------------------------------------------------------------
 
 export class KPSubLord {
-
     /**
      * Compute KP significators (Sign/Star/Sub/SubSub lords) for a given longitude.
      *
@@ -97,16 +96,16 @@ export class KPSubLord {
         const lon = normalize360D(new Decimal(longitude));
 
         // 1. Sign lord (12 signs of 30° each)
-        const signIdx  = lon.div(30).floor().toNumber();        // 0-11
+        const signIdx = lon.div(30).floor().toNumber(); // 0-11
         const signLord = SIGN_RULERS[signIdx];
 
         // 2. Star lord (Nakshatra — 27 of 13.333...° each)
-        const nakIdx   = lon.div(NAKSHATRA_SPAN).floor().toNumber() % 27; // 0-26
-        const starLordVimIdx = nakIdx % 9;                       // 0-8 (Vimshottari cycle)
-        const starLord       = DASHA_LORD_IDS[starLordVimIdx];
+        const nakIdx = lon.div(NAKSHATRA_SPAN).floor().toNumber() % 27; // 0-26
+        const starLordVimIdx = nakIdx % 9; // 0-8 (Vimshottari cycle)
+        const starLord = DASHA_LORD_IDS[starLordVimIdx];
 
         // 3. Sub lord — position within Nakshatra
-        const lonInNak  = lon.mod(NAKSHATRA_SPAN);              // 0 to 13.333...°
+        const lonInNak = lon.mod(NAKSHATRA_SPAN); // 0 to 13.333...°
         const { subLord, subSubLord } = KPSubLord.findSubLords(lonInNak, starLordVimIdx);
 
         return { longitude: toNum(lon), signLord, starLord, subLord, subSubLord };
@@ -118,15 +117,18 @@ export class KPSubLord {
      * @param posInNak     Decimal position within the Nakshatra [0, NAKSHATRA_SPAN)
      * @param startVimIdx  0-8 index in DASHA_LORD_IDS where the sub-cycle begins
      */
-    private static findSubLords(posInNak: Decimal, startVimIdx: number): { subLord: number; subSubLord: number } {
+    private static findSubLords(
+        posInNak: Decimal,
+        startVimIdx: number,
+    ): { subLord: number; subSubLord: number } {
         let remaining = posInNak;
-        let subLord    = -1;
+        let subLord = -1;
         let subSubLord = -1;
 
         for (let i = 0; i < 9; i++) {
-            const vimIdx   = (startVimIdx + i) % 9;
-            const years    = DASHA_YEARS[vimIdx];
-            const subSpan  = new Decimal(years).div(TOTAL_YEARS).times(NAKSHATRA_SPAN);
+            const vimIdx = (startVimIdx + i) % 9;
+            const years = DASHA_YEARS[vimIdx];
+            const subSpan = new Decimal(years).div(TOTAL_YEARS).times(NAKSHATRA_SPAN);
 
             if (remaining.lt(subSpan) || remaining.minus(subSpan).abs().lt(new Decimal('1e-10'))) {
                 subLord = DASHA_LORD_IDS[vimIdx];
@@ -134,11 +136,14 @@ export class KPSubLord {
                 // 4. Sub-Sub lord — iterate within the sub-span
                 let sslRemaining = remaining;
                 for (let j = 0; j < 9; j++) {
-                    const sslVimIdx  = (vimIdx + j) % 9;
-                    const sslYears   = DASHA_YEARS[sslVimIdx];
-                    const sslSpan    = new Decimal(sslYears).div(TOTAL_YEARS).times(subSpan);
+                    const sslVimIdx = (vimIdx + j) % 9;
+                    const sslYears = DASHA_YEARS[sslVimIdx];
+                    const sslSpan = new Decimal(sslYears).div(TOTAL_YEARS).times(subSpan);
 
-                    if (sslRemaining.lt(sslSpan) || sslRemaining.minus(sslSpan).abs().lt(new Decimal('1e-10'))) {
+                    if (
+                        sslRemaining.lt(sslSpan) ||
+                        sslRemaining.minus(sslSpan).abs().lt(new Decimal('1e-10'))
+                    ) {
                         subSubLord = DASHA_LORD_IDS[sslVimIdx];
                         break;
                     }

@@ -52,7 +52,7 @@ export function calculateNatonataBala(planetId: number, sunLon: number, mcLon: n
     if (planetId === Body.Mercury) return 60;
 
     const D180 = new Decimal(180);
-    const D3   = new Decimal(3);
+    const D3 = new Decimal(3);
     const distSunMC = new Decimal(getShortestDistance(sunLon, mcLon));
 
     if ([Body.Sun, Body.Jupiter, Body.Venus].includes(planetId)) {
@@ -75,9 +75,9 @@ export function calculateNatonataBala(planetId: number, sunLon: number, mcLon: n
 // Benefics get base; Malefics get (60 - base).
 
 export function calculatePakshaBala(planetId: number, sunLon: number, moonLon: number): number {
-    const dist         = new Decimal(getShortestDistance(sunLon, moonLon));
-    const D3           = new Decimal(3);
-    const D60          = new Decimal(60);
+    const dist = new Decimal(getShortestDistance(sunLon, moonLon));
+    const D3 = new Decimal(3);
+    const D60 = new Decimal(60);
     const beneficScore = dist.div(D3);
     const maleficScore = D60.minus(beneficScore);
 
@@ -93,31 +93,38 @@ export function calculatePakshaBala(planetId: number, sunLon: number, moonLon: n
 // Jupiter always receives 60 (BPHS Ch 27 Sl 16).
 // Lords of their part receive 60; all others receive 0.
 
-export function calculateTribhagaBala(planetId: number, birthHour: number, sunrise: number, sunset: number): number {
+export function calculateTribhagaBala(
+    planetId: number,
+    birthHour: number,
+    sunrise: number,
+    sunset: number,
+): number {
     if (planetId === Body.Jupiter) return 60;
 
     const isDay = birthHour >= sunrise && birthHour < sunset;
 
     if (isDay) {
-        const dayLen      = new Decimal(sunset - sunrise);
+        const dayLen = new Decimal(sunset - sunrise);
         const partDuration = dayLen.div(3);
         const timeFromRise = new Decimal(birthHour - sunrise);
-        const rawPart      = timeFromRise.div(partDuration).floor().toNumber();
-        const partIndex    = Math.min(rawPart, 2);
+        const rawPart = timeFromRise.div(partDuration).floor().toNumber();
+        const partIndex = Math.min(rawPart, 2);
 
         if (partIndex === 0 && planetId === Body.Mercury) return 60;
-        if (partIndex === 1 && planetId === Body.Sun)     return 60;
-        if (partIndex === 2 && planetId === Body.Saturn)  return 60;
+        if (partIndex === 1 && planetId === Body.Sun) return 60;
+        if (partIndex === 2 && planetId === Body.Saturn) return 60;
     } else {
-        const nightLen     = new Decimal(24 - sunset + sunrise);
-        const timeFromSet  = new Decimal(birthHour >= sunset ? birthHour - sunset : birthHour + 24 - sunset);
+        const nightLen = new Decimal(24 - sunset + sunrise);
+        const timeFromSet = new Decimal(
+            birthHour >= sunset ? birthHour - sunset : birthHour + 24 - sunset,
+        );
         const partDuration = nightLen.div(3);
-        const rawPart      = timeFromSet.div(partDuration).floor().toNumber();
-        const partIndex    = Math.min(rawPart, 2);
+        const rawPart = timeFromSet.div(partDuration).floor().toNumber();
+        const partIndex = Math.min(rawPart, 2);
 
-        if (partIndex === 0 && planetId === Body.Moon)   return 60;
-        if (partIndex === 1 && planetId === Body.Venus)  return 60;
-        if (partIndex === 2 && planetId === Body.Mars)   return 60;
+        if (partIndex === 0 && planetId === Body.Moon) return 60;
+        if (partIndex === 1 && planetId === Body.Venus) return 60;
+        if (partIndex === 2 && planetId === Body.Mars) return 60;
     }
 
     return 0;
@@ -129,10 +136,10 @@ export function calculateTribhagaBala(planetId: number, birthHour: number, sunri
 // Mercury: always 60 (BPHS).
 // Scores clamped to [0, 60].
 
-const D24   = new Decimal(24);
+const D24 = new Decimal(24);
 const D1_25 = new Decimal('1.25');
-const D60   = new Decimal(60);
-const D0    = new Decimal(0);
+const D60 = new Decimal(60);
+const D0 = new Decimal(0);
 
 export function calculateAyanabala(planetId: number, declination: number): number {
     if (planetId === Body.Mercury) return 60;

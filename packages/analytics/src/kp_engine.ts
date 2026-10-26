@@ -1,4 +1,4 @@
-import { HouseData, KPSignificator,KPSubLord, PlanetPosition } from '@node-jhora/core';
+import { HouseData, KPSignificator, KPSubLord, PlanetPosition } from '@node-jhora/core';
 
 export interface KPPlanetSignificator extends KPSignificator {
     planetName: string;
@@ -14,11 +14,11 @@ export class KPEngine {
      * @param planets Array of planet positions
      */
     public static getAllPlanetSignificators(planets: PlanetPosition[]): KPPlanetSignificator[] {
-        return planets.map(p => {
+        return planets.map((p) => {
             const sig = KPSubLord.calculateKPSignificators(p.longitude);
             return {
                 ...sig,
-                planetName: p.name
+                planetName: p.name,
             };
         });
     }
@@ -32,7 +32,7 @@ export class KPEngine {
             const sig = KPSubLord.calculateKPSignificators(c);
             return {
                 ...sig,
-                houseNumber: i + 1
+                houseNumber: i + 1,
             };
         });
     }

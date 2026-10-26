@@ -21,28 +21,28 @@ import { NodeJHora } from '@node-jhora/core';
 const chart = await NodeJHora.calculate(
     new Date('2000-01-01T12:00:00Z'),
     { latitude: 13.08, longitude: 80.27 },
-    'Lahiri'
+    'Lahiri',
 );
 
-console.log("Ascendant:", chart.ascendant);
-console.log("Moon Nakshatra:", chart.panchanga.nakshatra);
+console.log('Ascendant:', chart.ascendant);
+console.log('Moon Nakshatra:', chart.panchanga.nakshatra);
 ```
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
-| **Ephemeris Engine** | Swiss Ephemeris WASM — 0.0001″ accuracy |
+| Feature              | Description                                             |
+| :------------------- | :------------------------------------------------------ |
+| **Ephemeris Engine** | Swiss Ephemeris WASM — 0.0001″ accuracy                 |
 | **NodeJHora Facade** | Static `calculate()` + instance API for ergonomic usage |
-| **Panchanga** | Tithi, Nakshatra, Yoga, Karana, Vara |
-| **16 Vargas** | D1–D60 divisional charts with `Decimal.js` precision |
-| **House Systems** | Whole Sign, Placidus, Porphyry |
-| **Special Lagnas** | Pranapada, Indu, Hora, Ghati, Bhava, Varnada |
-| **Upagrahas** | Gulikadi (time-based) and Dhumadi (angular) |
-| **KP System** | Sub-lord tables and Ruling Planets |
-| **Geocoder** | Local CSV city lookup (coordinates + timezone) |
-| **Planetary Stream** | Real-time observable for live chart updates |
-| **Precision Math** | `Decimal.js` for all critical calculations |
+| **Panchanga**        | Tithi, Nakshatra, Yoga, Karana, Vara                    |
+| **16 Vargas**        | D1–D60 divisional charts with `Decimal.js` precision    |
+| **House Systems**    | Whole Sign, Placidus, Porphyry                          |
+| **Special Lagnas**   | Pranapada, Indu, Hora, Ghati, Bhava, Varnada            |
+| **Upagrahas**        | Gulikadi (time-based) and Dhumadi (angular)             |
+| **KP System**        | Sub-lord tables and Ruling Planets                      |
+| **Geocoder**         | Local CSV city lookup (coordinates + timezone)          |
+| **Planetary Stream** | Real-time observable for live chart updates             |
+| **Precision Math**   | `Decimal.js` for all critical calculations              |
 
 ## Exports
 
@@ -60,8 +60,15 @@ export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PL
 export { KPSubLord, KPRuling };
 
 // Special Lagnas
-export { calculatePranapada, calculateInduLagna, calculateShreeLagna,
-         calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna };
+export {
+    calculatePranapada,
+    calculateInduLagna,
+    calculateShreeLagna,
+    calculateHoraLagna,
+    calculateGhatiLagna,
+    calculateBhavaLagna,
+    calculateVarnadaLagna,
+};
 
 // Upagrahas
 export { calculateTimeUpagrahas, calculateDhumadiUpagrahas };
@@ -72,9 +79,20 @@ export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS };
 export { AYANAMSA };
 
 // Types
-export type { PlanetPosition, HouseData, PanchangaResult, ChartData, VargaPoint,
-              UpagrahaPositions, HouseSystemMethod, KPSignificator, RulingPlanetsResult,
-              AyanamsaMode, NodeJHoraConfig, Ayanamsa };
+export type {
+    PlanetPosition,
+    HouseData,
+    PanchangaResult,
+    ChartData,
+    VargaPoint,
+    UpagrahaPositions,
+    HouseSystemMethod,
+    KPSignificator,
+    RulingPlanetsResult,
+    AyanamsaMode,
+    NodeJHoraConfig,
+    Ayanamsa,
+};
 ```
 
 ## License

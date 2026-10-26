@@ -43,8 +43,7 @@ async function main(): Promise<void> {
             continue;
         }
         if (isRegression(base.medianMs, measured.medianMs, tolerance)) {
-            const pct =
-                ((measured.medianMs - base.medianMs) / base.medianMs) * 100;
+            const pct = ((measured.medianMs - base.medianMs) / base.medianMs) * 100;
             failures.push(
                 `${measured.id}: median ${measured.medianMs.toFixed(3)} ms regressed ${pct.toFixed(1)}% vs baseline ${base.medianMs.toFixed(3)} ms (limit ${tolerance * 100}%)`,
             );

@@ -4,26 +4,46 @@
  */
 import { DateTime } from 'luxon';
 
-import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, EPHEMERIS_BODIES, SEVEN_GRAHAS_JHORA_ORDER } from './core/body.js';
-import { getRelationship, PLANET_IDS,Relationship } from './core/relationships.js';
-import { EphemerisEngine, HouseData,PlanetPosition } from './engine/ephemeris.js';
+import {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
+    EPHEMERIS_BODIES,
+    SEVEN_GRAHAS_JHORA_ORDER,
+} from './core/body.js';
+import { getRelationship, PLANET_IDS, Relationship } from './core/relationships.js';
+import { EphemerisEngine, HouseData, PlanetPosition } from './engine/ephemeris.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
-import { KPSignificator,KPSubLord } from './kp/sublord.js';
+import { KPSignificator, KPSubLord } from './kp/sublord.js';
 import { VargaDeities } from './vedic/deities.js';
 import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
 import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
-import { calculateBhavaLagna, calculateGhatiLagna, calculateHoraLagna, calculateInduLagna, calculatePranapada, calculateShreeLagna, calculateVarnadaLagna } from './vedic/special_lagnas.js';
-import { calculateDhumadiUpagrahas, calculateTimeUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
+import {
+    calculateBhavaLagna,
+    calculateGhatiLagna,
+    calculateHoraLagna,
+    calculateInduLagna,
+    calculatePranapada,
+    calculateShreeLagna,
+    calculateVarnadaLagna,
+} from './vedic/special_lagnas.js';
+import {
+    calculateDhumadiUpagrahas,
+    calculateTimeUpagrahas,
+    UpagrahaPositions,
+} from './vedic/upagrahas.js';
 import { calculateShashtyamsa, calculateVarga, VargaPoint } from './vedic/vargas.js';
 
 // Re-export Interfaces
 export type {
-HouseData,
+    HouseData,
     HouseSystemMethod,
-    KPSignificator,     PanchangaResult,
-    PlanetPosition, RulingPlanetsResult,
+    KPSignificator,
+    PanchangaResult,
+    PlanetPosition,
+    RulingPlanetsResult,
     UpagrahaPositions,
-    VargaPoint};
+    VargaPoint,
+};
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -36,7 +56,7 @@ export interface ChartData {
 export type Ayanamsa = 'Lahiri' | 'Raman' | 'KP';
 
 // Re-export Utils
-export { decimalToDms,dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
+export { decimalToDms, dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
 export {
     Body,
     BODY_ASHTAKAVARGA_LAGNA_DONOR,
@@ -77,14 +97,14 @@ async function getEngine(): Promise<EphemerisEngine> {
  */
 export class NodeJHora {
     private ephemeris: EphemerisEngine;
-    private location: { latitude: number, longitude: number };
+    private location: { latitude: number; longitude: number };
     private ayanamsa: number;
     private ayanamsaName: Ayanamsa;
     private config: NodeJHoraConfig;
 
     constructor(
-        location: { latitude: number, longitude: number },
-        config: NodeJHoraConfig = { ayanamsaOrder: 1 }
+        location: { latitude: number; longitude: number },
+        config: NodeJHoraConfig = { ayanamsaOrder: 1 },
     ) {
         this.location = location;
         this.ephemeris = EphemerisEngine.getInstance();
@@ -98,7 +118,7 @@ export class NodeJHora {
     }
 
     // ========== STATIC API ==========
-    
+
     /**
      * Initialize the WASM engine (call once before calculate)
      */
@@ -110,40 +130,46 @@ export class NodeJHora {
      * Quick calculation without creating an instance
      */
     public static calculate(
-        date: Date, 
-        location: { latitude: number, longitude: number }, 
+        date: Date,
+        location: { latitude: number; longitude: number },
         ayanamsaName: Ayanamsa = 'Lahiri',
-        config: NodeJHoraConfig = { topocentric: true }
+        config: NodeJHoraConfig = { topocentric: true },
     ): ChartData {
         const ayanamsaMap: Record<Ayanamsa, number> = {
-            'Lahiri': 1,
-            'Raman': 3,
-            'KP': 5
+            Lahiri: 1,
+            Raman: 3,
+            KP: 5,
         };
         const ayanamsaOrder = ayanamsaMap[ayanamsaName];
         const engine = EphemerisEngine.getInstance();
-        
+
         const dt = DateTime.fromJSDate(date);
         const planets = engine.getPlanets(dt, location, {
             ayanamsaOrder,
             topocentric: config.topocentric,
             nodeType: config.nodeType,
         });
-        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
-        
+        const housesResult = calculateHouseCusps(
+            dt,
+            location.latitude,
+            location.longitude,
+            'WholeSign',
+            engine,
+        );
+
         const houses: HouseData = {
             cusps: housesResult.cusps,
             ascendant: housesResult.ascendant,
             mc: housesResult.mc,
             armc: housesResult.armc,
-            vertex: housesResult.vertex || 0
+            vertex: housesResult.vertex || 0,
         };
 
         return {
             planets,
             houses,
             ascendant: houses.ascendant,
-            ayanamsa: ayanamsaName
+            ayanamsa: ayanamsaName,
         };
     }
 
@@ -158,43 +184,56 @@ export class NodeJHora {
     }
 
     getHouses(date: DateTime, system: HouseSystemMethod = 'WholeSign'): HouseData {
-        const res = calculateHouseCusps(date, this.location.latitude, this.location.longitude, system, this.ephemeris);
+        const res = calculateHouseCusps(
+            date,
+            this.location.latitude,
+            this.location.longitude,
+            system,
+            this.ephemeris,
+        );
         return {
             cusps: res.cusps,
             ascendant: res.ascendant,
             mc: res.mc,
             armc: res.armc,
-            vertex: res.vertex || 0
+            vertex: res.vertex || 0,
         };
     }
 
     getChart(date: DateTime, system: HouseSystemMethod = 'WholeSign'): ChartData {
         const planets = this.getPlanets(date);
         const houses = this.getHouses(date, system);
-        return { 
-            planets, 
+        return {
+            planets,
             houses,
             ascendant: houses.ascendant,
-            ayanamsa: this.ayanamsaName
+            ayanamsa: this.ayanamsaName,
         };
     }
 
     getPanchanga(date: DateTime): PanchangaResult {
         const planets = this.getPlanets(date);
-        const sun = planets.find(p => p.id === Body.Sun);
-        const moon = planets.find(p => p.id === Body.Moon);
-        if (!sun || !moon) throw new Error("Sun or Moon data missing");
+        const sun = planets.find((p) => p.id === Body.Sun);
+        const moon = planets.find((p) => p.id === Body.Moon);
+        if (!sun || !moon) throw new Error('Sun or Moon data missing');
         return calculatePanchanga(sun.longitude, moon.longitude, date);
     }
 }
 
 // Functional Exports (Browser-safe only)
 export {
-calculateBhavaLagna, calculateDhumadiUpagrahas,
-calculateGhatiLagna,     calculateHoraLagna,     calculateHouseCusps,
-calculateInduLagna,     calculatePanchanga,
-    calculatePranapada, calculateShreeLagna,
-    calculateTimeUpagrahas, calculateVarnadaLagna,
+    calculateBhavaLagna,
+    calculateDhumadiUpagrahas,
+    calculateGhatiLagna,
+    calculateHoraLagna,
+    calculateHouseCusps,
+    calculateInduLagna,
+    calculatePanchanga,
+    calculatePranapada,
+    calculateShreeLagna,
+    calculateTimeUpagrahas,
+    calculateVarnadaLagna,
     EphemerisEngine,
-KPRuling,
-    KPSubLord};
+    KPRuling,
+    KPSubLord,
+};

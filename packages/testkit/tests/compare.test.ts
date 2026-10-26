@@ -111,7 +111,10 @@ describe('compareGoldenPaths', () => {
     it('compares dasa end dates in seconds', () => {
         const rows = compareGoldenPaths(
             {
-                'dasa.vimshottari[0].end': { value: '2009-07-07', tolerance: { type: 'seconds', seconds: 86400 } },
+                'dasa.vimshottari[0].end': {
+                    value: '2009-07-07',
+                    tolerance: { type: 'seconds', seconds: 86400 },
+                },
             },
             { 'dasa.vimshottari[0].end': '2009-07-08' },
         );
@@ -121,7 +124,10 @@ describe('compareGoldenPaths', () => {
     it('requires exact equality for strings and booleans', () => {
         const rows = compareGoldenPaths(
             {
-                'd1.planets.Sun.printed': { value: '1 Ar 00\' 00.00"', tolerance: { type: 'exact' } },
+                'd1.planets.Sun.printed': {
+                    value: '1 Ar 00\' 00.00"',
+                    tolerance: { type: 'exact' },
+                },
                 'd1.planets.Saturn.retrograde': { value: true, tolerance: { type: 'exact' } },
             },
             {

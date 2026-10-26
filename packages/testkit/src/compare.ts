@@ -94,7 +94,11 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
     switch (entry.tolerance.type) {
         case 'arcsec': {
             if (typeof entry.value !== 'number' || typeof raw !== 'number') {
-                return { ...base, pass: false, message: 'arcsec path requires numeric expected and actual' };
+                return {
+                    ...base,
+                    pass: false,
+                    message: 'arcsec path requires numeric expected and actual',
+                };
             }
             const delta = signedAngleDeltaDegrees(entry.value, raw) * 3600;
             const limit = entry.tolerance.arcsec;
@@ -104,13 +108,14 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
                 pass,
                 delta,
                 toleranceLimit: limit,
-                message: pass
-                    ? 'ok'
-                    : `|Δ|=${Math.abs(delta).toFixed(4)}″ > ${limit}″`,
+                message: pass ? 'ok' : `|Δ|=${Math.abs(delta).toFixed(4)}″ > ${limit}″`,
             };
         }
         case 'seconds': {
-            if (typeof raw !== typeof entry.value && !(typeof entry.value === 'string' || typeof entry.value === 'number')) {
+            if (
+                typeof raw !== typeof entry.value &&
+                !(typeof entry.value === 'string' || typeof entry.value === 'number')
+            ) {
                 return { ...base, pass: false, message: 'seconds path value kind mismatch' };
             }
             if (typeof entry.value === 'number' && typeof raw === 'number') {
@@ -123,9 +128,7 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
                     pass,
                     delta,
                     toleranceLimit: limit,
-                    message: pass
-                        ? 'ok'
-                        : `|Δ|=${Math.abs(delta).toFixed(4)} s > ${limit} s`,
+                    message: pass ? 'ok' : `|Δ|=${Math.abs(delta).toFixed(4)} s > ${limit} s`,
                 };
             }
             if (typeof entry.value === 'string' && typeof raw === 'string') {
@@ -137,19 +140,24 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
                     pass,
                     delta,
                     toleranceLimit: limit,
-                    message: pass
-                        ? 'ok'
-                        : `|Δ|=${Math.abs(delta).toFixed(1)} s > ${limit} s`,
+                    message: pass ? 'ok' : `|Δ|=${Math.abs(delta).toFixed(1)} s > ${limit} s`,
                 };
             }
-            return { ...base, pass: false, message: 'seconds path expected and actual must both be numbers or both be date strings' };
+            return {
+                ...base,
+                pass: false,
+                message:
+                    'seconds path expected and actual must both be numbers or both be date strings',
+            };
         }
         case 'exact': {
             const pass = Object.is(entry.value, raw);
             return {
                 ...base,
                 pass,
-                message: pass ? 'ok' : `expected ${JSON.stringify(entry.value)} got ${JSON.stringify(raw)}`,
+                message: pass
+                    ? 'ok'
+                    : `expected ${JSON.stringify(entry.value)} got ${JSON.stringify(raw)}`,
             };
         }
         default: {
@@ -171,7 +179,8 @@ export function compareGoldenPaths(
     const paths = options?.only ?? Object.keys(expected).sort();
     return paths.map((path) => {
         const entry = expected[path];
-        if (!entry) throw new Error(`Golden case has no expected entry for ${JSON.stringify(path)}`);
+        if (!entry)
+            throw new Error(`Golden case has no expected entry for ${JSON.stringify(path)}`);
         return comparePath(path, entry, actual);
     });
 }

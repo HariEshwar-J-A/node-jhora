@@ -19,7 +19,7 @@ const pdfBuffer = await generateFullReport(chartData, {
     subjectName: 'Ravi Shankar',
     birthDate: '1990-05-15',
     birthPlace: 'Chennai, Tamil Nadu',
-    chartStyle: 'North'
+    chartStyle: 'North',
 });
 
 // Save to file
@@ -29,13 +29,13 @@ writeFileSync('birth_chart.pdf', pdfBuffer);
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
-| **Full Report** | Planetary positions, houses, Yogas, and Shadbala in one PDF |
-| **Chart Diagrams** | North Indian (diamond) and South Indian (grid) styles |
-| **Yoga Analysis** | Automatic detection using built-in YOGA_LIBRARY |
-| **Shadbala Table** | 6-fold strength breakdown per planet |
-| **Buffer Output** | Returns `Buffer` for file saving or HTTP streaming |
+| Feature            | Description                                                 |
+| :----------------- | :---------------------------------------------------------- |
+| **Full Report**    | Planetary positions, houses, Yogas, and Shadbala in one PDF |
+| **Chart Diagrams** | North Indian (diamond) and South Indian (grid) styles       |
+| **Yoga Analysis**  | Automatic detection using built-in YOGA_LIBRARY             |
+| **Shadbala Table** | 6-fold strength breakdown per planet                        |
+| **Buffer Output**  | Returns `Buffer` for file saving or HTTP streaming          |
 
 ## Exports
 

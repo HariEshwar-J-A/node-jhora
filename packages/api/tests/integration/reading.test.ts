@@ -32,7 +32,9 @@ beforeAll(async () => {
     await app.ready();
 }, 60_000);
 
-afterAll(async () => { await app?.close(); });
+afterAll(async () => {
+    await app?.close();
+});
 
 async function post(url: string, payload: Record<string, unknown>) {
     const res = await app.inject({ method: 'POST', url, payload });
@@ -41,7 +43,10 @@ async function post(url: string, payload: Record<string, unknown>) {
 
 describe('POST /v1/reading', () => {
     test('returns the dasha stack down to Pratyantardasha', async () => {
-        const { status, body } = await post('/v1/reading', { ...BIRTH, asOf: '2026-08-09T12:00:00+05:30' });
+        const { status, body } = await post('/v1/reading', {
+            ...BIRTH,
+            asOf: '2026-08-09T12:00:00+05:30',
+        });
         expect(status).toBe(200);
 
         const levels = body.dashaStack.map((s: any) => s.levelName);
@@ -57,7 +62,8 @@ describe('POST /v1/reading', () => {
         const { body } = await post('/v1/reading', { ...BIRTH, asOf });
         const t = new Date(asOf).getTime();
 
-        let prevStart = -Infinity, prevEnd = Infinity;
+        let prevStart = -Infinity,
+            prevEnd = Infinity;
         for (const s of body.dashaStack) {
             const start = new Date(s.start).getTime();
             const end = new Date(s.end).getTime();
@@ -66,7 +72,8 @@ describe('POST /v1/reading', () => {
             // A sub-period cannot extend outside the period containing it.
             expect(start).toBeGreaterThanOrEqual(prevStart);
             expect(end).toBeLessThanOrEqual(prevEnd);
-            prevStart = start; prevEnd = end;
+            prevStart = start;
+            prevEnd = end;
         }
     }, 60_000);
 
@@ -88,7 +95,8 @@ describe('POST /v1/reading', () => {
         for (const s of body.dashaStack.slice(1)) {
             const h = s.houseFromLordAbove;
             if ([6, 8, 12].includes(h)) expect(s.classicalBranch).toBe('adverse');
-            else if ([1, 2, 4, 5, 7, 9, 10, 11].includes(h)) expect(s.classicalBranch).toBe('favourable');
+            else if ([1, 2, 4, 5, 7, 9, 10, 11].includes(h))
+                expect(s.classicalBranch).toBe('favourable');
             else expect(s.classicalBranch).toBe('mixed');
         }
     }, 60_000);
@@ -118,7 +126,7 @@ describe('POST /v1/transits', () => {
             expect(p.houseFromMoon).toBeGreaterThanOrEqual(1);
             expect(p.houseFromMoon).toBeLessThanOrEqual(12);
             // The two references differ unless Moon and lagna share a sign.
-            const offset = ((body.natal.moonSign - body.natal.ascendantSign) % 12 + 12) % 12;
+            const offset = (((body.natal.moonSign - body.natal.ascendantSign) % 12) + 12) % 12;
             if (offset !== 0) expect(p.houseFromMoon).not.toBe(p.houseFromLagna);
         }
     }, 120_000);
@@ -151,7 +159,8 @@ describe('POST /v1/transits', () => {
 
     test('rejects a request with no location', async () => {
         const res = await app.inject({
-            method: 'POST', url: '/v1/transits',
+            method: 'POST',
+            url: '/v1/transits',
             payload: { date: '2000-01-01', time: '12:00:00' },
         });
         expect(res.statusCode).toBeGreaterThanOrEqual(400);

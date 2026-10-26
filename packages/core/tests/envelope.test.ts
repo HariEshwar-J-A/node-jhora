@@ -15,7 +15,9 @@ const coreRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 describe('generated build constants', () => {
     test('match package.json and the installed luxon (not stale)', () => {
         const pkg = JSON.parse(readFileSync(join(coreRoot, 'package.json'), 'utf8'));
-        const luxonPkg = createRequire(join(coreRoot, 'package.json')).resolve('luxon/package.json');
+        const luxonPkg = createRequire(join(coreRoot, 'package.json')).resolve(
+            'luxon/package.json',
+        );
         const luxon = JSON.parse(readFileSync(luxonPkg, 'utf8'));
         expect(ENGINE_VERSION).toBe(pkg.version);
         expect(TZDB_VERSION).toBe(`luxon-${luxon.version}`);

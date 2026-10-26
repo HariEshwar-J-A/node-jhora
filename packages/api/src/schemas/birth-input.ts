@@ -10,19 +10,19 @@ import { z } from 'zod';
  * Reform Committee definition available as `lahiri_icrc`.
  */
 export const AYANAMSA_MAP = {
-    true_chitra: 27,   // True Chitrapaksha — Spica at 180° (Drik Siddhanta)
-    true_citra:  27,   // same mode; spelling used by calculation settings and presets
-    true_pushya: 29,   // δ Cancri at 106°
-    true_revati: 30,   // ζ Piscium at 359°50′
-    true_mula:   35,   // λ Scorpii at 240°
-    lahiri:       1,   // as JHora reports it
-    lahiri_icrc:  2,   // Indian Calendar Reform Committee definition
-    raman:        3,
-    kp:           5,
-    yukteshwar:   7,
+    true_chitra: 27, // True Chitrapaksha — Spica at 180° (Drik Siddhanta)
+    true_citra: 27, // same mode; spelling used by calculation settings and presets
+    true_pushya: 29, // δ Cancri at 106°
+    true_revati: 30, // ζ Piscium at 359°50′
+    true_mula: 35, // λ Scorpii at 240°
+    lahiri: 1, // as JHora reports it
+    lahiri_icrc: 2, // Indian Calendar Reform Committee definition
+    raman: 3,
+    kp: 5,
+    yukteshwar: 7,
     fagan_bradley: 0,
-    jn_bhasin:    8,
-    j2000:       18,
+    jn_bhasin: 8,
+    j2000: 18,
 } as const;
 
 export type AyanamsaKey = keyof typeof AYANAMSA_MAP;
@@ -44,10 +44,10 @@ const BirthBaseSchema = z.object({
      * Before 1582-10-15 the proleptic Julian calendar applies; on and after that date,
      * Gregorian — matching Swiss Ephemeris / JHora conventions.
      */
-    date:        z.string().regex(/^-?\d{1,5}-\d{2}-\d{2}$/, 'Must be astronomical YYYY-MM-DD'),
-    time:        z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Must be HH:MM:SS'),
-    ayanamsa:    z.enum(AYANAMSA_KEYS).default(DEFAULT_AYANAMSA_KEY),
-    nodeType:    z.enum(['mean', 'true']).default('true'),
+    date: z.string().regex(/^-?\d{1,5}-\d{2}-\d{2}$/, 'Must be astronomical YYYY-MM-DD'),
+    time: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Must be HH:MM:SS'),
+    ayanamsa: z.enum(AYANAMSA_KEYS).default(DEFAULT_AYANAMSA_KEY),
+    nodeType: z.enum(['mean', 'true']).default('true'),
     /** Report where a body is ('geometric', JHora's convention) or is seen ('apparent'). */
     positionMode: z.enum(['geometric', 'apparent']).default('geometric'),
     /** Correct for the observer's position on Earth's surface (matters for the Moon). */
@@ -78,10 +78,10 @@ const BirthBaseSchema = z.object({
     vargaVariants: z.record(z.string(), z.string()).optional(),
     customAyanamsaMode: z.number().int().optional(),
     // Location — provide city OR all three coordinate fields
-    city:        z.string().min(1).optional(),
-    latitude:    z.number().min(-90).max(90).optional(),
-    longitude:   z.number().min(-180).max(180).optional(),
-    timezone:    z.string().min(1).optional(),
+    city: z.string().min(1).optional(),
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
+    timezone: z.string().min(1).optional(),
 });
 
 const locationRefine = (d: z.infer<typeof BirthBaseSchema>) =>
@@ -94,7 +94,9 @@ const locationMessage = 'Provide either "city" or all three of "latitude", "long
  * Standard birth input used across all chart-based endpoints.
  * Accepts either {city} or {latitude, longitude, timezone} for location.
  */
-export const BirthInputSchema = BirthBaseSchema.refine(locationRefine, { message: locationMessage });
+export const BirthInputSchema = BirthBaseSchema.refine(locationRefine, {
+    message: locationMessage,
+});
 
 export type BirthInput = z.infer<typeof BirthInputSchema>;
 
@@ -111,9 +113,9 @@ export type MatchInput = z.infer<typeof MatchInputSchema>;
 /**
  * Dasha endpoint can optionally set tree depth (1–5).
  */
-export const DashaInputSchema = BirthBaseSchema
-    .extend({ depth: z.number().int().min(1).max(5).default(2) })
-    .refine(locationRefine, { message: locationMessage });
+export const DashaInputSchema = BirthBaseSchema.extend({
+    depth: z.number().int().min(1).max(5).default(2),
+}).refine(locationRefine, { message: locationMessage });
 
 export type DashaInput = z.infer<typeof DashaInputSchema>;
 
@@ -122,12 +124,10 @@ export type DashaInput = z.infer<typeof DashaInputSchema>;
  * the sky is evaluated for. Defaults to now, which is what an interpretive
  * question almost always means.
  */
-export const TransitInputSchema = BirthBaseSchema
-    .extend({
-        asOf: z.string().datetime({ offset: true }).optional(),
-        horizonDays: z.number().int().min(1).max(3650).default(365),
-    })
-    .refine(locationRefine, { message: locationMessage });
+export const TransitInputSchema = BirthBaseSchema.extend({
+    asOf: z.string().datetime({ offset: true }).optional(),
+    horizonDays: z.number().int().min(1).max(3650).default(365),
+}).refine(locationRefine, { message: locationMessage });
 
 export type TransitInput = z.infer<typeof TransitInputSchema>;
 
@@ -136,13 +136,11 @@ export type TransitInput = z.infer<typeof TransitInputSchema>;
  * one response. `asOf` is the moment being asked about (default now); the birth
  * fields still describe the native.
  */
-export const ReadingInputSchema = BirthBaseSchema
-    .extend({
-        asOf: z.string().datetime({ offset: true }).optional(),
-        /** Dasha tree depth. 3 reaches Pratyantardasha, which readings need. */
-        depth: z.number().int().min(1).max(5).default(3),
-        horizonDays: z.number().int().min(1).max(3650).default(365),
-    })
-    .refine(locationRefine, { message: locationMessage });
+export const ReadingInputSchema = BirthBaseSchema.extend({
+    asOf: z.string().datetime({ offset: true }).optional(),
+    /** Dasha tree depth. 3 reaches Pratyantardasha, which readings need. */
+    depth: z.number().int().min(1).max(5).default(3),
+    horizonDays: z.number().int().min(1).max(3650).default(365),
+}).refine(locationRefine, { message: locationMessage });
 
 export type ReadingInput = z.infer<typeof ReadingInputSchema>;

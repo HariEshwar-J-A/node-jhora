@@ -11,17 +11,16 @@
 import { KPSubLord } from '../../src/kp/sublord.js';
 
 describe('Golden: KP Sublord System', () => {
-
     describe('Sign lord (Vedic planet rulers)', () => {
         // Aries(0°): Mars(4), Taurus(30°): Venus(3), Gemini(60°): Mercury(2)
         // Cancer(90°): Moon(1), Leo(120°): Sun(0), Virgo(150°): Mercury(2)
         // Libra(180°): Venus(3), Scorpio(210°): Mars(4), Sag(240°): Jupiter(5)
         // Cap(270°): Saturn(6), Aquarius(300°): Saturn(6), Pisces(330°): Jupiter(5)
         const signLordTable: [number, number][] = [
-            [0,   4], // Aries
-            [30,  3], // Taurus
-            [60,  2], // Gemini
-            [90,  1], // Cancer
+            [0, 4], // Aries
+            [30, 3], // Taurus
+            [60, 2], // Gemini
+            [90, 1], // Cancer
             [120, 0], // Leo
             [150, 2], // Virgo
             [180, 3], // Libra
@@ -58,17 +57,17 @@ describe('Golden: KP Sublord System', () => {
     describe('Captured reference values', () => {
         // Captured from engine run — see _capture_vargas.test.ts
         const table: Array<{ lon: number; signLord: number; starLord: number; subLord: number }> = [
-            { lon:   0.0000, signLord: 4, starLord: 8, subLord: 8 },
-            { lon:  30.0000, signLord: 3, starLord: 0, subLord: 7 },
-            { lon:  60.0000, signLord: 2, starLord: 4, subLord: 6 },
-            { lon:  90.0000, signLord: 1, starLord: 5, subLord: 1 },
+            { lon: 0.0, signLord: 4, starLord: 8, subLord: 8 },
+            { lon: 30.0, signLord: 3, starLord: 0, subLord: 7 },
+            { lon: 60.0, signLord: 2, starLord: 4, subLord: 6 },
+            { lon: 90.0, signLord: 1, starLord: 5, subLord: 1 },
             // Decimal-precise: 120/(40/3)=9.0 exactly → nakIdx=9 (Magha, Ketu's nakshatra).
             // lonInNak=0 → first sub = Ketu (id=8). Float impl gave nakIdx=8 due to rounding.
-            { lon: 120.0000, signLord: 0, starLord: 8, subLord: 8 },
-            { lon: 180.0000, signLord: 3, starLord: 4, subLord: 6 },
+            { lon: 120.0, signLord: 0, starLord: 8, subLord: 8 },
+            { lon: 180.0, signLord: 3, starLord: 4, subLord: 6 },
             { lon: 256.5157, signLord: 5, starLord: 3, subLord: 1 }, // Chart A Sun
-            { lon:  85.9640, signLord: 2, starLord: 5, subLord: 8 }, // Chart B Sun
-            { lon:  17.5490, signLord: 4, starLord: 3, subLord: 4 }, // Chart B Moon
+            { lon: 85.964, signLord: 2, starLord: 5, subLord: 8 }, // Chart B Sun
+            { lon: 17.549, signLord: 4, starLord: 3, subLord: 4 }, // Chart B Moon
             { lon: 100.1009, signLord: 1, starLord: 6, subLord: 3 }, // Chart A Rahu
         ];
 

@@ -32,7 +32,18 @@ function writeCanonical(chart: JhdChart, eol: string): string {
         chart.altitudeMetres !== undefined ? (chart.altitudeMetres / 1000).toFixed(6) : '0.000000';
     lines.push(altKm);
     const tz = (-chart.tzHours).toFixed(6);
-    lines.push(tz, tz, '0', '0', chart.placeName ?? '', chart.country ?? '', '1', '1013.250000', '20.000000', '0');
+    lines.push(
+        tz,
+        tz,
+        '0',
+        '0',
+        chart.placeName ?? '',
+        chart.country ?? '',
+        '1',
+        '1013.250000',
+        '20.000000',
+        '0',
+    );
     return lines.join(eol);
 }
 

@@ -20,12 +20,10 @@ import {
 } from '../../src/dasha.js';
 
 describe('Golden: Vimshottari Dasha', () => {
-
     // ---------------------------------------------------------------------------
     // Balance calculation
     // ---------------------------------------------------------------------------
     describe('Dasha Balance at Birth', () => {
-
         test('0° (start Ashwini) → Ketu, full 7y remaining', () => {
             const b = calculateDashaBalance(0);
             expect(b.lord).toBe('Ketu');
@@ -49,8 +47,8 @@ describe('Golden: Vimshottari Dasha', () => {
             expect(b.yearsRemaining).toBeCloseTo(20, 1);
         });
 
-        test('midpoint Ashwini (6°40\') → Ketu, 3.5y remaining', () => {
-            const b = calculateDashaBalance(6 + 40/60);
+        test("midpoint Ashwini (6°40') → Ketu, 3.5y remaining", () => {
+            const b = calculateDashaBalance(6 + 40 / 60);
             expect(b.lord).toBe('Ketu');
             expect(b.yearsRemaining).toBeCloseTo(3.5, 3);
             expect(b.fractionTraversed).toBeCloseTo(0.5, 4);
@@ -106,7 +104,7 @@ describe('Golden: Vimshottari Dasha', () => {
 
         test('Venus Mahadasha starts immediately after Ketu ends', () => {
             const dashas = generateVimshottari(birth, 0, 1);
-            const ketuEnd   = dashas[0].end.toMillis();
+            const ketuEnd = dashas[0].end.toMillis();
             const venusStart = dashas[1].start.toMillis();
             expect(Math.abs(ketuEnd - venusStart)).toBeLessThan(1000); // within 1 second
         });
@@ -118,8 +116,8 @@ describe('Golden: Vimshottari Dasha', () => {
         });
 
         test('Partial balance: first Dasha < standard duration', () => {
-            const b = calculateDashaBalance(6 + 40/60); // 3.5y Ketu balance
-            const dashas = generateVimshottari(birth, 6 + 40/60, 1);
+            const b = calculateDashaBalance(6 + 40 / 60); // 3.5y Ketu balance
+            const dashas = generateVimshottari(birth, 6 + 40 / 60, 1);
             expect(dashas[0].durationYears).toBeCloseTo(b.yearsRemaining, 2);
         });
     });
@@ -164,7 +162,7 @@ describe('Golden: Vimshottari Dasha', () => {
         });
 
         test('Partial balance: sum of filtered antardashas = balance years', () => {
-            const moon = 6 + 40/60; // 3.5y Ketu balance
+            const moon = 6 + 40 / 60; // 3.5y Ketu balance
             const dashas = generateVimshottari(birth, moon, 2);
             const ketuMaha = dashas[0];
             const sum = ketuMaha.subPeriods!.reduce((acc, sp) => acc + sp.durationYears, 0);
@@ -175,7 +173,7 @@ describe('Golden: Vimshottari Dasha', () => {
             const dashas = generateVimshottari(birth, 0, 2);
             const subs = dashas[0].subPeriods!;
             for (let i = 1; i < subs.length; i++) {
-                const prevEnd = subs[i-1].end.toMillis();
+                const prevEnd = subs[i - 1].end.toMillis();
                 const curStart = subs[i].start.toMillis();
                 expect(Math.abs(prevEnd - curStart)).toBeLessThan(1000);
             }

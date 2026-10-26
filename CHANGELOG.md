@@ -5,17 +5,17 @@
 ### Breaking
 
 **D2 Hora now follows BPHS.** A Hora position can only be **Leo** (the Sun's
-sign) or **Cancer** (the Moon's), per BPHS chapter 6 sloka 5-6: *"The first half
+sign) or **Cancer** (the Moon's), per BPHS chapter 6 sloka 5-6: _"The first half
 of an odd sign is the Hora ruled by the Sun while the second half is the Hora of
-the Moon. The reverse is true in the case of an even sign."*
+the Moon. The reverse is true in the case of an even sign."_
 
 The previous implementation spread D2 across all twelve signs. Its own source
 comment named the origin — `PyJHora uses __parivritti_even_reverse(dcf=2)` — so
 it had been ported from another program rather than from the text.
 
 ```ts
-calculateVarga(lon, 2);                                // BPHS: Leo or Cancer
-calculateVarga(lon, 2, { horaScheme: 'parivritti' });  // previous behaviour
+calculateVarga(lon, 2); // BPHS: Leo or Cancer
+calculateVarga(lon, 2, { horaScheme: 'parivritti' }); // previous behaviour
 ```
 
 ### Added
@@ -31,7 +31,7 @@ calculateVarga(lon, 2, { horaScheme: 'parivritti' });  // previous behaviour
 - `@node-jhora/reporting` shipped with **no `license` field**, publishing as
   unlicensed.
 - All packages now declare `LicenseRef-NodeJHora-Source-Available` instead of
-  `SEE LICENSE IN LICENSE`, which npm renders as *unlicensed*.
+  `SEE LICENSE IN LICENSE`, which npm renders as _unlicensed_.
 - `repository.url` normalised (`npm pkg fix`), silencing a warning on every
   publish.
 - The monorepo root is now `private: true`. `npm publish` at the root packed the
@@ -48,12 +48,12 @@ Defaults now target **True Chitrapaksha + BPHS rules**, so existing charts will
 shift on upgrade. `JHORA_PRESET` restores Jagannatha Hora's conventions in one
 line.
 
-| Setting | Default |
-|---|---|
-| `ayanamsaMode` | `27` True Chitrapaksha (Drik Siddhanta) |
-| `positionMode` | `'geometric'` |
-| `nodeType` | `'true'` |
-| `dasamsaScheme` | `'parashara'` |
+| Setting         | Default                                 |
+| --------------- | --------------------------------------- |
+| `ayanamsaMode`  | `27` True Chitrapaksha (Drik Siddhanta) |
+| `positionMode`  | `'geometric'`                           |
+| `nodeType`      | `'true'`                                |
+| `dasamsaScheme` | `'parashara'`                           |
 
 ### Fixed — astrometry
 
@@ -88,7 +88,7 @@ from 7–41″ before.
 ### Changed — test fixtures
 
 Rebuilt with separated provenance: JPL Horizons for astrometry, a real JHora
-export for conventions, and a regression snapshot that is explicitly *not*
+export for conventions, and a regression snapshot that is explicitly _not_
 evidence. The previous fixtures were captured from the broken engine and
 asserted a retrograde Sun and Moon.
 

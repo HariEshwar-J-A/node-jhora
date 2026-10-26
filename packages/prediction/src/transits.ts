@@ -1,21 +1,20 @@
-
-import { EphemerisEngine, normalize360,PlanetPosition } from '@node-jhora/core';
+import { EphemerisEngine, normalize360, PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 export interface TransitEvent {
     planetId: number;
     type: 'Sign' | 'Nakshatra';
     prevValue: number; // Previous Sign/Nakshatra index
-    newValue: number;  // New Sign/Nakshatra index
-    time: DateTime;    // Time of ingress
+    newValue: number; // New Sign/Nakshatra index
+    time: DateTime; // Time of ingress
 }
 
 /** Calculation settings a transit scan must share with the chart it is compared to. */
 export interface TransitOptions {
     /** SE_SIDM_* code. Must match the natal chart, or every result is shifted. */
     ayanamsaOrder?: number;
-    positionMode?:  'geometric' | 'apparent';
-    nodeType?:      'mean' | 'true';
+    positionMode?: 'geometric' | 'apparent';
+    nodeType?: 'mean' | 'true';
 }
 
 export class TransitEngine {
@@ -47,15 +46,15 @@ export class TransitEngine {
         planetId: number,
         start: DateTime,
         end: DateTime,
-        stepHours: number = 24
+        stepHours: number = 24,
     ): Promise<TransitEvent[]> {
         const events: TransitEvent[] = [];
-        
+
         let cursor = start;
         // Get initial state
         let prevPos = this.getPos(planetId, cursor);
         let prevSign = Math.floor(prevPos / 30);
-        let prevNak = Math.floor(prevPos / (13 + 1/3));
+        let prevNak = Math.floor(prevPos / (13 + 1 / 3));
 
         while (cursor < end) {
             cursor = cursor.plus({ hours: stepHours });
@@ -63,7 +62,7 @@ export class TransitEngine {
 
             const currPos = this.getPos(planetId, cursor);
             const currSign = Math.floor(currPos / 30);
-            const currNak = Math.floor(currPos / (13 + 1/3));
+            const currNak = Math.floor(currPos / (13 + 1 / 3));
 
             // Check Sign Change
             if (currSign !== prevSign) {
@@ -76,7 +75,12 @@ export class TransitEngine {
                     // the ingress up to `stepHours` late — 24 h by default — and
                     // a date that wrong is worse than an admitted range, because
                     // it will be quoted as if exact.
-                    time: this.refineIngress(planetId, cursor.minus({ hours: stepHours }), cursor, 30),
+                    time: this.refineIngress(
+                        planetId,
+                        cursor.minus({ hours: stepHours }),
+                        cursor,
+                        30,
+                    ),
                 });
                 prevSign = currSign;
             }
@@ -88,12 +92,16 @@ export class TransitEngine {
                     type: 'Nakshatra',
                     prevValue: prevNak,
                     newValue: currNak,
-                    time: this.refineIngress(planetId, cursor.minus({ hours: stepHours }), cursor,
-                                             13 + 1 / 3),
+                    time: this.refineIngress(
+                        planetId,
+                        cursor.minus({ hours: stepHours }),
+                        cursor,
+                        13 + 1 / 3,
+                    ),
                 });
                 prevNak = currNak;
             }
-            
+
             prevPos = currPos;
 
             if (cursor >= end) break;
@@ -141,26 +149,26 @@ export class TransitEngine {
      * @param tolerance Degrees of error (default 0.01)
      */
     public async findExactAspect(
-        p1Id: number, 
-        p2Id: number, 
+        p1Id: number,
+        p2Id: number,
         targetAngle: number,
         start: DateTime,
         end: DateTime,
-        tolerance: number = 0.01
+        tolerance: number = 0.01,
     ): Promise<DateTime | null> {
         // Crude Scan then Refine.
-        // Step size: 6 hours? 
+        // Step size: 6 hours?
         let cursor = start;
         const stepHours = 24; // Initial crude scan
-        
+
         const prevDiff = 0;
         let prevTime = start;
-        
+
         // Helper: Get Angle Difference (0-360) ensuring minimal distance logic?
         // No, Aspects are usually Longitude difference: abs(l1 - l2).
         // But 350 and 10 is 20 deg difference.
         // Distance = min(|l1-l2|, 360-|l1-l2|)
-        
+
         const getDist = (t: DateTime) => {
             const l1 = this.getPos(p1Id, t);
             const l2 = this.getPos(p2Id, t);
@@ -176,38 +184,40 @@ export class TransitEngine {
 
             const currDist = getDist(cursor);
             const prevDist = getDist(prevTime);
-            
+
             // Check if we crossed Target
             // e.g. Prev=89, Curr=91. Target 90.
             // Or Prev=91, Curr=89.
-            if ((prevDist < targetAngle && currDist >= targetAngle) || 
-                (prevDist > targetAngle && currDist <= targetAngle)) {
-                
+            if (
+                (prevDist < targetAngle && currDist >= targetAngle) ||
+                (prevDist > targetAngle && currDist <= targetAngle)
+            ) {
                 // Crossed! Refine.
                 // Binary Search for MVP (Newton is robust but requires derivative/speed).
                 // Binary search 24h window (prevTime to cursor).
                 let low = prevTime.toMillis();
                 let high = cursor.toMillis();
                 let mid = 0;
-                
-                for(let i=0; i<30; i++) { // 30 iters -> accuracy ~ 100ms
+
+                for (let i = 0; i < 30; i++) {
+                    // 30 iters -> accuracy ~ 100ms
                     mid = (low + high) / 2;
                     const tMid = DateTime.fromMillis(mid);
                     const dMid = getDist(tMid);
-                    
+
                     if (Math.abs(dMid - targetAngle) < tolerance) {
                         return tMid;
                     }
-                    
+
                     // Decide which half
                     // Assume monotonic in this small window
                     const dLow = getDist(DateTime.fromMillis(low));
-                    
+
                     // If Low < Target and Mid > Target -> Target in Low..Mid
                     // But we don't know slope direction easily without checking.
                     // Simple logic: If (dLow < Target) == (dMid < Target), then Mid is on same side as Low.
                     // Move Low to Mid.
-                    if ((dLow < targetAngle) === (dMid < targetAngle)) {
+                    if (dLow < targetAngle === dMid < targetAngle) {
                         low = mid;
                     } else {
                         high = mid;
@@ -215,16 +225,16 @@ export class TransitEngine {
                 }
                 return DateTime.fromMillis(mid);
             }
-            
+
             prevTime = cursor;
         }
-        
+
         return null;
     }
 
-    // Helper: synchronous fetch from cached engine? 
+    // Helper: synchronous fetch from cached engine?
     // EphemerisEngine.getPlanets is technically blocking WASM call (if loaded).
-    // But getPlanets signature is not async in our code? 
+    // But getPlanets signature is not async in our code?
     // Let's check `src/engine/ephemeris.ts`.
     // It calls `this.swe.swe_calc_ut`. If WASM is loaded, it's synchronous.
     // However, our `getPlanets` takes (date, location). We just need Geocentric or Topo?
@@ -236,11 +246,15 @@ export class TransitEngine {
      * transit work does not use.
      */
     private getPos(planetId: number, time: DateTime): number {
-        const p = this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, {
-            ayanamsaOrder: this.options.ayanamsaOrder,
-            positionMode:  this.options.positionMode,
-            nodeType:      this.options.nodeType,
-        });
+        const p = this.ephemeris.getPlanets(
+            time,
+            { latitude: 0, longitude: 0 },
+            {
+                ayanamsaOrder: this.options.ayanamsaOrder,
+                positionMode: this.options.positionMode,
+                nodeType: this.options.nodeType,
+            },
+        );
         const target = p.find((x: PlanetPosition) => x.id === planetId);
         return target ? target.longitude : 0;
     }

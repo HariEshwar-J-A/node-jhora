@@ -27,13 +27,23 @@ describe('Golden: Panchanga', () => {
             let result: ReturnType<typeof calculatePanchanga>;
 
             beforeAll(() => {
-                const date = DateTime.fromObject({
-                    year: chart.year, month: chart.month, day: chart.day,
-                    hour: chart.hour, minute: chart.minute, second: chart.second,
-                }, { zone: 'utc' });
-                const planets = engine.getPlanets(date, undefined, { ayanamsaOrder: 1, nodeType: 'mean' });
-                const sun  = planets.find(p => p.name === 'Sun')!;
-                const moon = planets.find(p => p.name === 'Moon')!;
+                const date = DateTime.fromObject(
+                    {
+                        year: chart.year,
+                        month: chart.month,
+                        day: chart.day,
+                        hour: chart.hour,
+                        minute: chart.minute,
+                        second: chart.second,
+                    },
+                    { zone: 'utc' },
+                );
+                const planets = engine.getPlanets(date, undefined, {
+                    ayanamsaOrder: 1,
+                    nodeType: 'mean',
+                });
+                const sun = planets.find((p) => p.name === 'Sun')!;
+                const moon = planets.find((p) => p.name === 'Moon')!;
                 result = calculatePanchanga(sun.longitude, moon.longitude, date);
             });
 

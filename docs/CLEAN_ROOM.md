@@ -3,7 +3,7 @@
 node-jhora is an independent clean-room implementation of Vedic astrology
 (Jyotish) calculations and a user interface for them. Jagannatha Hora (JHora)
 by P.V.R. Narasimha Rao is a behavioural reference: we may study what the
-program *does* and which numbers it prints. We do not copy how it is built.
+program _does_ and which numbers it prints. We do not copy how it is built.
 
 This policy is binding. [ADR 0002](decisions/0002-clean-room-policy.md) records
 the decision. `pnpm run check:clean-room` enforces the mechanical part.
@@ -23,8 +23,8 @@ disassembler, or a screenshot of JHora's own text:
 - Strings lifted from JHora's UI, reports, or documentation. Wording in this
   repo is original.
 
-A file that merely *mentions* JHora (a citation, a test name, this policy)
-is fine. A file that *contains* JHora's expression of an idea is not.
+A file that merely _mentions_ JHora (a citation, a test name, this policy)
+is fine. A file that _contains_ JHora's expression of an idea is not.
 
 ## What JHora output may be used for
 
@@ -39,8 +39,8 @@ When a golden fixture records a JHora number:
 - Do not commit a raw export from a JHora install except a `.jhd` chart file
   placed under an allowlisted fixture directory. Those files are data, not
   code. Allowed locations:
-  - `packages/<package>/tests/fixtures/**/*.jhd`
-  - `test-fixtures/**/*.jhd`
+    - `packages/<package>/tests/fixtures/**/*.jhd`
+    - `test-fixtures/**/*.jhd`
 - Prefer a small transcribed fixture over a large captured directory. Capture
   pipelines (Wine or otherwise) stay outside the repo and commit numbers only.
 
