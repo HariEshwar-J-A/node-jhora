@@ -40,6 +40,35 @@ Measured on 2026-10-26 from `de431t.bsp` (3,696,366,592 bytes), default range:
 
 Coefficients are float64 copied verbatim, so the set is large; browser deployments should fetch only the centuries they need. Most of `g1` is Earth (399) relative to EMB, which could later be derived from the Moon segment and the DE431 Earth/Moon mass ratio instead of being stored.
 
+## Distribution
+
+The chunks are too large for one npm package (2.18 GB; npm rejects tarballs
+well under that). They are split into **40 data packages of 500 years each**,
+`@node-jhora/ephe-de431-{p|m}{start year}` (for example
+`@node-jhora/ephe-de431-p1500` for 1500–1999 and `@node-jhora/ephe-de431-m3000`
+for -3000..-2501), about 54 MB unpacked each. This package itself ships no data.
+
+```bash
+# after build:chunks: pin the hashes in @node-jhora/core, then stage the data packages
+pnpm --filter @node-jhora/ephe-long run generate:manifest            # writes core/src/ephemeris-data/manifest.generated.ts
+pnpm --filter @node-jhora/core build
+pnpm --filter @node-jhora/ephe-long run stage:data -- --pack-dry-run # .release/ephe-de431/*, npm pack --dry-run only
+```
+
+The staging script refuses any chunk whose SHA-256 differs from the manifest.
+It never publishes; the publish setup is described in ADR
+[0006](../../docs/decisions/0006-npm-packaging-and-ephemeris-data-distribution.md).
+
 ## Runtime
 
-Load chunks through `@node-jhora/core` (`De431ChunkStore` + `fetchChunkLoader` in the browser, or a filesystem loader in Node). The engine selects DE440s inside 1849–2150 and DE431 chunks outside that span when `ephemerisPolicy` is `auto`.
+In Node, `registerNodeChunkStore(engine, options)` from
+`@node-jhora/core/node/ephemeris` looks for each chunk in
+`NODE_JHORA_EPHE_LONG_DIR` (or `options.dirs`), then an installed data package,
+then the user cache, then a remote you choose (`baseUrl` for a self-hosted
+copy, `urlFor`, or `cdn: true` for jsDelivr's copy of the data packages).
+Every chunk is checked against the SHA-256 manifest wherever it came from.
+`npx node-jhora-ephe prefetch de431 --from 1500 --to 2200 --base-url URL`
+fills the cache for offline use.
+
+In the browser, use `De431ChunkStore` with `verifyingChunkLoader(fetchChunkLoader(baseUrl))`.
+The engine selects DE440s inside 1849–2150 and DE431 chunks outside that span when `ephemerisPolicy` is `auto`.

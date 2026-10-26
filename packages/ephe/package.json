@@ -5,17 +5,29 @@
     "type": "module",
     "license": "LicenseRef-NASA-Open-Government",
     "main": "index.mjs",
+    "types": "index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "import": "./index.mjs"
+        },
+        "./de440s.bsp": "./de440s.bsp",
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "build": "node -e \"process.exit(0)\"",
         "typecheck": "node -e \"process.exit(0)\"",
         "lint": "eslint .",
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config ../../tools/jest.config.js && node --test ../../tools/check-forbidden-assets.test.mjs ../../tools/check-runtime-licenses.test.mjs",
-        "postinstall": "node download.mjs"
+        "fetch": "node download.mjs",
+        "prepack": "node download.mjs"
     },
     "files": [
         "index.mjs",
-        "download.mjs",
-        "de440s.bsp"
+        "index.d.ts",
+        "de440s.bsp",
+        "NOTICE.md",
+        "README.md"
     ],
     "keywords": [
         "jpl",
@@ -31,5 +43,9 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "sideEffects": false
 }

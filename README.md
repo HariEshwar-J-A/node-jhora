@@ -4,38 +4,38 @@ Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It 
 
 ## Features
 
-*   **Ephemeris**: Pure TypeScript reader for the JPL DE440s SPK kernel (`de440s.bsp`), loaded by `@node-jhora/ephe`. The downloader and the engine record that kernel's coverage as **1849-12-26 through 2150-01-22**. A time that falls in no Type-2 segment throws from `SpkFile.getState`. There is no Swiss Ephemeris dependency and no WASM binary.
-*   **Ayanamsa**: The default is **True Chitrapaksha** (mode `27`, convenience name `'TrueChitra'`, API key `'true_chitra'`), derived from Spica at 180°. `AYANAMSA_MODELS` also implements True Pushya (29), True Revati (30), True Mula (35), Fagan/Bradley (0), Lahiri (1, label `Lahiri (ICRC)`), Raman (3), Krishnamurti/KP (5), Yukteshwar (7), JN Bhasin (8), and J2000 (18). `AYANAMSA.LAHIRI_ICRC` is mode `2` and has no registry entry; `getAyanamsa` uses mode 27 for any mode that is missing from `AYANAMSA_MODELS`.
-*   **Vedic core**: Panchanga (Tithi, Nakshatra, Yoga, Karana, Vara) and the 16 divisional charts D1, D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, and D60.
-*   **House systems**: Whole Sign (the `houseSystem` default) and Equal (`wholeSignCusps` / `equalHouseCusps`). The `HouseSystem` type also names `Placidus` and `Porphyry`; `EphemerisEngine.getHouses` uses the Whole Sign cusp formula for every method other than `'E'`.
-*   **Special lagnas**: Pranapada, Indu, Shree, Hora, Ghati, Bhava, and Varnada (exported from `@node-jhora/core`).
-*   **Upagrahas**: `calculateTimeUpagrahas` and `calculateDhumadiUpagrahas`.
-*   **Jaimini**: `JaiminiCore.calculateCharaKarakas` and `JaiminiCore.calculateArudha`, plus `JaiminiDashas.calculateCharaDasha`, in `@node-jhora/prediction`.
-*   **KP**: `KPSubLord` and `KPRuling` in core; `KPEngine` in analytics.
-*   **Yogas**: `YogaEngine.findYogas` evaluates a `YogaDef` list. The shipped `YOGA_LIBRARY` contains 7 yogas.
-*   **Predictive**: `generateVimshottari`, `YoginiDasha`, and `NarayanaDasha`.
-*   **Analytics**: `calculateShadbala` and Ashtakavarga BAV/SAV (`Ashtakavarga.calculateBAV`, `Ashtakavarga.calculateSAV`).
-*   **Matchmaking**: `calculateAshtaKuta`, `calculateDashaKuta`, and `checkMangalDosha`.
-*   **REST API**: Fastify server with Zod request schemas (`@node-jhora/api`).
-*   **Events**: `TransitScanner` for ingresses, stations, and a generic time solver.
-*   **PDF reports**: `generateFullReport` (PDFKit) in `@node-jhora/reporting`.
-*   **Decimal.js**: Vargas, panchanga, KP sub-lords, and `packages/core/src/core/precise.ts` use `decimal.js`. SPK state and the coordinate chain in `ephemeris.ts` use ordinary floating-point numbers.
+- **Ephemeris**: Pure TypeScript reader for the JPL DE440s SPK kernel (`de440s.bsp`), loaded by `@node-jhora/ephe`. The downloader and the engine record that kernel's coverage as **1849-12-26 through 2150-01-22**. A time that falls in no Type-2 segment throws from `SpkFile.getState`. There is no Swiss Ephemeris dependency and no WASM binary.
+- **Ayanamsa**: The default is **True Chitrapaksha** (mode `27`, convenience name `'TrueChitra'`, API key `'true_chitra'`), derived from Spica at 180°. `AYANAMSA_MODELS` also implements True Pushya (29), True Revati (30), True Mula (35), Fagan/Bradley (0), Lahiri (1, label `Lahiri (ICRC)`), Raman (3), Krishnamurti/KP (5), Yukteshwar (7), JN Bhasin (8), and J2000 (18). `AYANAMSA.LAHIRI_ICRC` is mode `2` and has no registry entry; `getAyanamsa` uses mode 27 for any mode that is missing from `AYANAMSA_MODELS`.
+- **Vedic core**: Panchanga (Tithi, Nakshatra, Yoga, Karana, Vara) and the 16 divisional charts D1, D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, and D60.
+- **House systems**: Whole Sign (the `houseSystem` default) and Equal (`wholeSignCusps` / `equalHouseCusps`). The `HouseSystem` type also names `Placidus` and `Porphyry`; `EphemerisEngine.getHouses` uses the Whole Sign cusp formula for every method other than `'E'`.
+- **Special lagnas**: Pranapada, Indu, Shree, Hora, Ghati, Bhava, and Varnada (exported from `@node-jhora/core`).
+- **Upagrahas**: `calculateTimeUpagrahas` and `calculateDhumadiUpagrahas`.
+- **Jaimini**: `JaiminiCore.calculateCharaKarakas` and `JaiminiCore.calculateArudha`, plus `JaiminiDashas.calculateCharaDasha`, in `@node-jhora/prediction`.
+- **KP**: `KPSubLord` and `KPRuling` in core; `KPEngine` in analytics.
+- **Yogas**: `YogaEngine.findYogas` evaluates a `YogaDef` list. The shipped `YOGA_LIBRARY` contains 7 yogas.
+- **Predictive**: `generateVimshottari`, `YoginiDasha`, and `NarayanaDasha`.
+- **Analytics**: `calculateShadbala` and Ashtakavarga BAV/SAV (`Ashtakavarga.calculateBAV`, `Ashtakavarga.calculateSAV`).
+- **Matchmaking**: `calculateAshtaKuta`, `calculateDashaKuta`, and `checkMangalDosha`.
+- **REST API**: Fastify server with Zod request schemas (`@node-jhora/api`).
+- **Events**: `TransitScanner` for ingresses, stations, and a generic time solver.
+- **PDF reports**: `generateFullReport` (PDFKit) in `@node-jhora/reporting`.
+- **Decimal.js**: Vargas, panchanga, KP sub-lords, and `packages/core/src/core/precise.ts` use `decimal.js`. SPK state and the coordinate chain in `ephemeris.ts` use ordinary floating-point numbers.
 
 Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md](./docs/ACCURACY.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 1998, and 2024 sample epochs.
 
 ## Packages
 
-| Package | Description |
-| :--- | :--- |
-| [`@node-jhora/core`](./packages/core) | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md)) |
-| [`@node-jhora/ephe`](./packages/ephe) | JPL `de440s.bsp` downloader. Data only; calculation stays in core. |
-| [`@node-jhora/analytics`](./packages/analytics) | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md)) |
-| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md)) |
-| [`@node-jhora/match`](./packages/match) | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md)) |
-| [`@node-jhora/events`](./packages/events) | `TransitScanner`. ([Docs](./docs/EVENTS.md)) |
-| [`@node-jhora/reporting`](./packages/reporting) | PDF reports. ([Docs](./docs/REPORTING.md)) |
-| [`@node-jhora/api`](./packages/api) | Fastify + Zod HTTP API. ([Docs](./docs/API.md)) |
-| [`@node-jhora/testkit`](./packages/testkit) | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md)) |
+| Package                                           | Description                                                                            |
+| :------------------------------------------------ | :------------------------------------------------------------------------------------- |
+| [`@node-jhora/core`](./packages/core)             | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md))    |
+| [`@node-jhora/ephe`](./packages/ephe)             | JPL `de440s.bsp` kernel (31 MB, in the tarball). Data only; calculation stays in core. |
+| [`@node-jhora/analytics`](./packages/analytics)   | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md))          |
+| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md))       |
+| [`@node-jhora/match`](./packages/match)           | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md))       |
+| [`@node-jhora/events`](./packages/events)         | `TransitScanner`. ([Docs](./docs/EVENTS.md))                                           |
+| [`@node-jhora/reporting`](./packages/reporting)   | PDF reports. ([Docs](./docs/REPORTING.md))                                             |
+| [`@node-jhora/api`](./packages/api)               | Fastify + Zod HTTP API. ([Docs](./docs/API.md))                                        |
+| [`@node-jhora/testkit`](./packages/testkit)       | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md))        |
 
 `pnpm build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, and `testkit`. `ephe` is a data package with no `tsconfig.json`.
 
@@ -43,18 +43,18 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 
 The [documentation site](./apps/docs) (Astro Starlight) is built with `pnpm run docs:build` from the repository root. Guides are synced from this README and `docs/` at build time; the API reference is generated with TypeDoc.
 
-*   **[Architecture](./docs/ARCHITECTURE.md)** — workspaces, package boundaries, build.
-*   **[Accuracy](./docs/ACCURACY.md)** — Horizons and JHora-export comparisons recorded in-repo.
-*   **[Mathematical notes](./docs/MATH.md)**
-*   **[Core](./docs/CORE.md)** — `EphemerisEngine`, `NodeJHora`, panchanga, lagnas, upagrahas.
-*   **[Analytics](./docs/ANALYTICS.md)** — Shadbala, Ashtakavarga, yogas, KP engine.
-*   **[Prediction](./docs/PREDICTION.md)** — dashas, transits, Jaimini.
-*   **[Matchmaking](./docs/MATCHMAKING.md)** — Ashta Kuta, Dasha Kuta, Mangal Dosha.
-*   **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
-*   **[Events](./docs/EVENTS.md)** — `TransitScanner`.
-*   **[PDF reporting](./docs/REPORTING.md)**
-*   **[Golden cases](./docs/GOLDENS.md)** — schema for accuracy fixtures.
-*   **[Market notes](./docs/MARKET_POSITION.md)**
+- **[Architecture](./docs/ARCHITECTURE.md)** — workspaces, package boundaries, build.
+- **[Accuracy](./docs/ACCURACY.md)** — Horizons and JHora-export comparisons recorded in-repo.
+- **[Mathematical notes](./docs/MATH.md)**
+- **[Core](./docs/CORE.md)** — `EphemerisEngine`, `NodeJHora`, panchanga, lagnas, upagrahas.
+- **[Analytics](./docs/ANALYTICS.md)** — Shadbala, Ashtakavarga, yogas, KP engine.
+- **[Prediction](./docs/PREDICTION.md)** — dashas, transits, Jaimini.
+- **[Matchmaking](./docs/MATCHMAKING.md)** — Ashta Kuta, Dasha Kuta, Mangal Dosha.
+- **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
+- **[Events](./docs/EVENTS.md)** — `TransitScanner`.
+- **[PDF reporting](./docs/REPORTING.md)**
+- **[Golden cases](./docs/GOLDENS.md)** — schema for accuracy fixtures.
+- **[Market notes](./docs/MARKET_POSITION.md)**
 
 ## Installation
 
@@ -62,7 +62,7 @@ The [documentation site](./apps/docs) (Astro Starlight) is built with `pnpm run 
 npm install @node-jhora/core @node-jhora/ephe
 ```
 
-`@node-jhora/core` declares `@node-jhora/ephe` as a required peer dependency. The `ephe` `postinstall` script downloads `de440s.bsp` from JPL and skips the download when the file already matches the pinned SHA-256. Override the path with `NODE_JHORA_EPHE_PATH`.
+`@node-jhora/core` declares `@node-jhora/ephe` as an optional peer dependency. Install it to get `de440s.bsp` inside `node_modules` with no network access at runtime. Without it, core downloads the same bytes from JPL into a user cache on first use and checks the pinned SHA-256; `npx node-jhora-ephe prefetch de440s` does that ahead of time. No package runs an install script. Override the path with `NODE_JHORA_EPHE_PATH`. See [ADR 0006](./docs/decisions/0006-npm-packaging-and-ephemeris-data-distribution.md).
 
 Other packages in this workspace: `@node-jhora/analytics`, `@node-jhora/prediction`, `@node-jhora/match`, `@node-jhora/events`, `@node-jhora/reporting`, `@node-jhora/api`.
 
@@ -84,7 +84,7 @@ const chart = await NodeJHora.calculate(
 );
 
 console.log('Ascendant:', chart.ascendant);
-console.log('Sun:', chart.planets.find(p => p.id === 0)?.longitude);
+console.log('Sun:', chart.planets.find((p) => p.id === 0)?.longitude);
 console.log('Moon nakshatra:', chart.panchanga.nakshatra);
 ```
 
@@ -115,7 +115,7 @@ const planets = engine.getPlanets(dt, location); // ayanamsa: instance default, 
 const houses = calculateHouseCusps(dt, location.latitude, location.longitude, 'WholeSign', engine);
 ```
 
-`de440s.bsp` is resolved in this order: `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then `de440s.bsp` next to the `packages/` directory.
+`de440s.bsp` is resolved in this order: `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then the monorepo copy, then the user cache, then a SHA-256-verified download from JPL into that cache (skipped when `NODE_JHORA_OFFLINE=1`).
 
 ## Modules
 
@@ -125,7 +125,11 @@ const houses = calculateHouseCusps(dt, location.latitude, location.longitude, 'W
 import { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
 
 const strength = calculateShadbala({
-    planet, allPlanets, houses, sun, moon,
+    planet,
+    allPlanets,
+    houses,
+    sun,
+    moon,
     timeDetails: { sunrise, sunset, birthHour },
     vargaPositions,
 });
@@ -141,8 +145,10 @@ const yogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 ```typescript
 import {
     generateVimshottari,
-    YoginiDasha, NarayanaDasha,
-    JaiminiCore, JaiminiDashas,
+    YoginiDasha,
+    NarayanaDasha,
+    JaiminiCore,
+    JaiminiDashas,
 } from '@node-jhora/prediction';
 
 const dashas = generateVimshottari(birthDate, moonLongitude, 5);
@@ -200,18 +206,18 @@ curl -X POST http://localhost:3000/v1/chart \
 
 Routes registered in `packages/api/src/server.ts`:
 
-| Method | Path |
-| :--- | :--- |
-| GET | `/health` |
-| POST | `/v1/chart` |
-| POST | `/v1/chart/vargas` |
-| POST | `/v1/panchanga` |
-| POST | `/v1/dasha` |
-| POST | `/v1/transits` |
-| POST | `/v1/reading` |
-| POST | `/v1/shadbala` |
-| POST | `/v1/kp/significators` |
-| POST | `/v1/match` |
+| Method | Path                   |
+| :----- | :--------------------- |
+| GET    | `/health`              |
+| POST   | `/v1/chart`            |
+| POST   | `/v1/chart/vargas`     |
+| POST   | `/v1/panchanga`        |
+| POST   | `/v1/dasha`            |
+| POST   | `/v1/transits`         |
+| POST   | `/v1/reading`          |
+| POST   | `/v1/shadbala`         |
+| POST   | `/v1/kp/significators` |
+| POST   | `/v1/match`            |
 
 The chart body schema is `BirthInputSchema` in `packages/api/src/schemas/birth-input.ts` (date, time, and either a city or latitude/longitude/timezone). Omitted `ayanamsa` defaults to `true_chitra`. See [docs/API.md](./docs/API.md) for the field list. That page still shows an older request shape in places; the schema file is the source of truth.
 
@@ -252,6 +258,6 @@ pnpm run validate-github-templates
 **Source available — commercial license required.**
 Copyright (c) 2026 Harieshwar Jagan Abirami. All Rights Reserved.
 
-*   **Public access**: source is available for inspection and education.
-*   **Restricted use**: usage, distribution, and derivative works require a commercial license.
-*   See [LICENSE](LICENSE).
+- **Public access**: source is available for inspection and education.
+- **Restricted use**: usage, distribution, and derivative works require a commercial license.
+- See [LICENSE](LICENSE).

@@ -5,18 +5,34 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
-        ".": "./dist/index.js",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
         "./node/register": {
             "types": "./node/register.d.ts",
             "import": "./node/register.mjs"
-        }
+        },
+        "./node/ephemeris": {
+            "types": "./node/ephemeris.d.ts",
+            "import": "./node/ephemeris.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "bin": {
+        "node-jhora-ephe": "./node/cli.mjs"
     },
     "license": "LicenseRef-NodeJHora-Source-Available",
+    "engines": {
+        "node": ">=22"
+    },
     "publishConfig": {
         "access": "public"
     },
     "files": [
         "dist",
+        "!dist/**/*.map",
+        "!dist/**/*.tsbuildinfo",
         "node",
         "LICENSE",
         "README.md"
@@ -33,11 +49,11 @@
         "zod": "4.6.7"
     },
     "peerDependencies": {
-        "@node-jhora/ephe": "workspace:*"
+        "@node-jhora/ephe": "workspace:^"
     },
     "peerDependenciesMeta": {
         "@node-jhora/ephe": {
-            "optional": false
+            "optional": true
         }
     },
     "devDependencies": {
