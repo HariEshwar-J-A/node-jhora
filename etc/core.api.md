@@ -447,7 +447,7 @@ export const DEFAULT_PRECISION_PROFILE: PrecisionProfile;
 export const DELTA_T_MODEL = "jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997";
 
 // @public
-export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-obs2026+st1997";
+export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+oracle-bridge+ukho-cubic+smh2016-parabola";
 
 // @public
 export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number): string;

@@ -75,3 +75,49 @@ export const SMH2016_S15: readonly (readonly [number, number, number, number, nu
     [2010.0, 2013.0, 66.063, 0.828, -0.142, 0.168],
     [2013.0, 2016.0, 66.917, 1.046, 0.36, -0.282],
 ];
+
+/** Knot year of the first Table S15 segment (−720…400). */
+export const SMH2016_SPLINE_FIRST_YEAR = SMH2016_S15[0][0];
+
+/**
+ * Long-term parabola for Y < −720 from Stephenson, Morrison & Hohenkerk (2016),
+ * Table S15 notes: ΔT = −320 + 32.5 u², u = (Y − 1825)/100.
+ */
+export const SMH2016_ANCIENT_PARABOLA_OFFSET = -320;
+export const SMH2016_ANCIENT_PARABOLA_COEFF = 32.5;
+export const SMH2016_ANCIENT_PARABOLA_ORIGIN = 1825;
+
+/** Table S15 discussion parabola (eq. 4.1), seconds, for Y ≪ −720. */
+export function deltaTSmh2016Parabola(y: number): number {
+    const u = (y - SMH2016_ANCIENT_PARABOLA_ORIGIN) / 100;
+    return SMH2016_ANCIENT_PARABOLA_OFFSET + SMH2016_ANCIENT_PARABOLA_COEFF * u * u;
+}
+
+/**
+ * Parabola minus the first spline knot value at Y = −720 (Table S15 `a0`).
+ * SMH2016 joins the long-term parabola to the cubic spline at −720 (Table S15
+ * notes): spline for Y ≥ −720, shifted parabola for Y < −720.
+ */
+export const SMH2016_PARABOLA_SPLINE_JOIN_OFFSET =
+    deltaTSmh2016Parabola(SMH2016_SPLINE_FIRST_YEAR) - SMH2016_S15[0][2];
+
+/** Parabola (4.1) aligned to the Table S15 knot at −720. */
+export function deltaTSmh2016Ancient(y: number): number {
+    return deltaTSmh2016Parabola(y) - SMH2016_PARABOLA_SPLINE_JOIN_OFFSET;
+}
+
+/** Table S15 cubic spline of ΔT (seconds) on the authors' n′ = −25.85″/cy². */
+export function deltaTSmh2016Spline(y: number): number {
+    if (y < SMH2016_SPLINE_FIRST_YEAR) {
+        return deltaTSmh2016Ancient(y);
+    }
+    for (const [k0, k1, a0, a1, a2, a3] of SMH2016_S15) {
+        if (y < k1) {
+            const t = (y - k0) / (k1 - k0);
+            return a0 + t * (a1 + t * (a2 + t * a3));
+        }
+    }
+    const [k0, k1, a0, a1, a2, a3] = SMH2016_S15[SMH2016_S15.length - 1];
+    const t = (y - k0) / (k1 - k0);
+    return a0 + t * (a1 + t * (a2 + t * a3));
+}

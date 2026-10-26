@@ -112,7 +112,8 @@ describe('Vertex — precision profiles vs oracles', () => {
             const m = engine.getHouses(J2000_JD, lat, 0, 'W', false, 27, 0, undefined, {
                 precisionProfile: 'modern',
             });
-            expect(gapArcsec(j.vertex, m.vertex)).toBe(0);
+            // Profiles use different ΔT at J2000; tropical vertex should still match within float noise.
+            expect(gapArcsec(j.vertex, m.vertex)).toBeLessThan(1e-6);
         }
     });
 
