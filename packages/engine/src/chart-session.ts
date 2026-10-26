@@ -50,6 +50,8 @@ const defaultDeps: ChartSessionDeps = {
 
 export interface ChartSessionInput {
     instant: DateTime;
+    /** When set, used instead of deriving JD from `instant` (civil-time resolver). */
+    julianDayUt?: number;
     location: { latitude: number; longitude: number; altitude?: number };
     settings: SettingsInput;
     ephemeris: EphemerisEngine;
@@ -97,6 +99,7 @@ export class ChartSession {
     readonly config: ReturnType<typeof describeCalculation>['config'];
 
     private readonly instant: DateTime;
+    private readonly julianDayUt?: number;
     private readonly location: ChartSessionInput['location'];
     private readonly ephemeris: EphemerisEngine;
     private readonly dashaOpts: ChartSessionDashaOptions;
@@ -119,6 +122,7 @@ export class ChartSession {
         this.settingsHash = resolved.settingsHash;
         this.config = resolved.config;
         this.instant = input.instant;
+        this.julianDayUt = input.julianDayUt;
         this.location = input.location;
         this.ephemeris = input.ephemeris;
         this.dashaOpts = input.dasha ?? {};
@@ -133,6 +137,8 @@ export class ChartSession {
             positionMode: this.config.positionMode,
             topocentric: this.config.topocentric,
             ayanamsaOffset: this.config.ayanamsaOffset,
+            calendar: this.config.calendar,
+            ...(this.julianDayUt !== undefined ? { julianDayUt: this.julianDayUt } : {}),
         };
     }
 
@@ -166,6 +172,10 @@ export class ChartSession {
                 this.ephemeris,
                 this.config.ayanamsaMode,
                 this.config.ayanamsaOffset,
+                {
+                    calendar: this.config.calendar,
+                    julianDayUt: this.julianDayUt,
+                },
             );
             this.housesOut = {
                 system: result.system,

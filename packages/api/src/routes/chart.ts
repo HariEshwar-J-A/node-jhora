@@ -5,7 +5,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 export async function chartRoutes(app: FastifyInstance): Promise<void> {
@@ -14,11 +14,13 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
     // POST /v1/chart — full birth chart (planets, houses, panchanga)
     typed.post('/chart', { schema: { body: BirthInputSchema } }, async (req, reply) => {
         const parsed = parseBirthInput(req.body);
-        const { dt, location, ayanamsaOrder, houseSystem, settingsHash, settings } = parsed;
+        const { dt, julianDayUt, location, ayanamsaOrder, houseSystem, settingsHash, settings } =
+            parsed;
         const engine = getEngine();
 
         const session = new ChartSession({
             instant: dt,
+            julianDayUt,
             location,
             settings,
             ephemeris: engine,
@@ -27,7 +29,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
         const planets = session.getPlanets();
         const housesResult = session.getHouses();
         const panchanga = session.getPanchanga();
-        const ayanamsa = engine.getAyanamsa(engine.julday(dt), ayanamsaOrder);
+        const ayanamsa = engine.getAyanamsa(julianDayUt, ayanamsaOrder);
 
         return reply.status(200).send(
             attachResultEnvelope(
@@ -45,7 +47,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
                         ayanamsaName: req.body.ayanamsa,
                         ayanamsaValue: ayanamsa,
                         nodeType: req.body.nodeType,
-                        julianDay: engine.julday(dt),
+                        julianDay: julianDayUt,
                         ...(parsed.resolvedCity
                             ? {
                                   resolvedCity: parsed.resolvedCity,
@@ -63,27 +65,11 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
 
     // POST /v1/chart/vargas — all 16 divisional charts
     typed.post('/chart/vargas', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const {
-            dt,
-            location,
-            ayanamsaOrder,
-            nodeType,
-            dasamsaScheme,
-            horaScheme,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-            settingsHash,
-        } = parseBirthInput(req.body);
+        const parsed = parseBirthInput(req.body);
+        const { dt, location, dasamsaScheme, horaScheme, settingsHash } = parsed;
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-        });
+        const planets = engine.getPlanets(dt, location, birthEphemerisOptions(parsed));
         const DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 
         const vargas: Record<string, any[]> = {};

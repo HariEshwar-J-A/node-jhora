@@ -9,6 +9,7 @@
  * All angles are in degrees unless documented otherwise.
  */
 
+import { type CalendarMode, julianDayUt } from '../time/historical.js';
 import { deltaT } from './deltat.js';
 import { equationOfOriginsComplementaryDegrees } from './iers-eo-complementary.js';
 import { nutation } from './nutation.js';
@@ -44,25 +45,21 @@ export function mod360(x: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Julian Day Number (UT) from a UTC calendar date (Meeus §7, Gregorian).
+ * Julian Day (UT) from civil date/time. Default calendar `'auto'` matches JHora /
+ * Swiss Ephemeris (Meeus ch. 7, reform at 1582-10-15).
  */
-export function julday(year: number, month: number, day: number, hourUT: number): number {
-    let y = year;
-    let m = month;
-    if (m <= 2) {
-        y -= 1;
-        m += 12;
-    }
-    const A = Math.floor(y / 100);
-    const B = 2 - A + Math.floor(A / 4);
-    return (
-        Math.floor(365.25 * (y + 4716)) +
-        Math.floor(30.6001 * (m + 1)) +
-        day +
-        hourUT / 24.0 +
-        B -
-        1524.5
-    );
+export function julday(
+    year: number,
+    month: number,
+    day: number,
+    hourUT: number,
+    calendar: CalendarMode = 'auto',
+): number {
+    const h = Math.floor(hourUT);
+    const remMin = (hourUT - h) * 60;
+    const minute = Math.floor(remMin);
+    const second = (remMin - minute) * 60;
+    return julianDayUt({ astronomicalYear: year, month, day, hour: h, minute, second }, calendar);
 }
 
 // ---------------------------------------------------------------------------

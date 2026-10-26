@@ -33,6 +33,7 @@ import {
     DEFAULT_POSITION_MODE,
     type PositionMode,
 } from './engine/ephemeris.js';
+import type { CalendarMode } from './time/historical.js';
 import {
     type DasamsaScheme,
     DEFAULT_DASAMSA_SCHEME,
@@ -121,6 +122,12 @@ export interface JyotishConfig {
 
     /** Fixed ΔT in seconds replacing the profile's model. See CalculationSettings. */
     deltaTOverrideSeconds?: number;
+
+    /**
+     * Civil calendar for date inputs. Omitted means `'auto'` (Julian before
+     * 1582-10-15, Gregorian from then — JHora / Swiss Ephemeris).
+     */
+    calendar?: CalendarMode;
 }
 
 /** Tropical year, the standard Vimshottari dasha year. */

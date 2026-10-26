@@ -12,6 +12,9 @@ import { z } from 'zod';
 export type AmbiguousLocalPolicy = 'earlier' | 'later' | 'reject';
 
 // @public
+export function assertValidCivilDate(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>, calendar?: CalendarMode): void;
+
+// @public
 export const AYANAMSA: {
     readonly FAGAN_BRADLEY: 0;
     readonly LAHIRI: 1;
@@ -157,6 +160,11 @@ export const CalculationSettingsSchema: z.ZodObject<{
         de440s: "de440s";
         de431_long: "de431_long";
     }>>;
+    calendar: z.ZodOptional<z.ZodEnum<{
+        auto: "auto";
+        gregorian: "gregorian";
+        julian: "julian";
+    }>>;
     ayanamsa: z.ZodEnum<{
         true_citra: "true_citra";
         true_pushya: "true_pushya";
@@ -221,6 +229,12 @@ export const CalculationSettingsSchema: z.ZodObject<{
     vargaVariants: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, z.core.$strict>;
 
+// @public
+export const CALENDAR_MODES: readonly ["auto", "gregorian", "julian"];
+
+// @public (undocumented)
+export type CalendarMode = (typeof CALENDAR_MODES)[number];
+
 // @public (undocumented)
 export function canonicalJson(value: unknown): string;
 
@@ -258,6 +272,7 @@ export function civilDateFromJulianDay(jd: number): Pick<HistoricalDateTime, 'as
 
 // @public (undocumented)
 export interface CivilTimeInput {
+    calendar?: CalendarMode;
     forceLmt?: boolean;
     // (undocumented)
     latitude: number;
@@ -349,6 +364,13 @@ export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
 // @public
 export const DASHA_YEAR_DAYS: Decimal;
+
+// @public
+export function dateTimeToJulianDayUt(date: DateTime, options?: {
+    calendar?: CalendarMode;
+    latitude?: number;
+    longitude?: number;
+}): number;
 
 // @public
 export const DE431_SOURCE: Readonly<{
@@ -488,7 +510,11 @@ export class EphemerisEngine {
     initialize(options?: {
         kernel?: Uint8Array;
     }): Promise<void>;
-    julday(date: DateTime): number;
+    julday(date: DateTime, options?: {
+        calendar?: CalendarMode;
+        latitude?: number;
+        longitude?: number;
+    }): number;
     setAyanamsa(mode: number): void;
     setChunkStore(store: De431ChunkStore): void;
     setEphemerisPolicy(policy: EphemerisPolicy): void;
@@ -574,9 +600,22 @@ export function getShortestDistance(angle1: number, angle2: number): number;
 export function getTzdbVersion(): string | undefined;
 
 // @public
-export function hashSettings(input: CalculationSettings | unknown): string;
+export class GregorianReformGapError extends RangeError {
+    constructor(astronomicalYear: number, month: number, day: number);
+    // (undocumented)
+    readonly astronomicalYear: number;
+    // (undocumented)
+    readonly code: "gregorian_reform_gap";
+    // (undocumented)
+    readonly day: number;
+    // (undocumented)
+    readonly month: number;
+}
 
 // @public
+export function hashSettings(input: CalculationSettings | unknown): string;
+
+// @public (undocumented)
 export interface HistoricalDateTime {
     astronomicalYear: number;
     // (undocumented)
@@ -626,6 +665,9 @@ export function inferDasaYearKind(days: number): DasaYearKind;
 // @public (undocumented)
 export function init(): Promise<void>;
 
+// @public
+export function isGregorianReformGap(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>): boolean;
+
 // @public (undocumented)
 export function isPresetId(value: string): value is PresetId;
 
@@ -641,14 +683,15 @@ export const JHORA_PRESET: Partial<JyotishConfig>;
 // @public (undocumented)
 export function julianDayToUnixMs(jd: number): number;
 
-// @public
-export function julianDayUt(parts: HistoricalDateTime): number;
+// @public (undocumented)
+export function julianDayUt(parts: HistoricalDateTime, calendar?: CalendarMode): number;
 
 // @public (undocumented)
 export interface JyotishConfig {
     altitudeMetres: number;
     ayanamsaMode: number;
     ayanamsaOffset: number;
+    calendar?: CalendarMode;
     dasamsaScheme: DasamsaScheme;
     dashaYearDays: number;
     deltaTOverrideSeconds?: number;
@@ -724,7 +767,7 @@ export function localClockToHourUT(local: {
 }): number;
 
 // @public
-export function localClockToJulianDay(local: LocalClock): number;
+export function localClockToJulianDay(local: LocalClock, calendar?: CalendarMode): number;
 
 // @public
 export interface ManualOffsetOverride {
@@ -902,7 +945,9 @@ export const PRECISION_PROFILES: readonly ["jhora", "modern"];
 
 // @public
 export interface PrecisionOptions {
+    calendar?: CalendarMode;
     deltaTOverrideSeconds?: number;
+    julianDayUt?: number;
     precisionProfile?: PrecisionProfile;
 }
 
@@ -937,6 +982,9 @@ export enum Relationship {
 
 // @public (undocumented)
 export function resolveCalculationInput(input?: SettingsInput, base?: CalculationSettings): CalculationSettings;
+
+// @public
+export function resolveCalendar(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>, calendar?: CalendarMode): 'julian' | 'gregorian';
 
 // @public
 export function resolveCivilTime(input: CivilTimeInput): CivilTimeResult;

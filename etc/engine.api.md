@@ -111,6 +111,7 @@ export interface ChartSessionInput {
     houseSystemOverride?: HouseSystemMethod | string;
     // (undocumented)
     instant: DateTime;
+    julianDayUt?: number;
     // (undocumented)
     location: {
         latitude: number;

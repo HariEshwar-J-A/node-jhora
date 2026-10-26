@@ -5,7 +5,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { MatchInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 const NAKSHATRA_SPAN = 360 / 27;
@@ -25,20 +25,8 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         const p1 = parseBirthInput(req.body.person1);
         const p2 = parseBirthInput(req.body.person2);
 
-        const planets1 = engine.getPlanets(p1.dt, p1.location, {
-            ayanamsaOrder: p1.ayanamsaOrder,
-            nodeType: p1.nodeType,
-            positionMode: p1.positionMode,
-            topocentric: p1.topocentric,
-            ayanamsaOffset: p1.ayanamsaOffset,
-        });
-        const planets2 = engine.getPlanets(p2.dt, p2.location, {
-            ayanamsaOrder: p2.ayanamsaOrder,
-            nodeType: p2.nodeType,
-            positionMode: p2.positionMode,
-            topocentric: p2.topocentric,
-            ayanamsaOffset: p2.ayanamsaOffset,
-        });
+        const planets1 = engine.getPlanets(p1.dt, p1.location, birthEphemerisOptions(p1));
+        const planets2 = engine.getPlanets(p2.dt, p2.location, birthEphemerisOptions(p2));
 
         const moon1 = planets1.find((p) => p.id === Body.Moon)!;
         const moon2 = planets2.find((p) => p.id === Body.Moon)!;

@@ -4,7 +4,14 @@
  *
  * Dates on and after 1582-10-15 use the Gregorian calendar. Earlier dates use
  * the proleptic Julian calendar (no historical discontinuity at the reform).
+ *
+ * In `'auto'` mode the ten civil dates 1582-10-05 … 1582-10-14 never existed
+ * (the historical Gregorian reform); callers must pick `'gregorian'` or
+ * `'julian'` explicitly to interpret those labels.
  */
+
+export const CALENDAR_MODES = ['auto', 'gregorian', 'julian'] as const;
+export type CalendarMode = (typeof CALENDAR_MODES)[number];
 
 export interface HistoricalDateTime {
     /** Astronomical year: 1 = 1 AD, 0 = 1 BC, -1 = 2 BC, … */
@@ -17,6 +24,77 @@ export interface HistoricalDateTime {
 }
 
 const GREGORIAN_START = { y: 1582, m: 10, d: 15 };
+const GREGORIAN_GAP_FIRST = { y: 1582, m: 10, d: 5 };
+const GREGORIAN_GAP_LAST = { y: 1582, m: 10, d: 14 };
+
+/** Civil dates suppressed by the 1582 Gregorian reform (invalid in `'auto'`). */
+export function isGregorianReformGap(
+    parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>,
+): boolean {
+    const y = parts.astronomicalYear;
+    if (y !== GREGORIAN_GAP_FIRST.y) return false;
+    if (parts.month !== GREGORIAN_GAP_FIRST.m) return false;
+    return parts.day >= GREGORIAN_GAP_FIRST.d && parts.day <= GREGORIAN_GAP_LAST.d;
+}
+
+/** Thrown when a reform-gap date is supplied with calendar `'auto'`. */
+export class GregorianReformGapError extends RangeError {
+    readonly code = 'gregorian_reform_gap' as const;
+
+    constructor(
+        public readonly astronomicalYear: number,
+        public readonly month: number,
+        public readonly day: number,
+    ) {
+        super(
+            `Civil date ${astronomicalYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ` +
+                'did not exist in the historical Gregorian reform; use calendar "gregorian" or "julian"',
+        );
+        this.name = 'GregorianReformGapError';
+    }
+}
+
+function isJulianLeapYear(y: number): boolean {
+    return y % 4 === 0;
+}
+
+function isGregorianLeapYear(y: number): boolean {
+    return y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+}
+
+function daysInMonth(y: number, m: number, cal: 'julian' | 'gregorian'): number {
+    const leap = cal === 'julian' ? isJulianLeapYear(y) : isGregorianLeapYear(y);
+    if (m === 2) return leap ? 29 : 28;
+    if (m === 4 || m === 6 || m === 9 || m === 11) return 30;
+    return 31;
+}
+
+/**
+ * Validate civil y-m-d for the resolved calendar. Throws {@link RangeError} for
+ * impossible dates; {@link GregorianReformGapError} for reform-gap dates in `'auto'`.
+ */
+export function assertValidCivilDate(
+    parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>,
+    calendar: CalendarMode = 'auto',
+): void {
+    if (calendar === 'auto' && isGregorianReformGap(parts)) {
+        throw new GregorianReformGapError(parts.astronomicalYear, parts.month, parts.day);
+    }
+    const { astronomicalYear: y, month: m, day: d } = parts;
+    if (m < 1 || m > 12) throw new RangeError(`month out of range: ${m}`);
+    const cal =
+        calendar === 'julian'
+            ? 'julian'
+            : calendar === 'gregorian'
+              ? 'gregorian'
+              : usesProlepticJulian(parts)
+                ? 'julian'
+                : 'gregorian';
+    const dim = daysInMonth(y, m, cal);
+    if (d < 1 || d > dim) {
+        throw new RangeError(`day out of range for ${cal} ${y}-${m}: ${d}`);
+    }
+}
 
 export function historicalYearFromParts(
     year: number,
@@ -43,8 +121,21 @@ export function usesProlepticJulian(
  * Julian day (UT) at the given civil time, 0h = midnight.
  * Fractional part encodes time of day.
  */
-export function julianDayUt(parts: HistoricalDateTime): number {
-    const cal = usesProlepticJulian(parts) ? 'julian' : 'gregorian';
+export function resolveCalendar(
+    parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>,
+    calendar: CalendarMode = 'auto',
+): 'julian' | 'gregorian' {
+    if (calendar === 'julian') return 'julian';
+    if (calendar === 'gregorian') return 'gregorian';
+    if (isGregorianReformGap(parts)) {
+        throw new GregorianReformGapError(parts.astronomicalYear, parts.month, parts.day);
+    }
+    return usesProlepticJulian(parts) ? 'julian' : 'gregorian';
+}
+
+export function julianDayUt(parts: HistoricalDateTime, calendar: CalendarMode = 'auto'): number {
+    assertValidCivilDate(parts, calendar);
+    const cal = resolveCalendar(parts, calendar);
     let y = parts.astronomicalYear;
     let m = parts.month;
     if (m <= 2) {

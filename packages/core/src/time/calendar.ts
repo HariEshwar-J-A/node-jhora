@@ -7,7 +7,7 @@
  * and Unix-epoch conversions.
  */
 
-import { julianDayUt } from './historical.js';
+import { type CalendarMode, julianDayUt } from './historical.js';
 import type { LocalClock } from './types.js';
 
 /** Julian Day of the Unix epoch, 1970-01-01T00:00:00Z. */
@@ -31,15 +31,18 @@ export function localClockToHourUT(local: {
  * (subtract the zone offset afterwards). Uses the shared calendar in
  * `historical.ts`: proleptic Julian before 1582-10-15, Gregorian after.
  */
-export function localClockToJulianDay(local: LocalClock): number {
-    const midnight = julianDayUt({
-        astronomicalYear: local.year,
-        month: local.month,
-        day: local.day,
-        hour: 0,
-        minute: 0,
-        second: 0,
-    });
+export function localClockToJulianDay(local: LocalClock, calendar: CalendarMode = 'auto'): number {
+    const midnight = julianDayUt(
+        {
+            astronomicalYear: local.year,
+            month: local.month,
+            day: local.day,
+            hour: 0,
+            minute: 0,
+            second: 0,
+        },
+        calendar,
+    );
     return midnight + localClockToHourUT(local) / 24;
 }
 

@@ -46,6 +46,11 @@ const BirthBaseSchema = z.object({
      */
     date: z.string().regex(/^-?\d{1,5}-\d{2}-\d{2}$/, 'Must be astronomical YYYY-MM-DD'),
     time: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Must be HH:MM:SS'),
+    /**
+     * Civil calendar for `date` (default `auto`: Julian before 1582-10-15,
+     * Gregorian from then). Use `gregorian` or `julian` to force a convention.
+     */
+    calendar: z.enum(['auto', 'gregorian', 'julian']).optional(),
     ayanamsa: z.enum(AYANAMSA_KEYS).default(DEFAULT_AYANAMSA_KEY),
     nodeType: z.enum(['mean', 'true']).default('true'),
     /** Report where a body is ('geometric', JHora's convention) or is seen ('apparent'). */

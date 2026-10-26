@@ -47,6 +47,8 @@
 import { DateTime } from 'luxon';
 
 import { Body } from '../core/body.js';
+import { dateTimeToJulianDayUt } from '../time/civil.js';
+import type { CalendarMode } from '../time/historical.js';
 import {
     APPARENT,
     AU_KM,
@@ -71,7 +73,6 @@ import {
     computeVertex,
     equalHouseCusps,
     getGAST,
-    julday as juldayFn,
     julianCenturies,
     meanObliquity,
     mod360,
@@ -141,6 +142,10 @@ export interface PrecisionOptions {
     precisionProfile?: PrecisionProfile;
     /** Fixed ΔT, seconds, replacing the profile's ΔT model. */
     deltaTOverrideSeconds?: number;
+    /** Civil calendar for Luxon inputs; default `'auto'` (JHora / SE). */
+    calendar?: CalendarMode;
+    /** When set, skips {@link EphemerisEngine.julday} (e.g. civil time from {@link resolveCivilTime}). */
+    julianDayUt?: number;
 }
 
 function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefined {
@@ -351,11 +356,16 @@ export class EphemerisEngine {
     // Julian Day
     // -----------------------------------------------------------------------
 
-    /** Compute Julian Day (UT) for any Luxon DateTime. */
-    public julday(date: DateTime): number {
+    /**
+     * Julian Day (UT) for a Luxon DateTime. Civil components are read in
+     * `date.zone` and converted with {@link dateTimeToJulianDayUt}.
+     */
+    public julday(
+        date: DateTime,
+        options?: { calendar?: CalendarMode; latitude?: number; longitude?: number },
+    ): number {
         this.checkInit();
-        const u = date.toUTC();
-        return juldayFn(u.year, u.month, u.day, u.hour + u.minute / 60 + u.second / 3600);
+        return dateTimeToJulianDayUt(date, options);
     }
 
     // -----------------------------------------------------------------------
@@ -432,11 +442,19 @@ export class EphemerisEngine {
             nodeType = DEFAULT_NODE_TYPE,
             positionMode = DEFAULT_POSITION_MODE,
             ayanamsaOffset = 0,
+            calendar = 'auto',
+            julianDayUt: jdOverride,
         } = options;
         const effectiveMode = ayanamsaOrder ?? this.ayanamsaMode;
         const corrections = correctionsFor(positionMode);
 
-        const jd = this.julday(date);
+        const jd =
+            jdOverride ??
+            this.julday(date, {
+                calendar,
+                latitude: location?.latitude,
+                longitude: location?.longitude,
+            });
         // Geometric (TRUEPOS) sidereal positions subtract the geometric star
         // place. Apparent positions subtract the same apparent ayanamsa
         // getAyanamsa() reports, so adding it back recovers the tropical place.

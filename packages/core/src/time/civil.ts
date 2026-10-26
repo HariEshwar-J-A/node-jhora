@@ -3,6 +3,15 @@
  *
  * Uses environment IANA rules via `Intl` (browser-safe, no Temporal polyfill).
  * Longitude-based LMT applies before standard-time history or when forced.
+ *
+ * **Historical dates:** for years inside {@link CIVIL_YEAR_MIN}…{@link CIVIL_YEAR_MAX},
+ * `calendar: 'auto'` (default) interprets the wall date as Julian before
+ * 1582-10-15 and Gregorian from that day onward (astronomical year numbering:
+ * year `0` = 1 BC). Dates 1582-10-05 … 1582-10-14 are rejected in `'auto'`
+ * ({@link GregorianReformGapError}); force `calendar: 'gregorian'` or
+ * `'julian'` to label them. Outside the civil-year span, or when the zone is
+ * not a known IANA id, {@link dateTimeToJulianDayUt} falls back to
+ * {@link julianDayUt} on the zone's civil components (no DST table).
  */
 
 import { DateTime } from 'luxon';
@@ -13,7 +22,7 @@ import {
     localClockToJulianDay,
     unixMsToJulianDay,
 } from './calendar.js';
-import { usesProlepticJulian } from './historical.js';
+import { type CalendarMode, julianDayUt, usesProlepticJulian } from './historical.js';
 import type {
     CivilTimeInput,
     CivilTimePolicy,
@@ -51,6 +60,40 @@ function assertLocalInRange(local: LocalClock): void {
 }
 
 /**
+ * True when the zone label means civil clock = UT (no longitude-based LMT).
+ * Used by {@link resolveCivilTime} and {@link dateTimeToJulianDayUt}.
+ */
+export function isUtcCivilTimezone(timezone: string): boolean {
+    return (
+        timezone === 'UTC' ||
+        timezone === 'Etc/UTC' ||
+        timezone === 'Etc/GMT' ||
+        timezone === 'GMT' ||
+        timezone === 'Etc/Greenwich'
+    );
+}
+
+function julianDayFromZonedCivil(date: DateTime, calendar: CalendarMode): number {
+    const ms = date.millisecond ?? 0;
+    const second = date.second + ms / 1000;
+    const localJd = julianDayUt(
+        {
+            astronomicalYear: date.year,
+            month: date.month,
+            day: date.day,
+            hour: date.hour,
+            minute: date.minute,
+            second,
+        },
+        calendar,
+    );
+    if (date.zone.type === 'fixed') {
+        return localJd - date.offset / 1440;
+    }
+    return localJd;
+}
+
+/**
  * Local mean time offset, east-positive minutes: exactly 4 minutes of time
  * per degree of longitude (360° = 24 h). Not rounded — rounding to whole
  * minutes would shift the instant by up to 30 s.
@@ -78,6 +121,7 @@ function shouldUseIndiaLmt(input: CivilTimeInput): boolean {
 
 function shouldUseLmtOnly(input: CivilTimeInput): boolean {
     if (input.forceLmt) return true;
+    if (isUtcCivilTimezone(input.timezone)) return false;
     if (shouldUseIndiaLmt(input)) return true;
     if (
         usesProlepticJulian({
@@ -96,8 +140,9 @@ function resolveWithFixedOffset(
     offsetMinutes: number,
     steps: TzResolutionStep[],
     warnings: CivilTimeWarning[],
+    calendar: CalendarMode,
 ): CivilTimeResult {
-    const localJd = localClockToJulianDay(input.local);
+    const localJd = localClockToJulianDay(input.local, calendar);
     const utcJd = localJd - offsetMinutes / 1_440;
     let utcMs: number;
     try {
@@ -153,7 +198,11 @@ function traceMinutes(offset: number): number {
  * instant; a candidate is valid when the zone really has that offset at the
  * implied UTC instant. Two valid → DST overlap (fold); none → DST gap.
  */
-function resolveWithIana(input: CivilTimeInput, policy: CivilTimePolicy): CivilTimeResult {
+function resolveWithIana(
+    input: CivilTimeInput,
+    policy: CivilTimePolicy,
+    calendar: CalendarMode,
+): CivilTimeResult {
     const zone = input.timezone;
     const warnings: CivilTimeWarning[] = [];
     const steps: TzResolutionStep[] = [
@@ -168,13 +217,16 @@ function resolveWithIana(input: CivilTimeInput, policy: CivilTimePolicy): CivilT
     const { hour, minute, second, millisecond = 0 } = input.local;
     const midnightMs = Math.round(
         julianDayToUnixMs(
-            localClockToJulianDay({
-                ...input.local,
-                hour: 0,
-                minute: 0,
-                second: 0,
-                millisecond: 0,
-            }),
+            localClockToJulianDay(
+                {
+                    ...input.local,
+                    hour: 0,
+                    minute: 0,
+                    second: 0,
+                    millisecond: 0,
+                },
+                calendar,
+            ),
         ),
     );
     const naiveMs = midnightMs + ((hour * 60 + minute) * 60 + second) * 1000 + millisecond;
@@ -257,6 +309,7 @@ export function resolveCivilTime(input: CivilTimeInput): CivilTimeResult {
         throw new RangeError(`Unknown IANA time zone: ${input.timezone}`);
     }
 
+    const calendar: CalendarMode = input.calendar ?? 'auto';
     const policy: CivilTimePolicy = { ...DEFAULT_POLICY, ...input.policy };
     const steps: TzResolutionStep[] = [
         {
@@ -278,7 +331,13 @@ export function resolveCivilTime(input: CivilTimeInput): CivilTimeResult {
             summary: label,
             offsetMinutes: input.manualOffset.offsetMinutes,
         });
-        return resolveWithFixedOffset(input, input.manualOffset.offsetMinutes, steps, warnings);
+        return resolveWithFixedOffset(
+            input,
+            input.manualOffset.offsetMinutes,
+            steps,
+            warnings,
+            calendar,
+        );
     }
 
     if (shouldUseLmtOnly(input)) {
@@ -291,8 +350,54 @@ export function resolveCivilTime(input: CivilTimeInput): CivilTimeResult {
             summary,
             offsetMinutes: offset,
         });
-        return resolveWithFixedOffset(input, offset, steps, warnings);
+        return resolveWithFixedOffset(input, offset, steps, warnings, calendar);
     }
 
-    return resolveWithIana(input, policy);
+    return resolveWithIana(input, policy, calendar);
+}
+
+/**
+ * Julian Day (UT) for a Luxon {@link DateTime}: civil components are read in
+ * `date.zone`. Regional IANA zones use {@link resolveCivilTime} (LMT / historic
+ * rules). UTC and Luxon fixed-offset zones treat wall time as zone civil time
+ * only — longitude from `getPlanets` is ignored for JD (still used for houses).
+ */
+export function dateTimeToJulianDayUt(
+    date: DateTime,
+    options: {
+        calendar?: CalendarMode;
+        latitude?: number;
+        longitude?: number;
+    } = {},
+): number {
+    if (!date.isValid) {
+        throw new RangeError(date.invalidReason ?? 'Invalid DateTime');
+    }
+    const zone = date.zoneName;
+    if (!zone) throw new RangeError('DateTime has no time zone');
+    const calendar = options.calendar ?? 'auto';
+    const local = {
+        year: date.year,
+        month: date.month,
+        day: date.day,
+        hour: date.hour,
+        minute: date.minute,
+        second: date.second,
+        millisecond: date.millisecond,
+    };
+    if (date.zone.type === 'fixed' || isUtcCivilTimezone(zone)) {
+        return julianDayFromZonedCivil(date, calendar);
+    }
+
+    const inCivilSpan = local.year >= CIVIL_YEAR_MIN && local.year <= CIVIL_YEAR_MAX;
+    if (inCivilSpan && isValidIanaTimeZone(zone)) {
+        return resolveCivilTime({
+            local,
+            timezone: zone,
+            latitude: options.latitude ?? 0,
+            longitude: options.longitude ?? 0,
+            calendar,
+        }).julianDayUt;
+    }
+    return julianDayFromZonedCivil(date, calendar);
 }

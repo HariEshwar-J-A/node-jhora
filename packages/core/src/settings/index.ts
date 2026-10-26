@@ -21,6 +21,7 @@ export {
 export type {
     AyanamsaId,
     CalculationSettings,
+    CalendarModeId,
     DasaYearKind,
     EphemerisPolicyId,
     HouseSystemId,
@@ -32,6 +33,7 @@ export {
     AYANAMSA_MODE_BY_ID,
     ayanamsaIdForMode,
     CalculationSettingsSchema,
+    CALENDAR_MODES,
     DASA_YEAR_KINDS,
     DasaYearSchema,
     EPHEMERIS_POLICIES,

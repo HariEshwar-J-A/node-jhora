@@ -5,6 +5,8 @@
  * `birth.tzResolution` shape in `@node-jhora/format` (schema v2).
  */
 
+import type { CalendarMode } from './historical.js';
+
 /** Wall-clock components in astronomical year numbering (year 0 = 1 BC). */
 export interface LocalClock {
     year: number;
@@ -66,6 +68,11 @@ export interface CivilTimeInput {
     timezone: string;
     latitude: number;
     longitude: number;
+    /**
+     * How to read `local` before 1582-10-15. Default `'auto'` matches JHora /
+     * Swiss Ephemeris (Julian before the reform, Gregorian from 1582-10-15).
+     */
+    calendar?: CalendarMode;
     policy?: CivilTimePolicy;
     /** Force longitude-based LMT (4 min per degree) regardless of zone history. */
     forceLmt?: boolean;
