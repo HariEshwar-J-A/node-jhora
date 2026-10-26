@@ -5,6 +5,7 @@ import { calculateShadbala, VargaInfo } from '@node-jhora/analytics';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 // The 7 vargas used in Saptavargaja Bala (BPHS): D1, D2, D3, D7, D9, D12, D30
 const SAPTAVARGA_DIVISIONS = [1, 2, 3, 7, 9, 12, 30];
@@ -114,6 +115,6 @@ export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
                 };
             });
 
-        return reply.status(200).send({ shadbala: results, settingsHash });
+        return reply.status(200).send(attachResultEnvelope({ shadbala: results, settingsHash }, { settingsHash }));
     });
 }

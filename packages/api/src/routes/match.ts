@@ -4,6 +4,7 @@ import { PoruthamMatch } from '@node-jhora/match';
 import { getEngine } from '../server.js';
 import { MatchInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 const NAKSHATRA_SPAN = 360 / 27;
 
@@ -34,13 +35,14 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         // Convention: person1 = boy, person2 = girl (as per Porutham)
         const result = PoruthamMatch.match(nak1, nak2, sign1, sign2);
 
-        return reply.status(200).send({
+        const settingsHash = { person1: p1.settingsHash, person2: p2.settingsHash };
+        return reply.status(200).send(attachResultEnvelope({
             person1MoonNakshatra: nak1 + 1, // 1-27
             person2MoonNakshatra: nak2 + 1,
             person1MoonSign:      sign1,
             person2MoonSign:      sign2,
             ...result,
-            settingsHash: { person1: p1.settingsHash, person2: p2.settingsHash },
-        });
+            settingsHash,
+        }, { settingsHash }));
     });
 }

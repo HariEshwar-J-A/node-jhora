@@ -4,6 +4,7 @@ import { calculatePanchanga } from '@node-jhora/core';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -17,6 +18,6 @@ export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
         const moon      = planets.find(p => p.id === 1)!;
         const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
-        return reply.status(200).send({ ...panchanga, settingsHash });
+        return reply.status(200).send(attachResultEnvelope({ ...panchanga, settingsHash }, { settingsHash }));
     });
 }

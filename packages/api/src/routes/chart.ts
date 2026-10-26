@@ -4,6 +4,7 @@ import { calculateHouseCusps, calculatePanchanga, calculateVarga } from '@node-j
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 export async function chartRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -22,7 +23,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
         const moon = planets.find(p => p.id === 1)!;
         const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
-        return reply.status(200).send({
+        return reply.status(200).send(attachResultEnvelope({
             planets: planets.map(p => ({
                 id:          p.id,
                 name:        p.name,
@@ -54,7 +55,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
                     resolvedLon:      location.longitude,
                 } : {}),
             },
-        });
+        }, { settingsHash }));
     });
 
     // POST /v1/chart/vargas — all 16 divisional charts
@@ -80,6 +81,6 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
             });
         }
 
-        return reply.status(200).send({ vargas, settingsHash });
+        return reply.status(200).send(attachResultEnvelope({ vargas, settingsHash }, { settingsHash }));
     });
 }

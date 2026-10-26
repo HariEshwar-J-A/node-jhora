@@ -9,6 +9,7 @@ import { generateVimshottari, TransitEngine }                    from '@node-jho
 import { getEngine }        from '../server.js';
 import { ReadingInputSchema, type ReadingInput } from '../schemas/birth-input.js';
 import { parseBirthInput }  from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 /**
  * One call returning everything an interpretation needs.
@@ -207,7 +208,7 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
         }
         upcoming.sort((a, b) => String(a.at).localeCompare(String(b.at)));
 
-        return reply.status(200).send({
+        return reply.status(200).send(attachResultEnvelope({
             asOf: asOf.toISO(),
             settingsHash,
             meta: {
@@ -256,6 +257,6 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
                     + 'dasha verse applies; classicalBranch names it. savBindus below ~25 '
                     + 'weakens a transit regardless of its nature.',
             },
-        });
+        }, { settingsHash }));
     });
 }

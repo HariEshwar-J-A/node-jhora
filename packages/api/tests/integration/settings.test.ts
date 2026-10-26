@@ -3,7 +3,14 @@
  * `true_citra` alias, preset ids, and the optional `settingsHash` field.
  */
 
-import { getPreset, hashSettings } from '@node-jhora/core';
+import {
+    DELTA_T_MODEL,
+    ENGINE_VERSION,
+    EPHEMERIS_PROVIDER,
+    TZDB_VERSION,
+    getPreset,
+    hashSettings,
+} from '@node-jhora/core';
 import { buildServer, initEngine } from '../../src/server.js';
 import type { FastifyInstance } from 'fastify';
 
@@ -30,6 +37,24 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await app.close();
+});
+
+function expectEnvelope(body: Record<string, unknown>, settingsHash: string) {
+    expect(body.engineVersion).toBe(ENGINE_VERSION);
+    expect(body.settingsHash).toBe(settingsHash);
+    expect(body.ephemerisProvider).toBe(EPHEMERIS_PROVIDER);
+    expect(body.tzdbVersion).toBe(TZDB_VERSION);
+    expect(body.deltaTModel).toBe(DELTA_T_MODEL);
+    expect(body.warnings).toEqual([]);
+    expect(body).not.toHaveProperty('computedAt');
+}
+
+describe('result envelope', () => {
+    test('chart responses include provenance without computedAt', async () => {
+        const res = await post('/v1/chart', birth);
+        expect(res.status).toBe(200);
+        expectEnvelope(res.body, hashSettings(getPreset('node-jhora-default')));
+    });
 });
 
 describe('true_chitra / true_citra alias', () => {

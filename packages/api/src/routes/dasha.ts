@@ -4,6 +4,7 @@ import { generateVimshottari, calculateDashaBalance } from '@node-jhora/predicti
 import { getEngine } from '../server.js';
 import { DashaInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 /**
  * Serialize a DashaPeriod tree to a plain JSON-safe structure.
@@ -39,7 +40,7 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
             applyDasaYear && dashaYearDays != null ? { yearDays: dashaYearDays } : undefined,
         );
 
-        return reply.status(200).send({
+        return reply.status(200).send(attachResultEnvelope({
             balance: {
                 lord:              balance.lord,
                 yearsRemaining:    balance.yearsRemaining,
@@ -49,6 +50,6 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
             },
             periods: periods.map(serializePeriod),
             settingsHash,
-        });
+        }, { settingsHash }));
     });
 }

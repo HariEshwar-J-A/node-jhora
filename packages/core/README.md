@@ -112,6 +112,13 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
 Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
 
+## Result provenance
+
+Top-level results can carry a small envelope: `engineVersion`, `settingsHash`,
+`ephemerisProvider`, `tzdbVersion`, `deltaTModel`, optional `computedAt`, and
+`warnings`. Use `createResultEnvelope` / `withResultEnvelope` from this package;
+omit `computedAt` when you need byte-stable serialisation.
+
 ## Accuracy
 
 Validated against **JPL Horizons** (≤ 0.28″, 1900–2024) and against a real
