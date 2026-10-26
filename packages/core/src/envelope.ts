@@ -6,7 +6,7 @@
  * without changing numeric results.
  */
 
-import { DELTA_T_MODEL_JHORA, type PrecisionProfile } from './engine/deltat.js';
+import { DELTA_T_MODEL_JHORA, deltaTModelId, type PrecisionProfile } from './engine/deltat.js';
 import { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 
 export type { PrecisionProfile };
@@ -24,7 +24,8 @@ export const DELTA_T_MODEL = DELTA_T_MODEL_JHORA;
 
 /**
  * Precision profile stamped on results. `'jhora'` (the default) reproduces
- * Jagannatha Hora's conventions; a `'modern'` profile is planned as a follow-up.
+ * Jagannatha Hora's conventions; `'modern'` follows the sources Swiss
+ * Ephemeris 2.10 documents (docs/precision-profiles.md).
  */
 export const DEFAULT_PRECISION_PROFILE: PrecisionProfile = 'jhora';
 
@@ -35,6 +36,7 @@ export interface ResultEnvelope {
     settingsHash: SettingsHashValue;
     ephemerisProvider: string;
     tzdbVersion: string;
+    /** ΔT model id for the profile, or `override:<s>s` when pinned. */
     deltaTModel: string;
     /** Precision profile the numbers were computed under. */
     precisionProfile: PrecisionProfile;
@@ -46,6 +48,7 @@ export interface ResultEnvelope {
 export interface ResultEnvelopeOptions {
     settingsHash: SettingsHashValue;
     precisionProfile?: PrecisionProfile;
+    deltaTOverrideSeconds?: number;
     warnings?: readonly string[];
     /** ISO-8601 timestamp; omit for deterministic output. */
     computedAt?: string;
@@ -59,7 +62,10 @@ export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnve
         settingsHash: options.settingsHash,
         ephemerisProvider: EPHEMERIS_PROVIDER,
         tzdbVersion: TZDB_VERSION,
-        deltaTModel: DELTA_T_MODEL,
+        deltaTModel: deltaTModelId(
+            options.precisionProfile ?? DEFAULT_PRECISION_PROFILE,
+            options.deltaTOverrideSeconds,
+        ),
         precisionProfile: options.precisionProfile ?? DEFAULT_PRECISION_PROFILE,
         warnings,
     };
@@ -77,6 +83,7 @@ export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnve
 export interface WithResultEnvelopeOptions {
     settingsHash?: SettingsHashValue;
     precisionProfile?: PrecisionProfile;
+    deltaTOverrideSeconds?: number;
     warnings?: readonly string[];
     computedAt?: string;
 }
@@ -100,6 +107,7 @@ export function withResultEnvelope<T extends Record<string, unknown>>(
         ...createResultEnvelope({
             settingsHash,
             precisionProfile: options.precisionProfile,
+            deltaTOverrideSeconds: options.deltaTOverrideSeconds,
             warnings: options.warnings,
             computedAt: options.computedAt,
         }),

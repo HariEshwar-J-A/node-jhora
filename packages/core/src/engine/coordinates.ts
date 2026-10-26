@@ -106,8 +106,8 @@ function vondrakGeneralPrecession(T: number): number {
 }
 
 /** IAU 2006 GMST (ERA + IERS 2010 eq. 5.32), degrees, unreduced. */
-function gmstIAU2006(jdUT: number): number {
-    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+function gmstIAU2006(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
+    const jdTT = jdUT + dtSeconds / 86400.0;
     const T = (jdTT - 2451545.0) / 36525.0;
     const Du = jdUT - 2451545.0;
 
@@ -136,8 +136,8 @@ function gmstIAU2006(jdUT: number): number {
  * + 180°, carried to the equinox of date with the long-term general
  * precession p_A of Vondrák, Capitaine & Wallace (2011).
  */
-function gmstLongTerm(jdUT: number): number {
-    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+function gmstLongTerm(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
+    const jdTT = jdUT + dtSeconds / 86400.0;
     const T = (jdTT - 2451545.0) / 36525.0;
     const t = T / 10;
     const lambdaEMB = 100.46645683 + (1295977422.83429 * t - 2.04411 * t * t) / 3600;
@@ -146,7 +146,17 @@ function gmstLongTerm(jdUT: number): number {
     return 360 * dayFraction + 180 + sunMeanLonOfDate;
 }
 
-/** Continuity constants, computed on first use at each boundary. */
+/**
+ * Continuity constants, computed on first use at each boundary.
+ *
+ * They belong to the sidereal-time formulation, not to a ΔT prediction, so
+ * they are always evaluated with the 'jhora' ΔT model (the documented
+ * formulas of deltat.ts) at the boundary instant, whatever profile or
+ * deltaTOverrideSeconds is in force. Sidereal time therefore does not jump
+ * when a ΔT prediction changes. Swiss Ephemeris 2.10, probed as a black box,
+ * behaves the same way: its 2050 join is continuous only under that ΔT
+ * (it steps by 1.9″ under its own 2.10 ΔT).
+ */
 const longTermOffsets = new Map<number, number>();
 
 /** Shortest signed angle a − b, degrees. */
@@ -173,7 +183,8 @@ export function getGMST(jdUT: number): number {
             jdUT > IAU2006_SIDEREAL_LAST_JD ? IAU2006_SIDEREAL_LAST_JD : IAU2006_SIDEREAL_FIRST_JD;
         let offset = longTermOffsets.get(b);
         if (offset === undefined) {
-            offset = angleDiff(gmstIAU2006(b), gmstLongTerm(b));
+            const dtB = deltaT(b, 'jhora');
+            offset = angleDiff(gmstIAU2006(b, dtB), gmstLongTerm(b, dtB));
             longTermOffsets.set(b, offset);
         }
         return mod360(gmstLongTerm(jdUT) + offset);

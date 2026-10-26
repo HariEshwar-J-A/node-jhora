@@ -88,11 +88,13 @@ export const DasaYearSchema = z
     .strict();
 
 /**
- * Precision profiles. `'jhora'` reproduces Jagannatha Hora (the Swiss
- * Ephemeris 2.02 conventions it ships with). A `'modern'` profile is a
- * planned follow-up and is not accepted yet.
+ * Precision profiles. `'jhora'` (default) reproduces Jagannatha Hora (the
+ * Swiss Ephemeris 2.02 conventions it ships with). `'modern'` follows the
+ * cited sources Swiss Ephemeris 2.10 documents (SMH2016 ΔT, observed ΔT
+ * through 2026, apparent ayanamsa, fully converged Placidus). See
+ * docs/precision-profiles.md.
  */
-export const PRECISION_PROFILES = ['jhora'] as const;
+export const PRECISION_PROFILES = ['jhora', 'modern'] as const;
 export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 
 export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
@@ -102,6 +104,13 @@ export const CalculationSettingsSchema = z
     .object({
         schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
         precisionProfile: z.enum(PRECISION_PROFILES).default('jhora'),
+        /**
+         * Fixed ΔT = TT − UT1 in seconds, replacing the profile's ΔT model for
+         * the whole calculation. For dates whose ΔT is known from elsewhere
+         * (e.g. a later IERS value, or another program's prediction). Omitted
+         * by default, so it does not change existing settings hashes.
+         */
+        deltaTOverrideSeconds: finite.optional(),
         /**
          * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
          * `de440s` / `de431_long` force a single kernel (long-range requires chunks).

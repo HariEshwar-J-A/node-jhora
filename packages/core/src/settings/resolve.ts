@@ -90,6 +90,10 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         horaScheme: settings.horaScheme,
         sunriseHour: settings.sunrise.nominalHour,
         dashaYearDays: settings.dasaYear.days,
+        ...(settings.precisionProfile !== 'jhora' ? { precisionProfile: settings.precisionProfile } : {}),
+        ...(settings.deltaTOverrideSeconds !== undefined
+            ? { deltaTOverrideSeconds: settings.deltaTOverrideSeconds }
+            : {}),
     };
 }
 
@@ -100,6 +104,10 @@ export function jyotishConfigToSettings(
     const known = ayanamsaIdForMode(config.ayanamsaMode);
     return CalculationSettingsSchema.parse({
         schemaVersion: 1,
+        precisionProfile: config.precisionProfile ?? base.precisionProfile,
+        ...(config.deltaTOverrideSeconds !== undefined
+            ? { deltaTOverrideSeconds: config.deltaTOverrideSeconds }
+            : {}),
         ayanamsa: known ?? base.ayanamsa,
         ayanamsaOffsetDeg: config.ayanamsaOffset,
         ...(known ? {} : { customAyanamsaMode: config.ayanamsaMode }),
