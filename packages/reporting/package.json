@@ -15,16 +15,16 @@
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js"
     },
     "dependencies": {
-        "@node-jhora/core": "^3.1.0",
-        "@node-jhora/analytics": "^3.1.0",
-        "@node-jhora/prediction": "^3.1.0",
+        "@node-jhora/core": "workspace:*",
+        "@node-jhora/analytics": "workspace:*",
+        "@node-jhora/prediction": "workspace:*",
         "pdfkit": "^0.15.0",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
-        "typescript": "*",
-        "@types/pdfkit": "*",
-        "jest": "*"
+        "typescript": "^5.9.3",
+        "@types/pdfkit": "^0.17.4",
+        "jest": "^30.2.0"
     },
     "publishConfig": {
         "access": "public"

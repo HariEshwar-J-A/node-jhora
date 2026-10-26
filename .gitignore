@@ -12,6 +12,7 @@ dist/
 logs
 *.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
@@ -22,6 +23,8 @@ coverage/
 # Ephemeris data (downloaded from JPL — large binary, not tracked in git)
 de440s.bsp
 **/de440s.bsp
+de440s.bsp.partial
+**/de440s.bsp.partial
 
 # Debug / scratch scripts (not part of the codebase)
 debug_*.mjs

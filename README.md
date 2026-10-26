@@ -1,6 +1,6 @@
 # Node-Jhora: Professional Vedic Astrology SDK
 
-Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It is an npm-workspaces monorepo. Libraries live in `packages/`. Applications belong in `apps/` (none are checked in; a React UI is planned there).
+Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It is a pnpm-workspaces monorepo (`pnpm-workspace.yaml` covers `packages/*` and `apps/*`). Libraries live in `packages/`. Applications belong in `apps/` (none are checked in; a React UI is planned there).
 
 ## Features
 
@@ -37,7 +37,7 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 | [`@node-jhora/api`](./packages/api) | Fastify + Zod HTTP API. ([Docs](./docs/API.md)) |
 | [`@node-jhora/testkit`](./packages/testkit) | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md)) |
 
-`npm run build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, and `testkit`. `ephe` is a data package with no `tsconfig.json`.
+`pnpm build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, and `testkit`. `ephe` is a data package with no `tsconfig.json`.
 
 ## Documentation
 
@@ -60,9 +60,11 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 npm install @node-jhora/core @node-jhora/ephe
 ```
 
-`@node-jhora/core` declares `@node-jhora/ephe` as a required peer dependency. The `ephe` `postinstall` script downloads `de440s.bsp` from JPL. Override the path with `NODE_JHORA_EPHE_PATH`.
+`@node-jhora/core` declares `@node-jhora/ephe` as a required peer dependency. The `ephe` `postinstall` script downloads `de440s.bsp` from JPL and skips the download when the file already matches the pinned SHA-256. Override the path with `NODE_JHORA_EPHE_PATH`.
 
-Optional workspaces: `@node-jhora/analytics`, `@node-jhora/prediction`, `@node-jhora/match`, `@node-jhora/events`, `@node-jhora/reporting`, `@node-jhora/api`.
+Other packages in this workspace: `@node-jhora/analytics`, `@node-jhora/prediction`, `@node-jhora/match`, `@node-jhora/events`, `@node-jhora/reporting`, `@node-jhora/api`.
+
+Contributors use pnpm. See [CONTRIBUTING.md](./CONTRIBUTING.md). The `npm install` lines above are for a published package.
 
 This repository is pure ESM (`"type": "module"`).
 
@@ -184,8 +186,7 @@ const pdfBuffer = await generateFullReport(chartData, {
 ### REST API
 
 ```bash
-cd packages/api
-npm run start
+pnpm --filter @node-jhora/api start
 # listens on 0.0.0.0:3000 unless HOST / PORT are set
 ```
 
@@ -219,26 +220,30 @@ Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CO
 Commands are from the monorepo root.
 
 ```bash
-npm install
+corepack enable
+corepack prepare --activate
+pnpm install --frozen-lockfile
 
 # tsc -b over the root tsconfig references:
 # core, analytics, prediction, match, api, events, reporting, testkit.
-npm run build
+pnpm build
 
 # Jest 30: one project per packages/*/jest.config.js (ephe has none) plus
 # tools/jest.config.js, then node --test for the clean-room guard.
-npm test
+pnpm test
 
-npx jest --config packages/core/jest.config.js
+pnpm exec jest --config packages/core/jest.config.js
 
 # Relative links in tracked and untracked Markdown (no network).
-npm run check:links
+pnpm run check:links
 
 # Forbidden help/image/binary files, stray .jhd charts, decompiler markers (docs/CLEAN_ROOM.md).
-npm run check:clean-room
+pnpm run check:clean-room
+
+pnpm run validate-github-templates
 ```
 
-`npm run lint` is `eslint packages/**/src --ext .ts`. ESLint is not listed in the root `devDependencies`, so that script cannot run until ESLint is installed.
+`pnpm run lint` is `eslint packages/**/src --ext .ts`. ESLint is not listed in the root `devDependencies`, so that script cannot run until ESLint is installed.
 
 ## License
 

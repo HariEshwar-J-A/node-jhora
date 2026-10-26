@@ -23,12 +23,12 @@
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js"
     },
     "dependencies": {
-        "@node-jhora/core": "^3.1.0",
+        "@node-jhora/core": "workspace:*",
         "decimal.js": "^10.4.3",
         "luxon": "^3.7.2"
     },
     "devDependencies": {
-        "typescript": "*"
+        "typescript": "^5.9.3"
     },
     "keywords": [
         "vedic-astrology",

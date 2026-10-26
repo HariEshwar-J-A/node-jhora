@@ -122,35 +122,35 @@ Please acknowledge these instructions. Begin Phase 1 by searching for the test f
 All commands run from `node-jhora/` (monorepo root) unless noted.
 
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (pnpm is pinned via packageManager; see CONTRIBUTING.md)
+corepack enable && corepack prepare --activate
+pnpm install --frozen-lockfile
 
 # Build all packages (incremental via TypeScript project references)
-npm run build
+pnpm build
 
 # Build and force rebuild from scratch
-npx tsc -b --clean && npm run build
+pnpm exec tsc -b --clean && pnpm build
 
 # Run all tests across all packages
-npm test
+pnpm test
 
 # Run tests for a single package
-npx jest --config packages/core/jest.config.js
-npx jest --config packages/analytics/jest.config.js
-npx jest --config packages/prediction/jest.config.js
-npx jest --config packages/match/jest.config.js
+pnpm --filter @node-jhora/core test
+pnpm --filter @node-jhora/analytics test
+pnpm --filter @node-jhora/prediction test
+pnpm --filter @node-jhora/match test
 
 # Run a single test file
-npx jest --config packages/core/jest.config.js packages/core/tests/ephemeris.test.ts
+pnpm --filter @node-jhora/core test tests/engine/ephemeris.test.ts
 
 # Lint TypeScript source files
-npm run lint
+pnpm run lint
 
-# Portal app (from apps/portal/)
-cd apps/portal && npm install
-npm run dev      # Vite dev server
-npm run build    # Production build (tsc + vite build)
-npm run preview  # Preview production build
+# Portal app (apps/portal/ is a workspace package once it exists)
+pnpm --filter ./apps/portal dev      # Vite dev server
+pnpm --filter ./apps/portal build    # Production build (tsc + vite build)
+pnpm --filter ./apps/portal preview  # Preview production build
 ```
 
 ## Architecture
@@ -219,7 +219,7 @@ await eph.initialize(); // Required — loads de440s.bsp
 
 The engine resolves `de440s.bsp` in this order:
 1. `NODE_JHORA_EPHE_PATH` environment variable
-2. `@node-jhora/ephe` npm package (auto-downloaded from JPL on `npm install`)
+2. `@node-jhora/ephe` npm package (auto-downloaded from JPL on install)
 3. Dev fallback: `de440s.bsp` next to the `packages/` directory
 
 **No WASM, no Swiss Ephemeris, no AGPL.** The engine is pure TypeScript + JPL data (U.S. Government public domain).

@@ -6,7 +6,7 @@ Instructions for coding agents in this repository.
 
 ## Layout
 
-npm workspaces (`packages/*`), ESM, TypeScript project references. Root scripts are in the root `package.json`.
+pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeScript project references. Root scripts are in the root `package.json`. pnpm is pinned via `packageManager`; enable it with Corepack (`corepack enable` then `corepack prepare --activate`).
 
 | Path | What belongs here |
 | :--- | :--- |
@@ -32,12 +32,14 @@ Verified in source. Do not document a different engine or a different default ay
 From the repository root:
 
 ```bash
-npm install
-npm run build          # tsc -b — root references: core, analytics, prediction, match, api, events, reporting, testkit
-npm test               # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
-npm test -w @node-jhora/core
-npm run check:links    # relative Markdown links, no network
-npm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
+corepack enable && corepack prepare --activate
+pnpm install --frozen-lockfile
+pnpm build             # tsc -b — root references: core, analytics, prediction, match, api, events, reporting, testkit
+pnpm test              # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
+pnpm --filter @node-jhora/core test
+pnpm run check:links   # relative Markdown links, no network
+pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
+pnpm run validate-github-templates
 ```
 
 Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporting`, `api`, `testkit`) share one script shape:
@@ -49,11 +51,13 @@ Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporti
 | `lint` | exits 0. `TODO(E1-S3-T1)`: ESLint is not installed yet. |
 | `test` | `node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js` |
 
-`typecheck` reads referenced projects from `dist/`. Run `npm run build` first.
+`typecheck` reads referenced projects from `dist/`. Run `pnpm build` first. A task runner must run `^build` before `typecheck`.
 
-`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `npm test` runs those same suites, so the sum of `npm test -w <pkg>` matches the root pass count.
+`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` runs those same suites, so the sum of `pnpm --filter <pkg> test` matches the root pass count. The kernel is not in git. `postinstall` (the package's, and the root's) runs `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256. A task runner that caches `ephe`'s `test` must include `tools/**` in that task's inputs, because the script executes those suites.
 
-Root `npm run lint` still calls ESLint, which is not a root `devDependency`.
+Root `pnpm run lint` still calls ESLint, which is not a root `devDependency`.
+
+Internal dependencies use `workspace:*`. There is no `.npmrc`: pnpm's isolated `node_modules` is unchanged. pnpm 12 records dependency lifecycle-script decisions in `allowBuilds` inside `pnpm-workspace.yaml`.
 
 Call `await EphemerisEngine.getInstance().initialize()` before planetary calculations. The kernel is `NODE_JHORA_EPHE_PATH`, else `@node-jhora/ephe`, else `de440s.bsp` beside `packages/`.
 

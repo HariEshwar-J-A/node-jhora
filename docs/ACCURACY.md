@@ -117,8 +117,8 @@ and capturing its output.
 ## Reproducing everything
 
 ```bash
-npm run build
-NODE_OPTIONS="--experimental-vm-modules" npx jest   # 547 tests, 37 suites
+pnpm build
+NODE_OPTIONS="--experimental-vm-modules" pnpm exec jest   # 547 tests, 37 suites
 node tools/verify-jhd.mjs data/
 node tools/benchmark-vs-jhora.mjs
 ```

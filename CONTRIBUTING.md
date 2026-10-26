@@ -34,14 +34,34 @@ Types match the branch types above. A breaking change uses `type(scope)!: summar
 
 Use the forms in `.github/ISSUE_TEMPLATE/` for an epic, story, task, or bug. Each form asks for context, goal, acceptance criteria, files likely touched, test requirements, dependencies, and size.
 
-## Checks
+## Package manager
 
-From the repository root:
+pnpm workspaces. The globs live in `pnpm-workspace.yaml`: `packages/*` and `apps/*`. `apps/` may be absent; the glob stays so a later app is picked up without another install-config change. pnpm is pinned with the `packageManager` field. Corepack (shipped with Node) installs that exact version:
 
 ```bash
-npm install
-npm run build && npm test
-node scripts/validate-github-templates.mjs
+corepack enable
+corepack prepare --activate
+pnpm install --frozen-lockfile
+```
+
+pnpm 12 needs a recent Corepack. The Corepack 0.34 bundled with Node 22.21 downloads pnpm 12.15.0 but cannot start it (`Cannot find module …/bin/pnpm.cjs`). Corepack 0.36 works. Update it with `npm install -g corepack@latest`, then run the commands above.
+
+Packages in this repo depend on each other with `workspace:*`. Publish with pnpm; it rewrites that protocol to a version.
+
+`de440s.bsp` is not committed. `@node-jhora/ephe`'s `postinstall` runs `download.mjs`, and the root `postinstall` runs the same script so a workspace install still fetches the kernel when pnpm skips a dependency's lifecycle scripts. The script pins the kernel's SHA-256. NAIF publishes the MD5 of those bytes as `3917ee56769db332790c751e2168843d` in `aa_checksums.txt`. When `packages/ephe/de440s.bsp` already has the pinned SHA-256, the download is skipped. Cache that path in CI with the SHA-256 as the key.
+
+pnpm 12 will not finish an install while a dependency's lifecycle script is neither approved nor denied (`ERR_PNPM_IGNORED_BUILDS`). Decisions are `allowBuilds` in `pnpm-workspace.yaml`. The linker stays isolated; there is no `.npmrc` hoist.
+
+## Checks
+
+From the repository root, after the Corepack commands above:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build && pnpm test
+pnpm run check:links
+pnpm run check:clean-room
+pnpm run validate-github-templates
 ```
 
 Paste the build and test summary into the pull request until CI is required.

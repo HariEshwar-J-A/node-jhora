@@ -14,8 +14,8 @@ npm install @node-jhora/api
 
 ```bash
 # Build and start
-npm run build
-npm run start
+pnpm build
+pnpm run start
 # → Listening on http://0.0.0.0:3000
 ```
 
