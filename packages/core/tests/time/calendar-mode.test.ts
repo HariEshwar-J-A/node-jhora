@@ -1,11 +1,11 @@
 import { DateTime } from 'luxon';
 
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../../src/errors.js';
 import { julday } from '../../src/engine/coordinates.js';
 import {
     assertValidCivilDate,
     civilDateFromJulianDay,
-    GregorianReformGapError,
     julianDayUt,
     resolveCalendar,
 } from '../../src/time/historical.js';
@@ -90,7 +90,7 @@ describe('calendar mode (JHora / SE)', () => {
 
     test('Gregorian reform gap (1582-10-05 … 14) throws in auto', () => {
         for (const day of [5, 10, 14]) {
-            expect(() =>
+            try {
                 julianDayUt({
                     astronomicalYear: 1582,
                     month: 10,
@@ -98,8 +98,12 @@ describe('calendar mode (JHora / SE)', () => {
                     hour: 0,
                     minute: 0,
                     second: 0,
-                }),
-            ).toThrow(GregorianReformGapError);
+                });
+                throw new Error('expected throw');
+            } catch (err) {
+                expect(err).toBeInstanceOf(NodeJHoraError);
+                expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+            }
         }
     });
 

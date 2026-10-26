@@ -6,9 +6,16 @@
  * the source kernel to numerical precision.
  */
 
-import { civilDateFromJulianDay, julianDayUt } from '../../time/historical.js';
+import { NJCE_MAX_CENTURY, NJCE_MIN_CENTURY } from '../../ephemeris-data/manifest.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../../errors.js';
+import { civilDateFromJulianDay } from '../../time/historical.js';
 import { evalRecord, type Vec3 } from '../chebyshev.js';
 import { NAIF } from '../spk.js';
+import {
+    NJCE_GROUP_SEGMENTS,
+    NJCE_TT_JD_MAX_REQUIRED,
+    NJCE_TT_JD_MIN_REQUIRED,
+} from './chunk-coverage.js';
 import { J2000_JD, SECONDS_PER_DAY } from './time.js';
 import type {
     EphemerisBodyId,
@@ -25,22 +32,9 @@ export function centuryIndex(astronomicalYear: number): number {
     return Math.floor(astronomicalYear / 100);
 }
 
-export const DE431_LONG_JD_TDB_START = julianDayUt({
-    astronomicalYear: -9999,
-    month: 1,
-    day: 1,
-    hour: 0,
-    minute: 0,
-    second: 0,
-});
-export const DE431_LONG_JD_TDB_END = julianDayUt({
-    astronomicalYear: 10000,
-    month: 1,
-    day: 1,
-    hour: 0,
-    minute: 0,
-    second: 0,
-});
+export const DE431_LONG_JD_TDB_START = NJCE_TT_JD_MIN_REQUIRED;
+/** Advertised long-range TT coverage (see `chunk-coverage.ts`). */
+export const DE431_LONG_JD_TDB_END = NJCE_TT_JD_MAX_REQUIRED;
 
 export const BODY_GROUP_PLANETS = 0;
 export const BODY_GROUP_EMB = 1;
@@ -110,31 +104,76 @@ export class De431ChunkFile {
     getState(target: number, center: number, et: number): Vec3 {
         const seg = this.findSegment(target, center, et);
         if (!seg) {
-            throw new Error(
-                `De431ChunkFile: no segment for target=${target} center=${center} at ET=${et}`,
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                `De431ChunkFile g${this.groupId}-c${this.centuryIndex}: no Chebyshev segment for ` +
+                    `target=${target} center=${center} at ET=${et}`,
+                { century: this.centuryIndex, groupId: this.groupId, et, target, center },
+            );
+        }
+        const segEnd = seg.init + seg.n * seg.intlen;
+        if (et < seg.init || et > segEnd) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                `De431ChunkFile g${this.groupId}-c${this.centuryIndex}: ET=${et} outside copied ` +
+                    `segment [${seg.init}, ${segEnd}] for target=${target} center=${center}`,
+                { century: this.centuryIndex, groupId: this.groupId, et, target, center },
             );
         }
         let recordIdx = Math.floor((et - seg.init) / seg.intlen);
-        recordIdx = Math.max(0, Math.min(recordIdx, seg.n - 1));
+        if (recordIdx >= seg.n) {
+            if (et > segEnd) {
+                throw new NodeJHoraError(
+                    NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                    `De431ChunkFile g${this.groupId}-c${this.centuryIndex}: ET=${et} past last ` +
+                        `Chebyshev record for target=${target} center=${center}`,
+                    { century: this.centuryIndex, groupId: this.groupId, et, target, center },
+                );
+            }
+            recordIdx = seg.n - 1;
+        }
+        if (recordIdx < 0) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                `De431ChunkFile g${this.groupId}-c${this.centuryIndex}: ET=${et} before first ` +
+                    `Chebyshev record for target=${target} center=${center}`,
+                { century: this.centuryIndex, groupId: this.groupId, et, target, center },
+            );
+        }
         const start = recordIdx * seg.rsize;
         const record = seg.data.subarray(start, start + seg.rsize);
         return evalRecord(record, et);
     }
 
     private findSegment(target: number, center: number, et: number): ChunkSegment | undefined {
-        let best: ChunkSegment | undefined;
-        let bestSpan = Infinity;
         for (const seg of this.segments) {
             if (seg.target !== target || seg.center !== center) continue;
             const end = seg.init + seg.n * seg.intlen;
             if (et < seg.init || et > end) continue;
-            const span = end - seg.init;
-            if (span < bestSpan) {
-                best = seg;
-                bestSpan = span;
-            }
+            return seg;
         }
-        return best;
+        return undefined;
+    }
+
+    /** Every segment in this group has Chebyshev data bracketing `et`. */
+    coversGroupAtEt(groupId: number, et: number): boolean {
+        const pairs = NJCE_GROUP_SEGMENTS[groupId];
+        if (!pairs) return false;
+        return pairs.every(
+            ([target, center]) => this.findSegment(target, center, et) !== undefined,
+        );
+    }
+
+    /** Union ET span (seconds) of all segments in this file. */
+    etSpanSeconds(): { start: number; end: number } | undefined {
+        let start = Infinity;
+        let end = -Infinity;
+        for (const seg of this.segments) {
+            start = Math.min(start, seg.init);
+            end = Math.max(end, seg.init + seg.n * seg.intlen);
+        }
+        if (!Number.isFinite(start)) return undefined;
+        return { start, end };
     }
 
     getBarycentric(naifBody: number, et: number): Vec3 {
@@ -180,6 +219,27 @@ export class De431LongEphemerisProvider implements EphemerisProvider {
         private readonly getChunk: (century: number, groupId: number) => De431ChunkFile | undefined,
     ) {}
 
+    /**
+     * Return the chunk file whose copied DE431 records bracket `et` for every
+     * body in `groupId`. Never returns a file that would clamp or extrapolate.
+     */
+    private resolveChunk(nominalCentury: number, groupId: number, et: number): De431ChunkFile {
+        const candidates = [nominalCentury, nominalCentury - 1, nominalCentury + 1].filter(
+            (c) => c >= NJCE_MIN_CENTURY && c <= NJCE_MAX_CENTURY,
+        );
+        for (const c of candidates) {
+            const chunk = this.getChunk(c, groupId);
+            if (chunk?.coversGroupAtEt(groupId, et)) return chunk;
+        }
+        throw new NodeJHoraError(
+            NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+            `No DE431 NJCE chunk contains TT ephemeris time ET=${et} for group=${groupId} ` +
+                `(nominal century=${nominalCentury}). Rebuild long-range data with ` +
+                '`pnpm --filter @node-jhora/ephe-long run build:chunks` and refresh the manifest.',
+            { nominalCentury, groupId, et },
+        );
+    }
+
     state(jdTdb: number, body: EphemerisBodyId, frame: EphemerisFrame): EphemerisState {
         const et = (jdTdb - J2000_JD) * SECONDS_PER_DAY;
         const astroYear = jdTdbToAstronomicalYear(jdTdb);
@@ -188,17 +248,11 @@ export class De431LongEphemerisProvider implements EphemerisProvider {
             body === NAIF.Moon || body === NAIF.Earth || body === NAIF.EMB
                 ? BODY_GROUP_EMB
                 : BODY_GROUP_PLANETS;
-        const chunk = this.getChunk(cent, group);
-        if (!chunk) {
-            throw new Error(
-                `De431LongEphemerisProvider: missing chunk century=${cent} group=${group}`,
-            );
-        }
+        const chunk = this.resolveChunk(cent, group, et);
         const bary = chunk.getBarycentric(body, et);
         if (frame === 'barycentric') return bary;
         const sunChunk =
-            group === BODY_GROUP_PLANETS ? chunk : this.getChunk(cent, BODY_GROUP_PLANETS);
-        if (!sunChunk) throw new Error('De431LongEphemerisProvider: missing Sun chunk');
+            group === BODY_GROUP_PLANETS ? chunk : this.resolveChunk(cent, BODY_GROUP_PLANETS, et);
         const sun = sunChunk.getBarycentric(NAIF.Sun, et);
         return {
             x: bary.x - sun.x,

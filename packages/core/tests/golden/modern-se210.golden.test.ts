@@ -7,9 +7,20 @@
  * fixture's `provenance` block and tools/modern-golden/. The fixture is a test
  * oracle only; no engine code reads it.
  *
- * Every sidereal graha, both nodes, the ayanamsa, the ascendant, the MC and all
- * twelve cusps of Whole Sign, Equal, Placidus and Porphyry must be strictly under
- * 1″, using the profile's own ΔT model (no deltaTOverrideSeconds).
+ * (a) Cases dated within the observed ΔT record (up to 1 Jan 2026): every
+ *     sidereal graha, both nodes, the ayanamsa, the ascendant, the MC and all
+ *     twelve cusps of Whole Sign, Equal, Placidus and Porphyry must be
+ *     strictly under 1″, using the profile's own ΔT model (no deltaTOverrideSeconds).
+ *
+ * (b) Cases dated after the observed record: ΔT there is a prediction, and
+ *     'modern' deliberately does not copy SE 2.10's undocumented post-record
+ *     extrapolation. These cases inject the oracle's own ΔT (recorded in the
+ *     fixture as test data) through deltaTOverrideSeconds and assert < 1″.
+ *     This VALIDATES EVERYTHING EXCEPT PREDICTED ΔT.
+ *
+ * Cases outside DE440s must throw EPHEMERIS_UNAVAILABLE without long-range chunks;
+ * with DE431 NJCE chunks present they are checked under (a) as well, otherwise
+ * skipped, not failed.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -150,10 +161,10 @@ const haveChunks =
     existsSync(join(chunkDir, 'g0-c18.njce')) && existsSync(join(chunkDir, 'g1-c21.njce'));
 
 describe.each(outOfRange)('outside DE440s — #$id $utc', (c) => {
-    test('throws a RangeError naming the supported range without long-range chunks', () => {
+    test('throws EPHEMERIS_UNAVAILABLE naming DE440s without long-range chunks', () => {
         const utc = DateTime.fromISO(c.utc, { zone: 'utc' });
         expect(() => engine.getPlanets(utc, undefined, { ayanamsaOrder: 27, ...MODERN })).toThrow(
-            RangeError,
+            /DE440s coverage/,
         );
     });
 });

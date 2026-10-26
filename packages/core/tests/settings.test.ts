@@ -5,6 +5,8 @@ import {
     JHORA_PRESET,
     LEGACY_DASHA_YEAR_DAYS,
     NodeJHora,
+    NodeJHoraError,
+    NodeJHoraErrorCode,
     PRESET_IDS,
     SETTINGS_HASH_HEX_LENGTH,
     canonicalJson,
@@ -136,7 +138,15 @@ describe('presets', () => {
             nodeType: 'mean',
             houseSystem: DEFAULT_CONFIG.houseSystem,
         });
-        expect(() => describeCalculation({ ayanamsaMode: 99 })).toThrow();
+        for (const mode of [99, 999]) {
+            try {
+                describeCalculation({ ayanamsaMode: mode });
+                throw new Error('expected throw');
+            } catch (err) {
+                expect(err).toBeInstanceOf(NodeJHoraError);
+                expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+            }
+        }
     });
 
     test('NodeJHora accepts a preset id or the existing config object', () => {

@@ -1,3 +1,5 @@
+import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
+
 /**
  * Historical calendar input — proleptic Julian before the Gregorian reform,
  * astronomical year numbering (year 0 = 1 BC), matching Swiss Ephemeris / JHora.
@@ -121,6 +123,45 @@ export function usesProlepticJulian(
  * Julian day (UT) at the given civil time, 0h = midnight.
  * Fractional part encodes time of day.
  */
+/** @throws {NodeJHoraError} invalid `calendar` strings (e.g. from JSON). */
+export function assertCalendarMode(calendar: string | undefined): CalendarMode {
+    const mode = calendar ?? 'auto';
+    if (!(CALENDAR_MODES as readonly string[]).includes(mode)) {
+        throw new NodeJHoraError(
+            NodeJHoraErrorCode.INVALID_INPUT,
+            `calendar must be one of: ${CALENDAR_MODES.join(', ')}`,
+            { calendar: mode },
+        );
+    }
+    return mode as CalendarMode;
+}
+
+function assertHistoricalTimeParts(parts: HistoricalDateTime): void {
+    for (const [field, value] of [
+        ['hour', parts.hour],
+        ['minute', parts.minute],
+        ['second', parts.second],
+    ] as const) {
+        if (typeof value !== 'number' || !Number.isFinite(value)) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.INVALID_INPUT,
+                `${field} must be a finite number`,
+                { field, value },
+            );
+        }
+    }
+}
+
+function civilDateError(err: unknown): NodeJHoraError {
+    if (err instanceof GregorianReformGapError) {
+        return new NodeJHoraError(NodeJHoraErrorCode.INVALID_INPUT, err.message);
+    }
+    if (err instanceof RangeError) {
+        return new NodeJHoraError(NodeJHoraErrorCode.INVALID_INPUT, err.message);
+    }
+    throw err;
+}
+
 export function resolveCalendar(
     parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>,
     calendar: CalendarMode = 'auto',
@@ -134,8 +175,14 @@ export function resolveCalendar(
 }
 
 export function julianDayUt(parts: HistoricalDateTime, calendar: CalendarMode = 'auto'): number {
-    assertValidCivilDate(parts, calendar);
-    const cal = resolveCalendar(parts, calendar);
+    const calMode = assertCalendarMode(calendar);
+    assertHistoricalTimeParts(parts);
+    try {
+        assertValidCivilDate(parts, calMode);
+    } catch (err) {
+        throw civilDateError(err);
+    }
+    const cal = resolveCalendar(parts, calMode);
     let y = parts.astronomicalYear;
     let m = parts.month;
     if (m <= 2) {

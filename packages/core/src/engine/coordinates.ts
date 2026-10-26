@@ -9,7 +9,7 @@
  * All angles are in degrees unless documented otherwise.
  */
 
-import { type CalendarMode, julianDayUt } from '../time/historical.js';
+import { assertCalendarMode, type CalendarMode, julianDayUt } from '../time/historical.js';
 import { deltaT } from './deltat.js';
 import { equationOfOriginsComplementaryDegrees } from './iers-eo-complementary.js';
 import { nutation } from './nutation.js';
@@ -59,7 +59,10 @@ export function julday(
     const remMin = (hourUT - h) * 60;
     const minute = Math.floor(remMin);
     const second = (remMin - minute) * 60;
-    return julianDayUt({ astronomicalYear: year, month, day, hour: h, minute, second }, calendar);
+    return julianDayUt(
+        { astronomicalYear: year, month, day, hour: h, minute, second },
+        assertCalendarMode(calendar),
+    );
 }
 
 // ---------------------------------------------------------------------------

@@ -14,6 +14,7 @@ export {
 } from './civil.js';
 export type { CalendarMode, HistoricalDateTime } from './historical.js';
 export {
+    assertCalendarMode,
     assertValidCivilDate,
     CALENDAR_MODES,
     civilDateFromJulianDay,

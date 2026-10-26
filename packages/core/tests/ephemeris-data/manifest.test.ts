@@ -61,8 +61,8 @@ describe('ephemeris data manifest', () => {
         expect(njcePackageName(-30)).toBe('@node-jhora/ephe-de431-m3000');
         expect(njcePackageName(0)).toBe('@node-jhora/ephe-de431-p0');
         const names = new Set(njceChunkEntries().map((e) => njcePackageName(e.century)));
-        expect(names.size).toBe(40);
-        expect(njceChunkEntry({ century: 100, groupId: 0 })).toBeUndefined();
+        expect(names.size).toBe(41);
+        expect(njceChunkEntry({ century: 100, groupId: 0 })).toBeDefined();
         expect(njceChunkEntry({ century: 0, groupId: 2 })).toBeUndefined();
     });
 

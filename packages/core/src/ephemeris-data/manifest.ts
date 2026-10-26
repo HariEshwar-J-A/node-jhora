@@ -54,7 +54,7 @@ export const NJCE_DATA_VERSION = '431.1.0';
 export const DE440S_DATA_VERSION = '440.2.0';
 
 export const NJCE_MIN_CENTURY = -100;
-export const NJCE_MAX_CENTURY = 99;
+export const NJCE_MAX_CENTURY = 100;
 
 /** Centuries per long-range data package (500 years, ~54 MB unpacked). */
 export const NJCE_PACKAGE_SPAN_CENTURIES = 5;
@@ -82,7 +82,7 @@ export function njceChunkEntry(key: ChunkKey): NjceChunkEntry | undefined {
     return chunkIndex.get(`${key.groupId}:${key.century}`);
 }
 
-/** All 400 chunk entries, ordered by century then group. */
+/** All NJCE chunk entries, ordered by century then group. */
 export function njceChunkEntries(): NjceChunkEntry[] {
     return [...chunkIndex.values()];
 }

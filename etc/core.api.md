@@ -11,6 +11,9 @@ import { z } from 'zod';
 // @public (undocumented)
 export type AmbiguousLocalPolicy = 'earlier' | 'later' | 'reject';
 
+// @public (undocumented)
+export function assertCalendarMode(calendar: string | undefined): CalendarMode;
+
 // @public
 export function assertValidAyanamsaMode(mode: number): void;
 
@@ -382,6 +385,11 @@ export class De431ChunkFile {
     constructor(buf: ArrayBuffer | Uint8Array);
     // (undocumented)
     readonly centuryIndex: number;
+    coversGroupAtEt(groupId: number, et: number): boolean;
+    etSpanSeconds(): {
+        start: number;
+        end: number;
+    } | undefined;
     // (undocumented)
     getBarycentric(naifBody: number, et: number): Vec3;
     // (undocumented)
@@ -395,9 +403,10 @@ export class De431ChunkStore {
     constructor(loader: EphemerisChunkLoader);
     // (undocumented)
     asGetter(): (century: number, groupId: number) => De431ChunkFile | undefined;
-    ensureForJd(jdTdb: number): Promise<void>;
+    ensureForJd(jdTdb: number, marginDays?: number): Promise<void>;
     // (undocumented)
     get(century: number, groupId: number): De431ChunkFile | undefined;
+    prefetchSyncForJdTdb(jdTdb: number): void;
 }
 
 // @public
@@ -453,6 +462,9 @@ export const DELTA_T_MODEL = "jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997";
 export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+oracle-bridge+ukho-cubic+smh2016-parabola";
 
 // @public
+export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864000;
+
+// @public
 export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number): string;
 
 // @public (undocumented)
@@ -465,7 +477,19 @@ export function dmsToDecimal(d: number, m: number, s: number): number;
 export const ENGINE_VERSION = "3.1.0";
 
 // @public
+export const EPHEMERIS_ASTRO_YEAR_MAX = 10000;
+
+// @public
+export const EPHEMERIS_ASTRO_YEAR_MIN = -10000;
+
+// @public
 export const EPHEMERIS_BODIES: readonly Body_2[];
+
+// @public
+export const EPHEMERIS_JD_UT_MAX: number;
+
+// @public
+export const EPHEMERIS_JD_UT_MIN: number;
 
 // @public (undocumented)
 export const EPHEMERIS_POLICIES: readonly ["auto", "de440s", "de431_long"];
@@ -476,6 +500,7 @@ export const EPHEMERIS_PROVIDER = "jpl-de440s";
 // @public (undocumented)
 export interface EphemerisChunkLoader {
     load(key: ChunkKey): Promise<ArrayBuffer | undefined>;
+    loadSync?(key: ChunkKey): ArrayBuffer | undefined;
 }
 
 // @public (undocumented)
@@ -508,7 +533,7 @@ export class EphemerisEngine {
     initialize(options?: {
         kernel?: Uint8Array;
     }): Promise<void>;
-    julday(date: DateTime, options?: {
+    julday(date: DateTime | Date, options?: {
         calendar?: CalendarMode;
         latitude?: number;
         longitude?: number;
@@ -667,6 +692,9 @@ export function init(): Promise<void>;
 export function isGregorianReformGap(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>): boolean;
 
 // @public (undocumented)
+export function isNodeJHoraError(err: unknown): err is NodeJHoraError;
+
+// @public (undocumented)
 export function isPresetId(value: string): value is PresetId;
 
 // @public
@@ -785,13 +813,19 @@ export const NAKSHATRA_SPAN_D: Decimal;
 export const NJCE_DATA_VERSION = "431.1.0";
 
 // @public (undocumented)
-export const NJCE_MAX_CENTURY = 99;
+export const NJCE_MAX_CENTURY = 100;
 
 // @public (undocumented)
 export const NJCE_MIN_CENTURY = -100;
 
 // @public
 export const NJCE_PACKAGE_SPAN_CENTURIES = 5;
+
+// @public
+export const NJCE_TT_JD_MAX_REQUIRED: number;
+
+// @public
+export const NJCE_TT_JD_MIN_REQUIRED: number;
 
 // @public
 export function njceCdnUrl(key: ChunkKey, version?: string): string;
@@ -869,6 +903,26 @@ export interface NodeJHoraConfig extends Partial<JyotishConfig> {
     // @deprecated (undocumented)
     ayanamsaOrder?: number;
 }
+
+// @public (undocumented)
+export class NodeJHoraError extends Error {
+    constructor(code: NodeJHoraErrorCode, message: string, detail?: Record<string, unknown>);
+    // (undocumented)
+    readonly code: NodeJHoraErrorCode;
+    // (undocumented)
+    readonly detail?: Record<string, unknown>;
+}
+
+// @public
+export const NodeJHoraErrorCode: {
+    readonly INVALID_INPUT: "INVALID_INPUT";
+    readonly OUT_OF_RANGE: "OUT_OF_RANGE";
+    readonly EPHEMERIS_UNAVAILABLE: "EPHEMERIS_UNAVAILABLE";
+    readonly NOT_INITIALIZED: "NOT_INITIALIZED";
+};
+
+// @public (undocumented)
+export type NodeJHoraErrorCode = (typeof NodeJHoraErrorCode)[keyof typeof NodeJHoraErrorCode];
 
 // @public
 export type NodeType = 'mean' | 'true';
@@ -984,7 +1038,7 @@ export enum Relationship {
 // @public (undocumented)
 export function resolveCalculationInput(input?: SettingsInput, base?: CalculationSettings): CalculationSettings;
 
-// @public
+// @public (undocumented)
 export function resolveCalendar(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>, calendar?: CalendarMode): 'julian' | 'gregorian';
 
 // @public

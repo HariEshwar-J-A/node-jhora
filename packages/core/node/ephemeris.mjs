@@ -273,6 +273,28 @@ export async function createNodeChunkLoader(options = {}) {
     }
 
     return {
+        loadSync(key) {
+            const entry = m.njceChunkEntry(key);
+            if (!entry) return undefined;
+            for (const dir of dirs) {
+                const hit = readVerified(join(dir, entry.file), entry);
+                if (hit) return hit;
+            }
+            const pkgDir = resolvePackageDir(m.njcePackageName(key.century));
+            if (pkgDir) {
+                const hit = readVerified(join(pkgDir, entry.file), entry);
+                if (hit) return hit;
+            }
+            const cachePath = join(cacheRoot, entry.file);
+            if (existsSync(cachePath)) {
+                try {
+                    return readVerified(cachePath, entry);
+                } catch {
+                    unlinkSync(cachePath);
+                }
+            }
+            return undefined;
+        },
         async load(key) {
             const entry = m.njceChunkEntry(key);
             if (!entry) return undefined;

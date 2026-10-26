@@ -26,24 +26,36 @@ Environment:
 
 - `DE431_BSP_PATH` — use an existing `de431t.bsp` instead of downloading (size is verified)
 - `NJCE_OUT_DIR` — output directory (default: `packages/ephe-long/dist`)
-- `NJCE_CENTURIES` — century range `min:max` (default `-100:99`, i.e. -9999..9999 with the century containing it)
+- `NJCE_CENTURIES` — century range `min:max` (default `-100:100`). The last two century
+  files (`c99`, `c100`) are sliced through **10000-12-31 UT plus ΔT and motion margin**
+  (see `NJCE_TT_JD_MAX_REQUIRED` in core) and the low century through
+  **−10000-01-01 UT plus ΔT and motion margin** (see `chunk-coverage.ts` in core).
+
+After changing chunk bytes, regenerate the manifest and data packages:
+
+```bash
+pnpm --filter @node-jhora/ephe-long run build:chunks   # needs de431t.bsp (~3.4 GB)
+pnpm --filter @node-jhora/ephe-long run generate:manifest
+pnpm --filter @node-jhora/core build
+pnpm --filter @node-jhora/ephe-long run stage:data -- --pack-dry-run
+```
 
 ## Size (measured after build)
 
 Measured on 2026-10-26 from `de431t.bsp` (3,696,366,592 bytes), default range:
 
-|                            | files   | total         | per century  |
-| -------------------------- | ------- | ------------- | ------------ |
-| `g0` Sun–Pluto barycentres | 200     | 830.4 MB      | 4.15 MB      |
-| `g1` EMB, Moon, Earth      | 200     | 1348.3 MB     | 6.74 MB      |
-| **all**                    | **400** | **2178.7 MB** | **10.89 MB** |
+|                            | files   | total        | per century  |
+| -------------------------- | ------- | ------------ | ------------ |
+| `g0` Sun–Pluto barycentres | 201     | ~834 MB      | ~4.15 MB     |
+| `g1` EMB, Moon, Earth      | 201     | ~1355 MB     | ~6.74 MB     |
+| **all**                    | **402** | **~2.19 GB** | **~10.9 MB** |
 
 Coefficients are float64 copied verbatim, so the set is large; browser deployments should fetch only the centuries they need. Most of `g1` is Earth (399) relative to EMB, which could later be derived from the Moon segment and the DE431 Earth/Moon mass ratio instead of being stored.
 
 ## Distribution
 
 The chunks are too large for one npm package (2.18 GB; npm rejects tarballs
-well under that). They are split into **40 data packages of 500 years each**,
+well under that). They are split into **41 data packages of 500 years each**,
 `@node-jhora/ephe-de431-{p|m}{start year}` (for example
 `@node-jhora/ephe-de431-p1500` for 1500–1999 and `@node-jhora/ephe-de431-m3000`
 for -3000..-2501), about 54 MB unpacked each. This package itself ships no data.

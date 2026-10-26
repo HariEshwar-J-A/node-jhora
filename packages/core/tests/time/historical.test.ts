@@ -1,4 +1,8 @@
+import { DateTime } from 'luxon';
+
 import { julday } from '../../src/engine/coordinates.js';
+import { EphemerisEngine } from '../../src/engine/ephemeris.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../../src/errors.js';
 import {
     civilDateFromJulianDay,
     julianDayUt,
@@ -84,6 +88,75 @@ describe('historical calendar', () => {
         expect(jd(-1000, 7, 12, 12)).toBe(1356001.0);
         expect(jd(1600, 1, 1)).toBe(2305447.5);
         expect(jd(1987, 1, 27)).toBe(2446822.5);
+    });
+
+    test('rejects unknown calendar mode with INVALID_INPUT', () => {
+        const parts = {
+            astronomicalYear: 2000,
+            month: 1,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+        };
+        try {
+            julianDayUt(parts, 'foo' as 'auto');
+            throw new Error('expected throw');
+        } catch (err) {
+            expect(err).toBeInstanceOf(NodeJHoraError);
+            expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+        }
+        try {
+            julday(2000, 1, 1, 0, 'foo' as 'auto');
+            throw new Error('expected throw');
+        } catch (err) {
+            expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+        }
+    });
+
+    test('rejects non-finite time components with INVALID_INPUT', () => {
+        try {
+            julianDayUt({
+                astronomicalYear: 2000,
+                month: 1,
+                day: 1,
+                hour: Number.NaN,
+                minute: 0,
+                second: 0,
+            });
+            throw new Error('expected throw');
+        } catch (err) {
+            expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+        }
+    });
+
+    test('rejects impossible civil dates with INVALID_INPUT', () => {
+        try {
+            julianDayUt({
+                astronomicalYear: 2000,
+                month: 2,
+                day: 30,
+                hour: 0,
+                minute: 0,
+                second: 0,
+            });
+            throw new Error('expected throw');
+        } catch (err) {
+            expect(err).toBeInstanceOf(NodeJHoraError);
+            expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+            expect(err).not.toBeInstanceOf(RangeError);
+        }
+    });
+
+    test('EphemerisEngine.julday rejects unknown calendar', async () => {
+        const engine = EphemerisEngine.getInstance();
+        await engine.initialize();
+        try {
+            engine.julday(DateTime.utc(2000, 1, 1), { calendar: 'foo' as 'auto' });
+            throw new Error('expected throw');
+        } catch (err) {
+            expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });
+        }
     });
 
     test('civilDateFromJulianDay inverts julianDayUt, including negative JD', () => {

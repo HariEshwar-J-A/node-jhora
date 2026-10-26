@@ -2,7 +2,17 @@ import { jest } from '@jest/globals';
 import { DateTime } from 'luxon';
 
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../../src/errors.js';
 import { julianDayUt } from '../../src/time/historical.js';
+
+function isOutsideDe440sCoverage(err: unknown): boolean {
+    if (err instanceof RangeError && String(err).includes('outside DE440s')) return true;
+    return (
+        err instanceof NodeJHoraError &&
+        err.code === NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE &&
+        String(err.message).includes('outside DE440s')
+    );
+}
 
 /** New Delhi — longitude must not shift UTC-labelled civil times. */
 const DELHI = { latitude: 28.6139, longitude: 77.209 };
@@ -55,14 +65,14 @@ describe('EphemerisEngine — UTC civil time ignores birth longitude for JD', ()
             try {
                 engine.getPlanets(dt, DELHI, opts);
             } catch (e) {
-                if (!(e instanceof RangeError && String(e).includes('outside DE440s'))) throw e;
+                if (!isOutsideDe440sCoverage(e)) throw e;
             }
             const jdWithLoc = spy.mock.results.at(-1)?.value as number;
             spy.mockClear();
             try {
                 engine.getPlanets(dt, undefined, opts);
             } catch (e) {
-                if (!(e instanceof RangeError && String(e).includes('outside DE440s'))) throw e;
+                if (!isOutsideDe440sCoverage(e)) throw e;
             }
             const jdBare = spy.mock.results.at(-1)?.value as number;
             spy.mockRestore();

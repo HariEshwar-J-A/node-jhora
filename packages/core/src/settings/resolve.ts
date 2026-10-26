@@ -10,6 +10,8 @@ import {
     resolveConfig,
     TROPICAL_YEAR_DAYS,
 } from '../config.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
+import { assertAyanamsaMode } from '../validation/input.js';
 import { hashSettings } from './hash.js';
 import { normalizeCalculationSettings } from './normalize.js';
 import { getPreset, isPresetId, type PresetId } from './presets.js';
@@ -117,7 +119,7 @@ export function jyotishConfigToSettings(
     base: CalculationSettings = getPreset('node-jhora-default'),
 ): CalculationSettings {
     const known = ayanamsaIdForMode(config.ayanamsaMode);
-    return CalculationSettingsSchema.parse({
+    return parseSettings({
         schemaVersion: 1,
         precisionProfile: config.precisionProfile ?? base.precisionProfile,
         ...(config.deltaTOverrideSeconds !== undefined
@@ -150,12 +152,26 @@ export function jyotishConfigToSettings(
     });
 }
 
+function parseSettings(input: unknown): CalculationSettings {
+    try {
+        return CalculationSettingsSchema.parse(input);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        throw new NodeJHoraError(NodeJHoraErrorCode.INVALID_INPUT, message);
+    }
+}
+
+function assertResolvableAyanamsa(settings: CalculationSettings): void {
+    const mode = settings.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[settings.ayanamsa];
+    assertAyanamsaMode(mode);
+}
+
 function mergeSettings(
     base: CalculationSettings,
     patch: Partial<CalculationSettings>,
 ): CalculationSettings {
-    return normalizeCalculationSettings(
-        CalculationSettingsSchema.parse({
+    const merged = normalizeCalculationSettings(
+        parseSettings({
             ...base,
             ...patch,
             schemaVersion: 1,
@@ -164,6 +180,8 @@ function mergeSettings(
             vargaVariants: { ...base.vargaVariants, ...patch.vargaVariants },
         }),
     );
+    assertResolvableAyanamsa(merged);
+    return merged;
 }
 
 export function resolveCalculationInput(
@@ -171,14 +189,23 @@ export function resolveCalculationInput(
     base: CalculationSettings = getPreset('node-jhora-default'),
 ): CalculationSettings {
     if (typeof input === 'string') {
-        if (!isPresetId(input)) throw new Error(`Unknown calculation preset: ${input}`);
+        if (!isPresetId(input)) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.INVALID_INPUT,
+                `Unknown calculation preset: ${input}`,
+            );
+        }
         return getPreset(input);
     }
 
     const record = input as LegacyCalculationInput & Partial<CalculationSettings>;
     if (typeof record.preset === 'string') {
-        if (!isPresetId(record.preset))
-            throw new Error(`Unknown calculation preset: ${record.preset}`);
+        if (!isPresetId(record.preset)) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.INVALID_INPUT,
+                `Unknown calculation preset: ${record.preset}`,
+            );
+        }
         const { preset: _preset, ...rest } = record;
         return resolveCalculationInput(rest, getPreset(record.preset));
     }
@@ -191,7 +218,9 @@ export function resolveCalculationInput(
         { ...rest, ayanamsaMode: rest.ayanamsaMode ?? ayanamsaOrder },
         settingsToJyotishConfig(base),
     );
-    return jyotishConfigToSettings(config, base);
+    const settings = jyotishConfigToSettings(config, base);
+    assertResolvableAyanamsa(settings);
+    return settings;
 }
 
 export function describeCalculation(
@@ -230,7 +259,7 @@ export interface FlatBirthSettings {
 /** Rebuild a settings object from the flat fields a request carries after validation. */
 export function settingsFromFlat(fields: FlatBirthSettings): CalculationSettings {
     const days = fields.dasaYearDays ?? TROPICAL_YEAR_DAYS;
-    return CalculationSettingsSchema.parse({
+    return parseSettings({
         schemaVersion: 1,
         ...(fields.calendar !== undefined && fields.calendar !== 'auto'
             ? { calendar: fields.calendar }
