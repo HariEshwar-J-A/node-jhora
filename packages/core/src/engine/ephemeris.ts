@@ -47,8 +47,32 @@
 import { DateTime } from 'luxon';
 
 import { Body } from '../core/body.js';
+import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
 import { dateTimeToJulianDayUt } from '../time/civil.js';
-import type { CalendarMode } from '../time/historical.js';
+import {
+    assertCalendarMode,
+    type CalendarMode,
+    GregorianReformGapError,
+} from '../time/historical.js';
+import { CHUNK_PREFETCH_MARGIN_DAYS, PLANET_SPEED_STEP_DAYS } from '../validation/bounds.js';
+import {
+    assertAyanamsaFrame,
+    assertAyanamsaMode,
+    assertDeltaTOverrideSeconds,
+    assertFiniteNumber,
+    assertGeoLocation,
+    assertHouseMethod,
+    assertJulianDayUt,
+    assertLatitude,
+    assertNodeType,
+    assertNotInitialized,
+    assertPositionMode,
+    assertPrecisionProfile,
+    assertSiderealFrame,
+    normalizeLongitude,
+    parseEngineDateTime,
+    parseEngineDateTimeOrJsDate,
+} from '../validation/input.js';
 import {
     APPARENT,
     AU_KM,
@@ -100,6 +124,8 @@ import {
 } from './kinematics.js';
 import { nutation } from './nutation.js';
 import { icrfToMeanEclipticOfDate, toSpherical, type Vec } from './precession.js';
+import { centuryIndex, jdTdbToAstronomicalYear } from './provider/de431-chunk.js';
+import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
 import {
     CompositeEphemerisProvider,
     type De431ChunkStore,
@@ -295,7 +321,8 @@ export class EphemerisEngine {
         const bytes = options?.kernel ?? (await getBspBytesLoader()?.());
 
         if (!bytes) {
-            throw new Error(
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
                 'EphemerisEngine: de440s.bsp bytes not available.\n' +
                     '  Browser: pass initialize({ kernel: Uint8Array }) from fetch/arrayBuffer.\n' +
                     '  Node: import and run registerNodeBspLoaderFromCore() from @node-jhora/core/node/register.mjs',
@@ -303,19 +330,14 @@ export class EphemerisEngine {
         }
 
         this.spk = loadSpkFromBytes(bytes);
-        this.composite = new CompositeEphemerisProvider(this.spk, {
-            policy: this.ephemerisPolicy,
-            longRange: this.chunkStore ? { getChunk: this.chunkStore.asGetter() } : undefined,
-        });
-        this.source = this.composite;
+        this.attachCompositeProvider();
         // Apparent True Citra needs Earth's barycentric velocity (aberration)
         // and the Sun's direction (deflection of Spica), from the same
         // ephemeris source the planets use.
-        const source = this.source;
         setStarKinematicsProvider((jdUT) => {
             const et = jdUTtoET(jdUT);
-            const earth = source.getBarycentric(NAIF.Earth, et);
-            const sun = source.getBarycentric(NAIF.Sun, et);
+            const earth = this.source.getBarycentric(NAIF.Earth, et);
+            const sun = this.source.getBarycentric(NAIF.Sun, et);
             return {
                 velocityKmS: [earth.vx, earth.vy, earth.vz],
                 sunToObserverKm: [earth.x - sun.x, earth.y - sun.y, earth.z - sun.z],
@@ -333,6 +355,9 @@ export class EphemerisEngine {
      */
     public setChunkStore(store: De431ChunkStore): void {
         this.chunkStore = store;
+        if (this.initialized) {
+            this.attachCompositeProvider();
+        }
     }
 
     /** Force DE440s, DE431 long-range, or auto (default). */
@@ -347,6 +372,7 @@ export class EphemerisEngine {
 
     public getEphemerisProvenance(jd: number): EphemerisProvenance {
         this.checkInit();
+        assertJulianDayUt(jd);
         return this.composite.provenance(jd);
     }
 
@@ -366,15 +392,34 @@ export class EphemerisEngine {
     // -----------------------------------------------------------------------
 
     /**
-     * Julian Day (UT) for a Luxon DateTime. Civil components are read in
-     * `date.zone` and converted with {@link dateTimeToJulianDayUt}.
+     * Julian Day (UT) for a Luxon DateTime or JavaScript Date. Civil components
+     * are read in `date.zone` and converted with {@link dateTimeToJulianDayUt}.
      */
     public julday(
-        date: DateTime,
+        date: DateTime | Date,
         options?: { calendar?: CalendarMode; latitude?: number; longitude?: number },
     ): number {
         this.checkInit();
-        return dateTimeToJulianDayUt(date, options);
+        const dt = parseEngineDateTimeOrJsDate(date);
+        const calendar = assertCalendarMode(options?.calendar);
+        let jd: number;
+        try {
+            jd = dateTimeToJulianDayUt(dt, { ...options, calendar });
+        } catch (err) {
+            if (err instanceof NodeJHoraError) throw err;
+            if (err instanceof GregorianReformGapError) {
+                throw new NodeJHoraError(NodeJHoraErrorCode.INVALID_INPUT, err.message);
+            }
+            if (err instanceof RangeError) {
+                const code =
+                    err.message.includes('Civil year') || err.message.includes('Julian Day')
+                        ? NodeJHoraErrorCode.OUT_OF_RANGE
+                        : NodeJHoraErrorCode.INVALID_INPUT;
+                throw new NodeJHoraError(code, err.message);
+            }
+            throw err;
+        }
+        return assertJulianDayUt(jd);
     }
 
     // -----------------------------------------------------------------------
@@ -402,12 +447,17 @@ export class EphemerisEngine {
         precision?: PrecisionOptions,
     ): number {
         this.checkInit();
+        assertJulianDayUt(jd);
+        const profile = assertPrecisionProfile(precision?.precisionProfile);
+        assertDeltaTOverrideSeconds(precision?.deltaTOverrideSeconds);
+        const effectiveMode = assertAyanamsaMode(mode ?? this.ayanamsaMode);
+        assertFiniteNumber(offsetDeg, 'ayanamsaOffset');
+        if (frame !== undefined) assertAyanamsaFrame(frame);
         // 'modern' reports what swe_get_ayanamsa_ut reports: the apparent value.
-        const f: AyanamsaFrame =
-            frame ?? (precision?.precisionProfile === 'modern' ? 'apparent' : 'geometric');
+        const f: AyanamsaFrame = frame ?? (profile === 'modern' ? 'apparent' : 'geometric');
         return withDeltaTContext(
             deltaTContextOf(precision),
-            () => computeAyanamsa(mode ?? this.ayanamsaMode, jd, f) + offsetDeg,
+            () => computeAyanamsa(effectiveMode, jd, f) + offsetDeg,
         );
     }
 
@@ -435,6 +485,8 @@ export class EphemerisEngine {
         } & PrecisionOptions = {},
     ): PlanetPosition[] {
         this.checkInit();
+        assertPrecisionProfile(options.precisionProfile);
+        assertDeltaTOverrideSeconds(options.deltaTOverrideSeconds);
         const ctx = deltaTContextOf(options);
         if (ctx) {
             const rest = {
@@ -445,25 +497,32 @@ export class EphemerisEngine {
             return withDeltaTContext(ctx, () => this.getPlanets(date, location, rest));
         }
 
+        const dt = parseEngineDateTime(date);
         const {
             ayanamsaOrder,
             topocentric = false,
-            nodeType = DEFAULT_NODE_TYPE,
-            positionMode = DEFAULT_POSITION_MODE,
+            nodeType: nodeTypeOpt = DEFAULT_NODE_TYPE,
+            positionMode: positionModeOpt = DEFAULT_POSITION_MODE,
             ayanamsaOffset = 0,
             calendar = 'auto',
             julianDayUt: jdOverride,
         } = options;
-        const effectiveMode = ayanamsaOrder ?? this.ayanamsaMode;
+        const nodeType = assertNodeType(nodeTypeOpt);
+        const positionMode = assertPositionMode(positionModeOpt);
+        const effectiveMode = assertAyanamsaMode(ayanamsaOrder ?? this.ayanamsaMode);
+        assertFiniteNumber(ayanamsaOffset, 'ayanamsaOffset');
+        const loc = assertGeoLocation(location, { required: topocentric });
         const corrections = correctionsFor(positionMode);
 
         const jd =
             jdOverride ??
-            this.julday(date, {
+            this.julday(dt, {
                 calendar,
-                latitude: location?.latitude,
-                longitude: location?.longitude,
+                latitude: loc?.latitude,
+                longitude: loc?.longitude,
             });
+        this.prefetchEphemerisChunks(jd);
+        this.assertLongRangeChunksForJd(jd);
         // Geometric (TRUEPOS) sidereal positions subtract the geometric star
         // place. Apparent positions subtract the same apparent ayanamsa
         // getAyanamsa() reports, so adding it back recovers the tropical place.
@@ -483,9 +542,9 @@ export class EphemerisEngine {
         for (const pid of SPK_BODY_IDS) {
             const naifId = ID_TO_NAIF[pid];
 
-            const loc = topocentric ? location : undefined;
-            const here = this.meanEclipticOfDate(jd, naifId, corrections, loc);
-            const motion = this.meanEclipticDailyMotion(jd, naifId, corrections, loc);
+            const topoLoc = topocentric ? loc : undefined;
+            const here = this.meanEclipticOfDate(jd, naifId, corrections, topoLoc);
+            const motion = this.meanEclipticDailyMotion(jd, naifId, corrections, topoLoc);
 
             planets.push({
                 id: pid,
@@ -724,14 +783,23 @@ export class EphemerisEngine {
         precision?: PrecisionOptions,
     ): HouseData {
         this.checkInit();
+        assertJulianDayUt(jd);
+        assertLatitude(lat);
+        const lonNorm = normalizeLongitude(lon);
+        const houseMethod = assertHouseMethod(method);
+        assertPrecisionProfile(precision?.precisionProfile);
+        assertDeltaTOverrideSeconds(precision?.deltaTOverrideSeconds);
+        if (ayanamsaMode !== undefined) assertAyanamsaMode(ayanamsaMode);
+        assertFiniteNumber(ayanamsaOffset, 'ayanamsaOffset');
+        if (siderealFrame !== undefined) assertSiderealFrame(siderealFrame);
         const ctx = deltaTContextOf(precision);
         if (ctx) {
             return withDeltaTContext(ctx, () =>
                 this.housesIn(
                     jd,
                     lat,
-                    lon,
-                    method,
+                    lonNorm,
+                    houseMethod,
                     sidereal,
                     ayanamsaMode,
                     ayanamsaOffset,
@@ -743,8 +811,8 @@ export class EphemerisEngine {
         return this.housesIn(
             jd,
             lat,
-            lon,
-            method,
+            lonNorm,
+            houseMethod,
             sidereal,
             ayanamsaMode,
             ayanamsaOffset,
@@ -836,6 +904,7 @@ export class EphemerisEngine {
     /** Greenwich Apparent Sidereal Time in hours. */
     public getSiderealTime(jd: number): number {
         this.checkInit();
+        assertJulianDayUt(jd);
         return getGAST(jd) / 15;
     }
 
@@ -845,6 +914,7 @@ export class EphemerisEngine {
      */
     public getEclipticObliquity(jd: number): { eps: number; dpsi: number; deps: number } {
         this.checkInit();
+        assertJulianDayUt(jd);
         const jdTT = jd + deltaT(jd) / 86400.0;
         const T = julianCenturies(jdTT);
         const { dpsi, deps } = nutation(T);
@@ -854,6 +924,9 @@ export class EphemerisEngine {
     /** ΔT = TT − UT in seconds at `jd`, exposed for diagnostics. */
     public getDeltaT(jd: number, precision?: PrecisionOptions): number {
         this.checkInit();
+        assertJulianDayUt(jd);
+        assertPrecisionProfile(precision?.precisionProfile);
+        assertDeltaTOverrideSeconds(precision?.deltaTOverrideSeconds);
         return withDeltaTContext(deltaTContextOf(precision), () => deltaT(jd));
     }
 
@@ -866,11 +939,58 @@ export class EphemerisEngine {
     // Private
     // -----------------------------------------------------------------------
 
-    private checkInit(): void {
-        if (!this.initialized) {
-            throw new Error(
-                'EphemerisEngine not initialised — call `await engine.initialize()` first.',
+    private prefetchEphemerisChunks(jdUT: number): void {
+        if (!this.chunkStore) return;
+        const margin = CHUNK_PREFETCH_MARGIN_DAYS + PLANET_SPEED_STEP_DAYS;
+        const jdTdb = jdUT + deltaT(jdUT) / 86_400;
+        this.chunkStore.prefetchSyncForJdTdb(jdTdb);
+        this.chunkStore.prefetchSyncForJdTdb(jdTdb - margin);
+        this.chunkStore.prefetchSyncForJdTdb(jdTdb + margin);
+    }
+
+    private attachCompositeProvider(): void {
+        this.composite = new CompositeEphemerisProvider(this.spk, {
+            policy: this.ephemerisPolicy,
+            longRange: this.chunkStore ? { getChunk: this.chunkStore.asGetter() } : undefined,
+        });
+        this.source = this.composite;
+    }
+
+    /**
+     * Fail fast when a date needs DE431 NJCE data that is not resident (instead
+     * of letting the SPK reader throw RangeError or returning wrong positions).
+     */
+    private assertLongRangeChunksForJd(jdUT: number): void {
+        const jdTdb = jdUT + deltaT(jdUT) / 86_400;
+        if (jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END) {
+            return;
+        }
+        if (!this.chunkStore) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                `Julian Day (UT) ${jdUT} is outside DE440s coverage (JD(TDB) ${DE440S_JD_TDB_START}–${DE440S_JD_TDB_END}). ` +
+                    'Attach DE431 NJCE chunks with setChunkStore() before calculating ancient or far-future dates.',
+                { jd: jdUT, jdTdb },
             );
         }
+        const cent = centuryIndex(jdTdbToAstronomicalYear(jdTdb));
+        const hasChunk = (groupId: number): boolean => {
+            for (const c of [cent - 1, cent, cent + 1]) {
+                if (this.chunkStore!.get(c, groupId)) return true;
+            }
+            return false;
+        };
+        if (!hasChunk(0) || !hasChunk(1)) {
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                `DE431 NJCE chunks for century ${cent} (and neighbours) are not loaded. ` +
+                    'Prefetch or install the matching @node-jhora/ephe-de431-* data package.',
+                { jd: jdUT, jdTdb, century: cent },
+            );
+        }
+    }
+
+    private checkInit(): void {
+        if (!this.initialized) assertNotInitialized();
     }
 }

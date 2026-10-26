@@ -3,6 +3,7 @@
  * the optional DE431 long-range chunk kernel.
  */
 
+import { NodeJHoraError, NodeJHoraErrorCode } from '../../errors.js';
 import type { BarycentricSource } from '../apparent.js';
 import type { Vec3 } from '../chebyshev.js';
 import type { SpkFile } from '../spk.js';
@@ -75,7 +76,12 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     private pick(jdTdb: number): EphemerisProvider {
         if (this.policy === 'de440s') return this.de440s;
         if (this.policy === 'de431_long') {
-            if (!this.de431) throw new Error('DE431 long-range chunks are not loaded');
+            if (!this.de431) {
+                throw new NodeJHoraError(
+                    NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
+                    'DE431 long-range chunks are not loaded',
+                );
+            }
             return this.de431;
         }
         // auto: prefer DE440s inside its span for byte-identical overlap
@@ -83,10 +89,12 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
             return this.de440s;
         }
         if (!this.de431) {
-            throw new RangeError(
+            throw new NodeJHoraError(
+                NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
                 `Ephemeris date JD(TDB) ${jdTdb} is outside DE440s coverage, 1849-12-26 to 2150-01-22 ` +
                     `(JD ${DE440S_JD_TDB_START}–${DE440S_JD_TDB_END}). ` +
                     'Install @node-jhora/ephe-long and attach its chunks with setChunkStore().',
+                { jdTdb },
             );
         }
         return this.de431;

@@ -5,7 +5,7 @@
  *   node packages/ephe-long/scripts/generate-manifest.mjs [chunkDir]
  *
  * chunkDir defaults to NJCE_DIR, then packages/ephe-long/dist. Every one of
- * the 400 NJCE chunks (centuries -100..99, groups 0 and 1) must be present.
+ * all NJCE chunks (centuries -100..100, groups 0 and 1) must be present.
  * Writes packages/core/src/ephemeris-data/manifest.generated.ts.
  */
 
@@ -20,7 +20,7 @@ const chunkDir = process.argv[2] ?? process.env.NJCE_DIR ?? join(here, '../dist'
 const out = join(repo, 'packages/core/src/ephemeris-data/manifest.generated.ts');
 
 const rows = [];
-for (let century = -100; century <= 99; century++) {
+for (let century = -100; century <= 100; century++) {
     for (const groupId of [0, 1]) {
         const path = join(chunkDir, `g${groupId}-c${century}.njce`);
         if (!existsSync(path)) {

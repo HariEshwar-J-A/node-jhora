@@ -1,3 +1,4 @@
+export * from './chunk-coverage.js';
 export * from './chunk-loader.js';
 export * from './composite.js';
 export * from './de431-chunk.js';

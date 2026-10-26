@@ -12,7 +12,7 @@
  * sign of the DLL ascendant (SE's own 'W' uses the tropical sign, which JHora
  * does not display). ΔT is checked separately in seconds of time.
  *
- * Cases outside DE440s (1849-12-26 … 2150-01-22) must throw a RangeError;
+ * Cases outside DE440s (1849-12-26 … 2150-01-22) must throw EPHEMERIS_UNAVAILABLE;
  * their parity checks are skipped pending #260 (long-range ephemeris), not
  * failed.
  */
@@ -141,11 +141,10 @@ const haveChunks =
     existsSync(join(chunkDir, 'g0-c18.njce')) && existsSync(join(chunkDir, 'g1-c21.njce'));
 
 describe.each(outOfRange)('outside DE440s — #$id $utc', (c) => {
-    test('throws a RangeError naming the supported range without long-range chunks', () => {
+    test('throws EPHEMERIS_UNAVAILABLE naming DE440s without long-range chunks', () => {
         const utc = DateTime.fromISO(c.utc, { zone: 'utc' });
-        expect(() => engine.getPlanets(utc, undefined, { ayanamsaOrder: 27 })).toThrow(RangeError);
         expect(() => engine.getPlanets(utc, undefined, { ayanamsaOrder: 27 })).toThrow(
-            /1849-12-26 to 2150-01-22/,
+            /DE440s coverage/,
         );
     });
 });

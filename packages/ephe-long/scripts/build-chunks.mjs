@@ -13,7 +13,7 @@
  * Environment:
  *   DE431_BSP_PATH  existing kernel (skips the download)
  *   NJCE_OUT_DIR    output directory (default packages/ephe-long/dist)
- *   NJCE_CENTURIES  optional "min:max" century-index range (default -100:99)
+ *   NJCE_CENTURIES  optional "min:max" century-index range (default -100:100)
  */
 
 import {
@@ -77,11 +77,32 @@ function julianDayAstro(year, month, day) {
 
 const jdToEt = (jd) => (jd - J2000_JD) * SECONDS_PER_DAY;
 
+/**
+ * TT Julian-day limits advertised by @node-jhora/core (chunk-coverage.ts).
+ * Recompute after changing EPHEMERIS_JD_UT_* or ΔT models:
+ *   node --input-type=module -e "import { NJCE_TT_JD_MIN_REQUIRED, NJCE_TT_JD_MAX_REQUIRED } from './packages/core/dist/engine/provider/chunk-coverage.js'; console.log(NJCE_TT_JD_MIN_REQUIRED, NJCE_TT_JD_MAX_REQUIRED)"
+ */
+const NJCE_TT_JD_MIN_REQUIRED = -1_931_440.605_619_693;
+const NJCE_TT_JD_MAX_REQUIRED = 5_373_856.151_148_088; // sync with core chunk-coverage.ts after bounds change
+
 function centuryRange(centuryIndex) {
     return {
         etStart: jdToEt(julianDayAstro(centuryIndex * 100, 1, 1)),
         etEnd: jdToEt(julianDayAstro(centuryIndex * 100 + 100, 1, 1)),
     };
+}
+
+/** ET slice bounds for one century file, extended at the global TT edges. */
+function centurySliceRange(centuryIndex, minCent, maxCent) {
+    const { etStart, etEnd } = centuryRange(centuryIndex);
+    const ttMinEt = jdToEt(NJCE_TT_JD_MIN_REQUIRED);
+    const ttMaxEt = jdToEt(NJCE_TT_JD_MAX_REQUIRED);
+    let start = etStart;
+    let end = etEnd;
+    if (centuryIndex === minCent) start = Math.min(start, ttMinEt);
+    // High TT (10000-12-31 UT + ΔT + margin) can fall in the last two century files.
+    if (centuryIndex >= maxCent - 1) end = Math.max(end, ttMaxEt);
+    return { etStart: start, etEnd: end };
 }
 
 async function downloadDe431() {
@@ -242,13 +263,13 @@ async function main() {
     const daf = new DafReader(DE431_PATH);
     mkdirSync(OUT_DIR, { recursive: true });
 
-    const [minCent, maxCent] = (process.env.NJCE_CENTURIES ?? '-100:99').split(':').map(Number);
+    const [minCent, maxCent] = (process.env.NJCE_CENTURIES ?? '-100:100').split(':').map(Number);
     let totalBytes = 0;
     let fileCount = 0;
     const perGroup = new Map();
 
     for (let cent = minCent; cent <= maxCent; cent++) {
-        const { etStart, etEnd } = centuryRange(cent);
+        const { etStart, etEnd } = centurySliceRange(cent, minCent, maxCent);
         for (const [groupId, pairs] of GROUPS) {
             const payloads = [];
             for (const [target, center] of pairs) {

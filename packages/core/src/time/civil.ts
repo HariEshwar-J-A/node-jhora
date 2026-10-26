@@ -22,7 +22,12 @@ import {
     localClockToJulianDay,
     unixMsToJulianDay,
 } from './calendar.js';
-import { type CalendarMode, julianDayUt, usesProlepticJulian } from './historical.js';
+import {
+    assertCalendarMode,
+    type CalendarMode,
+    julianDayUt,
+    usesProlepticJulian,
+} from './historical.js';
 import type {
     CivilTimeInput,
     CivilTimePolicy,
@@ -375,7 +380,7 @@ export function dateTimeToJulianDayUt(
     }
     const zone = date.zoneName;
     if (!zone) throw new RangeError('DateTime has no time zone');
-    const calendar = options.calendar ?? 'auto';
+    const calendar = assertCalendarMode(options.calendar);
     const local = {
         year: date.year,
         month: date.month,

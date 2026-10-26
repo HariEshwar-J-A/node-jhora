@@ -21,6 +21,11 @@ import {
     type SettingsInput,
 } from './settings/index.js';
 import { PlanetaryStream, StreamConfig } from './stream/planetary_stream.js';
+import {
+    assertGeoLocation,
+    parseEngineDateTime,
+    parseEngineDateTimeOrJsDate,
+} from './validation/input.js';
 import { VargaDeities } from './vedic/deities.js';
 import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
 import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
@@ -108,6 +113,8 @@ export {
     DE440S_JD_TDB_END,
     DE440S_JD_TDB_START,
     fetchChunkLoader,
+    NJCE_TT_JD_MAX_REQUIRED,
+    NJCE_TT_JD_MIN_REQUIRED,
     nodeFsChunkLoader,
 } from './engine/provider/index.js';
 export type {
@@ -151,6 +158,7 @@ export {
     verifyEphemerisBytes,
     verifyingChunkLoader,
 } from './ephemeris-data/index.js';
+export { isNodeJHoraError, NodeJHoraError, NodeJHoraErrorCode } from './errors.js';
 export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 export type {
     AyanamsaId,
@@ -194,6 +202,7 @@ export {
 } from './settings/index.js';
 export type { CalendarMode, HistoricalDateTime } from './time/historical.js';
 export {
+    assertCalendarMode,
     assertValidCivilDate,
     CALENDAR_MODES,
     civilDateFromJulianDay,
@@ -231,6 +240,13 @@ export {
     resolveCivilTime,
     unixMsToJulianDay,
 } from './time/index.js';
+export {
+    DELTA_T_OVERRIDE_ABS_MAX_SECONDS,
+    EPHEMERIS_ASTRO_YEAR_MAX,
+    EPHEMERIS_ASTRO_YEAR_MIN,
+    EPHEMERIS_JD_UT_MAX,
+    EPHEMERIS_JD_UT_MIN,
+} from './validation/bounds.js';
 export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
 export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
 
@@ -308,7 +324,7 @@ export class NodeJHora {
         location: { latitude: number; longitude: number; altitude?: number },
         config: SettingsInput = {},
     ) {
-        this.location = location;
+        this.location = assertGeoLocation(location, { required: true })!;
         this.ephemeris = EphemerisEngine.getInstance();
         const resolved = describeCalculation(config);
         this.ephemeris.setEphemerisPolicy(resolved.settings.ephemerisPolicy);
@@ -352,6 +368,8 @@ export class NodeJHora {
         ayanamsaName: Ayanamsa = 'TrueChitra',
         config: SettingsInput = {},
     ): Promise<ChartData & { panchanga: PanchangaResult; settingsHash: string }> {
+        const place = assertGeoLocation(location, { required: true })!;
+        parseEngineDateTimeOrJsDate(date);
         // A preset id or a settings object replaces the name. A legacy config
         // still lets an explicit mode win over the name, as before.
         const requested: SettingsInput =
@@ -373,7 +391,7 @@ export class NodeJHora {
         const dt = DateTime.fromJSDate(date);
         const planets = engine.getPlanets(
             dt,
-            { ...location, altitude: location.altitude ?? c.altitudeMetres },
+            { ...place, altitude: place.altitude ?? c.altitudeMetres },
             {
                 ayanamsaOrder: c.ayanamsaMode,
                 ayanamsaOffset: c.ayanamsaOffset,
@@ -387,8 +405,8 @@ export class NodeJHora {
         );
         const housesResult = calculateHouseCusps(
             dt,
-            location.latitude,
-            location.longitude,
+            place.latitude,
+            place.longitude,
             c.houseSystem as HouseSystemMethod,
             engine,
             c.ayanamsaMode,
