@@ -24,14 +24,20 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/dasha', { schema: { body: DashaInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
+        const parsed = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, settingsHash, applyDasaYear, dashaYearDays } = parsed;
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
         const moon    = planets.find(p => p.id === 1)!;
 
         const balance = calculateDashaBalance(moon.longitude);
-        const periods = generateVimshottari(dt, moon.longitude, req.body.depth);
+        // The historical 365.256364-day year stays in force until the client
+        // sends a preset, a settings object, or dasaYearDays.
+        const periods = generateVimshottari(
+            dt, moon.longitude, req.body.depth,
+            applyDasaYear && dashaYearDays != null ? { yearDays: dashaYearDays } : undefined,
+        );
 
         return reply.status(200).send({
             balance: {
@@ -42,6 +48,7 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
                 nakshatraIndex:    balance.nakshatraIndex,
             },
             periods: periods.map(serializePeriod),
+            settingsHash,
         });
     });
 }

@@ -9,7 +9,7 @@ export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/panchanga', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, settingsHash } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets   = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
@@ -17,6 +17,6 @@ export async function panchangaRoutes(app: FastifyInstance): Promise<void> {
         const moon      = planets.find(p => p.id === 1)!;
         const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
 
-        return reply.status(200).send(panchanga);
+        return reply.status(200).send({ ...panchanga, settingsHash });
     });
 }

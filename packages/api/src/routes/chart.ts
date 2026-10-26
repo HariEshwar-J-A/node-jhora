@@ -11,7 +11,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
     // POST /v1/chart — full birth chart (planets, houses, panchanga)
     typed.post('/chart', { schema: { body: BirthInputSchema } }, async (req, reply) => {
         const parsed = parseBirthInput(req.body);
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, houseSystem } = parsed;
+        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, houseSystem, settingsHash } = parsed;
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
@@ -41,6 +41,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
                 cusps:     housesResult.cusps,
             },
             panchanga,
+            settingsHash,
             meta: {
                 ayanamsaName:  req.body.ayanamsa,
                 ayanamsaValue: ayanamsa,
@@ -58,7 +59,7 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
 
     // POST /v1/chart/vargas — all 16 divisional charts
     typed.post('/chart/vargas', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const { dt, location, ayanamsaOrder, nodeType, dasamsaScheme, horaScheme, positionMode, topocentric, ayanamsaOffset } = parseBirthInput(req.body);
+        const { dt, location, ayanamsaOrder, nodeType, dasamsaScheme, horaScheme, positionMode, topocentric, ayanamsaOffset, settingsHash } = parseBirthInput(req.body);
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
@@ -79,6 +80,6 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
             });
         }
 
-        return reply.status(200).send({ vargas });
+        return reply.status(200).send({ vargas, settingsHash });
     });
 }

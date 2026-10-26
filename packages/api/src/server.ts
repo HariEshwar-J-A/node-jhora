@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import cors from '@fastify/cors';
-import { EphemerisEngine } from '@node-jhora/core';
+import { EphemerisEngine, expandRequestBody } from '@node-jhora/core';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { healthRoutes } from './routes/health.js';
 import { chartRoutes } from './routes/chart.js';
@@ -64,6 +64,14 @@ export async function buildServer(opts: {
     });
 
     registerErrorHandler(app);
+
+    // Preset ids and settings objects are copied onto the flat body fields
+    // before Zod fills defaults, so an omitted field keeps the preset's value
+    // and an explicit field still wins.
+    app.addHook('preValidation', async (req) => {
+        if (!req.body || typeof req.body !== 'object' || Buffer.isBuffer(req.body)) return;
+        req.body = expandRequestBody(req.body as Record<string, unknown>);
+    });
 
     // ---------------------------------------------------------------------------
     // Routes

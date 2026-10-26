@@ -70,8 +70,9 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
 
     typed.post('/reading', { schema: { body: ReadingInputSchema } }, async (req, reply) => {
         const body = req.body as ReadingInput;
+        const parsed = parseBirthInput(body);
         const { dt, location, ayanamsaOrder, nodeType, positionMode,
-                topocentric, ayanamsaOffset, houseSystem } = parseBirthInput(body);
+                topocentric, ayanamsaOffset, houseSystem, settingsHash, applyDasaYear, dashaYearDays } = parsed;
         const engine: EphemerisEngine = getEngine();
 
         const asOf = body.asOf
@@ -107,7 +108,10 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
         };
 
         // ── Dasha stack at `asOf`, to Pratyantar ────────────────────────────
-        const tree = generateVimshottari(dt, moonNatal.longitude, body.depth);
+        const tree = generateVimshottari(
+            dt, moonNatal.longitude, body.depth,
+            applyDasaYear && dashaYearDays != null ? { yearDays: dashaYearDays } : undefined,
+        );
 
         const stack: Array<Record<string, unknown>> = [];
         const transitions: Array<Record<string, unknown>> = [];
@@ -205,6 +209,7 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
 
         return reply.status(200).send({
             asOf: asOf.toISO(),
+            settingsHash,
             meta: {
                 ayanamsa: body.ayanamsa,
                 ayanamsaValue: engine.getAyanamsa(engine.julday(dt), ayanamsaOrder),
