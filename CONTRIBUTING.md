@@ -58,11 +58,13 @@ From the repository root, after the Corepack commands above:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm build && pnpm test
+pnpm build && pnpm typecheck && pnpm test
 pnpm run check:links
 pnpm run check:clean-room
 pnpm run validate-github-templates
 ```
+
+[Turborepo](https://turbo.build/) orchestrates `build`, `typecheck`, `lint`, `test`, and `generate` (`turbo.json`). Root scripts call `turbo run …`; local task output is cached under `.turbo/` (gitignored). A second `pnpm test` with no file changes should be a full cache hit. Regenerate goldens with `pnpm generate` only when you intend to refresh `@node-jhora/testkit` outputs.
 
 Paste the build and test summary into the pull request until CI is required.
 
