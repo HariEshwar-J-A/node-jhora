@@ -1,0 +1,27 @@
+{
+    "version": 1,
+    "attribution": "Data © GeoNames (https://www.geonames.org/), used under Creative Commons Attribution 4.0 International (CC-BY 4.0).",
+    "license": "CC-BY-4.0",
+    "geonamesUrl": "https://www.geonames.org/",
+    "builtAt": "2026-01-01T00:00:00.000Z",
+    "placeCount": 14,
+    "keyCount": 25,
+    "places": "places.json",
+    "indexShards": {
+        "la-be": "index/la-be.json",
+        "la-ch": "index/la-ch.json",
+        "la-de": "index/la-de.json",
+        "la-ko": "index/la-ko.json",
+        "la-lo": "index/la-lo.json",
+        "la-ma": "index/la-ma.json",
+        "la-na": "index/la-na.json",
+        "la-pa": "index/la-pa.json",
+        "la-pu": "index/la-pu.json",
+        "u-306a": "index/u-306a.json",
+        "u-91a": "index/u-91a.json",
+        "u-926": "index/u-926.json",
+        "u-92a": "index/u-92a.json",
+        "u-92c": "index/u-92c.json",
+        "u-932": "index/u-932.json"
+    }
+}

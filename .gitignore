@@ -24,6 +24,11 @@ apps/browser-harness/fixtures/node-chart-snapshots.json
 apps/browser-harness/test-results/
 packages/bench/artifacts/*.json
 
+# GeoNames raw dumps for atlas build (generated shards live under packages/atlas/data/)
+packages/atlas/.cache/
+packages/atlas/data/
+packages/atlas/data-mini/
+
 # Ephemeris data (downloaded from JPL — large binary, not tracked in git)
 de440s.bsp
 **/de440s.bsp

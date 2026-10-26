@@ -1,0 +1,54 @@
+{
+    "name": "@node-jhora/atlas",
+    "version": "3.1.0",
+    "type": "module",
+    "description": "Offline GeoNames gazetteer with prefix search, sharded JSON, and browser-safe lookup.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./node": {
+            "types": "./dist/node.d.ts",
+            "import": "./dist/node.js"
+        },
+        "./attribution": "./ATTRIBUTION.md",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "!dist/**/*.map",
+        "!dist/**/*.tsbuildinfo",
+        "ATTRIBUTION.md",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit --pretty false",
+        "lint": "eslint .",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js",
+        "atlas:build": "node scripts/build.mjs",
+        "atlas:build:mini": "node scripts/build.mjs --fixture tests/fixtures/gazetteer-mini --out data-mini"
+    },
+    "license": "LicenseRef-NodeJHora-Source-Available",
+    "engines": {
+        "node": ">=22"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/atlas"
+    },
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
+        "typescript": "^5.9.3"
+    }
+}

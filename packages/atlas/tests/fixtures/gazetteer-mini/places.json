@@ -1,0 +1,16 @@
+[
+    ["Chennai", 13.08784, 80.27847, "Asia/Kolkata", "IN", "Tamil Nadu", 4681087, 1264527],
+    ["London", 51.50853, -0.12574, "Europe/London", "GB", "England", 8961989, 2643743],
+    ["London", 42.98339, -81.23304, "America/Toronto", "CA", "Ontario", 422324, 6058560],
+    ["Paris", 48.85341, 2.3488, "Europe/Paris", "FR", "Île-de-France", 2138551, 2988507],
+    ["Paris", 43.2, -80.38333, "America/Toronto", "CA", "Ontario", 12310, 6942553],
+    ["Patna", 25.59408, 85.13563, "Asia/Kolkata", "IN", "Bihar", 1684297, 1260086],
+    ["Putney", 51.46072, -0.21814, "Europe/London", "GB", "England", 77140, 2639835],
+    ["Beirut", 33.89332, 35.50157, "Asia/Beirut", "LB", "Beirut", 1916100, 276781],
+    ["Berat", 40.70583, 19.95222, "Europe/Tirane", "AL", "Berat County", 62232, 3186084],
+    ["Nagano", 36.65, 138.18333, "Asia/Tokyo", "JP", "Nagano", 372760, 1856215],
+    ["Nakano", 35.70449, 139.66946, "Asia/Tokyo", "JP", "Tokyo", 344880, 8715035],
+    ["Delhi", 28.65195, 77.23149, "Asia/Kolkata", "IN", "Delhi", 11034555, 1273294],
+    ["Delhi", 42.8501, -80.49968, "America/Toronto", "CA", "Ontario", 5344, 5937522],
+    ["Köln", 50.93333, 6.95, "Europe/Berlin", "DE", "North Rhine-Westphalia", 1024621, 2886242]
+]
