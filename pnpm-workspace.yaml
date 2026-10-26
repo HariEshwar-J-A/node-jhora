@@ -13,7 +13,10 @@ packages:
 # @parcel/watcher — dependency of jest-haste-map. The install script compiles
 # from source only when npm_config_build_from_source=true; otherwise it exits
 # without doing work and the prebuilt optional package is what loads.
+# esbuild — dependency of tsx (horizons:refresh). Its postinstall checks that
+# the prebuilt platform binary from the optional @esbuild/* package runs.
 allowBuilds:
+  esbuild: true
   "@parcel/watcher": true
   unrs-resolver: true
 

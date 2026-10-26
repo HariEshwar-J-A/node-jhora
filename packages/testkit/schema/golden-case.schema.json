@@ -220,16 +220,16 @@
       "minProperties": 1,
       "additionalProperties": false,
       "patternProperties": {
-        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\\.(?:lon|lat))$": {
+        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.(?:lon|lat))$": {
           "$ref": "#/$defs/arcsecEntry"
         },
-        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\\.sign)$": {
+        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.sign)$": {
           "$ref": "#/$defs/exactEntry"
         },
-        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\\.printed)$": {
+        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.printed)$": {
           "$ref": "#/$defs/exactEntry"
         },
-        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\\.retrograde)$": {
+        "^(?:d(?:[1-9]|[1-5]\\d|60)\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.retrograde)$": {
           "$ref": "#/$defs/exactEntry"
         },
         "^(?:d(?:[1-9]|[1-5]\\d|60)\\.ascendant\\.(?:lon|lat))$": {
@@ -289,7 +289,7 @@
         "^(?:d10\\.evenSignBodies\\[\\d+\\])$": {
           "$ref": "#/$defs/exactEntry"
         },
-        "^(?:horizons\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\\.(?:lon|lat))$": {
+        "^(?:horizons\\.planets\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.(?:lon|lat))$": {
           "$ref": "#/$defs/arcsecEntry"
         },
         "^(?:time\\.jd)$": {
@@ -311,6 +311,12 @@
           "$ref": "#/$defs/exactEntry"
         },
         "^(?:meta\\.contract\\.(?:tolerance|futureTolerance)\\.(?:longitude|latitude))$": {
+          "$ref": "#/$defs/exactEntry"
+        },
+        "^(?:meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate))$": {
+          "$ref": "#/$defs/exactEntry"
+        },
+        "^(?:meta\\.horizons\\.requestParameters)$": {
           "$ref": "#/$defs/exactEntry"
         }
       }

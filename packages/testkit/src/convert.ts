@@ -13,6 +13,7 @@
  */
 
 import {
+    canonicalJson,
     type ExpectedEntry,
     type GoldenCase,
     GoldenCaseSchema,
@@ -110,6 +111,12 @@ export interface HorizonsFixture {
     readonly toleranceArcsec: { readonly longitude: number; readonly latitude: number };
     readonly futureToleranceArcsec: { readonly longitude: number; readonly latitude: number };
     readonly lastObservedDeltaTYear: number;
+    readonly provenance?: {
+        readonly horizonsApiVersion: string;
+        readonly ephemeris: string;
+        readonly queryUrlTemplate: string;
+        readonly requestParameters: Readonly<Record<string, string>>;
+    };
 }
 
 type ExpectedMap = Record<string, ExpectedEntry>;
@@ -398,6 +405,12 @@ function writeContract(out: ExpectedMap, fixture: HorizonsFixture): void {
     putExact(out, 'meta.contract.futureTolerance.longitude', fixture.futureToleranceArcsec.longitude);
     putExact(out, 'meta.contract.futureTolerance.latitude', fixture.futureToleranceArcsec.latitude);
     putExact(out, 'meta.contract.lastObservedDeltaTYear', fixture.lastObservedDeltaTYear);
+    if (fixture.provenance) {
+        putExact(out, 'meta.horizons.apiVersion', fixture.provenance.horizonsApiVersion);
+        putExact(out, 'meta.horizons.ephemeris', fixture.provenance.ephemeris);
+        putExact(out, 'meta.horizons.queryUrlTemplate', fixture.provenance.queryUrlTemplate);
+        putExact(out, 'meta.horizons.requestParameters', canonicalJson(fixture.provenance.requestParameters));
+    }
 }
 
 export function toHorizonsGoldenCases(fixture: HorizonsFixture): GoldenCase[] {
@@ -419,9 +432,10 @@ export function toHorizonsGoldenCases(fixture: HorizonsFixture): GoldenCase[] {
             putArcsec(expected, `horizons.planets.${body.name}.lon`, body.lon, tolerance.longitude);
             putArcsec(expected, `horizons.planets.${body.name}.lat`, body.lat, tolerance.latitude);
         }
+        const toolVersion = fixture.provenance?.ephemeris ?? LEGACY_PROVENANCE.toolVersion;
         return finish({
             id: horizonsId(epoch.label),
-            provenance: { source: 'horizons', ...LEGACY_PROVENANCE },
+            provenance: { source: 'horizons', toolVersion, capturedAt: LEGACY_PROVENANCE.capturedAt },
             input: {
                 instant: utcInstant(epoch.utc),
                 timezone: 'UTC',
@@ -461,7 +475,17 @@ export function fromHorizonsGoldenCases(cases: readonly GoldenCase[]): HorizonsF
             }),
         };
     });
-    return { epochs, ...contract };
+    const provenance = 'meta.horizons.ephemeris' in first.expected
+        ? {
+            horizonsApiVersion: exactValue<string>(first.expected, 'meta.horizons.apiVersion'),
+            ephemeris: exactValue<string>(first.expected, 'meta.horizons.ephemeris'),
+            queryUrlTemplate: exactValue<string>(first.expected, 'meta.horizons.queryUrlTemplate'),
+            requestParameters: JSON.parse(
+                exactValue<string>(first.expected, 'meta.horizons.requestParameters'),
+            ) as Readonly<Record<string, string>>,
+        }
+        : undefined;
+    return { epochs, ...contract, provenance };
 }
 
 function indexedNames(expected: ExpectedMap, prefix: string): string[] {

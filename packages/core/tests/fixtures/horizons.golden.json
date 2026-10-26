@@ -1,9 +1,334 @@
 [
   {
+    "id": "horizons-1890-01-01",
+    "provenance": {
+      "source": "horizons",
+      "toolVersion": "DE441",
+      "capturedAt": null
+    },
+    "input": {
+      "instant": "1890-01-01T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 0,
+      "lon": 0,
+      "alt": 0,
+      "settingsPresetId": "horizons-apparent-geocentric",
+      "settingsHash": "27872ec7d640b8ac22f9022b3a622851d79ee467a9605bc7f507dcc5fc952b74"
+    },
+    "settings": {
+      "frame": "tropical-of-date",
+      "positionMode": "apparent"
+    },
+    "expected": {
+      "horizons.planets.Jupiter.lat": {
+        "value": -0.1891731,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Jupiter.lon": {
+        "value": 287.8293837,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mars.lat": {
+        "value": 1.4381058,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mars.lon": {
+        "value": 209.9887435,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mercury.lat": {
+        "value": -2.0912811,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mercury.lon": {
+        "value": 294.3331117,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Moon.lat": {
+        "value": -4.0522776,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Moon.lon": {
+        "value": 43.2377159,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": -1.6851582,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 62.2063533,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -12.0402478,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 65.3345806,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Saturn.lat": {
+        "value": 1.5718459,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Saturn.lon": {
+        "value": 153.6290609,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Sun.lat": {
+        "value": -0.0001117,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Sun.lon": {
+        "value": 280.5819751,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": 0.5855143,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 206.3009492,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Venus.lat": {
+        "value": 0.067044,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Venus.lon": {
+        "value": 268.943475,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "meta.birth.utc.day": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.hour": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.minute": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.month": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.second": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.year": {
+        "value": 1890,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.latitude": {
+        "value": 60,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.longitude": {
+        "value": 180,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.lastObservedDeltaTYear": {
+        "value": 2025,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.latitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.longitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[0]": {
+        "value": "Sun",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[1]": {
+        "value": "Moon",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[2]": {
+        "value": "Mercury",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[3]": {
+        "value": "Venus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[4]": {
+        "value": "Mars",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[5]": {
+        "value": "Jupiter",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[6]": {
+        "value": "Saturn",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.label": {
+        "value": "1890-01-01 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "time.jd": {
+        "value": 2411368.5,
+        "tolerance": {
+          "type": "exact"
+        }
+      }
+    }
+  },
+  {
     "id": "horizons-1900-01-01",
     "provenance": {
       "source": "horizons",
-      "toolVersion": "unrecorded",
+      "toolVersion": "DE441",
       "capturedAt": null
     },
     "input": {
@@ -76,6 +401,34 @@
           "arcsec": 1
         }
       },
+      "horizons.planets.Neptune.lat": {
+        "value": -1.2996533,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 85.2186599,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -9.7769714,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 75.2513936,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
       "horizons.planets.Saturn.lat": {
         "value": 1.0076898,
         "tolerance": {
@@ -99,6 +452,20 @@
       },
       "horizons.planets.Sun.lon": {
         "value": 280.1532941,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": 0.0634029,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 250.1391591,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -226,8 +593,50 @@
           "type": "exact"
         }
       },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "meta.epoch.label": {
         "value": "1900-01-01 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
         "tolerance": {
           "type": "exact"
         }
@@ -244,7 +653,7 @@
     "id": "horizons-1970-07-08",
     "provenance": {
       "source": "horizons",
-      "toolVersion": "unrecorded",
+      "toolVersion": "DE441",
       "capturedAt": null
     },
     "input": {
@@ -283,7 +692,7 @@
         }
       },
       "horizons.planets.Mars.lon": {
-        "value": 113.9066488,
+        "value": 113.9066486,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -297,21 +706,49 @@
         }
       },
       "horizons.planets.Mercury.lon": {
-        "value": 108.5135122,
+        "value": 108.5135117,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
         }
       },
       "horizons.planets.Moon.lat": {
-        "value": -0.8592624,
+        "value": -0.8592622,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
         }
       },
       "horizons.planets.Moon.lon": {
-        "value": 163.2427628,
+        "value": 163.2427602,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": 1.7218076,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 238.3884137,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": 15.6603871,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 174.9785304,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -325,7 +762,7 @@
         }
       },
       "horizons.planets.Saturn.lon": {
-        "value": 49.8471185,
+        "value": 49.8471184,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -339,7 +776,21 @@
         }
       },
       "horizons.planets.Sun.lon": {
-        "value": 106.2314146,
+        "value": 106.2314144,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": 0.6984595,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 184.9631939,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -353,7 +804,7 @@
         }
       },
       "horizons.planets.Venus.lon": {
-        "value": 145.7854916,
+        "value": 145.7854914,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -467,14 +918,56 @@
           "type": "exact"
         }
       },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "meta.epoch.label": {
         "value": "1970-07-08 20:10 UT",
         "tolerance": {
           "type": "exact"
         }
       },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "time.jd": {
-        "value": 2440776.340278,
+        "value": 2440776.340277778,
         "tolerance": {
           "type": "exact"
         }
@@ -485,7 +978,7 @@
     "id": "horizons-2000-01-01",
     "provenance": {
       "source": "horizons",
-      "toolVersion": "unrecorded",
+      "toolVersion": "DE441",
       "capturedAt": null
     },
     "input": {
@@ -558,6 +1051,34 @@
           "arcsec": 1
         }
       },
+      "horizons.planets.Neptune.lat": {
+        "value": 0.3064221,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 300.2166974,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": 11.3667374,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 248.1474964,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
       "horizons.planets.Saturn.lat": {
         "value": -2.6633881,
         "tolerance": {
@@ -581,6 +1102,20 @@
       },
       "horizons.planets.Sun.lon": {
         "value": 253.8099214,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": -0.639069,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 309.7745197,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -708,8 +1243,50 @@
           "type": "exact"
         }
       },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "meta.epoch.label": {
         "value": "2000-01-01 12:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
         "tolerance": {
           "type": "exact"
         }
@@ -723,10 +1300,335 @@
     }
   },
   {
+    "id": "horizons-2000-01-01",
+    "provenance": {
+      "source": "horizons",
+      "toolVersion": "DE441",
+      "capturedAt": null
+    },
+    "input": {
+      "instant": "2000-01-01T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 0,
+      "lon": 0,
+      "alt": 0,
+      "settingsPresetId": "horizons-apparent-geocentric",
+      "settingsHash": "27872ec7d640b8ac22f9022b3a622851d79ee467a9605bc7f507dcc5fc952b74"
+    },
+    "settings": {
+      "frame": "tropical-of-date",
+      "positionMode": "apparent"
+    },
+    "expected": {
+      "horizons.planets.Jupiter.lat": {
+        "value": -1.2647766,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Jupiter.lon": {
+        "value": 25.2331086,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mars.lat": {
+        "value": -1.0740062,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mars.lon": {
+        "value": 327.5754592,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mercury.lat": {
+        "value": -0.9456805,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Mercury.lon": {
+        "value": 271.1117994,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Moon.lat": {
+        "value": 5.2312994,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Moon.lon": {
+        "value": 217.2933209,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": 0.2351174,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 303.1752432,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": 10.8545444,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 251.43715,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Saturn.lat": {
+        "value": -2.4472226,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Saturn.lon": {
+        "value": 40.4058374,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Sun.lat": {
+        "value": 0.0002403,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Sun.lon": {
+        "value": 279.8592049,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": -0.6584479,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 314.7840519,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Venus.lat": {
+        "value": 2.0802345,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Venus.lon": {
+        "value": 240.9614017,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "meta.birth.utc.day": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.hour": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.minute": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.month": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.second": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.year": {
+        "value": 2000,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.latitude": {
+        "value": 60,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.longitude": {
+        "value": 180,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.lastObservedDeltaTYear": {
+        "value": 2025,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.latitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.longitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[0]": {
+        "value": "Sun",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[1]": {
+        "value": "Moon",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[2]": {
+        "value": "Mercury",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[3]": {
+        "value": "Venus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[4]": {
+        "value": "Mars",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[5]": {
+        "value": "Jupiter",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[6]": {
+        "value": "Saturn",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.label": {
+        "value": "2000-01-01 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "time.jd": {
+        "value": 2451544.5,
+        "tolerance": {
+          "type": "exact"
+        }
+      }
+    }
+  },
+  {
     "id": "horizons-2024-06-15",
     "provenance": {
       "source": "horizons",
-      "toolVersion": "unrecorded",
+      "toolVersion": "DE441",
       "capturedAt": null
     },
     "input": {
@@ -799,6 +1701,34 @@
           "arcsec": 1
         }
       },
+      "horizons.planets.Neptune.lat": {
+        "value": -1.2653207,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 359.8495327,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -3.1503413,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 301.6964948,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
       "horizons.planets.Saturn.lat": {
         "value": -1.9151279,
         "tolerance": {
@@ -822,6 +1752,20 @@
       },
       "horizons.planets.Sun.lon": {
         "value": 84.398376,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": -0.2609606,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 1
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 54.9352525,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 1
@@ -949,8 +1893,50 @@
           "type": "exact"
         }
       },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "meta.epoch.label": {
         "value": "2024-06-15 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
         "tolerance": {
           "type": "exact"
         }
@@ -964,10 +1950,335 @@
     }
   },
   {
+    "id": "horizons-2050-01-01",
+    "provenance": {
+      "source": "horizons",
+      "toolVersion": "DE441",
+      "capturedAt": null
+    },
+    "input": {
+      "instant": "2050-01-01T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 0,
+      "lon": 0,
+      "alt": 0,
+      "settingsPresetId": "horizons-apparent-geocentric",
+      "settingsHash": "27872ec7d640b8ac22f9022b3a622851d79ee467a9605bc7f507dcc5fc952b74"
+    },
+    "settings": {
+      "frame": "tropical-of-date",
+      "positionMode": "apparent"
+    },
+    "expected": {
+      "horizons.planets.Jupiter.lat": {
+        "value": 0.4580707,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Jupiter.lon": {
+        "value": 121.6915484,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Mars.lat": {
+        "value": 0.7726782,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Mars.lon": {
+        "value": 227.7146938,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Mercury.lat": {
+        "value": 3.1357631,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Mercury.lon": {
+        "value": 270.0594885,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Moon.lat": {
+        "value": 3.3912133,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Moon.lon": {
+        "value": 18.675597,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": -1.7627912,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 53.6034213,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -12.6913738,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 337.5330677,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Saturn.lat": {
+        "value": -0.2035839,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Saturn.lon": {
+        "value": 297.5742802,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Sun.lat": {
+        "value": 0.0001127,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Sun.lon": {
+        "value": 280.7483824,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": 0.7867256,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 170.7326103,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Venus.lat": {
+        "value": -0.6060626,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Venus.lon": {
+        "value": 281.248038,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "meta.birth.utc.day": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.hour": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.minute": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.month": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.second": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.year": {
+        "value": 2050,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.latitude": {
+        "value": 60,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.longitude": {
+        "value": 180,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.lastObservedDeltaTYear": {
+        "value": 2025,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.latitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.longitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[0]": {
+        "value": "Sun",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[1]": {
+        "value": "Moon",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[2]": {
+        "value": "Mercury",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[3]": {
+        "value": "Venus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[4]": {
+        "value": "Mars",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[5]": {
+        "value": "Jupiter",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[6]": {
+        "value": "Saturn",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.label": {
+        "value": "2050-01-01 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "time.jd": {
+        "value": 2469807.5,
+        "tolerance": {
+          "type": "exact"
+        }
+      }
+    }
+  },
+  {
     "id": "horizons-2100-01-01",
     "provenance": {
       "source": "horizons",
-      "toolVersion": "unrecorded",
+      "toolVersion": "DE441",
       "capturedAt": null
     },
     "input": {
@@ -992,7 +2303,7 @@
         }
       },
       "horizons.planets.Jupiter.lon": {
-        "value": 201.2063161,
+        "value": 201.206317,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1006,7 +2317,7 @@
         }
       },
       "horizons.planets.Mars.lon": {
-        "value": 29.5253584,
+        "value": 29.5253593,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1020,7 +2331,7 @@
         }
       },
       "horizons.planets.Mercury.lon": {
-        "value": 288.005771,
+        "value": 288.0057719,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1034,7 +2345,35 @@
         }
       },
       "horizons.planets.Moon.lon": {
-        "value": 157.4116064,
+        "value": 157.4116073,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": 0.9638819,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 167.2905214,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -16.9212249,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 32.4030239,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1048,7 +2387,7 @@
         }
       },
       "horizons.planets.Saturn.lon": {
-        "value": 205.6316614,
+        "value": 205.6316624,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1062,7 +2401,21 @@
         }
       },
       "horizons.planets.Sun.lon": {
-        "value": 280.6041915,
+        "value": 280.6041925,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": -0.6294645,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 17.7413057,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1076,7 +2429,7 @@
         }
       },
       "horizons.planets.Venus.lon": {
-        "value": 320.0704841,
+        "value": 320.0704851,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 180
@@ -1190,14 +2543,381 @@
           "type": "exact"
         }
       },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "meta.epoch.label": {
         "value": "2100-01-01 00:00 UT",
         "tolerance": {
           "type": "exact"
         }
       },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
       "time.jd": {
         "value": 2488069.5,
+        "tolerance": {
+          "type": "exact"
+        }
+      }
+    }
+  },
+  {
+    "id": "horizons-2149-12-26",
+    "provenance": {
+      "source": "horizons",
+      "toolVersion": "DE441",
+      "capturedAt": null
+    },
+    "input": {
+      "instant": "2149-12-26T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 0,
+      "lon": 0,
+      "alt": 0,
+      "settingsPresetId": "horizons-apparent-geocentric",
+      "settingsHash": "27872ec7d640b8ac22f9022b3a622851d79ee467a9605bc7f507dcc5fc952b74"
+    },
+    "settings": {
+      "frame": "tropical-of-date",
+      "positionMode": "apparent"
+    },
+    "expected": {
+      "horizons.planets.Jupiter.lat": {
+        "value": 0.3597036,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Jupiter.lon": {
+        "value": 264.642672,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Mars.lat": {
+        "value": -0.442822,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Mars.lon": {
+        "value": 261.8607479,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Mercury.lat": {
+        "value": 2.0602763,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Mercury.lon": {
+        "value": 252.5135422,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Moon.lat": {
+        "value": 4.2366649,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Moon.lon": {
+        "value": 230.457295,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Neptune.lat": {
+        "value": 1.0836892,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Neptune.lon": {
+        "value": 273.8730533,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Pluto.lat": {
+        "value": -9.2469854,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Pluto.lon": {
+        "value": 80.9109607,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Saturn.lat": {
+        "value": -1.4058761,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Saturn.lon": {
+        "value": 83.4274318,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Sun.lat": {
+        "value": 0.0002039,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Sun.lon": {
+        "value": 274.3470062,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Uranus.lat": {
+        "value": 0.1487121,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Uranus.lon": {
+        "value": 244.6036629,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "horizons.planets.Venus.lat": {
+        "value": 3.685377,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 60
+        }
+      },
+      "horizons.planets.Venus.lon": {
+        "value": 241.8283195,
+        "tolerance": {
+          "type": "arcsec",
+          "arcsec": 180
+        }
+      },
+      "meta.birth.utc.day": {
+        "value": 26,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.hour": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.minute": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.month": {
+        "value": 12,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.second": {
+        "value": 0,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.birth.utc.year": {
+        "value": 2149,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.latitude": {
+        "value": 60,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.futureTolerance.longitude": {
+        "value": 180,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.lastObservedDeltaTYear": {
+        "value": 2025,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.latitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.contract.tolerance.longitude": {
+        "value": 1,
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[0]": {
+        "value": "Sun",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[1]": {
+        "value": "Moon",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[2]": {
+        "value": "Mercury",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[3]": {
+        "value": "Venus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[4]": {
+        "value": "Mars",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[5]": {
+        "value": "Jupiter",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[6]": {
+        "value": "Saturn",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[7]": {
+        "value": "Uranus",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[8]": {
+        "value": "Neptune",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.bodies[9]": {
+        "value": "Pluto",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.epoch.label": {
+        "value": "2149-12-26 00:00 UT",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.apiVersion": {
+        "value": "1.2",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.ephemeris": {
+        "value": "DE441",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.queryUrlTemplate": {
+        "value": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&MAKE_EPHEM=YES&EPHEM_TYPE=OBSERVER&CENTER=500%40399&QUANTITIES=31&TLIST_TYPE=JD&CAL_FORMAT=CAL&TIME_ZONE=0&APPARENT=AIRLESS&OBJ_DATA=NO&COMMAND=%27%7BCOMMAND%7D%27&TLIST=%7BTLIST%7D",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "meta.horizons.requestParameters": {
+        "value": "{\"APPARENT\":\"AIRLESS\",\"CAL_FORMAT\":\"CAL\",\"CENTER\":\"500@399\",\"EPHEM_TYPE\":\"OBSERVER\",\"MAKE_EPHEM\":\"YES\",\"OBJ_DATA\":\"NO\",\"QUANTITIES\":\"31\",\"TIME_ZONE\":\"0\",\"TLIST_TYPE\":\"JD\",\"format\":\"json\"}",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "time.jd": {
+        "value": 2506325.5,
         "tolerance": {
           "type": "exact"
         }

@@ -10,6 +10,7 @@
         "test": "turbo run test --filter=./packages/*",
         "generate": "turbo run generate --filter=./packages/*",
         "check:clean-room": "node tools/check-forbidden-assets.mjs",
+        "horizons:refresh": "pnpm exec tsx tools/oracles/horizons.ts",
         "check:links": "node tools/check-markdown-links.mjs",
         "check:licenses": "node tools/check-runtime-licenses.mjs",
         "validate-github-templates": "node scripts/validate-github-templates.mjs",
@@ -36,6 +37,7 @@
         "ts-jest": "^29.4.6",
         "ts-node": "^10.9.2",
         "turbo": "^2.11.10",
+        "tsx": "^4.19.4",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.46.2"
     },

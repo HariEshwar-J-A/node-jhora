@@ -17,6 +17,7 @@ import { nutation }        from '../../src/engine/nutation.js';
 import { deltaT }          from '../../src/engine/deltat.js';
 import {
     HORIZONS_EPOCHS,
+    HORIZONS_ENGINE_COMPARE_BODIES,
     TOLERANCE_ARCSEC,
     FUTURE_TOLERANCE_ARCSEC,
     LAST_OBSERVED_DELTAT_YEAR,
@@ -70,7 +71,9 @@ describe.each(HORIZONS_EPOCHS)('Horizons parity — $label', (epoch) => {
         expect(Math.abs(jd - epoch.jd)).toBeLessThan(1e-6);
     });
 
-    for (const body of epoch.bodies) {
+    for (const body of epoch.bodies.filter((b) =>
+        (HORIZONS_ENGINE_COMPARE_BODIES as readonly string[]).includes(b.name),
+    )) {
         test(`${body.name} longitude within ${tol.longitude}″`, () => {
             const got = apparent.get(body.name);
             expect(got).toBeDefined();
@@ -88,11 +91,52 @@ describe.each(HORIZONS_EPOCHS)('Horizons parity — $label', (epoch) => {
 });
 
 // ---------------------------------------------------------------------------
+// Observed residuals (informational; tolerances are not loosened here)
+// ---------------------------------------------------------------------------
+
+describe('Horizons parity — max residuals', () => {
+    test('records worst engine vs Horizons residual per body', () => {
+        const maxLon: Record<string, number> = {};
+        const maxLat: Record<string, number> = {};
+
+        for (const epoch of HORIZONS_EPOCHS) {
+            const utc = DateTime.fromObject(epoch.utc, { zone: 'utc' });
+            const jd = engine.julday(utc);
+            const ayan = engine.getAyanamsa(jd);
+            const T = (jd + deltaT(jd) / 86400 - 2451545.0) / 36525;
+            const dpsi = nutation(T).dpsi;
+            const tol = epoch.utc.year <= LAST_OBSERVED_DELTAT_YEAR
+                ? TOLERANCE_ARCSEC
+                : FUTURE_TOLERANCE_ARCSEC;
+            const planets = engine.getPlanets(utc, undefined, { positionMode: 'apparent' });
+            for (const body of epoch.bodies) {
+                if (!(HORIZONS_ENGINE_COMPARE_BODIES as readonly string[]).includes(body.name)) continue;
+                const p = planets.find((row) => row.name === body.name)!;
+                const lon = ((p.longitude + ayan + dpsi) % 360 + 360) % 360;
+                const dLon = Math.abs(deltaArcsec(lon, body.lon));
+                const dLat = Math.abs((p.latitude - body.lat) * 3600);
+                maxLon[body.name] = Math.max(maxLon[body.name] ?? 0, dLon);
+                maxLat[body.name] = Math.max(maxLat[body.name] ?? 0, dLat);
+                expect(dLon).toBeLessThanOrEqual(tol.longitude);
+                expect(dLat).toBeLessThanOrEqual(tol.latitude);
+            }
+        }
+
+        // eslint-disable-next-line no-console -- CI log for oracle health
+        console.info('Horizons max longitude residual (″):', maxLon);
+        // eslint-disable-next-line no-console
+        console.info('Horizons max latitude residual (″):', maxLat);
+        expect(Object.keys(maxLon).sort()).toEqual([...HORIZONS_ENGINE_COMPARE_BODIES].sort());
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Regression guards for the specific defects this rewrite fixed
 // ---------------------------------------------------------------------------
 
 describe('Astrometry regression guards', () => {
-    const utc = DateTime.fromObject(HORIZONS_EPOCHS[2].utc, { zone: 'utc' });
+    const refEpoch = HORIZONS_EPOCHS.find((e) => e.label.startsWith('2000-01-01'))!;
+    const utc = DateTime.fromObject(refEpoch.utc, { zone: 'utc' });
 
     test('ΔT is applied — 1998 value is ~63 s, not zero', () => {
         const jd = engine.julday(utc);

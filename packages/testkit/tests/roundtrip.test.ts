@@ -58,6 +58,7 @@ function horizonsFixture(): HorizonsFixture {
         toleranceArcsec: horizons.TOLERANCE_ARCSEC,
         futureToleranceArcsec: horizons.FUTURE_TOLERANCE_ARCSEC,
         lastObservedDeltaTYear: horizons.LAST_OBSERVED_DELTAT_YEAR,
+        provenance: horizons.HORIZONS_PROVENANCE,
     };
 }
 
@@ -80,9 +81,11 @@ describe('legacy fixture conversion', () => {
             'JHORA_PANCHANGA',
             'JHORA_SIDEREAL_TIME',
         ]);
-        expect(dataKeys(horizons)).toEqual([
+        expect(dataKeys(horizons).sort()).toEqual([
             'FUTURE_TOLERANCE_ARCSEC',
+            'HORIZONS_ENGINE_COMPARE_BODIES',
             'HORIZONS_EPOCHS',
+            'HORIZONS_PROVENANCE',
             'LAST_OBSERVED_DELTAT_YEAR',
             'TOLERANCE_ARCSEC',
         ]);
@@ -118,13 +121,13 @@ describe('legacy fixture conversion', () => {
         const cases = toHorizonsGoldenCases(source);
         expect(fromHorizonsGoldenCases(cases)).toEqual(source);
         expect(toHorizonsGoldenCases(fromHorizonsGoldenCases(cases))).toEqual(cases);
-        expect(cases.map((item) => item.id)).toEqual([
-            'horizons-1900-01-01',
-            'horizons-1970-07-08',
-            'horizons-2000-01-01',
-            'horizons-2024-06-15',
-            'horizons-2100-01-01',
-        ]);
+        expect(cases.map((item) => item.id)).toEqual(
+            horizons.HORIZONS_EPOCHS.map((epoch) => {
+                const date = /^(\d{4}-\d{2}-\d{2})/.exec(epoch.label);
+                if (!date) throw new Error(`bad label ${epoch.label}`);
+                return `horizons-${date[1]}`;
+            }),
+        );
         expect(cases.every((item) => item.input.timezone === 'UTC' && item.input.alt === 0)).toBe(true);
         expect(cases.every((item) => item.input.settingsPresetId === HORIZONS_PRESET_ID)).toBe(true);
         const future = cases.find((item) => item.id === 'horizons-2100-01-01');
