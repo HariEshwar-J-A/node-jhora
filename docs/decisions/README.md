@@ -14,10 +14,11 @@ delete an accepted ADR; supersede it.
 log. The clean-room rule those records must respect is
 [../CLEAN_ROOM.md](../CLEAN_ROOM.md).
 
-| ADR | Title | Status |
-|-----|-------|--------|
-| [0001](0001-record-architecture-decisions.md) | Record architecture decisions | accepted |
-| [0002](0002-clean-room-policy.md) | Clean-room policy | accepted |
-| [0003](0003-pure-typescript-de440s-ephemeris.md) | Pure-TypeScript DE440s ephemeris | accepted |
-| [0004](0004-react-ui-in-apps.md) | React-based UI app under `apps/` | proposed |
-| [0005](0005-chartsession-worker-host.md) | ChartSession worker / SharedWorker host | proposed |
+| ADR                                                           | Title                                         | Status   |
+| ------------------------------------------------------------- | --------------------------------------------- | -------- |
+| [0001](0001-record-architecture-decisions.md)                 | Record architecture decisions                 | accepted |
+| [0002](0002-clean-room-policy.md)                             | Clean-room policy                             | accepted |
+| [0003](0003-pure-typescript-de440s-ephemeris.md)              | Pure-TypeScript DE440s ephemeris              | accepted |
+| [0004](0004-react-ui-in-apps.md)                              | React-based UI app under `apps/`              | proposed |
+| [0005](0005-chartsession-worker-host.md)                      | ChartSession worker / SharedWorker host       | proposed |
+| [0006](0006-npm-packaging-and-ephemeris-data-distribution.md) | npm packaging and ephemeris data distribution | accepted |

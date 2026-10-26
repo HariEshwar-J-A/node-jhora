@@ -50,3 +50,6 @@ charts/
 de431*.bsp
 *.bsp.partial
 *.njce
+
+# Staged data packages (packages/ephe-long/scripts/stage-data-packages.mjs)
+.release/

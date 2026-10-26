@@ -1,5 +1,9 @@
 /**
- * download.mjs — postinstall script for @node-jhora/ephe
+ * download.mjs — fetch and verify de440s.bsp for @node-jhora/ephe
+ *
+ * Runs as `prepack` (so a packed tarball always carries the verified kernel)
+ * and from the monorepo root `postinstall`. It is not a lifecycle script of
+ * the published package.
  *
  * Downloads de440s.bsp from JPL's public servers.
  *
@@ -20,18 +24,26 @@
  */
 
 import { createHash } from 'crypto';
-import { createReadStream, createWriteStream, existsSync, realpathSync, renameSync, statSync, unlinkSync } from 'fs';
+import {
+    createReadStream,
+    createWriteStream,
+    existsSync,
+    realpathSync,
+    renameSync,
+    statSync,
+    unlinkSync,
+} from 'fs';
 import { get as httpsGet } from 'https';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEST      = join(__dirname, 'de440s.bsp');
-const PARTIAL   = `${DEST}.partial`;
+const DEST = join(__dirname, 'de440s.bsp');
+const PARTIAL = `${DEST}.partial`;
 
 /** SHA-256 of the NAIF/JPL de440s.bsp kernel (32,726,016 bytes). */
 const DE440S_SHA256 = 'c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2';
-const DE440S_BYTES  = 32726016;
+const DE440S_BYTES = 32726016;
 
 const SOURCES = [
     'https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
@@ -59,7 +71,11 @@ async function matchesPinnedChecksum(path) {
 }
 
 function removeQuiet(path) {
-    try { unlinkSync(path); } catch { /* already gone */ }
+    try {
+        unlinkSync(path);
+    } catch {
+        /* already gone */
+    }
 }
 
 function download(url) {
@@ -75,7 +91,13 @@ function download(url) {
 
         httpsGet(url, (res) => {
             const status = res.statusCode ?? 0;
-            if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) {
+            if (
+                status === 301 ||
+                status === 302 ||
+                status === 303 ||
+                status === 307 ||
+                status === 308
+            ) {
                 const location = res.headers.location;
                 res.resume();
                 stream.close();
@@ -93,15 +115,18 @@ function download(url) {
                 return;
             }
 
-            const total  = parseInt(res.headers['content-length'] ?? '0', 10);
-            let received = 0, lastPct = -1;
+            const total = parseInt(res.headers['content-length'] ?? '0', 10);
+            let received = 0,
+                lastPct = -1;
 
             res.on('data', (chunk) => {
                 received += chunk.length;
                 if (total > 0) {
-                    const pct = Math.floor(received / total * 100);
+                    const pct = Math.floor((received / total) * 100);
                     if (pct !== lastPct && pct % 10 === 0) {
-                        process.stdout.write(`\r[node-jhora/ephe] ${pct}% (${(received / 1e6).toFixed(1)} MB)`);
+                        process.stdout.write(
+                            `\r[node-jhora/ephe] ${pct}% (${(received / 1e6).toFixed(1)} MB)`,
+                        );
                         lastPct = pct;
                     }
                 }
@@ -126,7 +151,9 @@ async function acceptDownload() {
         throw new Error(`checksum mismatch (sha256 ${digest || 'n/a'}, ${size} bytes)`);
     }
     renameSync(PARTIAL, DEST);
-    console.log(`[node-jhora/ephe] de440s.bsp ready (${(size / 1e6).toFixed(1)} MB, sha256 ${digest.slice(0, 12)}…).`);
+    console.log(
+        `[node-jhora/ephe] de440s.bsp ready (${(size / 1e6).toFixed(1)} MB, sha256 ${digest.slice(0, 12)}…).`,
+    );
 }
 
 async function main() {
@@ -149,12 +176,14 @@ async function main() {
             console.warn(`[node-jhora/ephe] Failed: ${err.message} — trying next source…`);
         }
     }
-    console.error([
-        '[node-jhora/ephe] ERROR: Could not download de440s.bsp from any source.',
-        '  Download manually from: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
-        `  Place it at: ${DEST}`,
-        `  Expected sha256: ${DE440S_SHA256}`,
-    ].join('\n'));
+    console.error(
+        [
+            '[node-jhora/ephe] ERROR: Could not download de440s.bsp from any source.',
+            '  Download manually from: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
+            `  Place it at: ${DEST}`,
+            `  Expected sha256: ${DE440S_SHA256}`,
+        ].join('\n'),
+    );
     process.exit(1);
 }
 

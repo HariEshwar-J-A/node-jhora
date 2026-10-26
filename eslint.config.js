@@ -43,6 +43,7 @@ export default tseslint.config(
             'packages/ephe/download.mjs',
             '**/jest.config.js',
             'packages/core/node/**/*.d.ts',
+            'packages/ephe/*.d.ts',
         ],
     },
     eslint.configs.recommended,
@@ -63,7 +64,11 @@ export default tseslint.config(
             '@typescript-eslint/no-floating-promises': 'error',
             '@typescript-eslint/no-unused-vars': [
                 'warn',
-                { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+                {
+                    argsIgnorePattern: '^_',
+                    varsIgnorePattern: '^_',
+                    caughtErrorsIgnorePattern: '^_',
+                },
             ],
             '@typescript-eslint/ban-ts-comment': 'warn',
             '@typescript-eslint/no-explicit-any': 'off',

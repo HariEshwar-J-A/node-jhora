@@ -1,0 +1,37 @@
+name: Pack check
+
+# Gates what each publishable package would put in its npm tarball:
+# size budgets, no source maps/tests/data in code packages, README and
+# LICENSE/NOTICE present, publint and attw (esm-only) clean.
+# Dry run only: nothing is published. See
+# docs/decisions/0006-npm-packaging-and-ephemeris-data-distribution.md.
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+jobs:
+    pack:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22.23.4'
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build packages
+              run: pnpm build
+
+            - name: Check package tarballs
+              run: pnpm check:pack

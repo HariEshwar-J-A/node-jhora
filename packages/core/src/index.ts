@@ -77,6 +77,7 @@ export {
     DEFAULT_NODE_TYPE,
     DEFAULT_POSITION_MODE,
 } from './engine/ephemeris.js';
+export type { ChunkKey, EphemerisChunkLoader } from './engine/provider/index.js';
 export type {
     EphemerisPolicy,
     EphemerisProvenance,
@@ -106,6 +107,33 @@ export {
     EPHEMERIS_PROVIDER,
     withResultEnvelope,
 } from './envelope.js';
+export type {
+    EphemerisFileEntry,
+    NjceChunkEntry,
+    VerifyingChunkLoaderOptions,
+} from './ephemeris-data/index.js';
+export {
+    DE431_SOURCE,
+    DE440S_DATA_VERSION,
+    DE440S_ENTRY,
+    DE440S_PRIMARY_URLS,
+    de440sCdnUrl,
+    EphemerisIntegrityError,
+    firstAvailableChunkLoader,
+    NJCE_DATA_VERSION,
+    NJCE_MAX_CENTURY,
+    NJCE_MIN_CENTURY,
+    NJCE_PACKAGE_SPAN_CENTURIES,
+    njceCdnUrl,
+    njceChunkEntries,
+    njceChunkEntry,
+    njceFileName,
+    njcePackageName,
+    njcePackageStartYear,
+    sha256HexAsync,
+    verifyEphemerisBytes,
+    verifyingChunkLoader,
+} from './ephemeris-data/index.js';
 export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 export type {
     AyanamsaId,

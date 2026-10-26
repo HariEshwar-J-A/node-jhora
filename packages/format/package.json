@@ -6,13 +6,25 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
-        ".": "./dist/index.js",
-        "./jhd": "./dist/jhd/index.js",
-        "./node": "./dist/node/index.js",
-        "./schema/njh-chart.schema.json": "./schema/njh-chart.schema.json"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./jhd": {
+            "types": "./dist/jhd/index.d.ts",
+            "import": "./dist/jhd/index.js"
+        },
+        "./node": {
+            "types": "./dist/node/index.d.ts",
+            "import": "./dist/node/index.js"
+        },
+        "./schema/njh-chart.schema.json": "./schema/njh-chart.schema.json",
+        "./package.json": "./package.json"
     },
     "files": [
         "dist",
+        "!dist/**/*.map",
+        "!dist/**/*.tsbuildinfo",
         "schema",
         "LICENSE",
         "README.md"
@@ -39,6 +51,9 @@
         "typescript": "^5.9.3"
     },
     "license": "LicenseRef-NodeJHora-Source-Available",
+    "engines": {
+        "node": ">=22"
+    },
     "publishConfig": {
         "access": "public"
     },

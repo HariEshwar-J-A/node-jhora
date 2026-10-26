@@ -5,8 +5,15 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "license": "LicenseRef-NodeJHora-Source-Available",
+    "engines": {
+        "node": ">=22"
+    },
     "exports": {
-        ".": "./dist/index.js"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
     },
     "scripts": {
         "build": "tsc",
@@ -31,6 +38,8 @@
     },
     "files": [
         "dist",
+        "!dist/**/*.map",
+        "!dist/**/*.tsbuildinfo",
         "LICENSE",
         "README.md"
     ],

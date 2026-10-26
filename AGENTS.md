@@ -8,12 +8,12 @@ Instructions for coding agents in this repository.
 
 pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeScript project references. Root scripts are in the root `package.json`. pnpm is pinned via `packageManager`; enable it with Corepack (`corepack enable` then `corepack prepare --activate`).
 
-| Path | What belongs here |
-| :--- | :--- |
-| `packages/` | Libraries. One package per directory. Public imports go through each package's `exports`. |
-| `apps/` | Applications. `apps/docs` is the Starlight documentation site. A React UI app is planned here. Libraries must not depend on `apps/`. Application code must not be added under `packages/`. |
-| `docs/` | Technical documentation. |
-| `tools/` | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test. |
+| Path        | What belongs here                                                                                                                                                                          |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/` | Libraries. One package per directory. Public imports go through each package's `exports`.                                                                                                  |
+| `apps/`     | Applications. `apps/docs` is the Starlight documentation site. A React UI app is planned here. Libraries must not depend on `apps/`. Application code must not be added under `packages/`. |
+| `docs/`     | Technical documentation.                                                                                                                                                                   |
+| `tools/`    | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test.                                                                                                 |
 
 Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, `format` (.njh chart files), private `testkit` (golden-case schema), and private `bench` (performance budgets). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -53,22 +53,22 @@ Task graph and cache inputs live in `turbo.json`. `@node-jhora/ephe#test` lists 
 
 Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `format`, `testkit`, `bench`) share one script shape:
 
-| Script | Shape |
-| :--- | :--- |
-| `build` | `tsc` |
-| `typecheck` | `tsc --noEmit --pretty false` |
-| `lint` | `eslint .` |
-| `test` | `node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js` |
+| Script      | Shape                                                                                        |
+| :---------- | :------------------------------------------------------------------------------------------- |
+| `build`     | `tsc`                                                                                        |
+| `typecheck` | `tsc --noEmit --pretty false`                                                                |
+| `lint`      | `eslint .`                                                                                   |
+| `test`      | `node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js` |
 
 `typecheck` reads referenced projects from `dist/`. Run `pnpm build` first. A task runner must run `^build` before `typecheck`.
 
-`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` is `turbo run test` across workspace packages; the sum of per-package Jest totals plus the seven `node:test` guard cases from `@node-jhora/ephe` matches what the old root Jest multi-project run reported (no double counting). The kernel is not in git. `postinstall` (the package's, and the root's) runs `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256.
+`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` is `turbo run test` across workspace packages; the sum of per-package Jest totals plus the seven `node:test` guard cases from `@node-jhora/ephe` matches what the old root Jest multi-project run reported (no double counting). The kernel is not in git. The root `postinstall` and the package's `prepack` run `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256. The published package has no install scripts (ADR 0006).
 
 Root `pnpm run lint` runs `turbo run lint --filter=./packages/*`, i.e. `eslint .` in every workspace package (cached per package). Rule set: [docs/LINT.md](docs/LINT.md).
 
 Internal dependencies use `workspace:*`. There is no `.npmrc`: pnpm's isolated `node_modules` is unchanged. pnpm 12 records dependency lifecycle-script decisions in `allowBuilds` inside `pnpm-workspace.yaml`.
 
-Call `await EphemerisEngine.getInstance().initialize()` before planetary calculations. The kernel is `NODE_JHORA_EPHE_PATH`, else `@node-jhora/ephe`, else `de440s.bsp` beside `packages/`.
+Call `await EphemerisEngine.getInstance().initialize()` before planetary calculations. The kernel is `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then the monorepo copy, then the user cache, then a SHA-256-verified download from JPL into that cache (skipped when `NODE_JHORA_OFFLINE=1`) (`packages/core/node/ephemeris.mjs`).
 
 ## Git and pull requests
 

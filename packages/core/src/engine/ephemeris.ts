@@ -40,7 +40,7 @@
  *
  * ── Data source ──────────────────────────────────────────────────────────
  * de440s.bsp   Coverage: 1849-12-26 to 2150-01-22  (~32 MB)
- * Downloaded from JPL by @node-jhora/ephe postinstall.
+ * Shipped in @node-jhora/ephe, or cached by @node-jhora/core/node/ephemeris.
  * https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
  */
 
