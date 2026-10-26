@@ -81,7 +81,13 @@ import {
     trueObliquity,
     wholeSignCusps,
 } from './coordinates.js';
-import { deltaT, jdUTtoET } from './deltat.js';
+import {
+    deltaT,
+    type DeltaTContext,
+    jdUTtoET,
+    type PrecisionProfile,
+    withDeltaTContext,
+} from './deltat.js';
 import { nutation } from './nutation.js';
 import { icrfToMeanEclipticOfDate, toSpherical, type Vec } from './precession.js';
 import {
@@ -128,6 +134,20 @@ export type AyanamsaMode = (typeof AYANAMSA)[keyof typeof AYANAMSA];
 // ---------------------------------------------------------------------------
 // Public types — identical to previous version
 // ---------------------------------------------------------------------------
+
+/** Precision profile and ΔT override for one engine call (CalculationSettings fields). */
+export interface PrecisionOptions {
+    /** 'jhora' (default) or 'modern'. See docs/precision-profiles.md. */
+    precisionProfile?: PrecisionProfile;
+    /** Fixed ΔT, seconds, replacing the profile's ΔT model. */
+    deltaTOverrideSeconds?: number;
+}
+
+function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefined {
+    if (!p || (p.precisionProfile === undefined && p.deltaTOverrideSeconds === undefined))
+        return undefined;
+    return { profile: p.precisionProfile, overrideSeconds: p.deltaTOverrideSeconds };
+}
 
 export interface GeoLocation {
     latitude: number;
@@ -359,10 +379,17 @@ export class EphemerisEngine {
         jd: number,
         mode?: number,
         offsetDeg = 0,
-        frame: AyanamsaFrame = 'geometric',
+        frame?: AyanamsaFrame,
+        precision?: PrecisionOptions,
     ): number {
         this.checkInit();
-        return computeAyanamsa(mode ?? this.ayanamsaMode, jd, frame) + offsetDeg;
+        // 'modern' reports what swe_get_ayanamsa_ut reports: the apparent value.
+        const f: AyanamsaFrame =
+            frame ?? (precision?.precisionProfile === 'modern' ? 'apparent' : 'geometric');
+        return withDeltaTContext(
+            deltaTContextOf(precision),
+            () => computeAyanamsa(mode ?? this.ayanamsaMode, jd, f) + offsetDeg,
+        );
     }
 
     // -----------------------------------------------------------------------
@@ -386,9 +413,18 @@ export class EphemerisEngine {
             positionMode?: PositionMode;
             /** Constant added to the ayanamsa, degrees. */
             ayanamsaOffset?: number;
-        } = {},
+        } & PrecisionOptions = {},
     ): PlanetPosition[] {
         this.checkInit();
+        const ctx = deltaTContextOf(options);
+        if (ctx) {
+            const rest = {
+                ...options,
+                precisionProfile: undefined,
+                deltaTOverrideSeconds: undefined,
+            };
+            return withDeltaTContext(ctx, () => this.getPlanets(date, location, rest));
+        }
 
         const {
             ayanamsaOrder,
@@ -589,6 +625,9 @@ export class EphemerisEngine {
      *     takes `swe_houses` tropical angles and subtracts its ayanamsa.
      *   • `'se-apparent'` — opt-in Swiss Ephemeris `swe_houses_ex(SEFLG_SIDEREAL)`
      *     frame: apparent star place (aberration, deflection) plus Δψ.
+     *   Defaults to 'jhora', or to 'se-apparent' under the 'modern' profile.
+     * @param precision  precision profile and ΔT override. 'modern' also
+     *   solves Placidus cusps fully (scheme 'converged').
      */
     public getHouses(
         jd: number,
@@ -598,9 +637,52 @@ export class EphemerisEngine {
         sidereal = true,
         ayanamsaMode?: number,
         ayanamsaOffset = 0,
-        siderealFrame: 'jhora' | 'se-apparent' = 'jhora',
+        siderealFrame?: 'jhora' | 'se-apparent',
+        precision?: PrecisionOptions,
     ): HouseData {
         this.checkInit();
+        const ctx = deltaTContextOf(precision);
+        if (ctx) {
+            return withDeltaTContext(ctx, () =>
+                this.housesIn(
+                    jd,
+                    lat,
+                    lon,
+                    method,
+                    sidereal,
+                    ayanamsaMode,
+                    ayanamsaOffset,
+                    siderealFrame,
+                    precision?.precisionProfile,
+                ),
+            );
+        }
+        return this.housesIn(
+            jd,
+            lat,
+            lon,
+            method,
+            sidereal,
+            ayanamsaMode,
+            ayanamsaOffset,
+            siderealFrame,
+            precision?.precisionProfile,
+        );
+    }
+
+    private housesIn(
+        jd: number,
+        lat: number,
+        lon: number,
+        method: string,
+        sidereal: boolean,
+        ayanamsaMode: number | undefined,
+        ayanamsaOffset: number,
+        frameArg: 'jhora' | 'se-apparent' | undefined,
+        profile: PrecisionProfile | undefined,
+    ): HouseData {
+        const modern = profile === 'modern';
+        const siderealFrame = frameArg ?? (modern ? 'se-apparent' : 'jhora');
 
         // Angles are built on apparent sidereal time and the true obliquity,
         // as swe_houses does. Whole Sign cusps are the sign boundaries of the
@@ -619,7 +701,14 @@ export class EphemerisEngine {
             if (method === 'P') {
                 return Math.abs(lat) >= 90 - eps
                     ? porphyryCusps(tropAsc, tropMC)
-                    : placidusCusps(ramc, lat, eps, tropAsc, tropMC);
+                    : placidusCusps(
+                          ramc,
+                          lat,
+                          eps,
+                          tropAsc,
+                          tropMC,
+                          modern ? 'converged' : 'jhora',
+                      );
             }
             if (method === 'O') return porphyryCusps(tropAsc, tropMC);
             return wholeSignCusps(tropAsc);
@@ -679,9 +768,9 @@ export class EphemerisEngine {
     }
 
     /** ΔT = TT − UT in seconds at `jd`, exposed for diagnostics. */
-    public getDeltaT(jd: number): number {
+    public getDeltaT(jd: number, precision?: PrecisionOptions): number {
         this.checkInit();
-        return deltaT(jd);
+        return withDeltaTContext(deltaTContextOf(precision), () => deltaT(jd));
     }
 
     /** Human-readable label for the active (or given) ayanamsa model. */

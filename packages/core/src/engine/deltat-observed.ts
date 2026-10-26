@@ -45,3 +45,17 @@ export const OBSERVED_DELTAT_JAN1: readonly number[] = [
     64.09, 64.3, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78, 66.07, 66.3246, 66.603, 66.9069,
     67.281, 67.6439, 68.1024, 68.5927, 68.9676, 69.2202,
 ];
+
+/**
+ * @provenance Observed ΔT = TT − UT1 (seconds) at 1 January 0h, 2020–2026.
+ * U.S. Naval Observatory, Earth Orientation Department, "deltat.data"
+ * (monthly observed ΔT from IERS Bulletin B), https://maia.usno.navy.mil/ser7/deltat.data,
+ * 1 January rows, as retrieved 2026-10-26 (last row in the file: 2026-10-01).
+ *
+ * Only the 'modern' precision profile reads these rows. The 'jhora' profile
+ * keeps the 2019 end of the record, because that is what Swiss Ephemeris
+ * 2.02.01 (bundled with JHora) does.
+ */
+export const OBSERVED_DELTAT_JAN1_MODERN_EXT: readonly number[] = [
+    69.3612, 69.3594, 69.2945, 69.2039, 69.1752, 69.1377, 69.1099,
+];

@@ -26,6 +26,7 @@
  *   - a per-call override, on the individual function
  */
 
+import type { PrecisionProfile } from './engine/deltat.js';
 import { AYANAMSA, DEFAULT_NODE_TYPE, DEFAULT_POSITION_MODE, type PositionMode } from './engine/ephemeris.js';
 import {          type DasamsaScheme, DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME,
 type HoraScheme }                                  from './vedic/vargas.js';
@@ -103,6 +104,14 @@ export interface JyotishConfig {
      * standard; some traditions use 360 (savana) or 365.25 (Julian).
      */
     dashaYearDays: number;
+
+    // ── Precision ───────────────────────────────────────────────────────────
+
+    /** Precision profile; omitted means 'jhora'. See CalculationSettings. */
+    precisionProfile?: PrecisionProfile;
+
+    /** Fixed ΔT in seconds replacing the profile's model. See CalculationSettings. */
+    deltaTOverrideSeconds?: number;
 }
 
 /** Tropical year, the standard Vimshottari dasha year. */

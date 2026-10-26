@@ -70,7 +70,14 @@ export {
 export type { HouseSystem, JyotishConfig, NodeType } from './config.js';
 export { DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS } from './config.js';
 export { AYANAMSA_MODELS, ayanamsaName } from './engine/ayanamsa.js';
+export {
+    DELTA_T_MODEL_MODERN,
+    deltaTModelId,
+    LAST_OBSERVED_YEAR_MODERN,
+    lastObservedDeltaTYear,
+} from './engine/deltat.js';
 export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
+export type { PrecisionOptions } from './engine/ephemeris.js';
 export {
     AYANAMSA,
     DEFAULT_AYANAMSA,
@@ -357,6 +364,8 @@ export class NodeJHora {
                 topocentric: c.topocentric,
                 nodeType: c.nodeType,
                 positionMode: c.positionMode,
+                precisionProfile: c.precisionProfile,
+                deltaTOverrideSeconds: c.deltaTOverrideSeconds,
             },
         );
         const housesResult = calculateHouseCusps(
@@ -367,6 +376,10 @@ export class NodeJHora {
             engine,
             c.ayanamsaMode,
             c.ayanamsaOffset,
+            {
+                precisionProfile: c.precisionProfile,
+                deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+            },
         );
 
         const sun = planets.find((p) => p.id === Body.Sun);
@@ -407,6 +420,8 @@ export class NodeJHora {
                 topocentric: c.topocentric,
                 nodeType: c.nodeType,
                 positionMode: c.positionMode,
+                precisionProfile: c.precisionProfile,
+                deltaTOverrideSeconds: c.deltaTOverrideSeconds,
             },
         );
     }
@@ -421,6 +436,10 @@ export class NodeJHora {
             this.ephemeris,
             c.ayanamsaMode,
             c.ayanamsaOffset,
+            {
+                precisionProfile: c.precisionProfile,
+                deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+            },
         );
         return {
             cusps: res.cusps,

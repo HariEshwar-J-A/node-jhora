@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 
 import { dmsToDecimal,normalize360 } from '../core/math.js';
-import { EphemerisEngine, HouseData } from '../engine/ephemeris.js';
+import { EphemerisEngine, HouseData, type PrecisionOptions } from '../engine/ephemeris.js';
 
 export type HouseSystemMethod = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
 
@@ -21,7 +21,7 @@ const DEG_TO_RAD = Math.PI / 180;
  * Calculates House Cusps using manual trigonometric formulas for Ascendant/MC (First Principles),
  * passing dependency on broken `swe_houses`.
  */
-export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method: HouseSystemMethod = 'WholeSign', engineInstance?: EphemerisEngine, ayanamsaMode?: number, ayanamsaOffset = 0): HouseResult {
+export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method: HouseSystemMethod = 'WholeSign', engineInstance?: EphemerisEngine, ayanamsaMode?: number, ayanamsaOffset = 0, precision?: PrecisionOptions): HouseResult {
     const engine = engineInstance || EphemerisEngine.getInstance();
 
     // 1. Get Julian Day via the engine's public API
@@ -46,7 +46,7 @@ export function calculateHouseCusps(date: DateTime, lat: number, lon: number, me
 
     try {
         // Attempt Native SwissEph Calculation
-        const seHouses = engine.getHouses(jd, lat, lon, seMethod, true, ayanamsaMode, ayanamsaOffset);
+        const seHouses = engine.getHouses(jd, lat, lon, seMethod, true, ayanamsaMode, ayanamsaOffset, undefined, precision);
 
         // For Whole Sign, snap cusps to sidereal sign boundaries starting from ascendant's sign.
         // swe_houses returns tropical cusps; after ayanamsa subtraction they no longer fall on
