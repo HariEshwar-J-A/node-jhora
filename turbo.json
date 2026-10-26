@@ -1,0 +1,54 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", ".tsbuildinfo"]
+        },
+        "typecheck": {
+            "dependsOn": ["^build"],
+            "outputs": []
+        },
+        "lint": {
+            "outputs": []
+        },
+        "test": {
+            "dependsOn": ["^build"],
+            "outputs": ["coverage/**"]
+        },
+        "generate": {
+            "dependsOn": ["^build", "build"],
+            "outputs": []
+        },
+        "@node-jhora/core#build": {
+            "dependsOn": ["^build"],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "scripts/write-build-constants.mjs",
+                "package.json"
+            ],
+            "outputs": ["dist/**", ".tsbuildinfo", "src/generated/**"]
+        },
+        "@node-jhora/ephe#build": {
+            "outputs": []
+        },
+        "@node-jhora/ephe#test": {
+            "dependsOn": [],
+            "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/**"],
+            "outputs": ["coverage/**"]
+        },
+        "@node-jhora/testkit#generate": {
+            "dependsOn": ["^build", "build"],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "$TURBO_ROOT$/packages/core/tests/fixtures/horizons_golden.ts",
+                "$TURBO_ROOT$/packages/core/tests/fixtures/jhora_golden.ts"
+            ],
+            "outputs": [
+                "schema/**",
+                "../core/tests/fixtures/horizons.golden.json",
+                "../core/tests/fixtures/jhora.golden.json"
+            ]
+        }
+    }
+}

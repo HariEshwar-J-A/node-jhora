@@ -34,15 +34,19 @@ From the repository root:
 ```bash
 corepack enable && corepack prepare --activate
 pnpm install --frozen-lockfile
-pnpm build             # tsc -b — root references: core, analytics, prediction, match, engine, api, events, reporting, testkit, format
-pnpm test              # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
+pnpm build             # turbo run build — each package runs tsc; graph in turbo.json (dependsOn ^build)
+pnpm typecheck         # turbo run typecheck — dependsOn ^build (reads dependency dist/)
+pnpm test              # turbo run test — one Jest project per library package; @node-jhora/ephe runs tools/ suites
+pnpm generate          # turbo run generate — @node-jhora/testkit WRITE_GOLDENS (schema + core *.golden.json)
 pnpm --filter @node-jhora/core test
 pnpm run check:links   # relative Markdown links, no network
 pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
 pnpm run validate-github-templates
-pnpm run docs:build   # Starlight site in apps/docs (synced guides + TypeDoc)
+pnpm run docs:build   # Starlight site in apps/docs (standalone; not part of the turbo graph, which is filtered to packages/*)
 pnpm run docs:dev
 ```
+
+Task graph and cache inputs live in `turbo.json`. `@node-jhora/ephe#test` lists `$TURBO_ROOT$/tools/**` so edits under `tools/` invalidate that cache entry. `@node-jhora/core#build` restores `src/generated/build-constants.ts` from cache alongside `dist/**`. Regenerated artifacts (`packages/testkit/schema/**`, `packages/core/tests/fixtures/*.golden.json`) are declared on `@node-jhora/testkit#generate`.
 
 Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `format`, `testkit`) share one script shape:
 
@@ -55,9 +59,9 @@ Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`
 
 `typecheck` reads referenced projects from `dist/`. Run `pnpm build` first. A task runner must run `^build` before `typecheck`.
 
-`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` runs those same suites, so the sum of `pnpm --filter <pkg> test` matches the root pass count. The kernel is not in git. `postinstall` (the package's, and the root's) runs `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256. A task runner that caches `ephe`'s `test` must include `tools/**` in that task's inputs, because the script executes those suites.
+`@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` is `turbo run test` across workspace packages; the sum of per-package Jest totals plus the seven `node:test` guard cases from `@node-jhora/ephe` matches what the old root Jest multi-project run reported (no double counting). The kernel is not in git. `postinstall` (the package's, and the root's) runs `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256.
 
-Root `pnpm run lint` still calls ESLint, which is not a root `devDependency`.
+Root `pnpm run lint` runs `turbo run lint` (package placeholders) and then ESLint on `packages/**/src`. ESLint is not a root `devDependency`.
 
 Internal dependencies use `workspace:*`. There is no `.npmrc`: pnpm's isolated `node_modules` is unchanged. pnpm 12 records dependency lifecycle-script decisions in `allowBuilds` inside `pnpm-workspace.yaml`.
 

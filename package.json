@@ -4,15 +4,17 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "node packages/core/scripts/write-build-constants.mjs && tsc -b",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js && node --test tools/check-forbidden-assets.test.mjs",
+        "build": "turbo run build --filter=./packages/*",
+        "typecheck": "turbo run typecheck --filter=./packages/*",
+        "lint": "turbo run lint --filter=./packages/* && eslint packages/**/src --ext .ts",
+        "test": "turbo run test --filter=./packages/*",
+        "generate": "turbo run generate --filter=./packages/*",
         "check:clean-room": "node tools/check-forbidden-assets.mjs",
         "check:links": "node tools/check-markdown-links.mjs",
         "validate-github-templates": "node scripts/validate-github-templates.mjs",
         "docs:dev": "pnpm --filter @node-jhora/docs dev",
         "docs:build": "pnpm --filter @node-jhora/docs build",
-        "postinstall": "node packages/ephe/download.mjs",
-        "lint": "eslint packages/**/src --ext .ts"
+        "postinstall": "node packages/ephe/download.mjs"
     },
     "devDependencies": {
         "@node-jhora/ephe": "workspace:*",
@@ -23,6 +25,7 @@
         "js-yaml": "^3.15.2",
         "ts-jest": "^29.4.6",
         "ts-node": "^10.9.2",
+        "turbo": "^2.11.10",
         "typescript": "^5.9.3"
     },
     "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61"
