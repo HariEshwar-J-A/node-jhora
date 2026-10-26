@@ -22,10 +22,11 @@ const CHART_B_BODY = {
 
 /**
  * SHA-256 of canonical JSON with volatile envelope fields removed.
- * Re-pinned: Lahiri mode 1 (37.76″ ICRC anchor), lahiri_icrc → SE mode 46, equatorial Vertex.
+ * Re-pinned: Lahiri mode 1 (37.76″ ICRC anchor), lahiri_icrc → SE mode 46, equatorial Vertex;
+ * chart hash includes analytic body speeds (#281).
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': '64bf5ecabfee8f86f8863918d35bf1372f946f7cc36b91996618d97c6d1a1758',
+    '/v1/chart': '6e84aabde5122a8eae85254468129b480ae28b193cf93f4ecdc1f215a2d59f38',
     '/v1/shadbala': 'ae8a741916374ed5df82a810288a0a6abf035d5a0dee844cee2845810d1de61b',
     '/v1/kp/significators': 'df3e36794292ed38d6f43555862f1227a39650b3bf924b1961e707ce3c09eebe',
 };

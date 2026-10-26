@@ -86,10 +86,18 @@ import {
 import {
     deltaT,
     type DeltaTContext,
+    getDeltaTContext,
     jdUTtoET,
     type PrecisionProfile,
     withDeltaTContext,
 } from './deltat.js';
+import {
+    APPARENT_SPEED_STEP_DAYS,
+    geocentricRelativeState,
+    isGeometricPlace,
+    meanEclipticRelativeKinematics,
+    sphericalRatesDegPerDay,
+} from './kinematics.js';
 import { nutation } from './nutation.js';
 import { icrfToMeanEclipticOfDate, toSpherical, type Vec } from './precession.js';
 import {
@@ -218,9 +226,6 @@ const SPK_BODY_IDS = [
     Body.Jupiter,
     Body.Saturn,
 ] as const;
-
-/** Half-step used for the central difference that yields daily motion, in days. */
-const SPEED_STEP_DAYS = 0.25;
 
 /**
  * Whether to report where a body *is* or where it is *seen*.
@@ -464,6 +469,14 @@ export class EphemerisEngine {
         // getAyanamsa() reports, so adding it back recovers the tropical place.
         const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
         const ayan = computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset;
+        const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
+        // pyswisseph 2.10 (modern): sidereal speed = tropical rate − d(ayan)/dt with the
+        // same geometric True-Chitra ayanamsa subtracted from longitude (≈50″/cy).
+        // JHora 2.02 DLL: tropical daily motion at TRUEPOS (verified vs oracle kit).
+        const ayanRateForSiderealSpeed =
+            precisionProfile === 'modern'
+                ? this.ayanamsaRateDegPerDay(jd, effectiveMode, 'geometric', ayanamsaOffset)
+                : 0;
 
         const planets: PlanetPosition[] = [];
 
@@ -472,14 +485,7 @@ export class EphemerisEngine {
 
             const loc = topocentric ? location : undefined;
             const here = this.meanEclipticOfDate(jd, naifId, corrections, loc);
-            // Daily motion by central difference on the final longitude, so
-            // retrogression reflects the motion actually being reported.
-            const before = this.meanEclipticOfDate(jd - SPEED_STEP_DAYS, naifId, corrections, loc);
-            const after = this.meanEclipticOfDate(jd + SPEED_STEP_DAYS, naifId, corrections, loc);
-
-            let dLon = after.lon - before.lon;
-            if (dLon > 180) dLon -= 360;
-            if (dLon < -180) dLon += 360;
+            const motion = this.meanEclipticDailyMotion(jd, naifId, corrections, loc);
 
             planets.push({
                 id: pid,
@@ -487,7 +493,7 @@ export class EphemerisEngine {
                 longitude: toSidereal(here.lon, ayan),
                 latitude: here.lat,
                 distance: here.dist,
-                speed: dLon / (2 * SPEED_STEP_DAYS),
+                speed: motion.lon - ayanRateForSiderealSpeed,
                 declination: this.declinationOf(jd, here.lon, here.lat),
             });
         }
@@ -500,7 +506,7 @@ export class EphemerisEngine {
             longitude: toSidereal(node.lon, ayan),
             latitude: 0,
             distance: node.dist,
-            speed: node.speed,
+            speed: node.speed - ayanRateForSiderealSpeed,
             declination: this.declinationOf(jd, node.lon, 0),
         });
 
@@ -511,11 +517,24 @@ export class EphemerisEngine {
             longitude: mod360(rahu.longitude + 180),
             latitude: 0,
             distance: rahu.distance,
-            speed: rahu.speed,
+            speed: rahu.speed - ayanRateForSiderealSpeed,
             declination: -rahu.declination,
         });
 
         return planets;
+    }
+
+    /** d(ayanamsa)/d(UT day), degrees/day — symmetric 1 s step. */
+    private ayanamsaRateDegPerDay(
+        jdUT: number,
+        mode: number,
+        ayanFrame: AyanamsaFrame,
+        offsetDeg = 0,
+    ): number {
+        const h = APPARENT_SPEED_STEP_DAYS;
+        const a0 = computeAyanamsa(mode, jdUT - h, ayanFrame) + offsetDeg;
+        const a1 = computeAyanamsa(mode, jdUT + h, ayanFrame) + offsetDeg;
+        return (a1 - a0) / (2 * h);
     }
 
     /**
@@ -576,12 +595,54 @@ export class EphemerisEngine {
         }
 
         const lon = this.trueNodeLongitude(jdUT);
-        const h = 0.25;
+        const h = APPARENT_SPEED_STEP_DAYS;
         let d = this.trueNodeLongitude(jdUT + h) - this.trueNodeLongitude(jdUT - h);
         if (d > 180) d -= 360;
         if (d < -180) d += 360;
 
         return { lon, dist: 0.002569, speed: d / (2 * h) };
+    }
+
+    /**
+     * Tropical mean-ecliptic daily motions (deg/day, AU/day).
+     *
+     * Geometric places: DE Chebyshev velocity through the IAU 2006 frame
+     * (see kinematics.ts). Apparent places: 1 s central difference on
+     * longitude (APPARENT_SPEED_STEP_DAYS).
+     */
+    private meanEclipticDailyMotion(
+        jdUT: number,
+        naifId: number,
+        corrections: Required<PlaceCorrections>,
+        location?: GeoLocation,
+    ): { lon: number; lat: number; dist: number } {
+        if (!isGeometricPlace(corrections)) {
+            const h = APPARENT_SPEED_STEP_DAYS;
+            const before = this.meanEclipticOfDate(jdUT - h, naifId, corrections, location);
+            const after = this.meanEclipticOfDate(jdUT + h, naifId, corrections, location);
+            let dLon = after.lon - before.lon;
+            if (dLon > 180) dLon -= 360;
+            if (dLon < -180) dLon += 360;
+            return {
+                lon: dLon / (2 * h),
+                lat: (after.lat - before.lat) / (2 * h),
+                dist: (after.dist - before.dist) / (2 * h),
+            };
+        }
+
+        const et = jdUTtoET(jdUT);
+        const offset = location
+            ? observerGeocentricVector(
+                  jdUT,
+                  location.latitude,
+                  location.longitude,
+                  location.altitude ?? 0,
+              )
+            : undefined;
+        const observer = observerState(this.source, NAIF.Earth, et, offset);
+        const { rel, vel } = geocentricRelativeState(this.source, naifId, et, observer);
+        const { pos, vel: velEcl } = meanEclipticRelativeKinematics(rel, vel, jdUT);
+        return sphericalRatesDegPerDay(pos, velEcl);
     }
 
     /**
@@ -603,15 +664,12 @@ export class EphemerisEngine {
         const r: Vec = [moon.x - earth.x, moon.y - earth.y, moon.z - earth.z];
         const v: Vec = [moon.vx - earth.vx, moon.vy - earth.vy, moon.vz - earth.vz];
 
-        // Work in the ecliptic of date so that "ecliptic plane" means z = 0.
         const rEcl = icrfToMeanEclipticOfDate(r, T, jdTT);
         const vEcl = icrfToMeanEclipticOfDate(v, T, jdTT);
 
-        // h = r × v  (normal to the orbit plane)
         const hx = rEcl[1] * vEcl[2] - rEcl[2] * vEcl[1];
         const hy = rEcl[2] * vEcl[0] - rEcl[0] * vEcl[2];
 
-        // Ascending node direction = ẑ × h = (−h_y, h_x, 0)
         return mod360((Math.atan2(hx, -hy) * 180) / Math.PI);
     }
 
