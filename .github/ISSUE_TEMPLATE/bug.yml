@@ -1,0 +1,80 @@
+name: Bug
+description: Report a calculation, API, or tooling defect.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a wrong number, name the chart, the settings (ayanamsa, position mode, node type), and the oracle you compared against.
+  - type: input
+    id: backlog-id
+    attributes:
+      label: Backlog ID
+      description: Existing backlog ID, if this bug is already tracked.
+      placeholder: E1-S5-T2
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Chart, settings, version, and where you observed the defect.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Commands, request, or inputs that show the defect.
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: The correct behavior or number this bug should produce.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checklist that shows the defect is fixed.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: files-likely-touched
+    attributes:
+      label: Files likely touched
+      description: Paths that probably need a change. Write "Unknown" if you are not sure.
+    validations:
+      required: true
+  - type: textarea
+    id: test-requirements
+    attributes:
+      label: Test requirements
+      description: Regression test or golden that should fail before the fix and pass after it.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Backlog IDs or issues that block the fix. Write "None" if nothing blocks it.
+      placeholder: None
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: Rough size of the fix. XS=1, S=2, M=3, L=5, XL=8 points.
+      options:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+    validations:
+      required: true

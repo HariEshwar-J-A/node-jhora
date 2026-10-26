@@ -222,7 +222,7 @@ curl -X POST http://localhost:3000/v1/chart \
 
 ## 🛠️ Contributing
 
-We welcome contributions! The project uses an NPM workspaces monorepo structure.
+We welcome contributions! The project uses an NPM workspaces monorepo structure. Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
 # Install all dependencies
