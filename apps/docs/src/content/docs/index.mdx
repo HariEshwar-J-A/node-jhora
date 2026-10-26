@@ -3,17 +3,17 @@ title: Node-Jhora documentation
 description: Guides and API reference for the open-source Vedic astrology engine.
 template: splash
 hero:
-  tagline: TypeScript Jyotish calculations on JPL DE440s — libraries, HTTP API, and accuracy fixtures.
-  actions:
-    - text: Getting started
-      link: /getting-started/
-      icon: right-arrow
-    - text: Architecture
-      link: /guides/architecture/
-      icon: document
-    - text: API reference
-      link: /api
-      icon: open-book
+    tagline: TypeScript Jyotish calculations on JPL DE440s — libraries, HTTP API, and accuracy fixtures.
+    actions:
+        - text: Getting started
+          link: /getting-started/
+          icon: right-arrow
+        - text: Architecture
+          link: /guides/architecture/
+          icon: document
+        - text: API reference
+          link: /api
+          icon: open-book
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
@@ -21,13 +21,16 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 ## What you will find here
 
 <CardGrid>
-  <Card title="Guides" icon="open-book">
-    Long-form docs are synced at build time from the repository `README`, `docs/`, and contributor files — one source of truth in git, rendered here without manual copy/paste.
-  </Card>
-  <Card title="Catalogues" icon="list-format">
-    Supported ayanamsa models are generated from the core registry, with citations pointing back to engine source. Varga, dasa, and yoga catalogues are stubs until registry exporters land.
-  </Card>
-  <Card title="API reference" icon="document">
-    TypeDoc output for `@node-jhora/core`, analytics, prediction, match, events, reporting, and the Fastify API package.
-  </Card>
+    <Card title="Guides" icon="open-book">
+        Long-form docs are synced at build time from the repository `README`, `docs/`, and
+        contributor files — one source of truth in git, rendered here without manual copy/paste.
+    </Card>
+    <Card title="Catalogues" icon="list-format">
+        Supported ayanamsa models are generated from the core registry, with citations pointing back
+        to engine source. Varga, dasa, and yoga catalogues are stubs until registry exporters land.
+    </Card>
+    <Card title="API reference" icon="document">
+        TypeDoc output for `@node-jhora/core`, analytics, prediction, match, events, reporting, and
+        the Fastify API package.
+    </Card>
 </CardGrid>

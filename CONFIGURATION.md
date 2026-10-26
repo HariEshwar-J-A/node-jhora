@@ -15,18 +15,18 @@ library default  →  instance default  →  per-call override
 A Jyotish chart is not the output of one algorithm. It is a stack of three
 independent decisions, and **the authority for each is different**:
 
-| Layer | Decides | Authority | Configurable? |
-|---|---|---|---|
-| **1. Astronomy** | where the bodies physically are | JPL DE440 / Horizons | only `positionMode`, `topocentric` |
-| **2. Sidereal zero point** | where 0° Aries sits | a *named choice* — genuinely undecidable | `ayanamsaMode`, `ayanamsaOffset` |
-| **3. Jyotish rules** | vargas, houses, dashas | **BPHS** | `dasamsaScheme`, `houseSystem`, `nodeType`, … |
+| Layer                      | Decides                         | Authority                                | Configurable?                                 |
+| -------------------------- | ------------------------------- | ---------------------------------------- | --------------------------------------------- |
+| **1. Astronomy**           | where the bodies physically are | JPL DE440 / Horizons                     | only `positionMode`, `topocentric`            |
+| **2. Sidereal zero point** | where 0° Aries sits             | a _named choice_ — genuinely undecidable | `ayanamsaMode`, `ayanamsaOffset`              |
+| **3. Jyotish rules**       | vargas, houses, dashas          | **BPHS**                                 | `dasamsaScheme`, `houseSystem`, `nodeType`, … |
 
 Layer 1 is not a matter of opinion — it is measured, and this engine sits within
 **0.28″ of JPL Horizons** across 1900–2024.
 
 Layer 2 genuinely is undecidable. BPHS assumes a sidereal zodiac but fixes no
 number, and the classical anchors (Chitra at 180°, Revati at 359°50′) are
-mutually inconsistent by arcminutes. So the ayanamsa is always a *named model*,
+mutually inconsistent by arcminutes. So the ayanamsa is always a _named model_,
 never a fitted constant.
 
 Layer 3 is settled by the text. Where an implementation departs from BPHS, this
@@ -40,34 +40,37 @@ library follows BPHS by default and offers the variant explicitly. See
 All fields are optional. Defaults come from `DEFAULT_CONFIG`.
 
 ### `ayanamsaMode`
+
 **Default: `27` (True Chitrapaksha)** · type `number` (`AYANAMSA.*`)
 
-The sidereal zero point. Star-defined models are *derived* from a computed star
+The sidereal zero point. Star-defined models are _derived_ from a computed star
 position and so carry no fitted constant — prefer them.
 
-| Code | Model | Basis |
-|---|---|---|
-| `27` | **True Chitrapaksha** — Spica at 180° | star-defined, exact |
-| `29` | True Pushya — δ Cancri at 106° | star-defined, exact |
-| `30` | True Revati — ζ Piscium at 359°50′ | star-defined, exact |
-| `35` | True Mula — λ Scorpii at 240° | star-defined, exact |
-| `0` | Fagan/Bradley | epoch anchor, published definition |
-| `1` | Lahiri (ICRC) — 23°15′00″ at 1956-03-21 | epoch anchor, published definition |
-| `3` | Raman — 21°00′00″ at 1900-01-01 | epoch anchor, published definition |
-| `5` | Krishnamurti (KP) | epoch anchor, **provisional** |
-| `7` | Yukteshwar | epoch anchor, **provisional** |
-| `18` | J2000 (no ayanamsa) | — |
+| Code | Model                                   | Basis                              |
+| ---- | --------------------------------------- | ---------------------------------- |
+| `27` | **True Chitrapaksha** — Spica at 180°   | star-defined, exact                |
+| `29` | True Pushya — δ Cancri at 106°          | star-defined, exact                |
+| `30` | True Revati — ζ Piscium at 359°50′      | star-defined, exact                |
+| `35` | True Mula — λ Scorpii at 240°           | star-defined, exact                |
+| `0`  | Fagan/Bradley                           | epoch anchor, published definition |
+| `1`  | Lahiri (ICRC) — 23°15′00″ at 1956-03-21 | epoch anchor, published definition |
+| `3`  | Raman — 21°00′00″ at 1900-01-01         | epoch anchor, published definition |
+| `5`  | Krishnamurti (KP)                       | epoch anchor, **provisional**      |
+| `7`  | Yukteshwar                              | epoch anchor, **provisional**      |
+| `18` | J2000 (no ayanamsa)                     | —                                  |
 
-Entries marked *provisional* have not been verified against a primary source and
+Entries marked _provisional_ have not been verified against a primary source and
 may be off by arcminutes. `AYANAMSA_MODELS[mode].source` records provenance.
 
 ### `ayanamsaOffset`
+
 **Default: `0`** · degrees
 
 A constant added to the ayanamsa, for practitioners who work with a personal
 offset from a standard model. Leave at `0` otherwise.
 
 ### `positionMode`
+
 **Default: `'geometric'`** · `'geometric' | 'apparent'`
 
 Whether to report where a body **is** or where it is **seen**.
@@ -81,12 +84,14 @@ They differ by up to **~44″** (Venus near conjunction; the Sun ~21″, Saturn 
 so this is not cosmetic.
 
 ### `topocentric` / `altitudeMetres`
+
 **Default: `false` / `0`**
 
 Correct for the observer's position on Earth's surface rather than its centre.
 Matters almost only for the Moon, where parallax reaches ~1°.
 
 ### `nodeType`
+
 **Default: `'true'`** · `'mean' | 'true'`
 
 Rahu/Ketu from the mean node or the true (osculating) node. They differ by up to
@@ -94,11 +99,13 @@ Rahu/Ketu from the mean node or the true (osculating) node. They differ by up to
 practitioners prefer the smoothed `'mean'` node.
 
 ### `houseSystem`
+
 **Default: `'WholeSign'`** · `'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry'`
 
 Whole Sign is the Parashari standard.
 
 ### `dasamsaScheme`
+
 **Default: `'parashara'`** · `'parashara' | 'jhora_5_8'`
 
 The D10 rule for **even** signs. Odd signs are identical under both.
@@ -114,6 +121,7 @@ The D10 rule for **even** signs. Odd signs are identical under both.
 Only D10 is affected; every other varga has a single unambiguous rule.
 
 ### `horaScheme`
+
 **Default: `'parashara'`** · `'parashara' | 'parivritti'`
 
 The D2 rule. BPHS 5-6 puts the first half of an odd sign in the Sun's hora and
@@ -124,12 +132,14 @@ variant, which is what this library did before 3.1.
 See [docs/BPHS-VARGA-AUDIT.md](docs/BPHS-VARGA-AUDIT.md).
 
 ### `sunriseHour`
+
 **Default: `6.0`** · decimal hours, local
 
 The Vedic weekday (vara) begins at sunrise, not midnight. Supply the real
 sunrise for the birth place; the default is a nominal 6 a.m.
 
 ### `dashaYearDays`
+
 **Default: `365.242189623`** (tropical year)
 
 Length of a Vimshottari dasha year. Some traditions use 360 (savana) or 365.25
@@ -145,13 +155,13 @@ refraction is applied. `hashSettings` is the first 16 hex digits of SHA-256
 over canonical JSON (keys sorted at every level), so key order does not change
 the hash. The implementation is pure TypeScript and runs in the browser.
 
-| Preset id | What it selects |
-|---|---|
-| `node-jhora-default` | Library defaults (`DEFAULT_CONFIG`) |
-| `jhora-default@8.0` | Factory defaults: true Chitrapaksha, geometric places, mean node, equal houses with the cusp recorded in the middle, disc-centre sunrise without refraction, mean tropical year of 365.24219 days |
-| `kp` | Krishnamurti ayanamsa and Placidus houses |
-| `raman` | Raman ayanamsa |
-| `lahiri-mean` | Lahiri ayanamsa and the mean node |
+| Preset id            | What it selects                                                                                                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node-jhora-default` | Library defaults (`DEFAULT_CONFIG`)                                                                                                                                                               |
+| `jhora-default@8.0`  | Factory defaults: true Chitrapaksha, geometric places, mean node, equal houses with the cusp recorded in the middle, disc-centre sunrise without refraction, mean tropical year of 365.24219 days |
+| `kp`                 | Krishnamurti ayanamsa and Placidus houses                                                                                                                                                         |
+| `raman`              | Raman ayanamsa                                                                                                                                                                                    |
+| `lahiri-mean`        | Lahiri ayanamsa and the mean node                                                                                                                                                                 |
 
 `jhora-default@8.0` is not `JHORA_PRESET`. The preset used for the verified
 chart export keeps the true node and `dasamsaScheme: 'jhora_5_8'`. Pass either
@@ -173,9 +183,9 @@ const engine = EphemerisEngine.getInstance();
 await engine.initialize();
 
 engine.getPlanets(date, location, {
-  ayanamsaOrder: 27,
-  positionMode:  'apparent',
-  nodeType:      'mean',
+    ayanamsaOrder: 27,
+    positionMode: 'apparent',
+    nodeType: 'mean',
 });
 
 calculateVarga(lon, 10, { dasamsaScheme: 'jhora_5_8' });
@@ -187,12 +197,12 @@ calculateVarga(lon, 10, { dasamsaScheme: 'jhora_5_8' });
 import { NodeJHora } from '@node-jhora/core';
 
 const chart = new NodeJHora(
-  { latitude: 51.4769, longitude: -0.0005 },
-  { ayanamsaMode: 27, nodeType: 'mean', houseSystem: 'Equal' },
+    { latitude: 51.4769, longitude: -0.0005 },
+    { ayanamsaMode: 27, nodeType: 'mean', houseSystem: 'Equal' },
 );
 
-chart.getPlanets(date);                          // instance defaults
-chart.getPlanets(date, { nodeType: 'true' });    // per-call override wins
+chart.getPlanets(date); // instance defaults
+chart.getPlanets(date, { nodeType: 'true' }); // per-call override wins
 ```
 
 ### Reproducing JHora exactly
@@ -213,21 +223,21 @@ Every option is a field on the request body:
 
 ```json
 {
-  "date": "2000-01-01",
-  "time": "12:00:00",
-  "latitude": 51.4769,
-  "longitude": -0.0005,
-  "timezone": "Asia/Kolkata",
+    "date": "2000-01-01",
+    "time": "12:00:00",
+    "latitude": 51.4769,
+    "longitude": -0.0005,
+    "timezone": "Asia/Kolkata",
 
-  "ayanamsa": "true_chitra",
-  "ayanamsaOffset": 0,
-  "positionMode": "geometric",
-  "topocentric": false,
-  "altitudeMetres": 0,
-  "nodeType": "true",
-  "houseSystem": "whole_sign",
-  "dasamsaScheme": "parashara",
-  "sunriseHour": 6
+    "ayanamsa": "true_chitra",
+    "ayanamsaOffset": 0,
+    "positionMode": "geometric",
+    "topocentric": false,
+    "altitudeMetres": 0,
+    "nodeType": "true",
+    "houseSystem": "whole_sign",
+    "dasamsaScheme": "parashara",
+    "sunriseHour": 6
 }
 ```
 
@@ -243,10 +253,10 @@ field you omit; a field you send still wins. Responses include `settingsHash`.
 
 Measured, not asserted. Reproduce with the tools in `tools/`.
 
-| Comparison | Result |
-|---|---|
-| Tropical longitudes vs **JPL Horizons**, 1900–2024 | ≤ **0.28″** (typically 0.04″) |
-| vs **JHora** export, 1998 chart, `JHORA_PRESET` | D1 **0.01″**, ascendant **0.00″** |
+| Comparison                                                   | Result                                          |
+| ------------------------------------------------------------ | ----------------------------------------------- |
+| Tropical longitudes vs **JPL Horizons**, 1900–2024           | ≤ **0.28″** (typically 0.04″)                   |
+| vs **JHora** export, 1998 chart, `JHORA_PRESET`              | D1 **0.01″**, ascendant **0.00″**               |
 | vs JHora's own stored `.jhd` values, scored against Horizons | node-jhora closer on **4/4** charts, by 3×–113× |
 
 ```bash

@@ -5,7 +5,7 @@
  */
 import { DateTime } from 'luxon';
 
-import { EphemerisEngine, HouseData,PlanetPosition } from '../engine/ephemeris.js';
+import { EphemerisEngine, HouseData, PlanetPosition } from '../engine/ephemeris.js';
 
 export interface StreamConfig {
     location: {
@@ -27,17 +27,19 @@ export interface StreamUpdate {
  */
 export class PlanetaryStream {
     constructor(engine: EphemerisEngine, config: StreamConfig) {
-        console.warn("PlanetaryStream is not available in browser environments");
+        console.warn('PlanetaryStream is not available in browser environments');
     }
 
     public start(): void {
-        throw new Error("PlanetaryStream is not available in browser environments. This feature requires Node.js.");
+        throw new Error(
+            'PlanetaryStream is not available in browser environments. This feature requires Node.js.',
+        );
     }
 
     public stop(): void {}
 
     public on(event: string, listener: (...args: any[]) => void): this {
-        throw new Error("PlanetaryStream is not available in browser environments.");
+        throw new Error('PlanetaryStream is not available in browser environments.');
     }
 
     public emit(event: string, ...args: any[]): boolean {

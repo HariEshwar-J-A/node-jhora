@@ -12,7 +12,7 @@ const NAKSHATRA_SPAN = 360 / 27;
 
 function getMoonNakshatra(moonLon: number): { nakIdx: number; sign: number } {
     const nakIdx = Math.floor(moonLon / NAKSHATRA_SPAN);
-    const sign   = Math.floor(moonLon / 30) + 1;
+    const sign = Math.floor(moonLon / 30) + 1;
     return { nakIdx: nakIdx % 27, sign };
 }
 
@@ -25,11 +25,23 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         const p1 = parseBirthInput(req.body.person1);
         const p2 = parseBirthInput(req.body.person2);
 
-        const planets1 = engine.getPlanets(p1.dt, p1.location, { ayanamsaOrder: p1.ayanamsaOrder, nodeType: p1.nodeType, positionMode: p1.positionMode, topocentric: p1.topocentric, ayanamsaOffset: p1.ayanamsaOffset });
-        const planets2 = engine.getPlanets(p2.dt, p2.location, { ayanamsaOrder: p2.ayanamsaOrder, nodeType: p2.nodeType, positionMode: p2.positionMode, topocentric: p2.topocentric, ayanamsaOffset: p2.ayanamsaOffset });
+        const planets1 = engine.getPlanets(p1.dt, p1.location, {
+            ayanamsaOrder: p1.ayanamsaOrder,
+            nodeType: p1.nodeType,
+            positionMode: p1.positionMode,
+            topocentric: p1.topocentric,
+            ayanamsaOffset: p1.ayanamsaOffset,
+        });
+        const planets2 = engine.getPlanets(p2.dt, p2.location, {
+            ayanamsaOrder: p2.ayanamsaOrder,
+            nodeType: p2.nodeType,
+            positionMode: p2.positionMode,
+            topocentric: p2.topocentric,
+            ayanamsaOffset: p2.ayanamsaOffset,
+        });
 
-        const moon1 = planets1.find(p => p.id === Body.Moon)!;
-        const moon2 = planets2.find(p => p.id === Body.Moon)!;
+        const moon1 = planets1.find((p) => p.id === Body.Moon)!;
+        const moon2 = planets2.find((p) => p.id === Body.Moon)!;
 
         const { nakIdx: nak1, sign: sign1 } = getMoonNakshatra(moon1.longitude);
         const { nakIdx: nak2, sign: sign2 } = getMoonNakshatra(moon2.longitude);
@@ -38,13 +50,18 @@ export async function matchRoutes(app: FastifyInstance): Promise<void> {
         const result = PoruthamMatch.match(nak1, nak2, sign1, sign2);
 
         const settingsHash = { person1: p1.settingsHash, person2: p2.settingsHash };
-        return reply.status(200).send(attachResultEnvelope({
-            person1MoonNakshatra: nak1 + 1, // 1-27
-            person2MoonNakshatra: nak2 + 1,
-            person1MoonSign:      sign1,
-            person2MoonSign:      sign2,
-            ...result,
-            settingsHash,
-        }, { settingsHash }));
+        return reply.status(200).send(
+            attachResultEnvelope(
+                {
+                    person1MoonNakshatra: nak1 + 1, // 1-27
+                    person2MoonNakshatra: nak2 + 1,
+                    person1MoonSign: sign1,
+                    person2MoonSign: sign2,
+                    ...result,
+                    settingsHash,
+                },
+                { settingsHash },
+            ),
+        );
     });
 }

@@ -1,4 +1,9 @@
-import { calculateUchchaBala, calculateKendraBala, calculateOjayugmarasyamsaBala, calculateSaptavargajaBala } from '../../src/shadbala.js';
+import {
+    calculateUchchaBala,
+    calculateKendraBala,
+    calculateOjayugmarasyamsaBala,
+    calculateSaptavargajaBala,
+} from '../../src/shadbala.js';
 
 describe('Shadbala - Sthana Bala', () => {
     describe('Uchcha Bala', () => {

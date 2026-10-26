@@ -4,11 +4,11 @@ Performance budgets and regression gates for `ChartSession` and ephemeris initia
 
 ## Budgets
 
-| Case | Budget |
-| --- | --- |
-| Full chart warm (Node) | 20 ms median |
-| Ephemeris init cold (fresh Node process) | 150 ms median |
-| Full chart in browser worker | 40 ms (documented; hook via `registerBrowserWorkerBenchHook`) |
+| Case                                     | Budget                                                        |
+| ---------------------------------------- | ------------------------------------------------------------- |
+| Full chart warm (Node)                   | 20 ms median                                                  |
+| Ephemeris init cold (fresh Node process) | 150 ms median                                                 |
+| Full chart in browser worker             | 40 ms (documented; hook via `registerBrowserWorkerBenchHook`) |
 
 Workloads: D1–D60 vargas, Vimshottari dasha depth 3, shadbala, yogas, ashtakavarga, and core sections via `ChartSession.collect`.
 

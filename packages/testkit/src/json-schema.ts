@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { anchoredPattern,FEATURE_PATH_RULES } from './paths.js';
+import { anchoredPattern, FEATURE_PATH_RULES } from './paths.js';
 import {
     ArcsecEntrySchema,
     ExactEntrySchema,
@@ -31,7 +31,8 @@ export function buildGoldenCaseJsonSchema(): Record<string, unknown> {
     return {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
         title: 'GoldenCase',
-        description: 'One node-jhora accuracy case: input, settings, provenance, and per-path expectations.',
+        description:
+            'One node-jhora accuracy case: input, settings, provenance, and per-path expectations.',
         type: 'object',
         additionalProperties: false,
         required: ['id', 'provenance', 'input', 'settings', 'expected'],

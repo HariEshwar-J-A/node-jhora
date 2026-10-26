@@ -39,16 +39,17 @@ export async function initEngine(): Promise<void> {
 // Fastify factory
 // ---------------------------------------------------------------------------
 
-export async function buildServer(opts: {
-    logger?: boolean | object;
-    trustProxy?: boolean;
-} = {}): Promise<FastifyInstance> {
+export async function buildServer(
+    opts: {
+        logger?: boolean | object;
+        trustProxy?: boolean;
+    } = {},
+): Promise<FastifyInstance> {
     const app = Fastify({
         logger: opts.logger ?? {
             level: process.env.LOG_LEVEL ?? 'info',
-            transport: process.env.NODE_ENV === 'development'
-                ? { target: 'pino-pretty' }
-                : undefined,
+            transport:
+                process.env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
         },
         trustProxy: opts.trustProxy ?? false,
     });
@@ -81,14 +82,14 @@ export async function buildServer(opts: {
     // ---------------------------------------------------------------------------
 
     await app.register(healthRoutes, { prefix: '/' });
-    await app.register(chartRoutes,     { prefix: '/v1' });
+    await app.register(chartRoutes, { prefix: '/v1' });
     await app.register(panchangaRoutes, { prefix: '/v1' });
-    await app.register(dashaRoutes,     { prefix: '/v1' });
-    await app.register(transitRoutes,   { prefix: '/v1' });
-    await app.register(readingRoutes,   { prefix: '/v1' });
-    await app.register(shadbalaRoutes,  { prefix: '/v1' });
-    await app.register(kpRoutes,        { prefix: '/v1' });
-    await app.register(matchRoutes,     { prefix: '/v1' });
+    await app.register(dashaRoutes, { prefix: '/v1' });
+    await app.register(transitRoutes, { prefix: '/v1' });
+    await app.register(readingRoutes, { prefix: '/v1' });
+    await app.register(shadbalaRoutes, { prefix: '/v1' });
+    await app.register(kpRoutes, { prefix: '/v1' });
+    await app.register(matchRoutes, { prefix: '/v1' });
 
     return app;
 }

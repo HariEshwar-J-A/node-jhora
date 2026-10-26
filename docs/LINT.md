@@ -13,12 +13,12 @@ pnpm --filter @node-jhora/core lint
 
 ### Rule highlights
 
-| Rule | Purpose |
-| :--- | :--- |
-| `@typescript-eslint/no-floating-promises` | Unhandled async work must be awaited or voided explicitly. |
-| `simple-import-sort/*` | Stable import/export ordering. |
-| `no-restricted-imports` / `no-restricted-globals` | **Browser-targeted source only** — blocks `fs`, `path`, `node:*`, `Buffer`, and `process`. |
-| `node-jhora/no-body-numeric-literal` | **Non-core packages** — use `Body` from `@node-jhora/core` instead of raw `0`–`6`, `10`, or `99` in `planet.id` comparisons. |
+| Rule                                              | Purpose                                                                                                                      |
+| :------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| `@typescript-eslint/no-floating-promises`         | Unhandled async work must be awaited or voided explicitly.                                                                   |
+| `simple-import-sort/*`                            | Stable import/export ordering.                                                                                               |
+| `no-restricted-imports` / `no-restricted-globals` | **Browser-targeted source only** — blocks `fs`, `path`, `node:*`, `Buffer`, and `process`.                                   |
+| `node-jhora/no-body-numeric-literal`              | **Non-core packages** — use `Body` from `@node-jhora/core` instead of raw `0`–`6`, `10`, or `99` in `planet.id` comparisons. |
 
 Browser-targeted paths (engine must run in the browser):
 
@@ -44,10 +44,7 @@ In the browser, pass `initialize({ kernel: Uint8Array })` from `fetch(...).array
 
 Config: `.prettierrc.json`, ignore: `.prettierignore`.
 
-This repository has **not** been one-shot formatted yet (to avoid merge conflicts with open PRs). Use:
-
 ```bash
-pnpm run format:check   # Prettier --check on files changed vs origin/main
+pnpm run format:check   # Prettier --check on the whole tree (.prettierignore applies)
+pnpm exec prettier --write .   # apply formatting locally
 ```
-
-Follow-up task: run `pnpm exec prettier --write .` once parallel work on `main` settles.

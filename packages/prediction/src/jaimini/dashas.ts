@@ -1,5 +1,4 @@
-
-import { normalize360,PlanetPosition } from '@node-jhora/core';
+import { normalize360, PlanetPosition } from '@node-jhora/core';
 
 export interface CharaDashaPeriod {
     signIndex: number; // 0-11
@@ -12,22 +11,24 @@ export interface CharaDashaPeriod {
 }
 
 export class JaiminiDashas {
-
     /**
      * Calculates Chara Dasha Sequence and Durations.
      * @param lagnaSignIndex 0-11
      * @param planets Planet positions (to find lords)
      */
-    public static calculateCharaDasha(lagnaSignIndex: number, planets: PlanetPosition[]): CharaDashaPeriod[] {
+    public static calculateCharaDasha(
+        lagnaSignIndex: number,
+        planets: PlanetPosition[],
+    ): CharaDashaPeriod[] {
         // 1. Determine Direction of Sequence (Based on 9th House from Lagna)
         // User Prompt: "Sequence: Determined by the 9th House from Lagna (Savya/Apasavya groups)."
-        // Interpretation: Check 9th house sign. 
+        // Interpretation: Check 9th house sign.
         // Savya Signs (Direct Group): Aries(0), Leo(4), Virgo(5), Libra(6), Aqua(10), Pis(11)?
         // Apasavya (Reverse): Tau(1), Gem(2), Can(3), Sco(7), Sag(8), Cap(9)?
         // Common Jaimini Grouping (K.N. Rao):
         // Group A (Direct): 0, 4, 5, 6, 10, 11 (Ari, Leo, Vir, Lib, Aqu, Pis)
         // Group B (Reverse): 1, 2, 3, 7, 8, 9 (Tau, Gem, Can, Sco, Sag, Cap)
-        
+
         const ninthHouseSign = (lagnaSignIndex + 8) % 12;
         const groupA = [0, 4, 5, 6, 10, 11];
         const isForward = groupA.includes(ninthHouseSign);
@@ -43,7 +44,7 @@ export class JaiminiDashas {
                 dashaSign = (lagnaSignIndex + i) % 12;
             } else {
                 // Anti-Zodiacal: Lagna, L-1, ...
-                dashaSign = (lagnaSignIndex - i);
+                dashaSign = lagnaSignIndex - i;
                 if (dashaSign < 0) dashaSign += 12;
             }
 
@@ -54,7 +55,7 @@ export class JaiminiDashas {
                 signIndex: dashaSign,
                 startYear: currentYear,
                 endYear: currentYear + years,
-                durationYears: years
+                durationYears: years,
             });
             currentYear += years;
         }
@@ -74,22 +75,22 @@ export class JaiminiDashas {
         const countForward = directCountSigns.includes(signIndex);
 
         const lordId = this.getSignRulerId(signIndex);
-        const lord = planets.find(p => p.id === lordId);
-        
+        const lord = planets.find((p) => p.id === lordId);
+
         let years = 1; // Default fallback
         if (lord) {
             const lordSign = Math.floor(lord.longitude / 30);
             let count = 0;
             if (countForward) {
                 // Count Sign -> Lord
-                count = (lordSign - signIndex) + 1;
+                count = lordSign - signIndex + 1;
                 if (count <= 0) count += 12;
             } else {
                 // Count Sign -> Lord BACKWARDS
-                count = (signIndex - lordSign) + 1;
+                count = signIndex - lordSign + 1;
                 if (count <= 0) count += 12;
             }
-            
+
             // "Subtract 1"
             years = count - 1;
             if (years === 0) years = 12; // 12th house (0 dist) = 12 years.

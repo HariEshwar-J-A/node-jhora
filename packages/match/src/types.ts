@@ -30,7 +30,7 @@ export interface MatchResult {
 export enum Gana {
     Deva = 0,
     Manushya = 1,
-    Rakshasa = 2
+    Rakshasa = 2,
 }
 
 export enum YoniAnimal {
@@ -47,13 +47,13 @@ export enum YoniAnimal {
     Hare = 10,
     Monkey = 11,
     Lion = 12,
-    Mongoose = 13
+    Mongoose = 13,
 }
 
 export enum Nadi {
     Adi = 0, // Vata
     Madhya = 1, // Pitta
-    Antya = 2 // Kapha
+    Antya = 2, // Kapha
 }
 
 export enum Rajju {
@@ -61,14 +61,14 @@ export enum Rajju {
     Kanta = 1, // Neck
     Nabhi = 2, // Navel
     Kati = 3, // Thigh/Waist
-    Pada = 4 // Foot
+    Pada = 4, // Foot
 }
 
 export enum Varna {
     Brahmin = 0,
     Kshatriya = 1,
     Vaishya = 2,
-    Shudra = 3
+    Shudra = 3,
 }
 
 export enum Vashya {
@@ -76,5 +76,5 @@ export enum Vashya {
     Manava = 1, // Human
     Jalachara = 2, // Water
     Vanachara = 3, // Wild (Lion)
-    Keeta = 4 // Insect
+    Keeta = 4, // Insect
 }

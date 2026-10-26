@@ -8,13 +8,13 @@ describe('Reporting Engine', () => {
         { id: 0, name: 'Sun', longitude: 10, latitude: 0, distance: 1, speed: 1 },
         { id: 1, name: 'Moon', longitude: 45, latitude: 0, distance: 1, speed: 12 },
         { id: 2, name: 'Mars', longitude: 280, latitude: 0, distance: 1, speed: 0.5 },
-        { id: 4, name: 'Jupiter', longitude: 100, latitude: 0, distance: 5, speed: 0.1 }
+        { id: 4, name: 'Jupiter', longitude: 100, latitude: 0, distance: 5, speed: 0.1 },
     ];
 
     const mockChart: ChartData = {
         planets: mockPlanets,
         cusps: new Array(12).fill(0).map((_, i) => i * 30),
-        ascendant: 0 // Aries Lagna
+        ascendant: 0, // Aries Lagna
     };
 
     test('generateFullReport should return a valid PDF Buffer', async () => {
@@ -23,7 +23,7 @@ describe('Reporting Engine', () => {
                 subjectName: 'Test Subject',
                 birthDate: '2025-01-01T12:00:00Z',
                 birthPlace: 'New Delhi',
-                chartStyle: 'South'
+                chartStyle: 'South',
             });
 
             expect(buffer).toBeDefined();
@@ -38,7 +38,7 @@ describe('Reporting Engine', () => {
     test('generateFullReport with North Indian style', async () => {
         const buffer = await generateFullReport(mockChart, {
             subjectName: 'Test North',
-            chartStyle: 'North'
+            chartStyle: 'North',
         });
         expect(buffer.length).toBeGreaterThan(100);
     });

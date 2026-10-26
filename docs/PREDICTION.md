@@ -23,9 +23,9 @@ import type { DashaPeriod } from '@node-jhora/prediction';
 // Parameters: birthDate, moonLongitude, recursionDepth (1-5)
 const dashas: DashaPeriod[] = generateVimshottari(birthDate, moonLon, 5);
 
-dashas.forEach(maha => {
+dashas.forEach((maha) => {
     console.log(`${maha.planet}: ${maha.start.toISODate()} → ${maha.end.toISODate()}`);
-    maha.subPeriods?.forEach(antar => {
+    maha.subPeriods?.forEach((antar) => {
         console.log(`  └─ ${antar.planet}: ${antar.start.toISODate()} → ${antar.end.toISODate()}`);
     });
 });
@@ -38,10 +38,10 @@ const balance = calculateDashaBalance(moonLon);
 
 ```typescript
 interface DashaPeriod {
-    planet: string;     // Dasha lord name
-    start: DateTime;    // Period start
-    end: DateTime;      // Period end
-    years: number;      // Duration in years
+    planet: string; // Dasha lord name
+    start: DateTime; // Period start
+    end: DateTime; // Period end
+    years: number; // Duration in years
     subPeriods?: DashaPeriod[]; // Nested sub-periods (recursive)
 }
 ```
@@ -59,16 +59,16 @@ const periods = YoginiDasha.calculate(moonLon, birthDate, 80);
 
 **Yogini Lords & Durations:**
 
-| Yogini | Planet | Years |
-| :--- | :--- | :---: |
-| Mangala | Moon | 1 |
-| Pingala | Sun | 2 |
-| Dhanya | Jupiter | 3 |
-| Bhramari | Mars | 4 |
-| Bhadrika | Mercury | 5 |
-| Ulka | Saturn | 6 |
-| Siddha | Venus | 7 |
-| Sankata | Rahu | 8 |
+| Yogini   | Planet  | Years |
+| :------- | :------ | :---: |
+| Mangala  | Moon    |   1   |
+| Pingala  | Sun     |   2   |
+| Dhanya   | Jupiter |   3   |
+| Bhramari | Mars    |   4   |
+| Bhadrika | Mercury |   5   |
+| Ulka     | Saturn  |   6   |
+| Siddha   | Venus   |   7   |
+| Sankata  | Rahu    |   8   |
 
 ### 3. Narayana Dasha
 
@@ -97,12 +97,12 @@ const engine = new TransitEngine();
 
 // Find all transits for Sun within a date range
 const events: TransitEvent[] = await engine.findTransits(
-    0,         // Planet ID (Sun)
+    0, // Planet ID (Sun)
     startDate, // DateTime
-    endDate    // DateTime
+    endDate, // DateTime
 );
 
-events.forEach(ev => {
+events.forEach((ev) => {
     console.log(`${ev.type} at ${ev.date.toISO()}: ${ev.description}`);
 });
 ```
@@ -114,10 +114,10 @@ Uses Newton-Raphson method with the first derivative (planetary speed) to find t
 ```typescript
 // Find exact Sun-Mars conjunction
 const exactDate = await engine.findExactAspect(
-    0,         // Planet A (Sun)
-    4,         // Planet B (Mars)
-    0,         // Target angle (0° = conjunction, 180° = opposition)
-    startDate  // Search start
+    0, // Planet A (Sun)
+    4, // Planet B (Mars)
+    0, // Target angle (0° = conjunction, 180° = opposition)
+    startDate, // Search start
 );
 ```
 
@@ -140,19 +140,19 @@ import type { JaiminiKaraka, ArudhaPada } from '@node-jhora/prediction';
 
 Calculates karakas based on planetary degrees within their rashi (highest degree = Atmakaraka):
 
-| Karaka | Abbreviation | Rule |
-| :--- | :--- | :--- |
-| Atmakaraka | AK | Highest degree in sign |
-| Amatyakaraka | AmK | Second highest |
-| Bhratrukaraka | BK | Third highest |
-| Matrukaraka | MK | Fourth highest |
-| Putrakaraka | PK | Fifth highest |
-| Gnatikaraka | GK | Sixth highest |
-| Darakaraka | DK | Lowest (seventh) |
+| Karaka        | Abbreviation | Rule                   |
+| :------------ | :----------- | :--------------------- |
+| Atmakaraka    | AK           | Highest degree in sign |
+| Amatyakaraka  | AmK          | Second highest         |
+| Bhratrukaraka | BK           | Third highest          |
+| Matrukaraka   | MK           | Fourth highest         |
+| Putrakaraka   | PK           | Fifth highest          |
+| Gnatikaraka   | GK           | Sixth highest          |
+| Darakaraka    | DK           | Lowest (seventh)       |
 
 ```typescript
 const karakas: JaiminiKaraka[] = JaiminiCore.calculateKarakas(planets);
-karakas.forEach(k => {
+karakas.forEach((k) => {
     console.log(`${k.karaka}: Planet ${k.planetId} at ${k.degree.toFixed(2)}°`);
 });
 ```
@@ -166,6 +166,7 @@ const arudhas: ArudhaPada[] = JaiminiCore.calculateArudhaPadas(lagnaSign, planet
 ```
 
 **Exception Rules:**
+
 - If a house lord is placed in the same house → Arudha jumps 10 signs forward.
 - If a house lord is in the 7th from the house → Arudha jumps 4 signs forward.
 
@@ -178,7 +179,7 @@ import { JaiminiDashas } from '@node-jhora/prediction';
 import type { CharaDashaPeriod } from '@node-jhora/prediction';
 
 const charaDasha: CharaDashaPeriod[] = JaiminiDashas.calculateCharaDasha(lagnaSign, planets);
-charaDasha.forEach(period => {
+charaDasha.forEach((period) => {
     console.log(`Sign ${period.sign}: ${period.years} years`);
 });
 ```
@@ -189,7 +190,15 @@ charaDasha.forEach(period => {
 
 ```typescript
 // Functions
-export { generateVimshottari, calculateDashaBalance, TransitEngine, YoginiDasha, NarayanaDasha, JaiminiCore, JaiminiDashas };
+export {
+    generateVimshottari,
+    calculateDashaBalance,
+    TransitEngine,
+    YoginiDasha,
+    NarayanaDasha,
+    JaiminiCore,
+    JaiminiDashas,
+};
 
 // Types
 export type { DashaPeriod, TransitEvent, JaiminiKaraka, ArudhaPada, CharaDashaPeriod };

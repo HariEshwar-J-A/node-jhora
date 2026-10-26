@@ -1,4 +1,4 @@
-import { CompatibilityResult, KutaScore,PoruthamMatch } from './porutham.js';
+import { CompatibilityResult, KutaScore, PoruthamMatch } from './porutham.js';
 
 export * from './dosha/mangal.js';
 export * from './kuta/data.js';

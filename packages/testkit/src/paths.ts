@@ -36,10 +36,20 @@ function rule(
 }
 
 export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
-    rule('varga-planet-angle', `${VARGA}\\.planets\\.(?:${BODY})\\.(?:lon|lat)`, 'arcsec', 'number'),
+    rule(
+        'varga-planet-angle',
+        `${VARGA}\\.planets\\.(?:${BODY})\\.(?:lon|lat)`,
+        'arcsec',
+        'number',
+    ),
     rule('varga-planet-sign', `${VARGA}\\.planets\\.(?:${BODY})\\.sign`, 'exact', 'integer'),
     rule('varga-planet-printed', `${VARGA}\\.planets\\.(?:${BODY})\\.printed`, 'exact', 'string'),
-    rule('varga-planet-retrograde', `${VARGA}\\.planets\\.(?:${BODY})\\.retrograde`, 'exact', 'boolean'),
+    rule(
+        'varga-planet-retrograde',
+        `${VARGA}\\.planets\\.(?:${BODY})\\.retrograde`,
+        'exact',
+        'boolean',
+    ),
     rule('varga-asc-angle', `${VARGA}\\.ascendant\\.(?:lon|lat)`, 'arcsec', 'number'),
     rule('varga-asc-sign', `${VARGA}\\.ascendant\\.sign`, 'exact', 'integer'),
     rule('varga-asc-printed', `${VARGA}\\.ascendant\\.printed`, 'exact', 'string'),
@@ -48,10 +58,20 @@ export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
     rule('ayanamsa-mode', 'ayanamsa\\.mode', 'exact', 'integer'),
     rule('sidereal-hours', 'siderealTime\\.hours', 'seconds', 'number'),
     rule('sidereal-printed', 'siderealTime\\.printed', 'exact', 'string'),
-    rule('panchanga-name', 'panchanga\\.(?:tithi|nakshatra|yoga|karana|vara)\\.name', 'exact', 'string'),
+    rule(
+        'panchanga-name',
+        'panchanga\\.(?:tithi|nakshatra|yoga|karana|vara)\\.name',
+        'exact',
+        'string',
+    ),
     rule('panchanga-index', 'panchanga\\.(?:tithi|nakshatra|vara)\\.index', 'exact', 'integer'),
     rule('panchanga-pada', 'panchanga\\.nakshatra\\.pada', 'exact', 'integer'),
-    rule('panchanga-percent', 'panchanga\\.(?:tithi|nakshatra|yoga|karana)\\.percentLeft', 'exact', 'number'),
+    rule(
+        'panchanga-percent',
+        'panchanga\\.(?:tithi|nakshatra|yoga|karana)\\.percentLeft',
+        'exact',
+        'number',
+    ),
     rule('panchanga-tolerance', 'meta\\.panchanga\\.tolerancePercent', 'exact', 'number'),
     rule('dasa-start-lord', `dasa\\.(?:${DASA})\\.startLord`, 'exact', 'string'),
     rule('dasa-lord', `${DASA_PERIOD}\\.lord`, 'exact', 'string'),
@@ -61,13 +81,28 @@ export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
     rule('d10-even-sign', 'd10\\.evenSignBodies\\[\\d+\\]', 'exact', 'string'),
     rule('horizons-angle', `horizons\\.planets\\.(?:${BODY})\\.(?:lon|lat)`, 'arcsec', 'number'),
     rule('time-jd', 'time\\.jd', 'exact', 'number'),
-    rule('meta-clock', 'meta\\.birth\\.(?:local|utc)\\.(?:year|month|day|hour|minute|second)', 'exact', 'integer'),
+    rule(
+        'meta-clock',
+        'meta\\.birth\\.(?:local|utc)\\.(?:year|month|day|hour|minute|second)',
+        'exact',
+        'integer',
+    ),
     rule('meta-offset', 'meta\\.birth\\.utcOffsetHours', 'exact', 'number'),
     rule('meta-epoch-label', 'meta\\.epoch\\.label', 'exact', 'string'),
     rule('meta-epoch-bodies', 'meta\\.epoch\\.bodies\\[\\d+\\]', 'exact', 'string'),
     rule('meta-deltat-year', 'meta\\.contract\\.lastObservedDeltaTYear', 'exact', 'integer'),
-    rule('meta-tolerance', 'meta\\.contract\\.(?:tolerance|futureTolerance)\\.(?:longitude|latitude)', 'exact', 'number'),
-    rule('meta-horizons-api', 'meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate)', 'exact', 'string'),
+    rule(
+        'meta-tolerance',
+        'meta\\.contract\\.(?:tolerance|futureTolerance)\\.(?:longitude|latitude)',
+        'exact',
+        'number',
+    ),
+    rule(
+        'meta-horizons-api',
+        'meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate)',
+        'exact',
+        'string',
+    ),
     rule('meta-horizons-params', 'meta\\.horizons\\.requestParameters', 'exact', 'string'),
 ];
 

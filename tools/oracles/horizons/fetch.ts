@@ -54,7 +54,10 @@ export function parseHorizonsObserverTable(result: string): HorizonsSample[] {
         throw new Error('Horizons result missing $$SOE/$$EOE block');
     }
     const block = result.slice(start + 5, end);
-    const rows = block.split('\n').map((l) => l.trim()).filter(Boolean);
+    const rows = block
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
     return rows.map(parseObserverRow);
 }
 
@@ -71,7 +74,12 @@ export async function fetchBodyEphemeris(
     bodyName: string,
     jds: readonly number[],
     options: FetchOptions = {},
-): Promise<{ samples: HorizonsSample[]; queryUrl: string; result: string; signature: HorizonsFetchMeta }> {
+): Promise<{
+    samples: HorizonsSample[];
+    queryUrl: string;
+    result: string;
+    signature: HorizonsFetchMeta;
+}> {
     const command = HORIZONS_COMMAND[bodyName];
     if (!command) throw new Error(`No Horizons COMMAND for ${bodyName}`);
     const tlist = jds.map((jd) => jd.toFixed(9)).join(',');
@@ -79,7 +87,7 @@ export async function fetchBodyEphemeris(
     const fetchFn = options.fetchImpl ?? fetch;
     const response = await fetchFn(queryUrl);
     if (!response.ok) throw new Error(`Horizons HTTP ${response.status} for ${bodyName}`);
-    const payload = await response.json() as {
+    const payload = (await response.json()) as {
         result?: string;
         error?: string;
         signature?: { version?: string; source?: string };
@@ -88,9 +96,7 @@ export async function fetchBodyEphemeris(
     if (!payload.result) throw new Error(`Horizons empty result for ${bodyName}`);
     const samples = parseHorizonsObserverTable(payload.result);
     if (samples.length !== jds.length) {
-        throw new Error(
-            `Horizons row count ${samples.length} != ${jds.length} for ${bodyName}`,
-        );
+        throw new Error(`Horizons row count ${samples.length} != ${jds.length} for ${bodyName}`);
     }
     const ephemeris = parseEphemerisLabel(payload.result);
     const horizonsApiVersion = payload.signature?.version ?? 'unknown';
@@ -115,9 +121,7 @@ export interface FetchedEpoch {
     bodies: FetchedEpochBody[];
 }
 
-export async function fetchHorizonsFixture(
-    options: FetchOptions = {},
-): Promise<{
+export async function fetchHorizonsFixture(options: FetchOptions = {}): Promise<{
     epochs: FetchedEpoch[];
     provenance: {
         horizonsApiVersion: string;

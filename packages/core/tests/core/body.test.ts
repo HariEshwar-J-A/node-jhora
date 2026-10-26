@@ -1,4 +1,9 @@
-import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, EPHEMERIS_BODIES, SEVEN_GRAHAS_JHORA_ORDER } from '../../src/core/body.js';
+import {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
+    EPHEMERIS_BODIES,
+    SEVEN_GRAHAS_JHORA_ORDER,
+} from '../../src/core/body.js';
 
 describe('Body enum', () => {
     test('ephemeris node ids match historical API JSON', () => {

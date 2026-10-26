@@ -15,8 +15,7 @@ module.exports = {
             description: 'Require Body enum instead of numeric body id literals',
         },
         messages: {
-            useBodyEnum:
-                'Use Body.* from @node-jhora/core instead of numeric body id {{value}}.',
+            useBodyEnum: 'Use Body.* from @node-jhora/core instead of numeric body id {{value}}.',
         },
         schema: [],
     },
@@ -28,18 +27,37 @@ module.exports = {
             const parent = node.parent;
             if (!parent) return;
 
-            if (parent.type === 'BinaryExpression' && ['===', '==', '!==', '!='].includes(parent.operator)) {
+            if (
+                parent.type === 'BinaryExpression' &&
+                ['===', '==', '!==', '!='].includes(parent.operator)
+            ) {
                 const other = parent.left === node ? parent.right : parent.left;
-                if (other.type === 'MemberExpression' && other.property?.type === 'Identifier' && other.property.name === 'id') {
-                    context.report({ node, messageId: 'useBodyEnum', data: { value: String(node.value) } });
+                if (
+                    other.type === 'MemberExpression' &&
+                    other.property?.type === 'Identifier' &&
+                    other.property.name === 'id'
+                ) {
+                    context.report({
+                        node,
+                        messageId: 'useBodyEnum',
+                        data: { value: String(node.value) },
+                    });
                     return;
                 }
-                if (other.type === 'Identifier' && /planetId|donorId|targetId|lordId|aspectingPlanetId|planetA|planetB|pId|naifBody/i.test(other.name)) {
-                    context.report({ node, messageId: 'useBodyEnum', data: { value: String(node.value) } });
+                if (
+                    other.type === 'Identifier' &&
+                    /planetId|donorId|targetId|lordId|aspectingPlanetId|planetA|planetB|pId|naifBody/i.test(
+                        other.name,
+                    )
+                ) {
+                    context.report({
+                        node,
+                        messageId: 'useBodyEnum',
+                        data: { value: String(node.value) },
+                    });
                     return;
                 }
             }
-
         }
 
         return {

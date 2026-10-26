@@ -1,4 +1,10 @@
-import { getRelationship, getTatkalikaMaitri, getPanchadhaMaitri, NAISARGIKA_MAITRI, Relationship } from '../../src/core/relationships.js';
+import {
+    getRelationship,
+    getTatkalikaMaitri,
+    getPanchadhaMaitri,
+    NAISARGIKA_MAITRI,
+    Relationship,
+} from '../../src/core/relationships.js';
 
 describe('Planetary Relationships (Maitri)', () => {
     describe('Naisargika (Natural)', () => {

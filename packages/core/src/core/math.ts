@@ -21,7 +21,16 @@ import {
 } from './precise.js';
 
 // Re-export Decimal utilities for packages that need them directly
-export { Decimal, decimalToDmsD, dmsToDecimalD, midpointD, normalize360D, shortestArcD, D as toDecimal, toNum } from './precise.js';
+export {
+    Decimal,
+    decimalToDmsD,
+    dmsToDecimalD,
+    midpointD,
+    normalize360D,
+    shortestArcD,
+    D as toDecimal,
+    toNum,
+} from './precise.js';
 
 /**
  * Normalises an angle to [0, 360).

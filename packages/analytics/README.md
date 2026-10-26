@@ -16,7 +16,15 @@ npm install @node-jhora/analytics @node-jhora/core
 import { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
 
 // Shadbala — 6-fold planetary strength (Virupas)
-const strength = calculateShadbala({ planet, allPlanets, houses, sun, moon, timeDetails, vargaPositions });
+const strength = calculateShadbala({
+    planet,
+    allPlanets,
+    houses,
+    sun,
+    moon,
+    timeDetails,
+    vargaPositions,
+});
 
 // Ashtakavarga — BAV/SAV grids
 const av = Ashtakavarga.calculate(planets, ascendantSign);
@@ -27,21 +35,29 @@ const yogas = YogaEngine.findYogas(chartData, YOGA_LIBRARY);
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
-| **Shadbala** | Full Parashara 6-fold strength (Sthana, Dig, Kaala, Chesta, Naisargika, Drig) |
-| **Ashtakavarga** | Bhinnashtakavarga (BAV) and Sarvashtakavarga (SAV) |
-| **Yoga Engine** | Rule-based, extensible via JSON-compatible `YogaDef` definitions |
-| **YOGA_LIBRARY** | Built-in library of standard Raja, Dhana, Nabhasa Yogas |
-| **KP Engine** | Extended KP planet and house significator analysis |
-| **Aspects** | Aspect strength calculations for Drig Bala |
+| Feature          | Description                                                                   |
+| :--------------- | :---------------------------------------------------------------------------- |
+| **Shadbala**     | Full Parashara 6-fold strength (Sthana, Dig, Kaala, Chesta, Naisargika, Drig) |
+| **Ashtakavarga** | Bhinnashtakavarga (BAV) and Sarvashtakavarga (SAV)                            |
+| **Yoga Engine**  | Rule-based, extensible via JSON-compatible `YogaDef` definitions              |
+| **YOGA_LIBRARY** | Built-in library of standard Raja, Dhana, Nabhasa Yogas                       |
+| **KP Engine**    | Extended KP planet and house significator analysis                            |
+| **Aspects**      | Aspect strength calculations for Drig Bala                                    |
 
 ## Exports
 
 ```typescript
 export { calculateShadbala, Ashtakavarga, YogaEngine, YOGA_LIBRARY, KPEngine };
-export type { ShadbalaResult, VargaInfo, AshtakavargaResult, ChartData,
-              KPPlanetSignificator, KPHouseSignificator, YogaDef, YogaResult };
+export type {
+    ShadbalaResult,
+    VargaInfo,
+    AshtakavargaResult,
+    ChartData,
+    KPPlanetSignificator,
+    KPHouseSignificator,
+    YogaDef,
+    YogaResult,
+};
 ```
 
 ## License

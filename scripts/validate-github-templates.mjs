@@ -37,7 +37,10 @@ function parseYaml(text, file) {
     } catch {
         const py = spawnSync(
             'python3',
-            ['-c', 'import json, sys, yaml\njson.dump(yaml.safe_load(sys.stdin.read()), sys.stdout)'],
+            [
+                '-c',
+                'import json, sys, yaml\njson.dump(yaml.safe_load(sys.stdin.read()), sys.stdout)',
+            ],
             { input: text, encoding: 'utf8' },
         );
         if (py.status !== 0) {

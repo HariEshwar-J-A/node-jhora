@@ -32,10 +32,17 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
             let planets: ReturnType<typeof engine.getPlanets>;
 
             beforeAll(() => {
-                const date = DateTime.fromObject({
-                    year: chart.year, month: chart.month, day: chart.day,
-                    hour: chart.hour, minute: chart.minute, second: chart.second,
-                }, { zone: 'utc' });
+                const date = DateTime.fromObject(
+                    {
+                        year: chart.year,
+                        month: chart.month,
+                        day: chart.day,
+                        hour: chart.hour,
+                        minute: chart.minute,
+                        second: chart.second,
+                    },
+                    { zone: 'utc' },
+                );
                 // Engine defaults (true node, geometric places) are JHora's
                 // conventions — the snapshot is generated the same way.
                 planets = engine.getPlanets(date, undefined, {
@@ -45,19 +52,19 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
 
             for (const ref of chart.planets) {
                 test(`${ref.name} longitude = ${ref.longitude}°`, () => {
-                    const p = planets.find(pl => pl.name === ref.name);
+                    const p = planets.find((pl) => pl.name === ref.name);
                     expect(p).toBeDefined();
                     expect(p!.longitude).toBeCloseTo(ref.longitude, 3);
                 });
 
                 test(`${ref.name} sign = ${ref.sign}`, () => {
-                    const p = planets.find(pl => pl.name === ref.name);
+                    const p = planets.find((pl) => pl.name === ref.name);
                     const signNum = Math.floor(p!.longitude / 30) + 1;
                     expect(signNum).toBe(ref.sign);
                 });
 
                 test(`${ref.name} speed sign correct`, () => {
-                    const p = planets.find(pl => pl.name === ref.name);
+                    const p = planets.find((pl) => pl.name === ref.name);
                     // Sign of speed must match (retrograde / direct)
                     if (ref.speed < 0) {
                         expect(p!.speed).toBeLessThan(0);
@@ -72,8 +79,8 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
             });
 
             test('Ketu = Rahu + 180°', () => {
-                const rahu = planets.find(p => p.name === 'Rahu')!;
-                const ketu = planets.find(p => p.name === 'Ketu')!;
+                const rahu = planets.find((p) => p.name === 'Rahu')!;
+                const ketu = planets.find((p) => p.name === 'Ketu')!;
                 const diff = Math.abs(rahu.longitude - ketu.longitude);
                 expect(Math.abs(diff - 180)).toBeLessThan(0.001);
             });
@@ -89,13 +96,19 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
 
     describe('Julian Day Calculation', () => {
         test('J2000 epoch JD = 2451545.0', () => {
-            const date = DateTime.fromObject({ year: 2000, month: 1, day: 1, hour: 12 }, { zone: 'utc' });
+            const date = DateTime.fromObject(
+                { year: 2000, month: 1, day: 1, hour: 12 },
+                { zone: 'utc' },
+            );
             const jd = engine.julday(date);
             expect(jd).toBeCloseTo(2451545.0, 2);
         });
 
         test('Unix epoch JD = 2440587.5', () => {
-            const date = DateTime.fromObject({ year: 1970, month: 1, day: 1, hour: 0 }, { zone: 'utc' });
+            const date = DateTime.fromObject(
+                { year: 1970, month: 1, day: 1, hour: 0 },
+                { zone: 'utc' },
+            );
             const jd = engine.julday(date);
             expect(jd).toBeCloseTo(2440587.5, 2);
         });
@@ -114,43 +127,57 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
         /** name → [min, max] apparent daily motion in degrees. */
         const DAILY_MOTION: Record<string, [number, number]> = {
             // Perigee/apogee extremes of the true anomalistic rate
-            Moon:    [ 11.7,  15.4],
+            Moon: [11.7, 15.4],
             // Perihelion/aphelion extremes of the apparent solar rate
-            Sun:     [  0.95,  1.02],
+            Sun: [0.95, 1.02],
             // Outer planets can retrograde; bounds are on magnitude
-            Mercury: [ -1.5,   2.3],
-            Venus:   [ -0.7,   1.3],
-            Mars:    [ -0.5,   0.85],
-            Jupiter: [ -0.15,  0.25],
-            Saturn:  [ -0.09,  0.14],
+            Mercury: [-1.5, 2.3],
+            Venus: [-0.7, 1.3],
+            Mars: [-0.5, 0.85],
+            Jupiter: [-0.15, 0.25],
+            Saturn: [-0.09, 0.14],
         };
 
         for (const chart of ALL_CHARTS) {
             test(`${chart.label}: daily motion is within physical bounds`, () => {
-                const date = DateTime.fromObject({
-                    year: chart.year, month: chart.month, day: chart.day,
-                    hour: chart.hour, minute: chart.minute, second: chart.second,
-                }, { zone: 'utc' });
+                const date = DateTime.fromObject(
+                    {
+                        year: chart.year,
+                        month: chart.month,
+                        day: chart.day,
+                        hour: chart.hour,
+                        minute: chart.minute,
+                        second: chart.second,
+                    },
+                    { zone: 'utc' },
+                );
 
                 for (const p of engine.getPlanets(date)) {
                     const bounds = DAILY_MOTION[p.name];
-                    if (!bounds) continue;   // nodes are handled separately
+                    if (!bounds) continue; // nodes are handled separately
                     expect(p.speed).toBeGreaterThanOrEqual(bounds[0]);
                     expect(p.speed).toBeLessThanOrEqual(bounds[1]);
                 }
             });
 
             test(`${chart.label}: the ascendant leads the MC by 0°–180°`, () => {
-                const date = DateTime.fromObject({
-                    year: chart.year, month: chart.month, day: chart.day,
-                    hour: chart.hour, minute: chart.minute, second: chart.second,
-                }, { zone: 'utc' });
+                const date = DateTime.fromObject(
+                    {
+                        year: chart.year,
+                        month: chart.month,
+                        day: chart.day,
+                        hour: chart.hour,
+                        minute: chart.minute,
+                        second: chart.second,
+                    },
+                    { zone: 'utc' },
+                );
                 const h = engine.getHouses(engine.julday(date), chart.lat, chart.lon, 'W', true);
 
                 // Geometric necessity: the rising point always precedes the
                 // culminating point. The previous fixture violated this by
                 // exactly 180° for Chart A.
-                const lead = ((h.ascendant - h.mc) % 360 + 360) % 360;
+                const lead = (((h.ascendant - h.mc) % 360) + 360) % 360;
                 expect(lead).toBeGreaterThan(0);
                 expect(lead).toBeLessThan(180);
             });
@@ -158,12 +185,20 @@ describe('Regression: EphemerisEngine — Planetary Positions', () => {
 
         test('the mean node always regresses at ~0.0529°/day', () => {
             for (const chart of ALL_CHARTS) {
-                const date = DateTime.fromObject({
-                    year: chart.year, month: chart.month, day: chart.day,
-                    hour: chart.hour, minute: chart.minute, second: chart.second,
-                }, { zone: 'utc' });
-                const rahu = engine.getPlanets(date, undefined, { nodeType: 'mean' })
-                    .find(p => p.name === 'Rahu')!;
+                const date = DateTime.fromObject(
+                    {
+                        year: chart.year,
+                        month: chart.month,
+                        day: chart.day,
+                        hour: chart.hour,
+                        minute: chart.minute,
+                        second: chart.second,
+                    },
+                    { zone: 'utc' },
+                );
+                const rahu = engine
+                    .getPlanets(date, undefined, { nodeType: 'mean' })
+                    .find((p) => p.name === 'Rahu')!;
                 expect(rahu.speed).toBeCloseTo(-0.0529538, 5);
             }
         });

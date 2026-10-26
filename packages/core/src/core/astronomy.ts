@@ -1,4 +1,3 @@
-
 import { normalize360 } from './math.js';
 
 const DEGS_TO_RAD = Math.PI / 180;
@@ -14,8 +13,8 @@ export function calculateParallax(
     distanceAU: number,
     obsLat: number,
     lst: number,
-    obl: number
-): { lon: number, lat: number } {
+    obl: number,
+): { lon: number; lat: number } {
     // 1. Convert Ecliptic (Geo) -> Equatorial (Geo)
     const lonRad = geoLon * DEGS_TO_RAD;
     const latRad = geoLat * DEGS_TO_RAD;
@@ -37,12 +36,13 @@ export function calculateParallax(
     const flattening = 1 / 298.257223563;
     const obsLatRad = obsLat * DEGS_TO_RAD;
     // Standard Geodetic -> Geocentric conversion
-    // u = atan( (1-f) * tan(phi) ) -- This gives Reduced Latitude. 
+    // u = atan( (1-f) * tan(phi) ) -- This gives Reduced Latitude.
     // Usually Parallax formulas use Geocentric Latitude directly or this conversion.
     // Let's use standard Astrological formulas which often use:
-    // tan(phi') = (1-f^2) tan(phi)? 
+    // tan(phi') = (1-f^2) tan(phi)?
     // Yes: tan(phi_geoc) = (1-f)^2 tan(phi_geod)
-    const C = 1 / Math.sqrt(Math.cos(obsLatRad) ** 2 + (1 - flattening) ** 2 * Math.sin(obsLatRad) ** 2);
+    const C =
+        1 / Math.sqrt(Math.cos(obsLatRad) ** 2 + (1 - flattening) ** 2 * Math.sin(obsLatRad) ** 2);
     const S = (1 - flattening) ** 2 * C;
 
     // Neglecting height (h=0) factors for now as usually minimal vs Lat effect
@@ -95,6 +95,6 @@ export function calculateParallax(
 
     return {
         lon: normalize360(topoLonRad * RAD_TO_DEGS),
-        lat: topoLatRad * RAD_TO_DEGS
+        lat: topoLatRad * RAD_TO_DEGS,
     };
 }

@@ -114,7 +114,9 @@ Bad,,10:00:00,Asia/Kolkata,13,80
             DateTime.fromObject(
                 { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
                 { zone: 'Asia/Kolkata' },
-            ).toUTC().toMillis(),
+            )
+                .toUTC()
+                .toMillis(),
         );
     });
 

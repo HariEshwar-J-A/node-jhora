@@ -33,8 +33,14 @@ export function sha256(bytes: Uint8Array): Uint8Array {
     view.setUint32(total - 8, Math.floor(bits / 0x100000000));
     view.setUint32(total - 4, bits >>> 0);
 
-    let h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a;
-    let h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19;
+    let h0 = 0x6a09e667,
+        h1 = 0xbb67ae85,
+        h2 = 0x3c6ef372,
+        h3 = 0xa54ff53a;
+    let h4 = 0x510e527f,
+        h5 = 0x9b05688c,
+        h6 = 0x1f83d9ab,
+        h7 = 0x5be0cd19;
     const w = new Uint32Array(64);
 
     for (let offset = 0; offset < total; offset += 64) {
@@ -45,7 +51,14 @@ export function sha256(bytes: Uint8Array): Uint8Array {
             w[i] = (w[i - 16]! + s0 + w[i - 7]! + s1) >>> 0;
         }
 
-        let a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, h = h7;
+        let a = h0,
+            b = h1,
+            c = h2,
+            d = h3,
+            e = h4,
+            f = h5,
+            g = h6,
+            h = h7;
         for (let i = 0; i < 64; i++) {
             const s1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
             const ch = (e & f) ^ (~e & g);
@@ -53,11 +66,24 @@ export function sha256(bytes: Uint8Array): Uint8Array {
             const s0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
             const maj = (a & b) ^ (a & c) ^ (b & c);
             const t2 = (s0 + maj) >>> 0;
-            h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+            h = g;
+            g = f;
+            f = e;
+            e = (d + t1) >>> 0;
+            d = c;
+            c = b;
+            b = a;
+            a = (t1 + t2) >>> 0;
         }
 
-        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
-        h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + h) >>> 0;
+        h0 = (h0 + a) >>> 0;
+        h1 = (h1 + b) >>> 0;
+        h2 = (h2 + c) >>> 0;
+        h3 = (h3 + d) >>> 0;
+        h4 = (h4 + e) >>> 0;
+        h5 = (h5 + f) >>> 0;
+        h6 = (h6 + g) >>> 0;
+        h7 = (h7 + h) >>> 0;
     }
 
     const out = new Uint8Array(32);

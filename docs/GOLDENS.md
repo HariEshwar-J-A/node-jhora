@@ -4,14 +4,14 @@ A golden case is one JSON object: who computed the oracle, the chart input, the 
 
 ## Input
 
-| Field | Meaning |
-| :--- | :--- |
-| `instant` | UTC timestamp with a `Z` suffix |
-| `timezone` | IANA zone name |
-| `lat`, `lon` | Degrees, north and east positive |
-| `alt` | Metres above the WGS84 ellipsoid |
-| `settingsPresetId` | Name of the settings document |
-| `settingsHash` | SHA-256 hex of the canonical JSON of `settings` |
+| Field              | Meaning                                         |
+| :----------------- | :---------------------------------------------- |
+| `instant`          | UTC timestamp with a `Z` suffix                 |
+| `timezone`         | IANA zone name                                  |
+| `lat`, `lon`       | Degrees, north and east positive                |
+| `alt`              | Metres above the WGS84 ellipsoid                |
+| `settingsPresetId` | Name of the settings document                   |
+| `settingsHash`     | SHA-256 hex of the canonical JSON of `settings` |
 
 Canonical JSON sorts object keys at every level and has no whitespace. `settings` is a flat object of strings, finite numbers, and booleans. The schema rejects a hash that does not match that document.
 
@@ -21,11 +21,11 @@ Canonical JSON sorts object keys at every level and has no whitespace. `settings
 
 `expected` is a map from a feature path to `{ value, tolerance }`. The tolerance kind is fixed by the path:
 
-| Kind | Compared as | Examples |
-| :--- | :--- | :--- |
-| `arcsec` | numeric angle, slack in arcseconds | `d1.planets.Sun.lon`, `horizons.planets.Moon.lat` |
-| `seconds` | instant or duration, slack in seconds | `dasa.vimshottari[0].start`, `siderealTime.hours` |
-| `exact` | string, number, or boolean, no slack | `d1.planets.Sun.printed`, `dasa.vimshottari[0].lord` |
+| Kind      | Compared as                           | Examples                                             |
+| :-------- | :------------------------------------ | :--------------------------------------------------- |
+| `arcsec`  | numeric angle, slack in arcseconds    | `d1.planets.Sun.lon`, `horizons.planets.Moon.lat`    |
+| `seconds` | instant or duration, slack in seconds | `dasa.vimshottari[0].start`, `siderealTime.hours`    |
+| `exact`   | string, number, or boolean, no slack  | `d1.planets.Sun.printed`, `dasa.vimshottari[0].lord` |
 
 Varga prefixes are `d1` to `d60`. Dasa periods are `dasa.<system>[n]` for the maha dasa and `[n][m]...` for up to five sub-levels; `vimshottari` is the only registered system until another dasa engine lands.
 
@@ -49,12 +49,12 @@ Refresh JPL Horizons astrometry oracles with `pnpm horizons:refresh` (writes `pa
 
 `@node-jhora/testkit` compares a golden case to a flat `actual` map keyed by feature path:
 
-| API | Role |
-| :--- | :--- |
-| `compareGoldenCase` / `compareGoldenPaths` | Per-path pass/fail, signed Δ in arcseconds or seconds |
-| `formatGoldenReportText` / `Markdown` / `Html` | CI and PR-readable diff artifacts |
-| `goldenCompareResultToJson` | Structured JSON report |
-| `expectGolden` | Jest helper that throws the text report on failure |
+| API                                            | Role                                                  |
+| :--------------------------------------------- | :---------------------------------------------------- |
+| `compareGoldenCase` / `compareGoldenPaths`     | Per-path pass/fail, signed Δ in arcseconds or seconds |
+| `formatGoldenReportText` / `Markdown` / `Html` | CI and PR-readable diff artifacts                     |
+| `goldenCompareResultToJson`                    | Structured JSON report                                |
+| `expectGolden`                                 | Jest helper that throws the text report on failure    |
 
 Angles use shortest-arc difference (359°59′59″ vs 0°00′01″ → 2″). `siderealTime.hours` compares slack in seconds of time. Dasa `end` strings compare as UTC midnights. Failed paths are ranked by feature id in `worstByFeature`. Optional `{ only: string[] }` limits which expected paths run (useful when the engine fills a subset).
 

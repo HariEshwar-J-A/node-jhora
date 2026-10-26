@@ -32,23 +32,38 @@ export function dms(deg: number, min: number, sec: number): number {
 
 /** Sign abbreviations as JHora prints them, in zodiacal order. */
 const SIGN_BASE: Record<string, number> = {
-    Ar:   0, Ta:  30, Ge:  60, Cn:  90, Le: 120, Vi: 150,
-    Li: 180, Sc: 210, Sg: 240, Cp: 270, Aq: 300, Pi: 330,
+    Ar: 0,
+    Ta: 30,
+    Ge: 60,
+    Cn: 90,
+    Le: 120,
+    Vi: 150,
+    Li: 180,
+    Sc: 210,
+    Sg: 240,
+    Cp: 270,
+    Aq: 300,
+    Pi: 330,
 };
 
 /** Absolute longitude from a JHora body line, e.g. lon(19, 'Sc', 59, 31.99). */
-export function lon(deg: number, sign: keyof typeof SIGN_BASE | string, min: number, sec: number): number {
+export function lon(
+    deg: number,
+    sign: keyof typeof SIGN_BASE | string,
+    min: number,
+    sec: number,
+): number {
     return SIGN_BASE[sign] + deg + min / 60 + sec / 3600;
 }
 
 export const JHORA_BIRTH = {
     local: { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0, utcOffset: 5.5 },
-    utc:   { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+    utc: { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
     /** 51N28′ 00″ */
     lat: 51.4769,
     /** 0W00′ 00″ */
     lon: -0.0005,
-    jd:  2451545.0,
+    jd: 2451545.0,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -87,11 +102,11 @@ export const JHORA_AYANAMSA = {
 // ---------------------------------------------------------------------------
 
 export interface BodyRef {
-    name:      string;
+    name: string;
     /** Exactly as JHora printed it. */
-    printed:   string;
+    printed: string;
     /** 1 = Aries … 12 = Pisces. */
-    sign:      number;
+    sign: number;
     longitude: number;
     /** Retrograde flag as marked by JHora's "(R)". */
     retrograde?: boolean;
@@ -104,15 +119,71 @@ const NODE_TOL = 2.0;
 const BODY_TOL = 1.0;
 
 export const JHORA_D1: BodyRef[] = [
-    { name: 'Sun',     printed: `19 Sc 59' 31.99"`, sign:  8, longitude: lon(19, 'Sc', 59, 31.99), toleranceArcsec: BODY_TOL },
-    { name: 'Moon',    printed: `24 Ge 30' 39.61"`, sign:  3, longitude: lon(24, 'Ge', 30, 39.61), toleranceArcsec: BODY_TOL },
-    { name: 'Mars',    printed: `11 Vi 01' 45.83"`, sign:  6, longitude: lon(11, 'Vi',  1, 45.83), toleranceArcsec: BODY_TOL },
-    { name: 'Mercury', printed: ` 9 Sc 52' 02.95"`, sign:  8, longitude: lon( 9, 'Sc', 52,  2.95), retrograde: true, toleranceArcsec: BODY_TOL },
-    { name: 'Jupiter', printed: `25 Aq 12' 32.85"`, sign: 11, longitude: lon(25, 'Aq', 12, 32.85), toleranceArcsec: BODY_TOL },
-    { name: 'Venus',   printed: `29 Sc 08' 39.32"`, sign:  8, longitude: lon(29, 'Sc',  8, 39.32), toleranceArcsec: BODY_TOL },
-    { name: 'Saturn',  printed: ` 3 Ar 26' 36.50"`, sign:  1, longitude: lon( 3, 'Ar', 26, 36.50), retrograde: true, toleranceArcsec: BODY_TOL },
-    { name: 'Rahu',    printed: ` 0 Le 58' 20.94"`, sign:  5, longitude: lon( 0, 'Le', 58, 20.94), toleranceArcsec: NODE_TOL },
-    { name: 'Ketu',    printed: ` 0 Aq 58' 20.94"`, sign: 11, longitude: lon( 0, 'Aq', 58, 20.94), toleranceArcsec: NODE_TOL },
+    {
+        name: 'Sun',
+        printed: `19 Sc 59' 31.99"`,
+        sign: 8,
+        longitude: lon(19, 'Sc', 59, 31.99),
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Moon',
+        printed: `24 Ge 30' 39.61"`,
+        sign: 3,
+        longitude: lon(24, 'Ge', 30, 39.61),
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Mars',
+        printed: `11 Vi 01' 45.83"`,
+        sign: 6,
+        longitude: lon(11, 'Vi', 1, 45.83),
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Mercury',
+        printed: ` 9 Sc 52' 02.95"`,
+        sign: 8,
+        longitude: lon(9, 'Sc', 52, 2.95),
+        retrograde: true,
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Jupiter',
+        printed: `25 Aq 12' 32.85"`,
+        sign: 11,
+        longitude: lon(25, 'Aq', 12, 32.85),
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Venus',
+        printed: `29 Sc 08' 39.32"`,
+        sign: 8,
+        longitude: lon(29, 'Sc', 8, 39.32),
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Saturn',
+        printed: ` 3 Ar 26' 36.50"`,
+        sign: 1,
+        longitude: lon(3, 'Ar', 26, 36.5),
+        retrograde: true,
+        toleranceArcsec: BODY_TOL,
+    },
+    {
+        name: 'Rahu',
+        printed: ` 0 Le 58' 20.94"`,
+        sign: 5,
+        longitude: lon(0, 'Le', 58, 20.94),
+        toleranceArcsec: NODE_TOL,
+    },
+    {
+        name: 'Ketu',
+        printed: ` 0 Aq 58' 20.94"`,
+        sign: 11,
+        longitude: lon(0, 'Aq', 58, 20.94),
+        toleranceArcsec: NODE_TOL,
+    },
 ];
 
 export const JHORA_ASCENDANT = {
@@ -134,15 +205,69 @@ export const JHORA_SIDEREAL_TIME = {
 // ---------------------------------------------------------------------------
 
 export const JHORA_D9: BodyRef[] = [
-    { name: 'Sun',     printed: `29 Sg 55' 47.95"`, sign:  9, longitude: lon(29, 'Sg', 55, 47.95), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Moon',    printed: `10 Ta 35' 56.49"`, sign:  2, longitude: lon(10, 'Ta', 35, 56.49), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Mars',    printed: ` 9 Ar 15' 52.51"`, sign:  1, longitude: lon( 9, 'Ar', 15, 52.51), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Mercury', printed: `28 Vi 48' 26.54"`, sign:  6, longitude: lon(28, 'Vi', 48, 26.54), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Jupiter', printed: `16 Ta 52' 55.62"`, sign:  2, longitude: lon(16, 'Ta', 52, 55.62), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Venus',   printed: `22 Pi 17' 53.89"`, sign: 12, longitude: lon(22, 'Pi', 17, 53.89), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Saturn',  printed: ` 0 Ta 59' 28.52"`, sign:  2, longitude: lon( 0, 'Ta', 59, 28.52), toleranceArcsec: BODY_TOL * 9 },
-    { name: 'Rahu',    printed: ` 8 Ar 45' 08.46"`, sign:  1, longitude: lon( 8, 'Ar', 45,  8.46), toleranceArcsec: NODE_TOL * 9 },
-    { name: 'Ketu',    printed: ` 8 Li 45' 08.46"`, sign:  7, longitude: lon( 8, 'Li', 45,  8.46), toleranceArcsec: NODE_TOL * 9 },
+    {
+        name: 'Sun',
+        printed: `29 Sg 55' 47.95"`,
+        sign: 9,
+        longitude: lon(29, 'Sg', 55, 47.95),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Moon',
+        printed: `10 Ta 35' 56.49"`,
+        sign: 2,
+        longitude: lon(10, 'Ta', 35, 56.49),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Mars',
+        printed: ` 9 Ar 15' 52.51"`,
+        sign: 1,
+        longitude: lon(9, 'Ar', 15, 52.51),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Mercury',
+        printed: `28 Vi 48' 26.54"`,
+        sign: 6,
+        longitude: lon(28, 'Vi', 48, 26.54),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Jupiter',
+        printed: `16 Ta 52' 55.62"`,
+        sign: 2,
+        longitude: lon(16, 'Ta', 52, 55.62),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Venus',
+        printed: `22 Pi 17' 53.89"`,
+        sign: 12,
+        longitude: lon(22, 'Pi', 17, 53.89),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Saturn',
+        printed: ` 0 Ta 59' 28.52"`,
+        sign: 2,
+        longitude: lon(0, 'Ta', 59, 28.52),
+        toleranceArcsec: BODY_TOL * 9,
+    },
+    {
+        name: 'Rahu',
+        printed: ` 8 Ar 45' 08.46"`,
+        sign: 1,
+        longitude: lon(8, 'Ar', 45, 8.46),
+        toleranceArcsec: NODE_TOL * 9,
+    },
+    {
+        name: 'Ketu',
+        printed: ` 8 Li 45' 08.46"`,
+        sign: 7,
+        longitude: lon(8, 'Li', 45, 8.46),
+        toleranceArcsec: NODE_TOL * 9,
+    },
 ];
 
 export const JHORA_D9_ASCENDANT = {
@@ -161,11 +286,11 @@ export const JHORA_D9_ASCENDANT = {
  * *elapsed*. They must sum to 100.
  */
 export const JHORA_PANCHANGA = {
-    tithi:     { name: 'Krishna Tritiya', index: 18, percentLeft: 12.34 },
-    nakshatra: { name: 'Punarvasu',       index:  7, pada: 2, percentLeft: 66.17 },
-    yoga:      { name: 'Sukla',           percentLeft: 41.23 },
-    karana:    { name: 'Vishti',          percentLeft: 24.69 },
-    vara:      { name: 'Sunday',          index: 0 },
+    tithi: { name: 'Krishna Tritiya', index: 18, percentLeft: 12.34 },
+    nakshatra: { name: 'Punarvasu', index: 7, pada: 2, percentLeft: 66.17 },
+    yoga: { name: 'Sukla', percentLeft: 41.23 },
+    karana: { name: 'Vishti', percentLeft: 24.69 },
+    vara: { name: 'Sunday', index: 0 },
     tolerancePercent: 0.02,
 } as const;
 
@@ -186,14 +311,14 @@ export const JHORA_DASHA = {
     startLord: 'Jupiter',
     boundaries: [
         { lord: 'Jupiter', endsOn: '2009-07-07' },
-        { lord: 'Saturn',  endsOn: '2028-07-06' },
+        { lord: 'Saturn', endsOn: '2028-07-06' },
         { lord: 'Mercury', endsOn: '2045-07-06' },
-        { lord: 'Ketu',    endsOn: '2052-07-06' },
-        { lord: 'Venus',   endsOn: '2072-07-06' },
-        { lord: 'Sun',     endsOn: '2078-07-06' },
-        { lord: 'Moon',    endsOn: '2088-07-06' },
-        { lord: 'Mars',    endsOn: '2095-07-07' },
-        { lord: 'Rahu',    endsOn: '2113-07-07' },
+        { lord: 'Ketu', endsOn: '2052-07-06' },
+        { lord: 'Venus', endsOn: '2072-07-06' },
+        { lord: 'Sun', endsOn: '2078-07-06' },
+        { lord: 'Moon', endsOn: '2088-07-06' },
+        { lord: 'Mars', endsOn: '2095-07-07' },
+        { lord: 'Rahu', endsOn: '2113-07-07' },
     ],
     toleranceDays: 3,
 } as const;
@@ -218,7 +343,7 @@ export const JHORA_DASHA = {
  * Selected with `dasamsaScheme: 'jhora_5_8' | 'parashara'`.
  */
 export const JHORA_D10_SCHEME = 'jhora_5_8' as const;
-export const JHORA_D10_LABEL  = 'D-10 (5-8)';
+export const JHORA_D10_LABEL = 'D-10 (5-8)';
 
 /**
  * Looser than D1 because D10 multiplies the source longitude by ten, so the
@@ -228,15 +353,69 @@ export const JHORA_D10_LABEL  = 'D-10 (5-8)';
 const D10_TOL = 10.0;
 
 export const JHORA_D10: BodyRef[] = [
-    { name: 'Sun',     printed: `10 Vi 04' 40.05"`, sign:  6, longitude: lon(10, 'Vi',  4, 40.05), toleranceArcsec: D10_TOL },
-    { name: 'Moon',    printed: ` 5 Aq 06' 36.10"`, sign: 11, longitude: lon( 5, 'Aq',  6, 36.10), toleranceArcsec: D10_TOL },
-    { name: 'Mars',    printed: ` 9 Li 42' 21.65"`, sign:  7, longitude: lon( 9, 'Li', 42, 21.65), toleranceArcsec: D10_TOL },
-    { name: 'Mercury', printed: `21 Sg 19' 30.51"`, sign:  9, longitude: lon(21, 'Sg', 19, 30.51), toleranceArcsec: D10_TOL },
-    { name: 'Jupiter', printed: `12 Li 05' 28.47"`, sign:  7, longitude: lon(12, 'Li',  5, 28.47), toleranceArcsec: D10_TOL },
-    { name: 'Venus',   printed: ` 8 Ge 33' 26.79"`, sign:  3, longitude: lon( 8, 'Ge', 33, 26.79), toleranceArcsec: D10_TOL },
-    { name: 'Saturn',  printed: ` 4 Ta 26' 05.02"`, sign:  2, longitude: lon( 4, 'Ta', 26,  5.02), toleranceArcsec: D10_TOL },
-    { name: 'Rahu',    printed: ` 9 Le 43' 29.40"`, sign:  5, longitude: lon( 9, 'Le', 43, 29.40), toleranceArcsec: D10_TOL * 2 },
-    { name: 'Ketu',    printed: ` 9 Aq 43' 29.40"`, sign: 11, longitude: lon( 9, 'Aq', 43, 29.40), toleranceArcsec: D10_TOL * 2 },
+    {
+        name: 'Sun',
+        printed: `10 Vi 04' 40.05"`,
+        sign: 6,
+        longitude: lon(10, 'Vi', 4, 40.05),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Moon',
+        printed: ` 5 Aq 06' 36.10"`,
+        sign: 11,
+        longitude: lon(5, 'Aq', 6, 36.1),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Mars',
+        printed: ` 9 Li 42' 21.65"`,
+        sign: 7,
+        longitude: lon(9, 'Li', 42, 21.65),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Mercury',
+        printed: `21 Sg 19' 30.51"`,
+        sign: 9,
+        longitude: lon(21, 'Sg', 19, 30.51),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Jupiter',
+        printed: `12 Li 05' 28.47"`,
+        sign: 7,
+        longitude: lon(12, 'Li', 5, 28.47),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Venus',
+        printed: ` 8 Ge 33' 26.79"`,
+        sign: 3,
+        longitude: lon(8, 'Ge', 33, 26.79),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Saturn',
+        printed: ` 4 Ta 26' 05.02"`,
+        sign: 2,
+        longitude: lon(4, 'Ta', 26, 5.02),
+        toleranceArcsec: D10_TOL,
+    },
+    {
+        name: 'Rahu',
+        printed: ` 9 Le 43' 29.40"`,
+        sign: 5,
+        longitude: lon(9, 'Le', 43, 29.4),
+        toleranceArcsec: D10_TOL * 2,
+    },
+    {
+        name: 'Ketu',
+        printed: ` 9 Aq 43' 29.40"`,
+        sign: 11,
+        longitude: lon(9, 'Aq', 43, 29.4),
+        toleranceArcsec: D10_TOL * 2,
+    },
 ];
 
 export const JHORA_D10_ASCENDANT = {

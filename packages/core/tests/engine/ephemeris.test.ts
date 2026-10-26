@@ -11,7 +11,7 @@ describe('EphemerisEngine (WASM)', () => {
         try {
             engine.setAyanamsa(1);
         } catch (e) {
-            console.error("SetAyanamsa failed:", e);
+            console.error('SetAyanamsa failed:', e);
         }
     });
 
@@ -21,14 +21,20 @@ describe('EphemerisEngine (WASM)', () => {
 
     test('calculates Sun longitude for 2000-01-01 (Gold Standard)', () => {
         // Date: 2000-01-01 12:00:00 UTC
-        const date = DateTime.fromObject({
-            year: 2000, month: 1, day: 1, hour: 12
-        }, { zone: 'utc' });
+        const date = DateTime.fromObject(
+            {
+                year: 2000,
+                month: 1,
+                day: 1,
+                hour: 12,
+            },
+            { zone: 'utc' },
+        );
 
         const planets = engine.getPlanets(date);
 
         // Find Sun
-        const sun = planets.find(p => p.name === 'Sun');
+        const sun = planets.find((p) => p.name === 'Sun');
         expect(sun).toBeDefined();
 
         // Sidereal (Lahiri) Sun on 2000-01-01 12:00 UTC ≈ 256.6°
@@ -37,14 +43,14 @@ describe('EphemerisEngine (WASM)', () => {
         expect(sun?.longitude).toBeLessThan(360);
 
         // Strict check for Sidereal (optional, can be relaxed if precision issues)
-        // expect(sun?.longitude).toBeCloseTo(256.6, 0); 
+        // expect(sun?.longitude).toBeCloseTo(256.6, 0);
     });
 
     test('calculates Moon and other planets', () => {
         const date = DateTime.now();
         const planets = engine.getPlanets(date);
         expect(planets.length).toBeGreaterThan(5);
-        expect(planets.find(p => p.name === 'Moon')).toBeDefined();
-        expect(planets.find(p => p.name === 'Ketu')).toBeDefined();
+        expect(planets.find((p) => p.name === 'Moon')).toBeDefined();
+        expect(planets.find((p) => p.name === 'Ketu')).toBeDefined();
     });
 });

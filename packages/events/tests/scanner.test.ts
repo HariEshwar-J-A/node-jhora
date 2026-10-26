@@ -50,10 +50,14 @@ describe('TransitScanner', () => {
     test('Precision: Binary search finds event within 1 minute', async () => {
         const start = DateTime.fromISO('2025-06-08T00:00:00Z');
         const end = DateTime.fromISO('2025-06-09T00:00:00Z');
-        
+
         const check = (t: DateTime) => {
             // Some arbitrary event: Sun hits 50 degrees (sidereal Lahiri)
-            const planets = engine.getPlanets(t, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1 });
+            const planets = engine.getPlanets(
+                t,
+                { latitude: 0, longitude: 0 },
+                { ayanamsaOrder: 1 },
+            );
             return planets[0].longitude > 50;
         };
 
@@ -69,7 +73,7 @@ describe('TransitScanner', () => {
         }
     });
 
-    test('Uses the engine\'s configured ayanamsa, not a hardcoded one', async () => {
+    test("Uses the engine's configured ayanamsa, not a hardcoded one", async () => {
         // Saturn enters sidereal Aries in mid-2027. Lahiri and True Chitrapaksha
         // differ by ~0.02 deg, i.e. ~5 hours of Saturn's motion, so the reported
         // ingress must agree with the engine's default ayanamsa to the minute.
@@ -79,7 +83,9 @@ describe('TransitScanner', () => {
         expect(ingress).not.toBeNull();
 
         const signAt = (t: DateTime, opts: { ayanamsaOrder?: number } = {}) => {
-            const saturn = engine.getPlanets(t, { latitude: 0, longitude: 0 }, opts).find(p => p.id === 6)!;
+            const saturn = engine
+                .getPlanets(t, { latitude: 0, longitude: 0 }, opts)
+                .find((p) => p.id === 6)!;
             return Math.floor(saturn.longitude / 30);
         };
         expect(signAt(ingress!.minus({ minutes: 2 }))).toBe(11);

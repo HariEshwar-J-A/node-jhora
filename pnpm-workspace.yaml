@@ -1,8 +1,8 @@
 # apps/ is not checked in yet. The glob is here so a later app is a workspace
 # package without another install-config change.
 packages:
-  - "packages/*"
-  - "apps/*"
+    - 'packages/*'
+    - 'apps/*'
 
 # pnpm 12 fails `pnpm install` with ERR_PNPM_IGNORED_BUILDS until every
 # dependency that has a lifecycle script is approved or denied here. This is
@@ -16,9 +16,9 @@ packages:
 # esbuild — dependency of tsx (horizons:refresh). Its postinstall checks that
 # the prebuilt platform binary from the optional @esbuild/* package runs.
 allowBuilds:
-  esbuild: true
-  "@parcel/watcher": true
-  unrs-resolver: true
+    esbuild: true
+    '@parcel/watcher': true
+    unrs-resolver: true
 
 # light-my-request 6.8 depends on cookie 2, which is ESM-only. Jest 30 on
 # Node 22 loads node_modules through require() and refuses that file
@@ -32,4 +32,4 @@ allowBuilds:
 #   https://jestjs.io/docs/ecmascript-modules
 # Drop this override once Jest can load cookie 2 (or fastify pins cookie 1).
 overrides:
-  light-my-request: 6.6.0
+    light-my-request: 6.6.0

@@ -18,23 +18,23 @@ import { D, normalize360D, toNum } from '../core/precise.js';
 
 export interface VargaPoint {
     longitude: number; // 0-360 in the varga chart
-    sign:      number; // 1-12 (Aries … Pisces)
-    degree:    number; // 0-30 within the sign
-    deity?:    string; // Shashtyamsa deity (D60 only)
+    sign: number; // 1-12 (Aries … Pisces)
+    degree: number; // 0-30 within the sign
+    deity?: string; // Shashtyamsa deity (D60 only)
 }
 
 // ---------------------------------------------------------------------------
 // Internal Decimal-based computation
 // ---------------------------------------------------------------------------
 
-const D30  = new Decimal(30);
-const D12  = new Decimal(12);
+const D30 = new Decimal(30);
+const D12 = new Decimal(12);
 const D360 = new Decimal(360);
 
 /** Snap a Decimal longitude to { sign: 1-12, degree: 0-30 }. */
 function snap(lon: Decimal): { sign: number; degree: number } {
-    const norm  = normalize360D(lon);
-    const sign  = norm.div(D30).floor().toNumber() + 1; // 1-12
+    const norm = normalize360D(lon);
+    const sign = norm.div(D30).floor().toNumber() + 1; // 1-12
     const degree = toNum(norm.mod(D30));
     return { sign: sign > 12 ? 1 : sign, degree };
 }
@@ -47,8 +47,8 @@ function snap(lon: Decimal): { sign: number; degree: number } {
 function signType(idx: number): 'movable' | 'fixed' | 'dual' {
     const mod = idx % 3;
     if (mod === 0) return 'movable'; // Aries(0), Cancer(3), Libra(6), Capricorn(9)
-    if (mod === 1) return 'fixed';   // Taurus(1), Leo(4), Scorpio(7), Aquarius(10)
-    return 'dual';                   // Gemini(2), Virgo(5), Sagittarius(8), Pisces(11)
+    if (mod === 1) return 'fixed'; // Taurus(1), Leo(4), Scorpio(7), Aquarius(10)
+    return 'dual'; // Gemini(2), Virgo(5), Sagittarius(8), Pisces(11)
 }
 
 /**
@@ -104,19 +104,23 @@ export const DEFAULT_HORA_SCHEME: HoraScheme = 'parashara';
 
 /** 0-indexed: Cancer = 3 (Moon's sign), Leo = 4 (Sun's sign). */
 const CANCER = 3;
-const LEO    = 4;
+const LEO = 4;
 
 function d2Parashara(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
     const firstHalf = degInSign.lt(new Decimal(15));
 
     // signIdx is 0-based, so an even signIdx is an *odd* sign (Aries = 1st).
     const oddSign = signIdx % 2 === 0;
     const targetIdx = oddSign
-        ? (firstHalf ? LEO : CANCER)      // odd:  Sun's hora then Moon's
-        : (firstHalf ? CANCER : LEO);     // even: reversed
+        ? firstHalf
+            ? LEO
+            : CANCER // odd:  Sun's hora then Moon's
+        : firstHalf
+          ? CANCER
+          : LEO; // even: reversed
 
     const vDeg = degInSign.mod(new Decimal(15)).times(2);
     const vLon = new Decimal(targetIdx).times(D30).plus(vDeg);
@@ -124,14 +128,13 @@ function d2Parashara(lon: Decimal): VargaPoint {
 }
 
 function d2Parivritti(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const hora      = degInSign.lt(new Decimal(15)) ? 0 : 1;
+    const hora = degInSign.lt(new Decimal(15)) ? 0 : 1;
 
-    const targetIdx = signIdx % 2 === 0
-        ? (signIdx * 2 + hora) % 12
-        : (signIdx * 2 + (1 - hora)) % 12;
+    const targetIdx =
+        signIdx % 2 === 0 ? (signIdx * 2 + hora) % 12 : (signIdx * 2 + (1 - hora)) % 12;
 
     const vDeg = degInSign.times(2).mod(D30);
     const vLon = new Decimal(targetIdx).times(D30).plus(vDeg);
@@ -149,16 +152,16 @@ function d2(lon: Decimal, scheme: HoraScheme = DEFAULT_HORA_SCHEME): VargaPoint 
 // 20-30°: 9th from sign (trine 2)
 // ---------------------------------------------------------------------------
 function d3(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
 
-    const part       = degInSign.div(10).floor().toNumber(); // 0, 1, 2
-    const offsets    = [0, 4, 8]; // +0, +4 (5th), +8 (9th) in 0-indexed
-    const targetIdx  = (signIdx + offsets[part]) % 12;
+    const part = degInSign.div(10).floor().toNumber(); // 0, 1, 2
+    const offsets = [0, 4, 8]; // +0, +4 (5th), +8 (9th) in 0-indexed
+    const targetIdx = (signIdx + offsets[part]) % 12;
 
     const vargaDeg = degInSign.mod(10).times(3);
-    const vLon     = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -167,16 +170,16 @@ function d3(lon: Decimal): VargaPoint {
 // Sequence of 4 quadrants: sign, 4th, 7th, 10th (Kendra signs from given sign)
 // ---------------------------------------------------------------------------
 function d4(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
 
-    const part      = degInSign.div(new Decimal(7.5)).floor().toNumber(); // 0-3
-    const offsets   = [0, 3, 6, 9]; // 1st, 4th, 7th, 10th
+    const part = degInSign.div(new Decimal(7.5)).floor().toNumber(); // 0-3
+    const offsets = [0, 3, 6, 9]; // 1st, 4th, 7th, 10th
     const targetIdx = (signIdx + offsets[part]) % 12;
 
-    const vargaDeg  = degInSign.mod(new Decimal(7.5)).times(4);
-    const vLon      = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(new Decimal(7.5)).times(4);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -187,17 +190,17 @@ function d4(lon: Decimal): VargaPoint {
 // 7 parts of 30/7° each
 // ---------------------------------------------------------------------------
 function d7(lon: Decimal): VargaPoint {
-    const norm         = normalize360D(lon);
-    const signIdx      = norm.div(D30).floor().toNumber();
-    const degInSign    = norm.mod(D30);
-    const partSpan     = D30.div(7); // 30/7 ≈ 4.2857°
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(7); // 30/7 ≈ 4.2857°
 
-    const part         = degInSign.div(partSpan).floor().toNumber(); // 0-6
-    const startOffset  = (signIdx % 2 === 0) ? 0 : 6;               // odd(0-idx)=0, even=6
-    const targetIdx    = (signIdx + startOffset + part) % 12;
+    const part = degInSign.div(partSpan).floor().toNumber(); // 0-6
+    const startOffset = signIdx % 2 === 0 ? 0 : 6; // odd(0-idx)=0, even=6
+    const targetIdx = (signIdx + startOffset + part) % 12;
 
-    const vargaDeg     = degInSign.mod(partSpan).times(7);
-    const vLon         = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(7);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -232,7 +235,10 @@ function vargaPoint(targetIdx: number, vargaDeg: Decimal): VargaPoint {
     // the next sign so sign, degree and longitude stay mutually consistent.
     let idx = ((targetIdx % 12) + 12) % 12;
     let deg = vargaDeg;
-    if (deg.gte(D30)) { deg = deg.minus(D30); idx = (idx + 1) % 12; }
+    if (deg.gte(D30)) {
+        deg = deg.minus(D30);
+        idx = (idx + 1) % 12;
+    }
 
     const vLon = new Decimal(idx).times(D30).plus(deg);
     return { longitude: toNum(normalize360D(vLon)), sign: idx + 1, degree: toNum(deg) };
@@ -244,13 +250,13 @@ function vargaPoint(targetIdx: number, vargaDeg: Decimal): VargaPoint {
  *   Even signs: ten parts counted forward from the 9th sign from it.
  */
 function d10Parashara(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
 
-    const part      = degInSign.div(DASAMSA_SPAN).floor().toNumber();
+    const part = degInSign.div(DASAMSA_SPAN).floor().toNumber();
     // signIdx is 0-based, so an even signIdx is an odd sign.
-    const startOff  = (signIdx % 2 === 0) ? 0 : 8;
+    const startOff = signIdx % 2 === 0 ? 0 : 8;
 
     return vargaPoint(signIdx + startOff + part, degInSign.mod(DASAMSA_SPAN).times(10));
 }
@@ -271,16 +277,16 @@ function d10Parashara(lon: Decimal): VargaPoint {
  * degree sum to exactly 30.000 in every case.
  */
 function d10Jhora58(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
 
     const part = degInSign.div(DASAMSA_SPAN).floor().toNumber();
     const frac = degInSign.mod(DASAMSA_SPAN).times(10);
 
-    if (signIdx % 2 === 0) return vargaPoint(signIdx + part, frac);   // odd sign
+    if (signIdx % 2 === 0) return vargaPoint(signIdx + part, frac); // odd sign
 
-    return vargaPoint(signIdx + 4 - part, D30.minus(frac));           // even sign
+    return vargaPoint(signIdx + 4 - part, D30.minus(frac)); // even sign
 }
 
 /**
@@ -324,16 +330,16 @@ function d10(lon: Decimal, scheme: DasamsaScheme = DEFAULT_DASAMSA_SCHEME): Varg
 // 12 parts of 2.5° each, sequential starting from the same sign
 // ---------------------------------------------------------------------------
 function d12(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = new Decimal(2.5);
+    const partSpan = new Decimal(2.5);
 
-    const part      = degInSign.div(partSpan).floor().toNumber();
+    const part = degInSign.div(partSpan).floor().toNumber();
     const targetIdx = (signIdx + part) % 12;
 
-    const vargaDeg  = degInSign.mod(partSpan).times(12);
-    const vLon      = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(12);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -346,17 +352,19 @@ function d12(lon: Decimal): VargaPoint {
 // Within each group, sequential from the start sign.
 // ---------------------------------------------------------------------------
 function d16(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = D30.div(16); // 30/16 = 1.875°
+    const partSpan = D30.div(16); // 30/16 = 1.875°
 
-    const part       = degInSign.div(partSpan).floor().toNumber(); // 0-15
-    const groupStart = [0, 4, 8][signType(signIdx) === 'movable' ? 0 : signType(signIdx) === 'fixed' ? 1 : 2];
-    const targetIdx  = (groupStart + part) % 12;
+    const part = degInSign.div(partSpan).floor().toNumber(); // 0-15
+    const groupStart = [0, 4, 8][
+        signType(signIdx) === 'movable' ? 0 : signType(signIdx) === 'fixed' ? 1 : 2
+    ];
+    const targetIdx = (groupStart + part) % 12;
 
-    const vargaDeg   = degInSign.mod(partSpan).times(16);
-    const vLon       = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(16);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -366,18 +374,18 @@ function d16(lon: Decimal): VargaPoint {
 // 20 parts of 1.5° each
 // ---------------------------------------------------------------------------
 function d20(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = new Decimal(1.5); // 30/20
+    const partSpan = new Decimal(1.5); // 30/20
 
-    const part       = degInSign.div(partSpan).floor().toNumber();
-    const starts     = { movable: 0, fixed: 8, dual: 4 };
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const starts = { movable: 0, fixed: 8, dual: 4 };
     const groupStart = starts[signType(signIdx)];
-    const targetIdx  = (groupStart + part) % 12;
+    const targetIdx = (groupStart + part) % 12;
 
-    const vargaDeg   = degInSign.mod(partSpan).times(20);
-    const vLon       = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(20);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -388,17 +396,17 @@ function d20(lon: Decimal): VargaPoint {
 // 24 parts of 1.25° each
 // ---------------------------------------------------------------------------
 function d24(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = D30.div(24); // 1.25°
+    const partSpan = D30.div(24); // 1.25°
 
-    const part       = degInSign.div(partSpan).floor().toNumber();
-    const groupStart = (signIdx % 2 === 0) ? 4 : 3; // odd(0-idx)=Leo(4), even=Cancer(3)
-    const targetIdx  = (groupStart + part) % 12;
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const groupStart = signIdx % 2 === 0 ? 4 : 3; // odd(0-idx)=Leo(4), even=Cancer(3)
+    const targetIdx = (groupStart + part) % 12;
 
-    const vargaDeg   = degInSign.mod(partSpan).times(24);
-    const vLon       = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(24);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -414,17 +422,17 @@ function d24(lon: Decimal): VargaPoint {
 //   Degree: (degInSign * 27) % 30
 // ---------------------------------------------------------------------------
 function d27(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = D30.div(27); // 30/27 ≈ 1.1111°
+    const partSpan = D30.div(27); // 30/27 ≈ 1.1111°
 
-    const part        = degInSign.div(partSpan).floor().toNumber(); // 0-26
-    const elementOff  = (signIdx % 4) * 3;  // fire=0, earth=3, air=6, water=9
-    const targetIdx   = (elementOff + part) % 12;
+    const part = degInSign.div(partSpan).floor().toNumber(); // 0-26
+    const elementOff = (signIdx % 4) * 3; // fire=0, earth=3, air=6, water=9
+    const targetIdx = (elementOff + part) % 12;
 
     const vargaDeg = degInSign.mod(partSpan).times(27);
-    const vLon     = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -442,28 +450,43 @@ function d27(lon: Decimal): VargaPoint {
 // Degree within D30 sign: (degInSign * 30) % 30
 // ---------------------------------------------------------------------------
 // [upperBound, targetSignIdx (0-based)]
-const TRIMSAMSA_ODD  = [[5,0],[10,10],[18,8],[25,2],[30,6]] as const;
-const TRIMSAMSA_EVEN = [[5,1],[12,5],[20,11],[25,9],[30,7]] as const;
+const TRIMSAMSA_ODD = [
+    [5, 0],
+    [10, 10],
+    [18, 8],
+    [25, 2],
+    [30, 6],
+] as const;
+const TRIMSAMSA_EVEN = [
+    [5, 1],
+    [12, 5],
+    [20, 11],
+    [25, 9],
+    [30, 7],
+] as const;
 
 function d30(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = toNum(norm.mod(D30));
-    const isOdd     = (signIdx % 2) === 0; // 0-indexed even = traditional odd sign
-    const table     = isOdd ? TRIMSAMSA_ODD : TRIMSAMSA_EVEN;
+    const isOdd = signIdx % 2 === 0; // 0-indexed even = traditional odd sign
+    const table = isOdd ? TRIMSAMSA_ODD : TRIMSAMSA_EVEN;
 
     // Find first range whose upper bound >= degInSign (matches PyJHora first-match)
     let targetIdx = table[table.length - 1][1];
     for (const [ub, si] of table) {
-        if (degInSign <= ub) { targetIdx = si; break; }
+        if (degInSign <= ub) {
+            targetIdx = si;
+            break;
+        }
     }
 
     const vDeg = (degInSign * 30) % 30;
     const vLon = targetIdx * 30 + vDeg;
     return {
         longitude: toNum(normalize360D(new Decimal(vLon))),
-        sign:      targetIdx + 1,
-        degree:    vDeg,
+        sign: targetIdx + 1,
+        degree: vDeg,
     };
 }
 
@@ -474,17 +497,17 @@ function d30(lon: Decimal): VargaPoint {
 // 40 parts of 0.75° each
 // ---------------------------------------------------------------------------
 function d40(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = D30.div(40); // 0.75°
+    const partSpan = D30.div(40); // 0.75°
 
-    const part       = degInSign.div(partSpan).floor().toNumber();
-    const groupStart = (signIdx % 2 === 0) ? 0 : 6; // odd(0-idx)=Aries, even=Libra
-    const targetIdx  = (groupStart + part) % 12;
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const groupStart = signIdx % 2 === 0 ? 0 : 6; // odd(0-idx)=Aries, even=Libra
+    const targetIdx = (groupStart + part) % 12;
 
-    const vargaDeg   = degInSign.mod(partSpan).times(40);
-    const vLon       = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(40);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -494,18 +517,18 @@ function d40(lon: Decimal): VargaPoint {
 // 45 parts of 0.666...° each
 // ---------------------------------------------------------------------------
 function d45(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
-    const signIdx   = norm.div(D30).floor().toNumber();
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
-    const partSpan  = D30.div(45); // 30/45
+    const partSpan = D30.div(45); // 30/45
 
-    const part       = degInSign.div(partSpan).floor().toNumber();
-    const starts     = { movable: 0, fixed: 4, dual: 8 };
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const starts = { movable: 0, fixed: 4, dual: 8 };
     const groupStart = starts[signType(signIdx)];
-    const targetIdx  = (groupStart + part) % 12;
+    const targetIdx = (groupStart + part) % 12;
 
-    const vargaDeg   = degInSign.mod(partSpan).times(45);
-    const vLon       = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    const vargaDeg = degInSign.mod(partSpan).times(45);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
@@ -515,40 +538,91 @@ function d45(lon: Decimal): VargaPoint {
 // Deities assigned to each of the 60 parts.
 // ---------------------------------------------------------------------------
 const SHASHTYAMSA_DEITIES: string[] = [
-    'Ghora','Rakshasa','Deva','Kubera','Yaksha','Kinnara','Bhrashta',
-    'Kulaghna','Garala','Vahni','Maya','Purishaka','Apampathi','Marut','Kaala',
-    'Sarpa','Amrita','Indu','Mridu','Komala','Heramba','Brahma','Vishnu',
-    'Maheshwara','Deva','Ardra','Kalinasha','Kshiteesh','Kamalakara','Gulika',
-    'Mrityu','Kaala','Davagni','Ghora','Yama','Kantaka','Sudha','Amrita',
-    'Poorna','Chandra','Mridu','Saumya','Mridu','Ati Saumya','Shubha',
-    'Shubhakrut','Karaala Vaktra','Chandra Mukhi','Praveena','Kaala Pavaka',
-    'Dandayudha','Nirmala','Saumya','Krura','Atisheetala','Amrita','Payodhi',
-    'Brahma','Vishnu','Trilochana',
+    'Ghora',
+    'Rakshasa',
+    'Deva',
+    'Kubera',
+    'Yaksha',
+    'Kinnara',
+    'Bhrashta',
+    'Kulaghna',
+    'Garala',
+    'Vahni',
+    'Maya',
+    'Purishaka',
+    'Apampathi',
+    'Marut',
+    'Kaala',
+    'Sarpa',
+    'Amrita',
+    'Indu',
+    'Mridu',
+    'Komala',
+    'Heramba',
+    'Brahma',
+    'Vishnu',
+    'Maheshwara',
+    'Deva',
+    'Ardra',
+    'Kalinasha',
+    'Kshiteesh',
+    'Kamalakara',
+    'Gulika',
+    'Mrityu',
+    'Kaala',
+    'Davagni',
+    'Ghora',
+    'Yama',
+    'Kantaka',
+    'Sudha',
+    'Amrita',
+    'Poorna',
+    'Chandra',
+    'Mridu',
+    'Saumya',
+    'Mridu',
+    'Ati Saumya',
+    'Shubha',
+    'Shubhakrut',
+    'Karaala Vaktra',
+    'Chandra Mukhi',
+    'Praveena',
+    'Kaala Pavaka',
+    'Dandayudha',
+    'Nirmala',
+    'Saumya',
+    'Krura',
+    'Atisheetala',
+    'Amrita',
+    'Payodhi',
+    'Brahma',
+    'Vishnu',
+    'Trilochana',
 ];
 
 function d60(lon: Decimal): VargaPoint {
-    const norm      = normalize360D(lon);
+    const norm = normalize360D(lon);
     // D1 sign and degree-within-sign
-    const signIdx   = norm.div(D30).floor().toNumber();   // 0-11
+    const signIdx = norm.div(D30).floor().toNumber(); // 0-11
     const degInSign = norm.mod(D30);
-    const partSpan  = new Decimal('0.5');                 // 0.5° per shashtyamsa
+    const partSpan = new Decimal('0.5'); // 0.5° per shashtyamsa
 
     // PyJHora Traditional Parasara (chart_method=1):
     //   l  = floor(degInSign / 0.5)        → 0-59
     //   r  = (sign + l) % 12              → target sign
     //   d_long = (degInSign * 60) % 30
-    const l         = degInSign.div(partSpan).floor().toNumber();   // 0-59
+    const l = degInSign.div(partSpan).floor().toNumber(); // 0-59
     const targetIdx = (signIdx + l) % 12;
 
-    const vargaDeg  = toNum(degInSign.mod(partSpan).times(60));
-    const vLon      = new Decimal(targetIdx).times(D30).plus(new Decimal(vargaDeg));
-    const deityIdx  = l % SHASHTYAMSA_DEITIES.length;
+    const vargaDeg = toNum(degInSign.mod(partSpan).times(60));
+    const vLon = new Decimal(targetIdx).times(D30).plus(new Decimal(vargaDeg));
+    const deityIdx = l % SHASHTYAMSA_DEITIES.length;
 
     return {
         longitude: toNum(normalize360D(vLon)),
-        sign:      targetIdx + 1,
-        degree:    vargaDeg,
-        deity:     SHASHTYAMSA_DEITIES[deityIdx],
+        sign: targetIdx + 1,
+        degree: vargaDeg,
+        deity: SHASHTYAMSA_DEITIES[deityIdx],
     };
 }
 
@@ -557,12 +631,12 @@ function d60(lon: Decimal): VargaPoint {
 // ---------------------------------------------------------------------------
 
 const VARGA_FNS: Record<number, (lon: Decimal) => VargaPoint> = {
-    1:  d1,
-    2:  d2,
-    3:  d3,
-    4:  d4,
-    7:  d7,
-    9:  d9,
+    1: d1,
+    2: d2,
+    3: d3,
+    4: d4,
+    7: d7,
+    9: d9,
     10: d10,
     12: d12,
     16: d16,
@@ -588,7 +662,9 @@ const VARGA_FNS: Record<number, (lon: Decimal) => VargaPoint> = {
  * @returns VargaPoint with sign (1-12), degree (0-30), and longitude
  */
 export function calculateVarga(
-    longitude: number, division: number, options: VargaOptions = {},
+    longitude: number,
+    division: number,
+    options: VargaOptions = {},
 ): VargaPoint {
     const lon = new Decimal(longitude);
 
@@ -609,12 +685,13 @@ export function calculateVarga(
 }
 
 // Convenience exports for common vargas
-export const calculateD1  = (lon: number): VargaPoint => calculateVarga(lon, 1);
-export const calculateD2  = (lon: number, options: VargaOptions = {}): VargaPoint => calculateVarga(lon, 2, options);
-export const calculateD3  = (lon: number): VargaPoint => calculateVarga(lon, 3);
-export const calculateD4  = (lon: number): VargaPoint => calculateVarga(lon, 4);
-export const calculateD7  = (lon: number): VargaPoint => calculateVarga(lon, 7);
-export const calculateD9  = (lon: number): VargaPoint => calculateVarga(lon, 9);
+export const calculateD1 = (lon: number): VargaPoint => calculateVarga(lon, 1);
+export const calculateD2 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 2, options);
+export const calculateD3 = (lon: number): VargaPoint => calculateVarga(lon, 3);
+export const calculateD4 = (lon: number): VargaPoint => calculateVarga(lon, 4);
+export const calculateD7 = (lon: number): VargaPoint => calculateVarga(lon, 7);
+export const calculateD9 = (lon: number): VargaPoint => calculateVarga(lon, 9);
 export const calculateD10 = (lon: number, options: VargaOptions = {}): VargaPoint =>
     calculateVarga(lon, 10, options);
 export const calculateD12 = (lon: number): VargaPoint => calculateVarga(lon, 12);

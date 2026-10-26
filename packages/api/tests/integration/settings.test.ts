@@ -76,14 +76,17 @@ describe('true_chitra / true_citra alias', () => {
 
     test('settings.ayanamsa true_citra matches the true_chitra field', async () => {
         const viaField = await post('/v1/chart', { ...birth, ayanamsa: 'true_chitra' });
-        const viaSettings = await post('/v1/chart', { ...birth, settings: { ayanamsa: 'true_citra' } });
+        const viaSettings = await post('/v1/chart', {
+            ...birth,
+            settings: { ayanamsa: 'true_citra' },
+        });
         expect(viaSettings.status).toBe(200);
         expect(viaSettings.body.planets).toEqual(viaField.body.planets);
     });
 });
 
 describe('presets over HTTP', () => {
-    test('a preset id stamps that preset\'s hash', async () => {
+    test("a preset id stamps that preset's hash", async () => {
         const res = await post('/v1/dasha', { ...birth, preset: 'jhora-default@8.0' });
         expect(res.status).toBe(200);
         expect(res.body.settingsHash).toBe(hashSettings(getPreset('jhora-default@8.0')));

@@ -79,7 +79,11 @@ export function parseCsvRecords(text: string): string[][] {
     }
 
     // Trim a single empty trailing row from a final newline.
-    if (rows.length > 0 && rows[rows.length - 1]!.length === 1 && rows[rows.length - 1]![0] === '') {
+    if (
+        rows.length > 0 &&
+        rows[rows.length - 1]!.length === 1 &&
+        rows[rows.length - 1]![0] === ''
+    ) {
         const last = rows[rows.length - 1]!;
         if (rows.length > 1 || last[0] !== '') {
             const prev = rows[rows.length - 2];

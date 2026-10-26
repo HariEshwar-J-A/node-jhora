@@ -1,4 +1,3 @@
-
 import { DateTime } from 'luxon';
 
 import { DashaPeriod } from './dasha.js';
@@ -13,20 +12,23 @@ const YOGINIS = [
     { name: 'Bhadrika', years: 5, lord: 'Mercury' },
     { name: 'Ulka', years: 6, lord: 'Saturn' },
     { name: 'Siddha', years: 7, lord: 'Venus' },
-    { name: 'Sankata', years: 8, lord: 'Rahu' } // Ketu shares?
+    { name: 'Sankata', years: 8, lord: 'Rahu' }, // Ketu shares?
 ];
 // Total: 1+2+3+4+5+6+7+8 = 36 Years.
 
 export class YoginiDasha {
-
     /**
      * Calculates Yogini Dasha periods.
      * @param moonLongitude Moon's Longitude
      * @param birthDate Birth Date
      * @param durationYears Total years to calculate (default 50)
      */
-    public static calculate(moonLongitude: number, birthDate: DateTime, durationYears: number = 50): DashaPeriod[] {
-        const nakshatraSpan = 13 + (1/3);
+    public static calculate(
+        moonLongitude: number,
+        birthDate: DateTime,
+        durationYears: number = 50,
+    ): DashaPeriod[] {
+        const nakshatraSpan = 13 + 1 / 3;
         const nakshatraIndex = Math.floor(moonLongitude / nakshatraSpan); // 0-26
         const lonInNak = moonLongitude % nakshatraSpan;
 
@@ -42,10 +44,10 @@ export class YoginiDasha {
         // (1 + 3) = 4. 4 % 8 = 4 --> Bhramari (if 1=Mangala, 2=Pingala, 3=Dhanya, 4=Bhramari).
         // Yes. So Formula: (NakIndexZeroBased + 1 + 3) % 8.
         // If remainder 0? Means 8 (Sankata).
-        
+
         let seed = (nakshatraIndex + 1 + 3) % 8;
         if (seed === 0) seed = 8;
-        
+
         // Map 1-8 to 0-7 array index
         const yoginiIndex = seed - 1;
 
@@ -53,14 +55,14 @@ export class YoginiDasha {
         // Proportion of Nakshatra remaining
         const elapsed = lonInNak / nakshatraSpan;
         const remaining = 1 - elapsed;
-        
+
         const startYogini = YOGINIS[yoginiIndex];
         const balanceYears = startYogini.years * remaining;
 
         const periods: DashaPeriod[] = [];
         const currentStart = birthDate;
         let runningDate = birthDate.plus({ years: balanceYears }); // End of first period
-        
+
         // Add First Period (Partial)
         periods.push({
             planet: startYogini.name,
@@ -68,7 +70,7 @@ export class YoginiDasha {
             start: currentStart,
             end: runningDate,
             durationYears: balanceYears,
-            subPeriods: []
+            subPeriods: [],
         });
 
         // Continue generating
@@ -86,9 +88,9 @@ export class YoginiDasha {
                 start: start,
                 end: end,
                 durationYears: yogini.years,
-                subPeriods: []
+                subPeriods: [],
             });
-            
+
             runningDate = end;
             currentYear += yogini.years;
             idx = (idx + 1) % 8;

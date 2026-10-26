@@ -21,13 +21,13 @@ export { Decimal };
 
 export const D360 = new Decimal(360);
 export const D180 = new Decimal(180);
-export const D90  = new Decimal(90);
-export const D30  = new Decimal(30);
-export const D27  = new Decimal(27);
-export const D12  = new Decimal(12);
-export const D6   = new Decimal(6);
-export const D0   = new Decimal(0);
-export const D1   = new Decimal(1);
+export const D90 = new Decimal(90);
+export const D30 = new Decimal(30);
+export const D27 = new Decimal(27);
+export const D12 = new Decimal(12);
+export const D6 = new Decimal(6);
+export const D0 = new Decimal(0);
+export const D1 = new Decimal(1);
 
 /** Exact Nakshatra span: 360/27 = 13.333...° */
 export const NAKSHATRA_SPAN_D: Decimal = D360.div(D27);
@@ -74,11 +74,11 @@ export function shortestArcD(a: Decimal, b: Decimal): Decimal {
  * Sign is inferred from the first non-zero signed component.
  */
 export function dmsToDecimalD(d: number, m: number, s: number): Decimal {
-    const sign = (d < 0 || (d === 0 && (m < 0 || s < 0))) ? new Decimal(-1) : new Decimal(1);
+    const sign = d < 0 || (d === 0 && (m < 0 || s < 0)) ? new Decimal(-1) : new Decimal(1);
     return sign.times(
         new Decimal(Math.abs(d))
             .plus(new Decimal(Math.abs(m)).div(60))
-            .plus(new Decimal(Math.abs(s)).div(3600))
+            .plus(new Decimal(Math.abs(s)).div(3600)),
     );
 }
 
@@ -88,11 +88,11 @@ export function dmsToDecimalD(d: number, m: number, s: number): Decimal {
  */
 export function decimalToDmsD(deg: Decimal): { d: number; m: number; s: Decimal } {
     const sign = deg.isNegative() ? -1 : 1;
-    const abs  = deg.abs();
-    const d    = abs.floor();
-    const rem  = abs.minus(d).times(60);
-    const m    = rem.floor();
-    const s    = rem.minus(m).times(60);
+    const abs = deg.abs();
+    const d = abs.floor();
+    const rem = abs.minus(d).times(60);
+    const m = rem.floor();
+    const s = rem.minus(m).times(60);
     return { d: sign * d.toNumber(), m: m.toNumber(), s };
 }
 
@@ -110,9 +110,7 @@ export function midpointD(a: Decimal, b: Decimal): Decimal {
     if (a1.minus(a2).abs().lt(new Decimal('1e-20'))) return a1;
 
     const diff = a2.minus(a1);
-    const mid  = diff.abs().lte(D180)
-        ? a1.plus(diff.div(2))
-        : a1.plus(a2).plus(D360).div(2);
+    const mid = diff.abs().lte(D180) ? a1.plus(diff.div(2)) : a1.plus(a2).plus(D360).div(2);
     return normalize360D(mid);
 }
 

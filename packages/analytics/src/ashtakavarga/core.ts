@@ -1,4 +1,9 @@
-import { Body, BODY_ASHTAKAVARGA_LAGNA_DONOR, PlanetPosition, SEVEN_GRAHAS_JHORA_ORDER } from '@node-jhora/core';
+import {
+    Body,
+    BODY_ASHTAKAVARGA_LAGNA_DONOR,
+    PlanetPosition,
+    SEVEN_GRAHAS_JHORA_ORDER,
+} from '@node-jhora/core';
 
 import { ASHTAKAVARGA_RULES } from './rules.js';
 
@@ -16,7 +21,7 @@ export class AshtakavargaCalculator {
     public static calculateBAV(planets: PlanetPosition[], targetPlanetId: number): number[] {
         const scores = new Array(12).fill(0);
         const rules = ASHTAKAVARGA_RULES[targetPlanetId];
-        
+
         if (!rules) {
             throw new Error(`No rules defined for planet ID ${targetPlanetId}`);
         }
@@ -24,17 +29,17 @@ export class AshtakavargaCalculator {
         // Donor IDs: 0-6 (Planets) + 99 (Lagna)
         const donorIds = [...SEVEN_GRAHAS_JHORA_ORDER, BODY_ASHTAKAVARGA_LAGNA_DONOR];
 
-        donorIds.forEach(donorId => {
+        donorIds.forEach((donorId) => {
             const beneficHouses = rules[donorId];
             if (!beneficHouses) return;
 
-            const donor = planets.find(p => p.id === donorId);
+            const donor = planets.find((p) => p.id === donorId);
             if (!donor) return;
 
             // Sign index (0-based, 0=Aries)
             const donorSignIndex = Math.floor(donor.longitude / 30);
 
-            beneficHouses.forEach(houseNum => {
+            beneficHouses.forEach((houseNum) => {
                 // houseNum is 1-based (1st house = same sign)
                 const targetSignIndex = (donorSignIndex + houseNum - 1) % 12;
                 scores[targetSignIndex]++;
@@ -53,10 +58,10 @@ export class AshtakavargaCalculator {
         const sav = new Array(12).fill(0);
         const targetPlanets = [...SEVEN_GRAHAS_JHORA_ORDER];
 
-        targetPlanets.forEach(id => {
+        targetPlanets.forEach((id) => {
             const planetBAV = this.calculateBAV(planets, id);
             bav[id] = planetBAV;
-            
+
             planetBAV.forEach((score, signIdx) => {
                 sav[signIdx] += score;
             });
@@ -65,7 +70,9 @@ export class AshtakavargaCalculator {
         // Validation Checksum: 337
         const totalBindus = sav.reduce((sum, current) => sum + current, 0);
         if (totalBindus !== 337) {
-            throw new Error(`Ashtakavarga Validation Failed: Total Bindus is ${totalBindus}, expected 337.`);
+            throw new Error(
+                `Ashtakavarga Validation Failed: Total Bindus is ${totalBindus}, expected 337.`,
+            );
         }
 
         return { bav, sav };

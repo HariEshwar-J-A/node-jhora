@@ -44,7 +44,10 @@ $$EOE`;
 
     it('is idempotent when re-formatting the checked-in fixture epochs', () => {
         const text = formatHorizonsGoldenTs(horizons.HORIZONS_EPOCHS, horizons.HORIZONS_PROVENANCE);
-        const again = formatHorizonsGoldenTs(horizons.HORIZONS_EPOCHS, horizons.HORIZONS_PROVENANCE);
+        const again = formatHorizonsGoldenTs(
+            horizons.HORIZONS_EPOCHS,
+            horizons.HORIZONS_PROVENANCE,
+        );
         expect(text).toBe(again);
         expect(text).toBe(readFileSync(fixturePath, 'utf8'));
     });

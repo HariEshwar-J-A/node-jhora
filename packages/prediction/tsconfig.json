@@ -5,17 +5,11 @@
         "rootDir": "src",
         "composite": true,
         "paths": {
-            "@node-jhora/core": [
-                "../core/src/index.ts"
-            ],
-            "@node-jhora/analytics": [
-                "../analytics/src/index.ts"
-            ]
+            "@node-jhora/core": ["../core/src/index.ts"],
+            "@node-jhora/analytics": ["../analytics/src/index.ts"]
         }
     },
-    "include": [
-        "src/**/*"
-    ],
+    "include": ["src/**/*"],
     "references": [
         {
             "path": "../core"

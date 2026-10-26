@@ -32,13 +32,18 @@ export function installGoldenMatchers(): void {
     if (!jestExpect?.extend) return;
 
     jestExpect.extend({
-        toMatchGoldenCase(received: GoldenActual, goldenCase: GoldenCase, options?: CompareGoldenOptions) {
+        toMatchGoldenCase(
+            received: GoldenActual,
+            goldenCase: GoldenCase,
+            options?: CompareGoldenOptions,
+        ) {
             const result = compareGoldenCase(goldenCase, received, options);
             void ({ result } satisfies GoldenMatcherState);
             if (result.pass) {
                 return {
                     pass: true,
-                    message: () => `Expected golden case ${goldenCase.id} to fail, but all paths matched.`,
+                    message: () =>
+                        `Expected golden case ${goldenCase.id} to fail, but all paths matched.`,
                 };
             }
             return {
@@ -49,7 +54,6 @@ export function installGoldenMatchers(): void {
     });
 }
 
- 
 declare global {
     namespace jest {
         interface Matchers<R> {

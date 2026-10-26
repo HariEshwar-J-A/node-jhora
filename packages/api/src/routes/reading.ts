@@ -1,13 +1,13 @@
-import { Ashtakavarga }                                          from '@node-jhora/analytics';
-import { calculateHouseCusps, calculateVarga,EphemerisEngine } from '@node-jhora/core';
-import { generateVimshottari, TransitEngine }                    from '@node-jhora/prediction';
+import { Ashtakavarga } from '@node-jhora/analytics';
+import { calculateHouseCusps, calculateVarga, EphemerisEngine } from '@node-jhora/core';
+import { generateVimshottari, TransitEngine } from '@node-jhora/prediction';
 import { FastifyInstance } from 'fastify';
-import { ZodTypeProvider }  from 'fastify-type-provider-zod';
-import { DateTime }         from 'luxon';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { DateTime } from 'luxon';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
-import { type ReadingInput,ReadingInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput }  from '../schemas/helpers.js';
+import { type ReadingInput, ReadingInputSchema } from '../schemas/birth-input.js';
+import { parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 /**
@@ -30,21 +30,69 @@ import { getEngine } from '../server.js';
  * whatever consumes this. That boundary keeps the engine self-contained.
  */
 
-const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-               'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+const SIGNS = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+];
 
 /** Sign lords, 1-based. */
-const SIGN_LORD = [null, 'Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury',
-                   'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
+const SIGN_LORD = [
+    null,
+    'Mars',
+    'Venus',
+    'Mercury',
+    'Moon',
+    'Sun',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Saturn',
+    'Jupiter',
+] as const;
 
-const EXALT: Record<string, number> = { Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7 };
-const DEBIL: Record<string, number> = { Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1 };
-const OWN:   Record<string, number[]> = { Sun: [5], Moon: [4], Mars: [1, 8], Mercury: [3, 6],
-                                          Jupiter: [9, 12], Venus: [2, 7], Saturn: [10, 11] };
+const EXALT: Record<string, number> = {
+    Sun: 1,
+    Moon: 2,
+    Mars: 10,
+    Mercury: 6,
+    Jupiter: 4,
+    Venus: 12,
+    Saturn: 7,
+};
+const DEBIL: Record<string, number> = {
+    Sun: 7,
+    Moon: 8,
+    Mars: 4,
+    Mercury: 12,
+    Jupiter: 10,
+    Venus: 6,
+    Saturn: 1,
+};
+const OWN: Record<string, number[]> = {
+    Sun: [5],
+    Moon: [4],
+    Mars: [1, 8],
+    Mercury: [3, 6],
+    Jupiter: [9, 12],
+    Venus: [2, 7],
+    Saturn: [10, 11],
+};
 
 /** Houses from a dasha lord in which a sub-lord is classically benefic / malefic. */
 const FAVOURABLE_FROM_LORD = [1, 2, 4, 5, 7, 9, 10, 11];
-const ADVERSE_FROM_LORD    = [6, 8, 12];
+const ADVERSE_FROM_LORD = [6, 8, 12];
 
 const signOf = (lon: number) => Math.floor(lon / 30) + 1;
 const houseFrom = (from: number, to: number) => ((((to - from) % 12) + 12) % 12) + 1;
@@ -71,8 +119,19 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
     typed.post('/reading', { schema: { body: ReadingInputSchema } }, async (req, reply) => {
         const body = req.body as ReadingInput;
         const parsed = parseBirthInput(body);
-        const { dt, location, ayanamsaOrder, nodeType, positionMode,
-                topocentric, ayanamsaOffset, houseSystem, settingsHash, applyDasaYear, dashaYearDays } = parsed;
+        const {
+            dt,
+            location,
+            ayanamsaOrder,
+            nodeType,
+            positionMode,
+            topocentric,
+            ayanamsaOffset,
+            houseSystem,
+            settingsHash,
+            applyDasaYear,
+            dashaYearDays,
+        } = parsed;
         const engine: EphemerisEngine = getEngine();
 
         const asOf = body.asOf
@@ -82,21 +141,29 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
         const opts = { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset };
 
         // ── Natal ───────────────────────────────────────────────────────────
-        const natal  = engine.getPlanets(dt, location, opts);
-        const houses = calculateHouseCusps(dt, location.latitude, location.longitude,
-                                           houseSystem as any, engine, ayanamsaOrder, ayanamsaOffset);
-        const ascSign  = signOf(houses.ascendant);
-        const moonNatal = natal.find(p => p.name === 'Moon')!;
+        const natal = engine.getPlanets(dt, location, opts);
+        const houses = calculateHouseCusps(
+            dt,
+            location.latitude,
+            location.longitude,
+            houseSystem as any,
+            engine,
+            ayanamsaOrder,
+            ayanamsaOffset,
+        );
+        const ascSign = signOf(houses.ascendant);
+        const moonNatal = natal.find((p) => p.name === 'Moon')!;
         const moonSign = signOf(moonNatal.longitude);
-        const { sav }  = Ashtakavarga.calculateSAV(natal);
+        const { sav } = Ashtakavarga.calculateSAV(natal);
 
-        const natalBy = new Map(natal.map(p => [p.name, p]));
+        const natalBy = new Map(natal.map((p) => [p.name, p]));
 
-        const describeNatal = (p: typeof natal[number]) => {
+        const describeNatal = (p: (typeof natal)[number]) => {
             const sign = signOf(p.longitude);
             return {
                 name: p.name,
-                sign, signName: SIGNS[sign - 1],
+                sign,
+                signName: SIGNS[sign - 1],
                 degree: +(p.longitude % 30).toFixed(4),
                 house: houseFrom(ascSign, sign),
                 retrograde: p.speed < 0,
@@ -109,7 +176,9 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
 
         // ── Dasha stack at `asOf`, to Pratyantar ────────────────────────────
         const tree = generateVimshottari(
-            dt, moonNatal.longitude, body.depth,
+            dt,
+            moonNatal.longitude,
+            body.depth,
             applyDasaYear && dashaYearDays != null ? { yearDays: dashaYearDays } : undefined,
         );
 
@@ -118,17 +187,19 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
         let level: any[] = tree.filter((p: any) => p.level === 1);
         let parentLord: string | null = null;
 
-        const LEVEL_NAME = ['', 'Mahadasha', 'Antardasha', 'Pratyantardasha',
-                            'Sookshma', 'Prana'];
+        const LEVEL_NAME = ['', 'Mahadasha', 'Antardasha', 'Pratyantardasha', 'Sookshma', 'Prana'];
 
         while (level && level.length) {
-            const idx = level.findIndex((p: any) =>
-                asOf >= DateTime.fromISO(String(p.start)) && asOf < DateTime.fromISO(String(p.end)));
+            const idx = level.findIndex(
+                (p: any) =>
+                    asOf >= DateTime.fromISO(String(p.start)) &&
+                    asOf < DateTime.fromISO(String(p.end)),
+            );
             if (idx < 0) break;
             const cur = level[idx];
 
             const lordNatal = natalBy.get(cur.planet);
-            const lordSign  = lordNatal ? signOf(lordNatal.longitude) : null;
+            const lordSign = lordNatal ? signOf(lordNatal.longitude) : null;
 
             // The hinge: where this lord sits relative to the lord above it.
             let fromParent: number | null = null;
@@ -137,9 +208,11 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
                 const parentNatal = natalBy.get(parentLord);
                 if (parentNatal) {
                     fromParent = houseFrom(signOf(parentNatal.longitude), lordSign);
-                    branch = ADVERSE_FROM_LORD.includes(fromParent) ? 'adverse'
-                           : FAVOURABLE_FROM_LORD.includes(fromParent) ? 'favourable'
-                           : 'mixed';
+                    branch = ADVERSE_FROM_LORD.includes(fromParent)
+                        ? 'adverse'
+                        : FAVOURABLE_FROM_LORD.includes(fromParent)
+                          ? 'favourable'
+                          : 'mixed';
                 }
             }
 
@@ -149,7 +222,9 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
                 lord: cur.planet,
                 start: cur.start,
                 end: cur.end,
-                yearsRemaining: +DateTime.fromISO(String(cur.end)).diff(asOf, 'years').years.toFixed(4),
+                yearsRemaining: +DateTime.fromISO(String(cur.end))
+                    .diff(asOf, 'years')
+                    .years.toFixed(4),
                 lordNatal: lordNatal ? describeNatal(lordNatal) : null,
                 // Null at Mahadasha, which has no lord above it.
                 houseFromLordAbove: fromParent,
@@ -173,11 +248,12 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
 
         // ── Transits at `asOf` ──────────────────────────────────────────────
         const transiting = engine.getPlanets(asOf, location, opts);
-        const transitPlanets = transiting.map(p => {
+        const transitPlanets = transiting.map((p) => {
             const sign = signOf(p.longitude);
             return {
                 name: p.name,
-                sign, signName: SIGNS[sign - 1],
+                sign,
+                signName: SIGNS[sign - 1],
                 degree: +(p.longitude % 30).toFixed(4),
                 retrograde: p.speed < 0,
                 houseFromMoon: houseFrom(moonSign, sign),
@@ -186,19 +262,29 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
                 isReturn: sign === signOf(natalBy.get(p.name)!.longitude),
                 // Flagged because a transit over a dasha lord is the most
                 // informative gochara fact available.
-                isDashaLord: stack.some(s => s.lord === p.name),
+                isDashaLord: stack.some((s) => s.lord === p.name),
             };
         });
 
-        const satFromMoon = transitPlanets.find(p => p.name === 'Saturn')!.houseFromMoon;
+        const satFromMoon = transitPlanets.find((p) => p.name === 'Saturn')!.houseFromMoon;
 
         const te = new TransitEngine(engine, { ayanamsaOrder, positionMode, nodeType });
         const upcoming: Array<Record<string, unknown>> = [];
-        for (const [id, name] of [[5, 'Jupiter'], [6, 'Saturn']] as const) {
-            for (const e of await te.findTransits(id, asOf, asOf.plus({ days: body.horizonDays }), 24)) {
+        for (const [id, name] of [
+            [5, 'Jupiter'],
+            [6, 'Saturn'],
+        ] as const) {
+            for (const e of await te.findTransits(
+                id,
+                asOf,
+                asOf.plus({ days: body.horizonDays }),
+                24,
+            )) {
                 if (e.type !== 'Sign') continue;
                 upcoming.push({
-                    planet: name, from: SIGNS[e.prevValue], to: SIGNS[e.newValue],
+                    planet: name,
+                    from: SIGNS[e.prevValue],
+                    to: SIGNS[e.newValue],
                     at: e.time.toISO(),
                     houseFromMoon: houseFrom(moonSign, e.newValue + 1),
                     houseFromLagna: houseFrom(ascSign, e.newValue + 1),
@@ -207,55 +293,78 @@ export async function readingRoutes(app: FastifyInstance): Promise<void> {
         }
         upcoming.sort((a, b) => String(a.at).localeCompare(String(b.at)));
 
-        return reply.status(200).send(attachResultEnvelope({
-            asOf: asOf.toISO(),
-            settingsHash,
-            meta: {
-                ayanamsa: body.ayanamsa,
-                ayanamsaValue: engine.getAyanamsa(engine.julday(dt), ayanamsaOrder),
-                positionMode: body.positionMode,
-                nodeType: body.nodeType,
-                houseSystem: body.houseSystem,
-                engine: 'node-jhora / JPL DE440',
-                scope: 'computation only — no classical text or interpretation',
-            },
-            natal: {
-                ascendant: {
-                    sign: ascSign, signName: SIGNS[ascSign - 1],
-                    degree: +(houses.ascendant % 30).toFixed(4),
-                    lord: SIGN_LORD[ascSign],
+        return reply.status(200).send(
+            attachResultEnvelope(
+                {
+                    asOf: asOf.toISO(),
+                    settingsHash,
+                    meta: {
+                        ayanamsa: body.ayanamsa,
+                        ayanamsaValue: engine.getAyanamsa(engine.julday(dt), ayanamsaOrder),
+                        positionMode: body.positionMode,
+                        nodeType: body.nodeType,
+                        houseSystem: body.houseSystem,
+                        engine: 'node-jhora / JPL DE440',
+                        scope: 'computation only — no classical text or interpretation',
+                    },
+                    natal: {
+                        ascendant: {
+                            sign: ascSign,
+                            signName: SIGNS[ascSign - 1],
+                            degree: +(houses.ascendant % 30).toFixed(4),
+                            lord: SIGN_LORD[ascSign],
+                        },
+                        moonSign,
+                        moonSignName: SIGNS[moonSign - 1],
+                        planets: natal.map(describeNatal),
+                        savBySign: sav.map((bindus, i) => ({
+                            sign: i + 1,
+                            signName: SIGNS[i],
+                            bindus,
+                            house: houseFrom(ascSign, i + 1),
+                        })),
+                    },
+                    dashaStack: stack,
+                    transitions,
+                    transits: {
+                        planets: transitPlanets,
+                        sadeSati: {
+                            active: [12, 1, 2].includes(satFromMoon),
+                            phase:
+                                satFromMoon === 12
+                                    ? 'rising'
+                                    : satFromMoon === 1
+                                      ? 'peak'
+                                      : satFromMoon === 2
+                                        ? 'setting'
+                                        : null,
+                            houseFromMoon: satFromMoon,
+                            kantakaShani: [4, 7, 10].includes(satFromMoon),
+                            ashtamaShani: satFromMoon === 8,
+                        },
+                        upcoming,
+                    },
+                    guidance: {
+                        classicalRule:
+                            'Dasha promises, transit delivers, the natal chart decides ' +
+                            'whether anything was on offer. A transit cannot deliver what ' +
+                            'the chart and dasha do not support.',
+                        readingOrder: [
+                            'natal promise',
+                            'mahadasha',
+                            'antardasha',
+                            'pratyantardasha',
+                            'transit',
+                            'ashtakavarga',
+                        ],
+                        note:
+                            'houseFromLordAbove selects which conditional branch of a classical ' +
+                            'dasha verse applies; classicalBranch names it. savBindus below ~25 ' +
+                            'weakens a transit regardless of its nature.',
+                    },
                 },
-                moonSign, moonSignName: SIGNS[moonSign - 1],
-                planets: natal.map(describeNatal),
-                savBySign: sav.map((bindus, i) => ({
-                    sign: i + 1, signName: SIGNS[i], bindus, house: houseFrom(ascSign, i + 1),
-                })),
-            },
-            dashaStack: stack,
-            transitions,
-            transits: {
-                planets: transitPlanets,
-                sadeSati: {
-                    active: [12, 1, 2].includes(satFromMoon),
-                    phase: satFromMoon === 12 ? 'rising'
-                         : satFromMoon === 1  ? 'peak'
-                         : satFromMoon === 2  ? 'setting' : null,
-                    houseFromMoon: satFromMoon,
-                    kantakaShani: [4, 7, 10].includes(satFromMoon),
-                    ashtamaShani: satFromMoon === 8,
-                },
-                upcoming,
-            },
-            guidance: {
-                classicalRule: 'Dasha promises, transit delivers, the natal chart decides '
-                             + 'whether anything was on offer. A transit cannot deliver what '
-                             + 'the chart and dasha do not support.',
-                readingOrder: ['natal promise', 'mahadasha', 'antardasha',
-                               'pratyantardasha', 'transit', 'ashtakavarga'],
-                note: 'houseFromLordAbove selects which conditional branch of a classical '
-                    + 'dasha verse applies; classicalBranch names it. savBindus below ~25 '
-                    + 'weakens a transit regardless of its nature.',
-            },
-        }, { settingsHash }));
+                { settingsHash },
+            ),
+        );
     });
 }

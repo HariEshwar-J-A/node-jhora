@@ -30,8 +30,9 @@ describe('expectGolden', () => {
     });
 
     it('throws a text report when a path fails', () => {
-        expect(() => expectGolden(tinyCase(), { 'd1.planets.Sun.lon': 20 }))
-            .toThrow(/jest-fixture/);
+        expect(() => expectGolden(tinyCase(), { 'd1.planets.Sun.lon': 20 })).toThrow(
+            /jest-fixture/,
+        );
     });
 });
 

@@ -11,11 +11,7 @@ export function median(values: readonly number[]): number {
 }
 
 /** True when `measured` is more than `tolerance` above `baseline`. */
-export function isRegression(
-    baseline: number,
-    measured: number,
-    tolerance: number,
-): boolean {
+export function isRegression(baseline: number, measured: number, tolerance: number): boolean {
     if (baseline <= 0) {
         return measured > baseline;
     }

@@ -1,4 +1,10 @@
-import { normalize360, getShortestDistance, dmsToDecimal, decimalToDms, midpoint } from '../../src/core/math.js';
+import {
+    normalize360,
+    getShortestDistance,
+    dmsToDecimal,
+    decimalToDms,
+    midpoint,
+} from '../../src/core/math.js';
 
 describe('Math Core (First Principles)', () => {
     describe('normalize360', () => {

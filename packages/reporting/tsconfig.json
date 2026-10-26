@@ -4,22 +4,13 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "composite": true,
-        "types": [
-            "node",
-            "jest"
-        ],
+        "types": ["node", "jest"],
         "paths": {
-            "@node-jhora/core": [
-                "../core/src/index.ts"
-            ],
-            "@node-jhora/analytics": [
-                "../analytics/src/index.ts"
-            ]
+            "@node-jhora/core": ["../core/src/index.ts"],
+            "@node-jhora/analytics": ["../analytics/src/index.ts"]
         }
     },
-    "include": [
-        "src/**/*"
-    ],
+    "include": ["src/**/*"],
     "references": [
         {
             "path": "../core"

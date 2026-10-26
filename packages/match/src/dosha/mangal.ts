@@ -1,4 +1,4 @@
-import { Body, HouseData,PlanetPosition } from '@node-jhora/core';
+import { Body, HouseData, PlanetPosition } from '@node-jhora/core';
 
 import { DoshaResult } from '../types.js';
 
@@ -13,16 +13,18 @@ const DOSHA_HOUSES = [1, 2, 4, 7, 8, 12];
  */
 function hasMangalDosha(
     chart: { planets: PlanetPosition[]; houses: HouseData },
-    strict: boolean = true
+    strict: boolean = true,
 ): { hasDosha: boolean; reasons: string[] } {
     const reasons: string[] = [];
-    const mars = chart.planets.find(p => p.id === Body.Mercury);
+    const mars = chart.planets.find((p) => p.id === Body.Mercury);
     if (!mars) return { hasDosha: false, reasons }; // Should not happen
 
     const ascSign = Math.floor(chart.houses.ascendant / 30) + 1; // 1-12
     const marsSign = Math.floor(mars.longitude / 30) + 1; // 1-12
-    const moonSign = Math.floor((chart.planets.find(p => p.id === Body.Moon)?.longitude || 0) / 30) + 1;
-    const venusSign = Math.floor((chart.planets.find(p => p.id === Body.Jupiter)?.longitude || 0) / 30) + 1;
+    const moonSign =
+        Math.floor((chart.planets.find((p) => p.id === Body.Moon)?.longitude || 0) / 30) + 1;
+    const venusSign =
+        Math.floor((chart.planets.find((p) => p.id === Body.Jupiter)?.longitude || 0) / 30) + 1;
 
     // Helper: 1-based House from Ref Sign
     const getHouse = (from: number, target: number) => ((target - from + 12) % 12) + 1;
@@ -49,13 +51,13 @@ function hasMangalDosha(
     // 1. Mars in Aries(1) or Scorpio(8) -> Own House.
     // 2. Mars in Capricorn(10) -> Exalted.
     // 3. Mars in Cancer(4) -> Debilitated (some say cancels, some say worst. BPHS says cancelled).
-    // 4. Mars in Leo(5) / Sagittarius(9)? 
+    // 4. Mars in Leo(5) / Sagittarius(9)?
     // Let's implement Own/Exalt Check.
-    
+
     // Check if Mars is in Own House or Exalted
     const isOwn = [1, 8].includes(marsSign);
     const isExalted = marsSign === 10;
-    
+
     if ((isOwn || isExalted) && reasons.length > 0) {
         // Exception applies. cancel reasons.
         // Or mark as "Cancelled".
@@ -65,24 +67,27 @@ function hasMangalDosha(
 
     // Specific House Exceptions (e.g. Mars in 8th in Sagittarius/Pisces? ) -> Too detailed for basic check.
     // Basic Rule: If Mars is in 1,2,4,7,8,12 it is Dosha unless Exception.
-    
-    return { hasDosha: reasons.length > 0 && !reasons.some(r => r.includes('Cancelled')), reasons };
+
+    return {
+        hasDosha: reasons.length > 0 && !reasons.some((r) => r.includes('Cancelled')),
+        reasons,
+    };
 }
 
 export function checkMangalDosha(
     boyChart: { planets: PlanetPosition[]; houses: HouseData },
-    girlChart: { planets: PlanetPosition[]; houses: HouseData }
+    girlChart: { planets: PlanetPosition[]; houses: HouseData },
 ): DoshaResult {
     const boyCheck = hasMangalDosha(boyChart);
     const girlCheck = hasMangalDosha(girlChart);
-    
+
     // Logic:
     // If Both have Dosha -> Match (Cancel).
     // If Neither have Dosha -> No Dosha.
     // If One has Dosha -> Mismatch (Present).
-    
+
     let status: 'Cancel' | 'Present' | 'None' = 'None';
-    
+
     if (boyCheck.hasDosha && girlCheck.hasDosha) {
         status = 'Cancel'; // Both hold Dosha, neutralizing.
     } else if (boyCheck.hasDosha || girlCheck.hasDosha) {
@@ -95,6 +100,6 @@ export function checkMangalDosha(
         boyHasDosha: boyCheck.hasDosha,
         girlHasDosha: girlCheck.hasDosha,
         matchStatus: status,
-        exceptions: [...boyCheck.reasons, ...girlCheck.reasons] // Just listing debug info really
+        exceptions: [...boyCheck.reasons, ...girlCheck.reasons], // Just listing debug info really
     };
 }

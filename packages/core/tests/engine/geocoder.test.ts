@@ -9,7 +9,7 @@ describe('Geocoder (Browser Stub)', () => {
 
     test('throws in non-browser environment (stub behaviour)', async () => {
         await expect(geocoder.searchCity('Chennai')).rejects.toThrow(
-            'Geocoder is not available in browser environments'
+            'Geocoder is not available in browser environments',
         );
     });
 

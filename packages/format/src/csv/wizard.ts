@@ -31,7 +31,7 @@ export function csvWizardParse(text: string, options: CsvParseOptions = {}): Csv
     let rows: string[][];
 
     if (hasHeader) {
-        headers = records[0]!.map((h, i) => (h.trim() || `column_${i + 1}`));
+        headers = records[0]!.map((h, i) => h.trim() || `column_${i + 1}`);
         rows = records.slice(1).filter((r) => r.some((c) => c.trim().length > 0));
     } else {
         const width = records[0]!.length;

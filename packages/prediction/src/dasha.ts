@@ -13,7 +13,11 @@
  * Hierarchy: Mahadasha → Antardasha → Pratyantar → Sookshma → Prana (5 levels)
  */
 
-import { describeCalculation, LEGACY_DASHA_YEAR_DAYS_TEXT, type SettingsInput } from '@node-jhora/core';
+import {
+    describeCalculation,
+    LEGACY_DASHA_YEAR_DAYS_TEXT,
+    type SettingsInput,
+} from '@node-jhora/core';
 import { Decimal } from 'decimal.js';
 import { DateTime } from 'luxon';
 
@@ -23,12 +27,28 @@ import { DateTime } from 'luxon';
 
 /** Vimshottari Dasha durations in years (standard). Total = 120. */
 export const DASHA_DURATIONS: Record<string, number> = {
-    Sun: 6, Moon: 10, Mars: 7, Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17, Ketu: 7, Venus: 20,
+    Sun: 6,
+    Moon: 10,
+    Mars: 7,
+    Rahu: 18,
+    Jupiter: 16,
+    Saturn: 19,
+    Mercury: 17,
+    Ketu: 7,
+    Venus: 20,
 };
 
 /** Fixed cyclic order (starting planet depends on Moon's Nakshatra). */
 export const DASHA_ORDER: string[] = [
-    'Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury',
+    'Ketu',
+    'Venus',
+    'Sun',
+    'Moon',
+    'Mars',
+    'Rahu',
+    'Jupiter',
+    'Saturn',
+    'Mercury',
 ];
 
 /**
@@ -56,22 +76,22 @@ const MS_PER_DAY = new Decimal(86400000);
 // ---------------------------------------------------------------------------
 
 export interface DashaPeriod {
-    planet:        string;
-    level:         number;    // 1=Maha, 2=Antar, 3=Pratyantar, 4=Sookshma, 5=Prana
-    start:         DateTime;
-    end:           DateTime;
+    planet: string;
+    level: number; // 1=Maha, 2=Antar, 3=Pratyantar, 4=Sookshma, 5=Prana
+    start: DateTime;
+    end: DateTime;
     durationYears: number;
-    subPeriods?:   DashaPeriod[];
+    subPeriods?: DashaPeriod[];
     /** Set when `options.settings` was passed. */
     settingsHash?: string;
 }
 
 interface DashaBalance {
-    lord:              string;
-    yearsRemaining:    number;
-    totalDuration:     number;
+    lord: string;
+    yearsRemaining: number;
+    totalDuration: number;
     fractionTraversed: number;
-    nakshatraIndex:    number;
+    nakshatraIndex: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -128,23 +148,23 @@ export function calculateDashaBalance(moonLongitude: number): DashaBalance {
     const lon = new Decimal(moonLongitude).mod(new Decimal(360));
     const absLon = lon.isNegative() ? lon.plus(360) : lon;
 
-    const nakIdx          = absLon.div(NAKSHATRA_SPAN).floor().toNumber(); // 0-26
-    const lonInNak        = absLon.mod(NAKSHATRA_SPAN);                    // 0 to 13.333...°
-    const fractionTraversed = lonInNak.div(NAKSHATRA_SPAN);               // 0 to 1
+    const nakIdx = absLon.div(NAKSHATRA_SPAN).floor().toNumber(); // 0-26
+    const lonInNak = absLon.mod(NAKSHATRA_SPAN); // 0 to 13.333...°
+    const fractionTraversed = lonInNak.div(NAKSHATRA_SPAN); // 0 to 1
 
-    const lordVimIdx = nakIdx % 9;                                         // 0-8
-    const lord       = DASHA_ORDER[lordVimIdx];
+    const lordVimIdx = nakIdx % 9; // 0-8
+    const lord = DASHA_ORDER[lordVimIdx];
     const totalDuration = DASHA_DURATIONS[lord];
 
     const fractionRemaining = new Decimal(1).minus(fractionTraversed);
-    const yearsRemaining    = fractionRemaining.times(totalDuration);
+    const yearsRemaining = fractionRemaining.times(totalDuration);
 
     return {
         lord,
-        yearsRemaining:    yearsRemaining.toNumber(),
+        yearsRemaining: yearsRemaining.toNumber(),
         totalDuration,
         fractionTraversed: fractionTraversed.toNumber(),
-        nakshatraIndex:    nakIdx,
+        nakshatraIndex: nakIdx,
     };
 }
 
@@ -156,28 +176,28 @@ export function calculateDashaBalance(moonLongitude: number): DashaBalance {
  * @param depth          Recursion depth: 1=Mahadasha only, 2=+Antardasha, …, 5=+Prana
  */
 export function generateVimshottari(
-    birthDate:     DateTime,
+    birthDate: DateTime,
     moonLongitude: number,
-    depth:         number = 2,
-    options?:      VimshottariOptions,
+    depth: number = 2,
+    options?: VimshottariOptions,
 ): DashaPeriod[] {
     const { days: yearDays, settingsHash } = yearLength(options);
-    const balance     = calculateDashaBalance(moonLongitude);
-    const periods:    DashaPeriod[] = [];
-    let currentDate   = birthDate;
-    let currentIndex  = DASHA_ORDER.indexOf(balance.lord);
-    let yearsCovered  = new Decimal(0);
-    const TARGET      = new Decimal(120);
+    const balance = calculateDashaBalance(moonLongitude);
+    const periods: DashaPeriod[] = [];
+    let currentDate = birthDate;
+    let currentIndex = DASHA_ORDER.indexOf(balance.lord);
+    let yearsCovered = new Decimal(0);
+    const TARGET = new Decimal(120);
 
     while (yearsCovered.lt(TARGET)) {
-        const planet       = DASHA_ORDER[currentIndex % 9];
+        const planet = DASHA_ORDER[currentIndex % 9];
         const fullDuration = new Decimal(DASHA_DURATIONS[planet]);
 
-        const isFirst      = periods.length === 0;
-        const duration     = isFirst ? new Decimal(balance.yearsRemaining) : fullDuration;
+        const isFirst = periods.length === 0;
+        const duration = isFirst ? new Decimal(balance.yearsRemaining) : fullDuration;
 
         const start = currentDate;
-        const end   = addYears(start, duration, yearDays);
+        const end = addYears(start, duration, yearDays);
 
         const period: DashaPeriod = {
             planet,
@@ -189,13 +209,11 @@ export function generateVimshottari(
         };
 
         if (depth >= 2) {
-            period.subPeriods = generateSubPeriods(
-                period, fullDuration, depth, 2, yearDays,
-            );
+            period.subPeriods = generateSubPeriods(period, fullDuration, depth, 2, yearDays);
         }
 
         periods.push(period);
-        currentDate  = end;
+        currentDate = end;
         yearsCovered = yearsCovered.plus(duration);
         currentIndex++;
     }
@@ -213,14 +231,14 @@ export function generateVimshottari(
  * conceptual start, generate all sub-periods, then filter/clip to birth date.
  */
 function generateSubPeriods(
-    parent:               DashaPeriod,
-    parentStandardYears:  Decimal,
-    maxDepth:             number,
-    currentDepth:         number,
-    yearDays:             Decimal,
+    parent: DashaPeriod,
+    parentStandardYears: Decimal,
+    maxDepth: number,
+    currentDepth: number,
+    yearDays: Decimal,
 ): DashaPeriod[] {
     const traversedYears = parentStandardYears.minus(parent.durationYears);
-    const isPartial      = traversedYears.abs().gt(new Decimal('0.0001'));
+    const isPartial = traversedYears.abs().gt(new Decimal('0.0001'));
 
     const conceptualStart = isPartial
         ? addYears(parent.start, traversedYears.negated(), yearDays)
@@ -231,10 +249,10 @@ function generateSubPeriods(
     let currentP = conceptualStart;
 
     for (let i = 0; i < 9; i++) {
-        const subLord          = DASHA_ORDER[(parentLordIdx + i) % 9];
-        const childStdYears    = new Decimal(DASHA_DURATIONS[subLord]);
-        const subDuration      = parentStandardYears.times(childStdYears).div(120);
-        const subEnd           = addYears(currentP, subDuration, yearDays);
+        const subLord = DASHA_ORDER[(parentLordIdx + i) % 9];
+        const childStdYears = new Decimal(DASHA_DURATIONS[subLord]);
+        const subDuration = parentStandardYears.times(childStdYears).div(120);
+        const subEnd = addYears(currentP, subDuration, yearDays);
 
         // Skip sub-periods that ended before birth
         if (subEnd <= parent.start) {
@@ -243,22 +261,27 @@ function generateSubPeriods(
         }
 
         // Clip start to birth date if this sub-period overlaps birth
-        const actualStart    = currentP < parent.start ? parent.start : currentP;
-        const actualDuration = new Decimal(subEnd.toMillis() - actualStart.toMillis())
-            .div(yearDays.times(MS_PER_DAY));
+        const actualStart = currentP < parent.start ? parent.start : currentP;
+        const actualDuration = new Decimal(subEnd.toMillis() - actualStart.toMillis()).div(
+            yearDays.times(MS_PER_DAY),
+        );
 
         const subPeriod: DashaPeriod = {
-            planet:        subLord,
-            level:         currentDepth,
-            start:         actualStart,
-            end:           subEnd,
+            planet: subLord,
+            level: currentDepth,
+            start: actualStart,
+            end: subEnd,
             durationYears: actualDuration.toNumber(),
-            subPeriods:    [],
+            subPeriods: [],
         };
 
         if (currentDepth < maxDepth) {
             subPeriod.subPeriods = generateSubPeriods(
-                subPeriod, subDuration, maxDepth, currentDepth + 1, yearDays,
+                subPeriod,
+                subDuration,
+                maxDepth,
+                currentDepth + 1,
+                yearDays,
             );
         }
 

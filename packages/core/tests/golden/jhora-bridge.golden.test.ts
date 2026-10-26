@@ -11,8 +11,8 @@
  * accuracy will get right by itself.
  */
 
-import { DateTime }           from 'luxon';
-import { EphemerisEngine }    from '../../src/engine/ephemeris.js';
+import { DateTime } from 'luxon';
+import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import { getAyanamsa, AYANAMSA_MODELS, accumulatedPrecession } from '../../src/engine/ayanamsa.js';
 import { calculatePanchanga } from '../../src/vedic/panchanga.js';
 import { calculateVarga, DEFAULT_DASAMSA_SCHEME } from '../../src/vedic/vargas.js';
@@ -34,11 +34,11 @@ import {
 } from '../fixtures/jhora_golden.js';
 
 let engine: EphemerisEngine;
-let refJD:  number;
+let refJD: number;
 let planets: ReturnType<EphemerisEngine['getPlanets']>;
 let ascendant: number;
 
-const REF_UTC   = DateTime.fromObject(JHORA_BIRTH.utc, { zone: 'utc' });
+const REF_UTC = DateTime.fromObject(JHORA_BIRTH.utc, { zone: 'utc' });
 const REF_LOCAL = REF_UTC.setZone('Asia/Kolkata');
 
 beforeAll(async () => {
@@ -46,20 +46,20 @@ beforeAll(async () => {
     await engine.initialize();
     engine.setAyanamsa(JHORA_CONVENTIONS.ayanamsaMode);
 
-    refJD     = engine.julday(REF_UTC);
-    planets   = engine.getPlanets(REF_UTC);
+    refJD = engine.julday(REF_UTC);
+    planets = engine.getPlanets(REF_UTC);
     ascendant = engine.getHouses(refJD, JHORA_BIRTH.lat, JHORA_BIRTH.lon, 'W', true).ascendant;
 }, 30_000);
 
 /** |a − b| in arcseconds, wrapped across 0°/360°. */
 function gapArcsec(a: number, b: number): number {
     let d = a - b;
-    if (d >  180) d -= 360;
+    if (d > 180) d -= 360;
     if (d < -180) d += 360;
     return Math.abs(d) * 3600;
 }
 
-const bodyLon = (name: string) => planets.find(p => p.name === name)!.longitude;
+const bodyLon = (name: string) => planets.find((p) => p.name === name)!.longitude;
 
 // ===========================================================================
 // 1. Conventions — the defaults must be JHora's, not astronomy's
@@ -75,21 +75,24 @@ describe('JHora Bridge: engine defaults match JHora conventions', () => {
     });
 
     test('default positions are geometric, not apparent', () => {
-        const geometric = engine.getPlanets(REF_UTC).find(p => p.name === 'Venus')!;
-        const apparent  = engine.getPlanets(REF_UTC, undefined, { positionMode: 'apparent' })
-            .find(p => p.name === 'Venus')!;
+        const geometric = engine.getPlanets(REF_UTC).find((p) => p.name === 'Venus')!;
+        const apparent = engine
+            .getPlanets(REF_UTC, undefined, { positionMode: 'apparent' })
+            .find((p) => p.name === 'Venus')!;
 
         // Venus is near conjunction here, so the two conventions are ~44″ apart —
         // the largest separation in the chart, and the clearest discriminator.
         expect(gapArcsec(geometric.longitude, apparent.longitude)).toBeGreaterThan(30);
-        expect(gapArcsec(geometric.longitude, JHORA_D1.find(b => b.name === 'Venus')!.longitude))
-            .toBeLessThan(1);
+        expect(
+            gapArcsec(geometric.longitude, JHORA_D1.find((b) => b.name === 'Venus')!.longitude),
+        ).toBeLessThan(1);
     });
 
     test('default node is the true node, not the mean node', () => {
-        const jhoraRahu = JHORA_D1.find(b => b.name === 'Rahu')!.longitude;
-        const mean = engine.getPlanets(REF_UTC, undefined, { nodeType: 'mean' })
-            .find(p => p.name === 'Rahu')!;
+        const jhoraRahu = JHORA_D1.find((b) => b.name === 'Rahu')!.longitude;
+        const mean = engine
+            .getPlanets(REF_UTC, undefined, { nodeType: 'mean' })
+            .find((p) => p.name === 'Rahu')!;
 
         expect(gapArcsec(bodyLon('Rahu'), jhoraRahu)).toBeLessThan(2);
         // The mean node is nearly a degree away — an unmistakable discriminator.
@@ -104,8 +107,9 @@ describe('JHora Bridge: engine defaults match JHora conventions', () => {
 describe('JHora Bridge: Ayanamsa', () => {
     test(`True Chitrapaksha = ${JHORA_AYANAMSA.printed} (±${JHORA_AYANAMSA.toleranceArcsec}″)`, () => {
         const actual = getAyanamsa(JHORA_AYANAMSA.mode, refJD);
-        expect(gapArcsec(actual, JHORA_AYANAMSA.value))
-            .toBeLessThanOrEqual(JHORA_AYANAMSA.toleranceArcsec);
+        expect(gapArcsec(actual, JHORA_AYANAMSA.value)).toBeLessThanOrEqual(
+            JHORA_AYANAMSA.toleranceArcsec,
+        );
     });
 
     test('is derived from Spica, with no fitted constant', () => {
@@ -124,8 +128,10 @@ describe('JHora Bridge: Ayanamsa', () => {
     });
 
     test('accumulated precession is antisymmetric in its endpoints', () => {
-        expect(accumulatedPrecession(2415020.5, 2460476.5)
-             + accumulatedPrecession(2460476.5, 2415020.5)).toBeCloseTo(0, 6);
+        expect(
+            accumulatedPrecession(2415020.5, 2460476.5) +
+                accumulatedPrecession(2460476.5, 2415020.5),
+        ).toBeCloseTo(0, 6);
     });
 });
 
@@ -137,20 +143,23 @@ describe('JHora Bridge: D1 Rasi', () => {
     for (const ref of JHORA_D1) {
         test(`${ref.name} = ${ref.printed.trim()} (±${ref.toleranceArcsec}″)`, () => {
             expect(Math.floor(bodyLon(ref.name) / 30) + 1).toBe(ref.sign);
-            expect(gapArcsec(bodyLon(ref.name), ref.longitude))
-                .toBeLessThanOrEqual(ref.toleranceArcsec);
+            expect(gapArcsec(bodyLon(ref.name), ref.longitude)).toBeLessThanOrEqual(
+                ref.toleranceArcsec,
+            );
         });
     }
 
-    for (const ref of JHORA_D1.filter(b => b.retrograde)) {
+    for (const ref of JHORA_D1.filter((b) => b.retrograde)) {
         test(`${ref.name} is retrograde, as JHora marks with (R)`, () => {
-            expect(planets.find(p => p.name === ref.name)!.speed).toBeLessThan(0);
+            expect(planets.find((p) => p.name === ref.name)!.speed).toBeLessThan(0);
         });
     }
 
     test('bodies JHora leaves unmarked are direct', () => {
-        for (const ref of JHORA_D1.filter(b => !b.retrograde && b.name !== 'Rahu' && b.name !== 'Ketu')) {
-            expect(planets.find(p => p.name === ref.name)!.speed).toBeGreaterThan(0);
+        for (const ref of JHORA_D1.filter(
+            (b) => !b.retrograde && b.name !== 'Rahu' && b.name !== 'Ketu',
+        )) {
+            expect(planets.find((p) => p.name === ref.name)!.speed).toBeGreaterThan(0);
         }
     });
 
@@ -166,15 +175,17 @@ describe('JHora Bridge: D1 Rasi', () => {
 describe('JHora Bridge: Ascendant and sidereal time', () => {
     test(`Lagna = ${JHORA_ASCENDANT.printed} (±${JHORA_ASCENDANT.toleranceArcsec}″)`, () => {
         expect(Math.floor(ascendant / 30) + 1).toBe(JHORA_ASCENDANT.sign);
-        expect(gapArcsec(ascendant, JHORA_ASCENDANT.longitude))
-            .toBeLessThanOrEqual(JHORA_ASCENDANT.toleranceArcsec);
+        expect(gapArcsec(ascendant, JHORA_ASCENDANT.longitude)).toBeLessThanOrEqual(
+            JHORA_ASCENDANT.toleranceArcsec,
+        );
     });
 
     test(`local sidereal time = ${JHORA_SIDEREAL_TIME.printed} (±${JHORA_SIDEREAL_TIME.toleranceSeconds}s)`, () => {
         // JHora prints local apparent sidereal time; the engine returns Greenwich.
         const local = (engine.getSiderealTime(refJD) + JHORA_BIRTH.lon / 15 + 24) % 24;
-        expect(Math.abs(local - JHORA_SIDEREAL_TIME.hours) * 3600)
-            .toBeLessThanOrEqual(JHORA_SIDEREAL_TIME.toleranceSeconds);
+        expect(Math.abs(local - JHORA_SIDEREAL_TIME.hours) * 3600).toBeLessThanOrEqual(
+            JHORA_SIDEREAL_TIME.toleranceSeconds,
+        );
     });
 
     test('Whole-Sign cusps start at 0° of the ascendant sign', () => {
@@ -185,17 +196,17 @@ describe('JHora Bridge: Ascendant and sidereal time', () => {
 
     /** Guards the two-argument ascendant formula across hemispheres and latitudes. */
     test.each([
-        ['Chennai',    51.4769,  -0.0005],
-        ['Sydney',    -33.8688, 151.2093],
-        ['Reykjavík',  64.1466, -21.9426],
-        ['Quito',      -0.1807, -78.4678],
+        ['Chennai', 51.4769, -0.0005],
+        ['Sydney', -33.8688, 151.2093],
+        ['Reykjavík', 64.1466, -21.9426],
+        ['Quito', -0.1807, -78.4678],
     ])('ascendant leads the MC by 0°–180° at %s', (_city, lat, lonDeg) => {
         for (let hour = 0; hour < 24; hour++) {
             const jd = engine.julday(
                 DateTime.fromObject({ year: 2024, month: 3, day: 20, hour }, { zone: 'utc' }),
             );
             const h = engine.getHouses(jd, lat, lonDeg, 'W', false);
-            const lead = ((h.ascendant - h.mc) % 360 + 360) % 360;
+            const lead = (((h.ascendant - h.mc) % 360) + 360) % 360;
             expect(lead).toBeGreaterThan(0);
             expect(lead).toBeLessThan(180);
         }
@@ -223,8 +234,9 @@ describe('JHora Bridge: D9 Navamsa', () => {
     test(`Lagna = ${JHORA_D9_ASCENDANT.printed}`, () => {
         const got = d9(ascendant);
         expect(Math.floor(got / 30) + 1).toBe(JHORA_D9_ASCENDANT.sign);
-        expect(gapArcsec(got, JHORA_D9_ASCENDANT.longitude))
-            .toBeLessThanOrEqual(JHORA_D9_ASCENDANT.toleranceArcsec);
+        expect(gapArcsec(got, JHORA_D9_ASCENDANT.longitude)).toBeLessThanOrEqual(
+            JHORA_D9_ASCENDANT.toleranceArcsec,
+        );
     });
 });
 
@@ -256,33 +268,33 @@ describe(`JHora Bridge: D10 Dasamsa (${JHORA_D10_LABEL})`, () => {
     test(`Lagna = ${JHORA_D10_ASCENDANT.printed}`, () => {
         const got = d10(ascendant);
         expect(Math.floor(got / 30) + 1).toBe(JHORA_D10_ASCENDANT.sign);
-        expect(gapArcsec(got, JHORA_D10_ASCENDANT.longitude))
-            .toBeLessThanOrEqual(JHORA_D10_ASCENDANT.toleranceArcsec);
+        expect(gapArcsec(got, JHORA_D10_ASCENDANT.longitude)).toBeLessThanOrEqual(
+            JHORA_D10_ASCENDANT.toleranceArcsec,
+        );
     });
 
     // ── The toggle must actually change something, in the right places ──────
 
     test('odd-sign bodies are identical under both schemes', () => {
-        const oddSignBodies = JHORA_D10
-            .map(b => b.name)
-            .filter(n => !(JHORA_D10_EVEN_SIGN_BODIES as readonly string[]).includes(n));
+        const oddSignBodies = JHORA_D10.map((b) => b.name).filter(
+            (n) => !(JHORA_D10_EVEN_SIGN_BODIES as readonly string[]).includes(n),
+        );
 
         expect(oddSignBodies.length).toBeGreaterThan(0);
         for (const name of oddSignBodies) {
-            expect(d10(bodyLon(name), 'parashara'))
-                .toBeCloseTo(d10(bodyLon(name), 'jhora_5_8'), 9);
+            expect(d10(bodyLon(name), 'parashara')).toBeCloseTo(d10(bodyLon(name), 'jhora_5_8'), 9);
         }
     });
 
-    test('even-sign bodies differ between the schemes, and only JHora\'s matches', () => {
+    test("even-sign bodies differ between the schemes, and only JHora's matches", () => {
         for (const name of JHORA_D10_EVEN_SIGN_BODIES) {
-            const ref = JHORA_D10.find(b => b.name === name)!;
+            const ref = JHORA_D10.find((b) => b.name === name)!;
 
-            expect(gapArcsec(d10(bodyLon(name), 'jhora_5_8'), ref.longitude))
-                .toBeLessThanOrEqual(ref.toleranceArcsec);
+            expect(gapArcsec(d10(bodyLon(name), 'jhora_5_8'), ref.longitude)).toBeLessThanOrEqual(
+                ref.toleranceArcsec,
+            );
             // Parashara puts these in a different sign entirely.
-            expect(gapArcsec(d10(bodyLon(name), 'parashara'), ref.longitude))
-                .toBeGreaterThan(3600);
+            expect(gapArcsec(d10(bodyLon(name), 'parashara'), ref.longitude)).toBeGreaterThan(3600);
         }
     });
 
@@ -341,14 +353,18 @@ describe('JHora Bridge: Panchanga', () => {
         expect(pa.tithi.index).toBe(JHORA_PANCHANGA.tithi.index);
         // JHora prints what remains; the engine reports what has elapsed.
         expect(100 - pa.tithi.percent).toBeCloseTo(JHORA_PANCHANGA.tithi.percentLeft, 1);
-        expect(Math.abs((100 - pa.tithi.percent) - JHORA_PANCHANGA.tithi.percentLeft)).toBeLessThan(tol);
+        expect(Math.abs(100 - pa.tithi.percent - JHORA_PANCHANGA.tithi.percentLeft)).toBeLessThan(
+            tol,
+        );
     });
 
     test(`Nakshatra = ${JHORA_PANCHANGA.nakshatra.name} pada ${JHORA_PANCHANGA.nakshatra.pada} (${JHORA_PANCHANGA.nakshatra.percentLeft}% left)`, () => {
         expect(pa.nakshatra.name).toBe(JHORA_PANCHANGA.nakshatra.name);
         expect(pa.nakshatra.index).toBe(JHORA_PANCHANGA.nakshatra.index);
         expect(pa.nakshatra.pada).toBe(JHORA_PANCHANGA.nakshatra.pada);
-        expect(Math.abs((100 - pa.nakshatra.percent) - JHORA_PANCHANGA.nakshatra.percentLeft)).toBeLessThan(tol);
+        expect(
+            Math.abs(100 - pa.nakshatra.percent - JHORA_PANCHANGA.nakshatra.percentLeft),
+        ).toBeLessThan(tol);
     });
 
     test(`Yoga = ${JHORA_PANCHANGA.yoga.name}`, () => {

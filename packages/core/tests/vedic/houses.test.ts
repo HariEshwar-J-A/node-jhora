@@ -21,7 +21,7 @@ describe('House Systems', () => {
         expect(res.cusps.length).toBe(12);
 
         // Verify Equal 30 deg
-        const diff1 = (res.cusps[1] - res.cusps[0]);
+        const diff1 = res.cusps[1] - res.cusps[0];
         // handle wrap
         const diffNorm = diff1 < 0 ? diff1 + 360 : diff1;
         expect(diffNorm).toBeCloseTo(30);

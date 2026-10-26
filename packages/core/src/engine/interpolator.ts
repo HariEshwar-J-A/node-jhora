@@ -1,4 +1,3 @@
-
 import { DateTime } from 'luxon';
 
 import { Body, EPHEMERIS_BODIES } from '../core/body.js';
@@ -13,7 +12,7 @@ export class EphemerisInterpolator {
     private snapshots: PlanetSnapshot[] = [];
     private ephemeris: EphemerisEngine;
     private stepMs: number = 0;
-    
+
     // Cache bounds
     private startTime: number = 0;
     private endTime: number = 0;
@@ -37,21 +36,25 @@ export class EphemerisInterpolator {
 
         let cursor = start;
         const targetIds = [...EPHEMERIS_BODIES];
-        
+
         // Loop and fill
         while (cursor <= end) {
             // Get Planest sync? Ephemeris usually cache friendly?
             // EphemerisEngine.getPlanets is the call.
-            const planets = this.ephemeris.getPlanets(cursor, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1, topocentric: true });
-            
+            const planets = this.ephemeris.getPlanets(
+                cursor,
+                { latitude: 0, longitude: 0 },
+                { ayanamsaOrder: 1, topocentric: true },
+            );
+
             // Store compacted
-            // Map ID to index specific? 
+            // Map ID to index specific?
             // Let's store compact array: index 0=Sun, 1=Moon...
             // Or better, Map ID -> Lon.
             // For perf, fixed index array is best.
             // 0=Sun, 1=Moon, 2=Mer, 3=Ven, 4=Mar, 5=Jup, 6=Sat, 7=Rahu, 8=Ketu.
             const pArr = new Float32Array(9);
-            
+
             // Map:
             const getIdIdx = (id: number) => {
                 if (id <= Body.Saturn) return id;
@@ -60,14 +63,14 @@ export class EphemerisInterpolator {
                 return -1;
             };
 
-            planets.forEach(p => {
+            planets.forEach((p) => {
                 const idx = getIdIdx(p.id);
                 if (idx >= 0) pArr[idx] = p.longitude;
             });
 
             this.snapshots.push({
                 time: cursor.toMillis(),
-                positions: pArr
+                positions: pArr,
             });
 
             cursor = cursor.plus({ hours: stepHours });
@@ -84,7 +87,11 @@ export class EphemerisInterpolator {
             // Out of bounds - Fallback or Error?
             // Fallback to real engine (slow but works)
             // Fallback to real engine (slow but works)
-            return this.ephemeris.getPlanets(time, { latitude: 0, longitude: 0 }, { ayanamsaOrder: 1, topocentric: true });
+            return this.ephemeris.getPlanets(
+                time,
+                { latitude: 0, longitude: 0 },
+                { ayanamsaOrder: 1, topocentric: true },
+            );
         }
 
         // Find indices
@@ -92,7 +99,7 @@ export class EphemerisInterpolator {
         const fractionalIndex = (t - this.startTime) / this.stepMs;
         const i1 = Math.floor(fractionalIndex);
         const i2 = i1 + 1;
-        
+
         if (i1 >= this.snapshots.length - 1) {
             // End of range
             return this.unpack(this.snapshots[this.snapshots.length - 1].positions);
@@ -100,7 +107,7 @@ export class EphemerisInterpolator {
 
         const s1 = this.snapshots[i1];
         const s2 = this.snapshots[i2];
-        
+
         const ratio = fractionalIndex - i1; // 0..1
 
         // Interpolate
@@ -108,18 +115,18 @@ export class EphemerisInterpolator {
         for (let i = 0; i < 9; i++) {
             let v1 = s1.positions[i];
             let v2 = s2.positions[i];
-            
+
             // Handle 360 wrap
-            // ex: 359 -> 1. Diff is 2. 
+            // ex: 359 -> 1. Diff is 2.
             // if v2-v1 < -180 (359 to 1: -358), then v2 += 360 (361).
             // if v2-v1 > 180 (1 to 359: 358), then v1 += 360 (361).
             if (v2 - v1 < -180) v2 += 360;
             else if (v2 - v1 > 180) v1 += 360;
-            
+
             let val = v1 + (v2 - v1) * ratio;
             if (val >= 360) val -= 360;
             if (val < 0) val += 360;
-            
+
             result[i] = val;
         }
 
@@ -130,9 +137,19 @@ export class EphemerisInterpolator {
         // Reconstruct PlanetPosition objects
         // 0=Sun, 1=Moon...
         // Names needed?
-        const names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+        const names = [
+            'Sun',
+            'Moon',
+            'Mercury',
+            'Venus',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+            'Rahu',
+            'Ketu',
+        ];
         const ids = [...EPHEMERIS_BODIES];
-        
+
         return ids.map((id, idx) => ({
             id,
             name: names[idx],
@@ -140,7 +157,7 @@ export class EphemerisInterpolator {
             speed: 0, // Interpolated speed not calc
             latitude: 0,
             distance: 0,
-            declination: 0
+            declination: 0,
         }));
     }
 }

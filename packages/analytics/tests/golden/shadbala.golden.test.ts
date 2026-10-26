@@ -7,10 +7,13 @@
  * Units: Virupas (raw). 1 Rupa = 60 Virupas.
  * BPHS minimum strength thresholds (Rupas): Sun=5, Moon=6, Mars=5, Merc=7, Jup=6.5, Ven=5.5, Sat=5
  */
-import { calculateUchchaBala, calculateKendraBala, calculateOjayugmarasyamsaBala } from '../../src/shadbala.js';
+import {
+    calculateUchchaBala,
+    calculateKendraBala,
+    calculateOjayugmarasyamsaBala,
+} from '../../src/shadbala.js';
 
 describe('Golden: Shadbala Components', () => {
-
     // ---------------------------------------------------------------------------
     // Uchcha Bala (Exaltation Strength)
     // Formula: (1/3) * (180 - |lon - exaltPoint|)
@@ -116,7 +119,7 @@ describe('Golden: Shadbala Components', () => {
         // We test via the full calculator — individual export not available in v1
         // These are computed from BPHS ratios: 60*(7/7), 60*(6/7), 60*(5/7)...
         test('BPHS ratio sanity: Sun(60) > Moon(51.43) > Venus(42.85)', () => {
-            expect(60.00).toBeGreaterThan(51.43);
+            expect(60.0).toBeGreaterThan(51.43);
             expect(51.43).toBeGreaterThan(42.85);
         });
     });

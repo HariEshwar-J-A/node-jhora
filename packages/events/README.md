@@ -32,13 +32,13 @@ const event = await scanner.findEventTime(start, end, (date) => {
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
-| **Generic Solver** | Binary search for any boolean condition flip within a time window |
-| **Sign Ingress** | `findIngress()` — planet enters specific sign |
-| **Auto Next Ingress** | `findNextIngress()` — auto-detect next sign boundary |
-| **Stationary Points** | `findStationaryPoint()` — retrograde/direct station detection |
-| **Configurable Precision** | Default 60s, adjustable to sub-second |
+| Feature                    | Description                                                       |
+| :------------------------- | :---------------------------------------------------------------- |
+| **Generic Solver**         | Binary search for any boolean condition flip within a time window |
+| **Sign Ingress**           | `findIngress()` — planet enters specific sign                     |
+| **Auto Next Ingress**      | `findNextIngress()` — auto-detect next sign boundary              |
+| **Stationary Points**      | `findStationaryPoint()` — retrograde/direct station detection     |
+| **Configurable Precision** | Default 60s, adjustable to sub-second                             |
 
 ## Exports
 

@@ -8,7 +8,12 @@ import {
     parseTimezoneField,
     parseUtcOffsetMinutes,
 } from './field-parsers.js';
-import type { CsvColumnMapping, CsvColumnRole, CsvMappingSuggestion, CsvParsedTable } from './types.js';
+import type {
+    CsvColumnMapping,
+    CsvColumnRole,
+    CsvMappingSuggestion,
+    CsvParsedTable,
+} from './types.js';
 
 const HEADER_HINTS: Record<CsvColumnRole, RegExp[]> = {
     name: [/^name$/i, /^chart\s*name$/i, /^person$/i, /^native$/i, /^title$/i],

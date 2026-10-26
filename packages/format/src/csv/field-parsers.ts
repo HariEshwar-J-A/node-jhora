@@ -100,7 +100,9 @@ export function parseTimeField(raw: string): ParsedTime | undefined {
     return undefined;
 }
 
-export function parseCombinedDateTime(raw: string): { date: ParsedDate; time: ParsedTime } | undefined {
+export function parseCombinedDateTime(
+    raw: string,
+): { date: ParsedDate; time: ParsedTime } | undefined {
     const s = raw.trim();
     if (!s) return undefined;
     const dt = DateTime.fromISO(s, { setZone: true });

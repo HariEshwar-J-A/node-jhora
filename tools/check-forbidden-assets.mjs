@@ -17,24 +17,10 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const SKIP_DIRS = new Set([
-    'node_modules',
-    'dist',
-    '.git',
-    'coverage',
-    '.turbo',
-    '.next',
-]);
+export const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', 'coverage', '.turbo', '.next']);
 
 /** Extensions that do not belong in this repository at all. */
-export const FORBIDDEN_EXTENSIONS = new Set([
-    '.chm',
-    '.hlp',
-    '.ico',
-    '.bmp',
-    '.exe',
-    '.dll',
-]);
+export const FORBIDDEN_EXTENSIONS = new Set(['.chm', '.hlp', '.ico', '.bmp', '.exe', '.dll']);
 
 /**
  * Case-insensitive substrings typical of decompiler listings.
@@ -55,9 +41,26 @@ export const CONTENT_EXEMPT = new Set([
 ]);
 
 const TEXT_EXTENSIONS = new Set([
-    '.ts', '.tsx', '.js', '.mjs', '.cjs', '.jsx', '.md', '.json', '.txt',
-    '.html', '.css', '.yml', '.yaml', '.csv', '.ini', '.py', '.java', '.cs',
-    '.c', '.h',
+    '.ts',
+    '.tsx',
+    '.js',
+    '.mjs',
+    '.cjs',
+    '.jsx',
+    '.md',
+    '.json',
+    '.txt',
+    '.html',
+    '.css',
+    '.yml',
+    '.yaml',
+    '.csv',
+    '.ini',
+    '.py',
+    '.java',
+    '.cs',
+    '.c',
+    '.h',
 ]);
 
 const MAX_TEXT_BYTES = 1_000_000;

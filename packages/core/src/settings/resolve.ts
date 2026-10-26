@@ -59,8 +59,14 @@ export interface LegacyCalculationInput {
 export type SettingsInput = PresetId | Partial<CalculationSettings> | LegacyCalculationInput;
 
 const SETTINGS_MARKS = [
-    'schemaVersion', 'ephemerisPolicy', 'ayanamsa', 'ayanamsaOffsetDeg', 'dasaYear',
-    'vargaVariants', 'cuspsInMiddle', 'customAyanamsaMode',
+    'schemaVersion',
+    'ephemerisPolicy',
+    'ayanamsa',
+    'ayanamsaOffsetDeg',
+    'dasaYear',
+    'vargaVariants',
+    'cuspsInMiddle',
+    'customAyanamsaMode',
 ] as const;
 
 export function isSettingsShape(value: object): value is Partial<CalculationSettings> {
@@ -68,7 +74,9 @@ export function isSettingsShape(value: object): value is Partial<CalculationSett
     if (SETTINGS_MARKS.some((key) => record[key] !== undefined)) return true;
     if (record.sunrise !== undefined && typeof record.sunrise === 'object') return true;
     const house = record.houseSystem;
-    return house === 'whole_sign' || house === 'equal' || house === 'placidus' || house === 'porphyry';
+    return (
+        house === 'whole_sign' || house === 'equal' || house === 'placidus' || house === 'porphyry'
+    );
 }
 
 export interface ResolvedCalculation {
@@ -90,7 +98,9 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         horaScheme: settings.horaScheme,
         sunriseHour: settings.sunrise.nominalHour,
         dashaYearDays: settings.dasaYear.days,
-        ...(settings.precisionProfile !== 'jhora' ? { precisionProfile: settings.precisionProfile } : {}),
+        ...(settings.precisionProfile !== 'jhora'
+            ? { precisionProfile: settings.precisionProfile }
+            : {}),
         ...(settings.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: settings.deltaTOverrideSeconds }
             : {}),
@@ -118,9 +128,10 @@ export function jyotishConfigToSettings(
         topocentric: config.topocentric,
         altitudeMetres: config.altitudeMetres,
         sunrise: { ...base.sunrise, nominalHour: config.sunriseHour },
-        dasaYear: config.dashaYearDays === base.dasaYear.days
-            ? base.dasaYear
-            : { kind: inferDasaYearKind(config.dashaYearDays), days: config.dashaYearDays },
+        dasaYear:
+            config.dashaYearDays === base.dasaYear.days
+                ? base.dasaYear
+                : { kind: inferDasaYearKind(config.dashaYearDays), days: config.dashaYearDays },
         dasamsaScheme: config.dasamsaScheme,
         horaScheme: config.horaScheme,
         vargaVariants: {
@@ -131,7 +142,10 @@ export function jyotishConfigToSettings(
     });
 }
 
-function mergeSettings(base: CalculationSettings, patch: Partial<CalculationSettings>): CalculationSettings {
+function mergeSettings(
+    base: CalculationSettings,
+    patch: Partial<CalculationSettings>,
+): CalculationSettings {
     return CalculationSettingsSchema.parse({
         ...base,
         ...patch,
@@ -153,7 +167,8 @@ export function resolveCalculationInput(
 
     const record = input as LegacyCalculationInput & Partial<CalculationSettings>;
     if (typeof record.preset === 'string') {
-        if (!isPresetId(record.preset)) throw new Error(`Unknown calculation preset: ${record.preset}`);
+        if (!isPresetId(record.preset))
+            throw new Error(`Unknown calculation preset: ${record.preset}`);
         const { preset: _preset, ...rest } = record;
         return resolveCalculationInput(rest, getPreset(record.preset));
     }
@@ -174,7 +189,11 @@ export function describeCalculation(
     base?: CalculationSettings,
 ): ResolvedCalculation {
     const settings = base ? resolveCalculationInput(input, base) : resolveCalculationInput(input);
-    return { settings, settingsHash: hashSettings(settings), config: settingsToJyotishConfig(settings) };
+    return {
+        settings,
+        settingsHash: hashSettings(settings),
+        config: settingsToJyotishConfig(settings),
+    };
 }
 
 export interface FlatBirthSettings {
@@ -204,7 +223,9 @@ export function settingsFromFlat(fields: FlatBirthSettings): CalculationSettings
         schemaVersion: 1,
         ayanamsa: fields.ayanamsa,
         ayanamsaOffsetDeg: fields.ayanamsaOffsetDeg,
-        ...(fields.customAyanamsaMode !== undefined ? { customAyanamsaMode: fields.customAyanamsaMode } : {}),
+        ...(fields.customAyanamsaMode !== undefined
+            ? { customAyanamsaMode: fields.customAyanamsaMode }
+            : {}),
         nodeType: fields.nodeType,
         houseSystem: fields.houseSystem,
         cuspsInMiddle: fields.cuspsInMiddle ?? false,
@@ -227,7 +248,9 @@ export function flatFromSettings(settings: CalculationSettings): Record<string, 
     return {
         ayanamsa: settings.ayanamsa,
         ayanamsaOffset: settings.ayanamsaOffsetDeg,
-        ...(settings.customAyanamsaMode !== undefined ? { customAyanamsaMode: settings.customAyanamsaMode } : {}),
+        ...(settings.customAyanamsaMode !== undefined
+            ? { customAyanamsaMode: settings.customAyanamsaMode }
+            : {}),
         nodeType: settings.nodeType,
         houseSystem: settings.houseSystem,
         cuspsInMiddle: settings.cuspsInMiddle,
@@ -251,9 +274,13 @@ export function flatFromSettings(settings: CalculationSettings): Record<string, 
  * returned unchanged.
  */
 export function expandCalculationBody(body: Record<string, unknown>): Record<string, unknown> {
-    const preset = typeof body.preset === 'string' && isPresetId(body.preset) ? body.preset : undefined;
+    const preset =
+        typeof body.preset === 'string' && isPresetId(body.preset) ? body.preset : undefined;
     const invalidPreset = typeof body.preset === 'string' && !isPresetId(body.preset);
-    const hasSettings = body.settings !== null && typeof body.settings === 'object' && !Array.isArray(body.settings);
+    const hasSettings =
+        body.settings !== null &&
+        typeof body.settings === 'object' &&
+        !Array.isArray(body.settings);
     const hasYear = typeof body.dasaYearDays === 'number';
     if (invalidPreset || (!preset && !hasSettings && !hasYear)) return body;
 
@@ -261,13 +288,18 @@ export function expandCalculationBody(body: Record<string, unknown>): Record<str
     if (hasSettings) settings = resolveCalculationInput(body.settings as SettingsInput, settings);
     if (hasYear) {
         const days = body.dasaYearDays as number;
-        const kind = typeof body.dasaYearKind === 'string'
-            ? body.dasaYearKind as DasaYearKind
-            : inferDasaYearKind(days);
+        const kind =
+            typeof body.dasaYearKind === 'string'
+                ? (body.dasaYearKind as DasaYearKind)
+                : inferDasaYearKind(days);
         settings = resolveCalculationInput({ dasaYear: { kind, days } }, settings);
     }
 
-    const next: Record<string, unknown> = { ...flatFromSettings(settings), ...body, applyDasaYear: true };
+    const next: Record<string, unknown> = {
+        ...flatFromSettings(settings),
+        ...body,
+        applyDasaYear: true,
+    };
     delete next.settings;
     return next;
 }

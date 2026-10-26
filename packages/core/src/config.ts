@@ -27,9 +27,18 @@
  */
 
 import type { PrecisionProfile } from './engine/deltat.js';
-import { AYANAMSA, DEFAULT_NODE_TYPE, DEFAULT_POSITION_MODE, type PositionMode } from './engine/ephemeris.js';
-import {          type DasamsaScheme, DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME,
-type HoraScheme }                                  from './vedic/vargas.js';
+import {
+    AYANAMSA,
+    DEFAULT_NODE_TYPE,
+    DEFAULT_POSITION_MODE,
+    type PositionMode,
+} from './engine/ephemeris.js';
+import {
+    type DasamsaScheme,
+    DEFAULT_DASAMSA_SCHEME,
+    DEFAULT_HORA_SCHEME,
+    type HoraScheme,
+} from './vedic/vargas.js';
 
 /** House systems the engine can produce. */
 export type HouseSystem = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
@@ -122,19 +131,19 @@ export const TROPICAL_YEAR_DAYS = 365.242189623;
  * classical Parashara rules.
  */
 export const DEFAULT_CONFIG: JyotishConfig = {
-    positionMode:   DEFAULT_POSITION_MODE,
-    topocentric:    false,
+    positionMode: DEFAULT_POSITION_MODE,
+    topocentric: false,
     altitudeMetres: 0,
 
-    ayanamsaMode:   AYANAMSA.TRUE_CITRA,
+    ayanamsaMode: AYANAMSA.TRUE_CITRA,
     ayanamsaOffset: 0,
 
-    nodeType:       DEFAULT_NODE_TYPE,
-    houseSystem:    'WholeSign',
-    dasamsaScheme:  DEFAULT_DASAMSA_SCHEME,
-    horaScheme:     DEFAULT_HORA_SCHEME,
-    sunriseHour:    6.0,
-    dashaYearDays:  TROPICAL_YEAR_DAYS,
+    nodeType: DEFAULT_NODE_TYPE,
+    houseSystem: 'WholeSign',
+    dasamsaScheme: DEFAULT_DASAMSA_SCHEME,
+    horaScheme: DEFAULT_HORA_SCHEME,
+    sunriseHour: 6.0,
+    dashaYearDays: TROPICAL_YEAR_DAYS,
 };
 
 /**
@@ -147,11 +156,11 @@ export const DEFAULT_CONFIG: JyotishConfig = {
  * because JHora's D10 variant is not the BPHS rule.
  */
 export const JHORA_PRESET: Partial<JyotishConfig> = {
-    ayanamsaMode:  AYANAMSA.TRUE_CITRA,
-    positionMode:  'geometric',
-    nodeType:      'true',
+    ayanamsaMode: AYANAMSA.TRUE_CITRA,
+    positionMode: 'geometric',
+    nodeType: 'true',
     dasamsaScheme: 'jhora_5_8',
-    houseSystem:   'WholeSign',
+    houseSystem: 'WholeSign',
 };
 
 /**

@@ -1,0 +1,213 @@
+# Required-check pipeline for main (install, typecheck, lint, format, unit, golden, build, docs).
+# The changeset gate runs in changeset-check.yml (job `changeset-check`) so the
+# `no-changeset` label can re-run it without re-running this matrix.
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    install:
+        name: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+
+    typecheck:
+        name: typecheck
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run typecheck
+
+    lint:
+        name: lint
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm lint
+
+    format:
+        name: format
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run format:check
+
+    unit:
+        name: unit
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm test
+
+    golden:
+        name: golden
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build
+            - run: pnpm run test:golden
+            - run: pnpm run check:clean-room
+            - run: pnpm run check:links
+            - run: pnpm run validate-github-templates
+
+    build:
+        name: build
+        needs: install
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+                node: [20, 22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-${{ matrix.os }}-node${{ matrix.node }}-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build
+
+    docs:
+        name: docs
+        needs: install
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22.23.4'
+                  cache: pnpm
+            - name: Restore turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-ubuntu-latest-node22.23.4-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      turbo-ubuntu-latest-node22.23.4-
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build
+            - run: pnpm run docs:build

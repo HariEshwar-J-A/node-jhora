@@ -16,64 +16,69 @@ const { AYANAMSA_IDS, AYANAMSA_MODE_BY_ID } = schema;
 const { AYANAMSA_MODELS } = ayanamsaModule;
 
 const AYANAMSA_TS = await fs.readFile(
-  path.join(REPO_ROOT, 'packages/core/src/engine/ayanamsa.ts'),
-  'utf8',
+    path.join(REPO_ROOT, 'packages/core/src/engine/ayanamsa.ts'),
+    'utf8',
 );
 
 /** Pull inline // comments on the same line as a model entry. */
 function lineCommentForMode(mode) {
-  const re = new RegExp(`^\\s*${mode}:\\s*\\{[^}]+\\},?\\s*//\\s*(.+)$`, 'm');
-  const m = AYANAMSA_TS.match(re);
-  return m ? m[1].trim() : null;
+    const re = new RegExp(`^\\s*${mode}:\\s*\\{[^}]+\\},?\\s*//\\s*(.+)$`, 'm');
+    const m = AYANAMSA_TS.match(re);
+    return m ? m[1].trim() : null;
 }
 
 function describeModel(mode, model) {
-  if (!model) return { kind: 'fallback', detail: 'No registry entry; `getAyanamsa` uses True Chitrapaksha (mode 27).' };
-  if (model.kind === 'star') {
+    if (!model)
+        return {
+            kind: 'fallback',
+            detail: 'No registry entry; `getAyanamsa` uses True Chitrapaksha (mode 27).',
+        };
+    if (model.kind === 'star') {
+        return {
+            kind: 'star-defined',
+            detail: `${model.label}. Sidereal zero point pinned by placing the named star at ${model.atLongitude}°.`,
+            citation:
+                'Star catalogue and proper-motion handling: `packages/core/src/engine/ayanamsa.ts` (`STARS`, `starLongitudeOfDate`). IAU 2006 precession via `precession.ts`.',
+        };
+    }
+    const src = model.source ?? 'definition';
+    const line = lineCommentForMode(mode);
     return {
-      kind: 'star-defined',
-      detail: `${model.label}. Sidereal zero point pinned by placing the named star at ${model.atLongitude}°.`,
-      citation: 'Star catalogue and proper-motion handling: `packages/core/src/engine/ayanamsa.ts` (`STARS`, `starLongitudeOfDate`). IAU 2006 precession via `precession.ts`.',
+        kind: 'epoch-defined',
+        detail: `${model.label}. Anchor ${model.value}° at JD ${model.jd}.`,
+        citation: line
+            ? `Engine note: ${line}`
+            : `Provenance tag in code: \`source: '${src}'\` on the epoch model in \`ayanamsa.ts\`.`,
     };
-  }
-  const src = model.source ?? 'definition';
-  const line = lineCommentForMode(mode);
-  return {
-    kind: 'epoch-defined',
-    detail: `${model.label}. Anchor ${model.value}° at JD ${model.jd}.`,
-    citation: line
-      ? `Engine note: ${line}`
-      : `Provenance tag in code: \`source: '${src}'\` on the epoch model in \`ayanamsa.ts\`.`,
-  };
 }
 
 function mdTable(rows) {
-  const header = '| Setting id | SE mode | Kind | Summary |\n| --- | ---: | --- | --- |';
-  const lines = rows.map(
-    (r) => `| \`${r.id}\` | ${r.mode} | ${r.kind} | ${r.summary} |`,
-  );
-  return [header, ...lines].join('\n');
+    const header = '| Setting id | SE mode | Kind | Summary |\n| --- | ---: | --- | --- |';
+    const lines = rows.map((r) => `| \`${r.id}\` | ${r.mode} | ${r.kind} | ${r.summary} |`);
+    return [header, ...lines].join('\n');
 }
 
 async function writeAyanamsaCatalogue() {
-  const rows = [];
-  const sections = [];
+    const rows = [];
+    const sections = [];
 
-  for (const id of AYANAMSA_IDS) {
-    const mode = AYANAMSA_MODE_BY_ID[id];
-    const model = AYANAMSA_MODELS[mode];
-    const info = describeModel(mode, model);
-    rows.push({
-      id,
-      mode,
-      kind: info.kind,
-      summary: model?.label ?? 'Falls back to True Chitrapaksha',
-    });
+    for (const id of AYANAMSA_IDS) {
+        const mode = AYANAMSA_MODE_BY_ID[id];
+        const model = AYANAMSA_MODELS[mode];
+        const info = describeModel(mode, model);
+        rows.push({
+            id,
+            mode,
+            kind: info.kind,
+            summary: model?.label ?? 'Falls back to True Chitrapaksha',
+        });
 
-    sections.push(`### \`${id}\` (mode ${mode})\n\n${info.detail}\n\n${info.citation ? `**Citation:** ${info.citation}\n` : ''}`);
-  }
+        sections.push(
+            `### \`${id}\` (mode ${mode})\n\n${info.detail}\n\n${info.citation ? `**Citation:** ${info.citation}\n` : ''}`,
+        );
+    }
 
-  const body = `---
+    const body = `---
 title: Ayanamsa catalogue
 description: Supported sidereal zero-point models, generated from the core engine registry.
 ---
@@ -91,12 +96,12 @@ ${mdTable(rows)}
 ${sections.join('\n')}
 `;
 
-  await fs.mkdir(GENERATED_CATALOGUES, { recursive: true });
-  await fs.writeFile(path.join(GENERATED_CATALOGUES, 'ayanamsas.md'), body, 'utf8');
+    await fs.mkdir(GENERATED_CATALOGUES, { recursive: true });
+    await fs.writeFile(path.join(GENERATED_CATALOGUES, 'ayanamsas.md'), body, 'utf8');
 }
 
 async function writeStub(name, title, blurb) {
-  const body = `---
+    const body = `---
 title: ${JSON.stringify(title)}
 description: Placeholder catalogue; a generator script will replace this content.
 ---
@@ -105,32 +110,32 @@ ${blurb}
 
 > **Stub:** This catalogue will be filled automatically once the varga, dasa, and yoga registries (E4-S1) expose machine-readable metadata in \`packages/core\`.
 `;
-  await fs.writeFile(path.join(GENERATED_CATALOGUES, `${name}.md`), body, 'utf8');
+    await fs.writeFile(path.join(GENERATED_CATALOGUES, `${name}.md`), body, 'utf8');
 }
 
 export async function generateCatalogues() {
-  await fs.mkdir(GENERATED_CATALOGUES, { recursive: true });
-  await writeAyanamsaCatalogue();
-  await writeStub(
-    'vargas',
-    'Varga catalogue',
-    'Divisional chart definitions (D1–D60 and variants) will be listed here with scheme ids and literature citations.',
-  );
-  await writeStub(
-    'dasas',
-    'Dasa catalogue',
-    'Vimshottari, Yogini, Narayana, Chara, and future dasa systems will be listed here with year-length options and seed rules.',
-  );
-  await writeStub(
-    'yogas',
-    'Yoga catalogue',
-    'Rule-based yogas from `@node-jhora/analytics` will be exported here with predicate summaries and sources.',
-  );
+    await fs.mkdir(GENERATED_CATALOGUES, { recursive: true });
+    await writeAyanamsaCatalogue();
+    await writeStub(
+        'vargas',
+        'Varga catalogue',
+        'Divisional chart definitions (D1–D60 and variants) will be listed here with scheme ids and literature citations.',
+    );
+    await writeStub(
+        'dasas',
+        'Dasa catalogue',
+        'Vimshottari, Yogini, Narayana, Chara, and future dasa systems will be listed here with year-length options and seed rules.',
+    );
+    await writeStub(
+        'yogas',
+        'Yoga catalogue',
+        'Rule-based yogas from `@node-jhora/analytics` will be exported here with predicate summaries and sources.',
+    );
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  generateCatalogues().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+    generateCatalogues().catch((err) => {
+        console.error(err);
+        process.exit(1);
+    });
 }

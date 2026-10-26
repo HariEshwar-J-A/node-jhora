@@ -1,9 +1,7 @@
-
 import { calculateVarga, calculateD60 } from '../../src/vedic/vargas.js';
 import { VargaDeities } from '../../src/vedic/deities.js';
 
 describe('Advanced Varga Precision', () => {
-
     describe('D2 Hora — BPHS (default) vs Parivritti', () => {
         // BPHS puts every Hora in Leo or Cancer. The previous implementation
         // spread them across all twelve signs, which came from PyJHora's

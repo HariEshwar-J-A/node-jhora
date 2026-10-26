@@ -14,7 +14,7 @@ describe('Vedic Layer', () => {
         test('D9 Calculation (Aries 3:20)', () => {
             // 3 deg 20 min = 3.3333 deg. End of 1st Navamsa.
             // 3.3333 * 9 = 30.0
-            // Technically start of Taurus Navamsa? Or end of Aries? 
+            // Technically start of Taurus Navamsa? Or end of Aries?
             // 3.33333... is the boundary.
             // Let's test mid-Navamsa. 1.5 deg Aries.
             // 1.5 * 9 = 13.5 -> Aries sign (1), 13.5 result logic?

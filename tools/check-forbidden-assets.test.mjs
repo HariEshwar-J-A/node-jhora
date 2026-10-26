@@ -60,40 +60,58 @@ test('forbidden asset extensions fail anywhere, including fixture dirs', () => {
 });
 
 test('jhd files pass only under an allowlisted fixture path', () => {
-    withTree({
-        'data/from-install.jhd': '1\n',
-        'packages/core/tests/fixtures/oracle.jhd': '1\n',
-        'test-fixtures/batch/oracle.jhd': '1\n',
-    }, (root) => {
-        assert.deepEqual(rules(root), ['jhd-outside-fixtures:data/from-install.jhd']);
-    });
+    withTree(
+        {
+            'data/from-install.jhd': '1\n',
+            'packages/core/tests/fixtures/oracle.jhd': '1\n',
+            'test-fixtures/batch/oracle.jhd': '1\n',
+        },
+        (root) => {
+            assert.deepEqual(rules(root), ['jhd-outside-fixtures:data/from-install.jhd']);
+        },
+    );
 });
 
 test('decompiler markers fail in source and are ignored in exempt policy files', () => {
-    withTree({
-        'packages/core/src/leaked.ts': '/* Decompiled by JD-GUI */\nlet undefined4 = 1;\n',
-        'notes/ghidra.md': 'Opened in Ghidra.\n',
-        'docs/CLEAN_ROOM.md': 'markers: Decompiled by, Ghidra, undefined4\n',
-        'docs/decisions/0002-clean-room-policy.md': 'Ghidra\n',
-        'tools/check-forbidden-assets.mjs': 'Ghidra\n',
-    }, (root) => {
-        const found = rules(root);
-        assert.ok(found.includes('decompiler-marker:packages/core/src/leaked.ts'));
-        assert.ok(found.includes('decompiler-marker:notes/ghidra.md'));
-        assert.equal(found.some((line) => line.includes('CLEAN_ROOM')), false);
-        assert.equal(found.some((line) => line.includes('0002-clean-room-policy')), false);
-        assert.equal(found.some((line) => line.includes('check-forbidden-assets.mjs')), false);
-    });
+    withTree(
+        {
+            'packages/core/src/leaked.ts': '/* Decompiled by JD-GUI */\nlet undefined4 = 1;\n',
+            'notes/ghidra.md': 'Opened in Ghidra.\n',
+            'docs/CLEAN_ROOM.md': 'markers: Decompiled by, Ghidra, undefined4\n',
+            'docs/decisions/0002-clean-room-policy.md': 'Ghidra\n',
+            'tools/check-forbidden-assets.mjs': 'Ghidra\n',
+        },
+        (root) => {
+            const found = rules(root);
+            assert.ok(found.includes('decompiler-marker:packages/core/src/leaked.ts'));
+            assert.ok(found.includes('decompiler-marker:notes/ghidra.md'));
+            assert.equal(
+                found.some((line) => line.includes('CLEAN_ROOM')),
+                false,
+            );
+            assert.equal(
+                found.some((line) => line.includes('0002-clean-room-policy')),
+                false,
+            );
+            assert.equal(
+                found.some((line) => line.includes('check-forbidden-assets.mjs')),
+                false,
+            );
+        },
+    );
 });
 
 test('node_modules and dist are not scanned', () => {
-    withTree({
-        'node_modules/pkg/tool.exe': '',
-        'dist/out.dll': '',
-        'src/ok.ts': 'export {}\n',
-    }, (root) => {
-        assert.deepEqual(scan(root), []);
-    });
+    withTree(
+        {
+            'node_modules/pkg/tool.exe': '',
+            'dist/out.dll': '',
+            'src/ok.ts': 'export {}\n',
+        },
+        (root) => {
+            assert.deepEqual(scan(root), []);
+        },
+    );
 });
 
 test('the repository itself is clean', () => {

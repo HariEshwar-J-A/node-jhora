@@ -21,7 +21,17 @@ import {
     type SettingsDocument,
 } from './schema.js';
 
-const BODY_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'] as const;
+const BODY_ORDER = [
+    'Sun',
+    'Moon',
+    'Mars',
+    'Mercury',
+    'Jupiter',
+    'Venus',
+    'Saturn',
+    'Rahu',
+    'Ketu',
+] as const;
 const CLOCK_PARTS = ['year', 'month', 'day', 'hour', 'minute', 'second'] as const;
 
 const LEGACY_PROVENANCE = { toolVersion: 'unrecorded', capturedAt: null } as const;
@@ -78,12 +88,25 @@ export interface JhoraFixture {
     };
     readonly d1: readonly JhoraBody[];
     readonly ascendant: JhoraAngle;
-    readonly siderealTime: { readonly printed: string; readonly hours: number; readonly toleranceSeconds: number };
+    readonly siderealTime: {
+        readonly printed: string;
+        readonly hours: number;
+        readonly toleranceSeconds: number;
+    };
     readonly d9: readonly JhoraBody[];
     readonly d9Ascendant: JhoraAngle;
     readonly panchanga: {
-        readonly tithi: { readonly name: string; readonly index: number; readonly percentLeft: number };
-        readonly nakshatra: { readonly name: string; readonly index: number; readonly pada: number; readonly percentLeft: number };
+        readonly tithi: {
+            readonly name: string;
+            readonly index: number;
+            readonly percentLeft: number;
+        };
+        readonly nakshatra: {
+            readonly name: string;
+            readonly index: number;
+            readonly pada: number;
+            readonly percentLeft: number;
+        };
         readonly yoga: { readonly name: string; readonly percentLeft: number };
         readonly karana: { readonly name: string; readonly percentLeft: number };
         readonly vara: { readonly name: string; readonly index: number };
@@ -106,7 +129,11 @@ export interface HorizonsFixture {
         readonly label: string;
         readonly jd: number;
         readonly utc: DateParts;
-        readonly bodies: readonly { readonly name: string; readonly lon: number; readonly lat: number }[];
+        readonly bodies: readonly {
+            readonly name: string;
+            readonly lon: number;
+            readonly lat: number;
+        }[];
     }[];
     readonly toleranceArcsec: { readonly longitude: number; readonly latitude: number };
     readonly futureToleranceArcsec: { readonly longitude: number; readonly latitude: number };
@@ -134,7 +161,11 @@ function putSeconds(out: ExpectedMap, path: string, value: string | number, seco
 }
 
 function sorted<T>(record: Record<string, T>): Record<string, T> {
-    return Object.fromEntries(Object.keys(record).sort().map((key) => [key, record[key]]));
+    return Object.fromEntries(
+        Object.keys(record)
+            .sort()
+            .map((key) => [key, record[key]]),
+    );
 }
 
 function finish(draft: GoldenCase): GoldenCase {
@@ -206,7 +237,10 @@ function bodiesOf(expected: ExpectedMap, varga: string): JhoraBody[] {
             toleranceArcsec: angle.toleranceArcsec,
         };
         if (`${base}.retrograde` in expected) {
-            bodies.push({ ...body, retrograde: exactValue<boolean>(expected, `${base}.retrograde`) });
+            bodies.push({
+                ...body,
+                retrograde: exactValue<boolean>(expected, `${base}.retrograde`),
+            });
         } else {
             bodies.push(body);
         }
@@ -236,7 +270,12 @@ export function toJhoraGoldenCase(fixture: JhoraFixture): GoldenCase {
     putExact(expected, 'ayanamsa.mode', fixture.ayanamsa.mode);
     writeBodies(expected, 'd1', fixture.d1);
     writeAngle(expected, 'd1.ascendant', fixture.ascendant);
-    putSeconds(expected, 'siderealTime.hours', fixture.siderealTime.hours, fixture.siderealTime.toleranceSeconds);
+    putSeconds(
+        expected,
+        'siderealTime.hours',
+        fixture.siderealTime.hours,
+        fixture.siderealTime.toleranceSeconds,
+    );
     putExact(expected, 'siderealTime.printed', fixture.siderealTime.printed);
     writeBodies(expected, 'd9', fixture.d9);
     writeAngle(expected, 'd9.ascendant', fixture.d9Ascendant);
@@ -301,8 +340,12 @@ export function fromJhoraGoldenCase(golden: GoldenCase): JhoraFixture {
         if (end.tolerance.type !== 'seconds' || end.tolerance.seconds !== seconds) {
             throw new Error(`dasa.vimshottari[${index}].end slack is not ${seconds} seconds`);
         }
-        if (typeof end.value !== 'string') throw new Error(`dasa.vimshottari[${index}].end must be a date`);
-        boundaries.push({ lord: exactValue(expected, `dasa.vimshottari[${index}].lord`), endsOn: end.value });
+        if (typeof end.value !== 'string')
+            throw new Error(`dasa.vimshottari[${index}].end must be a date`);
+        boundaries.push({
+            lord: exactValue(expected, `dasa.vimshottari[${index}].lord`),
+            endsOn: end.value,
+        });
     }
     const evenSignBodies: string[] = [];
     for (let index = 0; `d10.evenSignBodies[${index}]` in expected; index += 1) {
@@ -314,7 +357,10 @@ export function fromJhoraGoldenCase(golden: GoldenCase): JhoraFixture {
     }
     return {
         birth: {
-            local: { ...clockOf(expected, 'meta.birth.local'), utcOffset: exactValue(expected, 'meta.birth.utcOffsetHours') },
+            local: {
+                ...clockOf(expected, 'meta.birth.local'),
+                utcOffset: exactValue(expected, 'meta.birth.utcOffsetHours'),
+            },
             utc: clockOf(expected, 'meta.birth.utc'),
             lat: golden.input.lat,
             lon: golden.input.lon,
@@ -389,7 +435,8 @@ function readAyanamsa(expected: ExpectedMap): JhoraFixture['ayanamsa'] {
 
 function boundarySeconds(expected: ExpectedMap): number {
     const first = requireEntry(expected, 'dasa.vimshottari[0].end');
-    if (first.tolerance.type !== 'seconds') throw new Error('dasa boundary tolerance must be seconds');
+    if (first.tolerance.type !== 'seconds')
+        throw new Error('dasa boundary tolerance must be seconds');
     return first.tolerance.seconds;
 }
 
@@ -402,14 +449,22 @@ function horizonsId(label: string): string {
 function writeContract(out: ExpectedMap, fixture: HorizonsFixture): void {
     putExact(out, 'meta.contract.tolerance.longitude', fixture.toleranceArcsec.longitude);
     putExact(out, 'meta.contract.tolerance.latitude', fixture.toleranceArcsec.latitude);
-    putExact(out, 'meta.contract.futureTolerance.longitude', fixture.futureToleranceArcsec.longitude);
+    putExact(
+        out,
+        'meta.contract.futureTolerance.longitude',
+        fixture.futureToleranceArcsec.longitude,
+    );
     putExact(out, 'meta.contract.futureTolerance.latitude', fixture.futureToleranceArcsec.latitude);
     putExact(out, 'meta.contract.lastObservedDeltaTYear', fixture.lastObservedDeltaTYear);
     if (fixture.provenance) {
         putExact(out, 'meta.horizons.apiVersion', fixture.provenance.horizonsApiVersion);
         putExact(out, 'meta.horizons.ephemeris', fixture.provenance.ephemeris);
         putExact(out, 'meta.horizons.queryUrlTemplate', fixture.provenance.queryUrlTemplate);
-        putExact(out, 'meta.horizons.requestParameters', canonicalJson(fixture.provenance.requestParameters));
+        putExact(
+            out,
+            'meta.horizons.requestParameters',
+            canonicalJson(fixture.provenance.requestParameters),
+        );
     }
 }
 
@@ -425,9 +480,10 @@ export function toHorizonsGoldenCases(fixture: HorizonsFixture): GoldenCase[] {
         writeClock(expected, 'meta.birth.utc', epoch.utc);
         putExact(expected, 'time.jd', epoch.jd);
         writeContract(expected, fixture);
-        const tolerance = epoch.utc.year > fixture.lastObservedDeltaTYear
-            ? fixture.futureToleranceArcsec
-            : fixture.toleranceArcsec;
+        const tolerance =
+            epoch.utc.year > fixture.lastObservedDeltaTYear
+                ? fixture.futureToleranceArcsec
+                : fixture.toleranceArcsec;
         for (const body of epoch.bodies) {
             putArcsec(expected, `horizons.planets.${body.name}.lon`, body.lon, tolerance.longitude);
             putArcsec(expected, `horizons.planets.${body.name}.lat`, body.lat, tolerance.latitude);
@@ -435,7 +491,11 @@ export function toHorizonsGoldenCases(fixture: HorizonsFixture): GoldenCase[] {
         const toolVersion = fixture.provenance?.ephemeris ?? LEGACY_PROVENANCE.toolVersion;
         return finish({
             id: horizonsId(epoch.label),
-            provenance: { source: 'horizons', toolVersion, capturedAt: LEGACY_PROVENANCE.capturedAt },
+            provenance: {
+                source: 'horizons',
+                toolVersion,
+                capturedAt: LEGACY_PROVENANCE.capturedAt,
+            },
             input: {
                 instant: utcInstant(epoch.utc),
                 timezone: 'UTC',
@@ -475,16 +535,23 @@ export function fromHorizonsGoldenCases(cases: readonly GoldenCase[]): HorizonsF
             }),
         };
     });
-    const provenance = 'meta.horizons.ephemeris' in first.expected
-        ? {
-            horizonsApiVersion: exactValue<string>(first.expected, 'meta.horizons.apiVersion'),
-            ephemeris: exactValue<string>(first.expected, 'meta.horizons.ephemeris'),
-            queryUrlTemplate: exactValue<string>(first.expected, 'meta.horizons.queryUrlTemplate'),
-            requestParameters: JSON.parse(
-                exactValue<string>(first.expected, 'meta.horizons.requestParameters'),
-            ) as Readonly<Record<string, string>>,
-        }
-        : undefined;
+    const provenance =
+        'meta.horizons.ephemeris' in first.expected
+            ? {
+                  horizonsApiVersion: exactValue<string>(
+                      first.expected,
+                      'meta.horizons.apiVersion',
+                  ),
+                  ephemeris: exactValue<string>(first.expected, 'meta.horizons.ephemeris'),
+                  queryUrlTemplate: exactValue<string>(
+                      first.expected,
+                      'meta.horizons.queryUrlTemplate',
+                  ),
+                  requestParameters: JSON.parse(
+                      exactValue<string>(first.expected, 'meta.horizons.requestParameters'),
+                  ) as Readonly<Record<string, string>>,
+              }
+            : undefined;
     return { epochs, ...contract, provenance };
 }
 
@@ -496,7 +563,9 @@ function indexedNames(expected: ExpectedMap, prefix: string): string[] {
     return names;
 }
 
-function readContract(expected: ExpectedMap): Pick<HorizonsFixture, 'toleranceArcsec' | 'futureToleranceArcsec' | 'lastObservedDeltaTYear'> {
+function readContract(
+    expected: ExpectedMap,
+): Pick<HorizonsFixture, 'toleranceArcsec' | 'futureToleranceArcsec' | 'lastObservedDeltaTYear'> {
     return {
         toleranceArcsec: {
             longitude: exactValue(expected, 'meta.contract.tolerance.longitude'),

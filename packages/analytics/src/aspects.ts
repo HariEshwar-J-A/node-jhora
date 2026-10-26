@@ -9,7 +9,7 @@ const NATURAL_MALEFICS = [Body.Sun, Body.Mars, Body.Saturn];
 /**
  * Calculates the Drishti Value (Aspect Value) of an Aspecting Planet on an Aspected Planet.
  * Range: 0 to 60 Virupas.
- * 
+ *
  * @param angle - Angle from Aspecting Planet to Aspected Planet (0-360).
  *                Formula: (Aspected - Aspecting + 360) % 360.
  * @param aspectingPlanetId - ID of the planet casting the aspect (for special rules).
@@ -21,7 +21,7 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
     if (angle >= 30 && angle < 60) {
         drishti = (angle - 30) / 2;
     } else if (angle >= 60 && angle < 90) {
-        drishti = (angle - 60) + 15;
+        drishti = angle - 60 + 15;
     } else if (angle >= 90 && angle < 120) {
         drishti = (120 - angle) / 2 + 30; // 45 down to 30? Wait. Formula Check.
         // User Prompt: "90-120: (120 - Angle) / 2 + 30".
@@ -71,7 +71,7 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
     // Jupiter 9th (240): Standard gives (300-240)/2 = 30. Add 30 = 60.
     // Saturn 3rd (60): Standard gives 15. Add 45 = 60.
     // Saturn 10th (270): Standard gives 15. Add 45 = 60.
-    // 
+    //
     // CONCLUSION: The additives make the special aspects exactly 60 at the peaks.
     // Therefore, I should add the "Boost" if the angle matches?
     // But what about 269 deg?
@@ -92,7 +92,7 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
     // Angle 60 is start of 60-90 sector.
     // Angle 270 is inside 180-300.
     // I will add the boost if the angle is "close" to the peak?
-    // Actually, widespread implementation: 
+    // Actually, widespread implementation:
     // Special aspect is a separate calculation, take MAX? No, prompt says ADD.
     // I will add the specific value only if Angle is within +/- 15 deg of peak?
     // Or maybe the prompt implies the Addition is constant for the House?
@@ -102,27 +102,27 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
     // Saturn at 61: Standard = 16. If we add 45 -> 61 (Cap 60).
     // Saturn at 89: Standard = 44. If we add 45 -> 89 (Cap 60).
     // This seems to imply full strength across the house?
-    // Let's assume the boosted value is applied *at the peak* and we linearly interpolate? 
+    // Let's assume the boosted value is applied *at the peak* and we linearly interpolate?
     // NO, that's too complex for "Phase 5".
-    // 
+    //
     // SIMPLIFICATION:
     // I will checking if angle is within +/- 10 degrees of the peak, and add the full value, capping at 60.
     // Mars: Peak 90, 210.
     // Jup: Peak 120, 240.
     // Sat: Peak 60, 270.
     // Better yet: Just apply the addition logic continuously using a bell curve? No.
-    // 
+    //
     // STRICT INTERPRETATION of "Add 15 virupas at 90":
     // It likely implies the term is simply added.
     // But WHERE?
     // Let's assume specific "Special Aspect Value" is added if the angle falls in the *Sign* roughly?
     // BPHS implies Full Aspect on 4th House.
     // 4th House = 90 deg to 120 deg (Whole Sign) or Peak at 90.
-    // 
+    //
     // Let's follow the standard "Drishti Pinda" calculation method found in reputable sources (e.g. Raman/JHora logic):
     // Special aspects are added.
     // Mars: Add 15 to angles 30-120?? No.
-    // 
+    //
     // REVISIT PROMPT: "Implement logic to handle the range around these peaks".
     // User left it to me.
     // Logic: Use a simplified "orb" of +/- 15 degrees (1 sign width total).
@@ -157,11 +157,14 @@ export function calculateDrishtiValue(angle: number, aspectingPlanetId: number):
 /**
  * Calculates Drig Bala for a target planet.
  * Sum of 1/4 Drishti from Benefics - 1/4 Drishti from Malefics.
- * 
+ *
  * @param targetPlanet - The planet receiving aspects.
  * @param allPlanets - List of all planets (containing positions).
  */
-export function calculateDrigBala(targetPlanet: PlanetPosition, allPlanets: PlanetPosition[]): number {
+export function calculateDrigBala(
+    targetPlanet: PlanetPosition,
+    allPlanets: PlanetPosition[],
+): number {
     let score = 0;
 
     for (const aspectingPlanet of allPlanets) {

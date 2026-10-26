@@ -18,7 +18,7 @@
  */
 
 const DEG = Math.PI / 180;
-const AS2R = Math.PI / (180 * 3600);   // arcseconds → radians
+const AS2R = Math.PI / (180 * 3600); // arcseconds → radians
 
 export type Vec = [number, number, number];
 export type Mat = [Vec, Vec, Vec];
@@ -35,12 +35,13 @@ export function julianCenturies(jd: number): number {
  *                  − 0.000000576″T⁴ − 0.0000000434″T⁵
  */
 export function meanObliquity(T: number): number {
-    const eps = 84381.406
-              - 46.836769   * T
-              -  0.0001831  * T ** 2
-              +  0.00200340 * T ** 3
-              -  0.000000576 * T ** 4
-              -  0.0000000434 * T ** 5;
+    const eps =
+        84381.406 -
+        46.836769 * T -
+        0.0001831 * T ** 2 +
+        0.0020034 * T ** 3 -
+        0.000000576 * T ** 4 -
+        0.0000000434 * T ** 5;
     return eps / 3600.0;
 }
 
@@ -49,25 +50,28 @@ export function meanObliquity(T: number): number {
  * and equinox of date. IAU 2006 (Capitaine et al. 2003).
  */
 function precessionAngles(T: number): { zeta: number; z: number; theta: number } {
-    const zeta =  2.650545
-               + 2306.083227   * T
-               +    0.2988499  * T ** 2
-               +    0.01801828 * T ** 3
-               -    0.000005971 * T ** 4
-               -    0.0000003173 * T ** 5;
+    const zeta =
+        2.650545 +
+        2306.083227 * T +
+        0.2988499 * T ** 2 +
+        0.01801828 * T ** 3 -
+        0.000005971 * T ** 4 -
+        0.0000003173 * T ** 5;
 
-    const z    = -2.650545
-               + 2306.077181   * T
-               +    1.0927348  * T ** 2
-               +    0.01826837 * T ** 3
-               -    0.000028596 * T ** 4
-               -    0.0000002904 * T ** 5;
+    const z =
+        -2.650545 +
+        2306.077181 * T +
+        1.0927348 * T ** 2 +
+        0.01826837 * T ** 3 -
+        0.000028596 * T ** 4 -
+        0.0000002904 * T ** 5;
 
-    const theta = 2004.191903  * T
-                -    0.4294934 * T ** 2
-                -    0.04182264 * T ** 3
-                -    0.000007089 * T ** 4
-                -    0.0000001274 * T ** 5;
+    const theta =
+        2004.191903 * T -
+        0.4294934 * T ** 2 -
+        0.04182264 * T ** 3 -
+        0.000007089 * T ** 4 -
+        0.0000001274 * T ** 5;
 
     return { zeta: zeta * AS2R, z: z * AS2R, theta: theta * AS2R };
 }
@@ -80,14 +84,17 @@ function precessionAngles(T: number): { zeta: number; z: number; theta: number }
 export function precessionMatrix(T: number): Mat {
     const { zeta, z, theta } = precessionAngles(T);
 
-    const cz = Math.cos(zeta),  sz = Math.sin(zeta);
-    const ct = Math.cos(theta), st = Math.sin(theta);
-    const cZ = Math.cos(z),     sZ = Math.sin(z);
+    const cz = Math.cos(zeta),
+        sz = Math.sin(zeta);
+    const ct = Math.cos(theta),
+        st = Math.sin(theta);
+    const cZ = Math.cos(z),
+        sZ = Math.sin(z);
 
     return [
-        [ cz * ct * cZ - sz * sZ,  -sz * ct * cZ - cz * sZ,  -st * cZ ],
-        [ cz * ct * sZ + sz * cZ,  -sz * ct * sZ + cz * cZ,  -st * sZ ],
-        [ cz * st,                 -sz * st,                  ct      ],
+        [cz * ct * cZ - sz * sZ, -sz * ct * cZ - cz * sZ, -st * cZ],
+        [cz * ct * sZ + sz * cZ, -sz * ct * sZ + cz * cZ, -st * sZ],
+        [cz * st, -sz * st, ct],
     ];
 }
 
@@ -115,7 +122,8 @@ export function matTransposeVec(m: Mat, v: Vec): Vec {
 /** Rotate about the x-axis by `angleDeg` (equatorial → ecliptic uses +ε). */
 export function rotateX(v: Vec, angleDeg: number): Vec {
     const a = angleDeg * DEG;
-    const c = Math.cos(a), s = Math.sin(a);
+    const c = Math.cos(a),
+        s = Math.sin(a);
     return [v[0], v[1] * c + v[2] * s, -v[1] * s + v[2] * c];
 }
 

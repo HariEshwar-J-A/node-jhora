@@ -13,7 +13,12 @@ npm install @node-jhora/match @node-jhora/core
 ## Quick Start
 
 ```typescript
-import { calculateAshtaKuta, calculateDashaKuta, PoruthamMatch, checkMangalDosha } from '@node-jhora/match';
+import {
+    calculateAshtaKuta,
+    calculateDashaKuta,
+    PoruthamMatch,
+    checkMangalDosha,
+} from '@node-jhora/match';
 
 // North Indian — Ashta Kuta (36 points max)
 const north = calculateAshtaKuta(boyStar, girlStar, boySign, girlSign);
@@ -32,14 +37,14 @@ console.log(`Status: ${dosha.matchStatus}`); // 'None' | 'Present' | 'Cancel'
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
+| Feature                | Description                                                                    |
+| :--------------------- | :----------------------------------------------------------------------------- |
 | **Ashta Kuta (North)** | 8 kutas: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi (36 pts) |
-| **Dasha Kuta (South)** | 10 Poruthams with Vedha pairs and Rajju dosha critical checks |
-| **Porutham (Simple)** | Quick 4-kuta check: Dina, Gana, Yoni, Rajju |
-| **Mangal Dosha** | Mars in houses 1/2/4/7/8/12 from Lagna, Moon, Venus with exceptions |
-| **Typed Enums** | Gana, YoniAnimal, Nadi, Rajju, Varna, Vashya |
-| **Data Tables** | Gana, Yoni (14×14 matrix), Nadi, Graha Maitri, Sign Lords, Vedha Pairs |
+| **Dasha Kuta (South)** | 10 Poruthams with Vedha pairs and Rajju dosha critical checks                  |
+| **Porutham (Simple)**  | Quick 4-kuta check: Dina, Gana, Yoni, Rajju                                    |
+| **Mangal Dosha**       | Mars in houses 1/2/4/7/8/12 from Lagna, Moon, Venus with exceptions            |
+| **Typed Enums**        | Gana, YoniAnimal, Nadi, Rajju, Varna, Vashya                                   |
+| **Data Tables**        | Gana, Yoni (14×14 matrix), Nadi, Graha Maitri, Sign Lords, Vedha Pairs         |
 
 ## Exports
 

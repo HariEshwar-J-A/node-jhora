@@ -2,7 +2,6 @@ import { calculateDrishtiValue, calculateDrigBala } from '../../src/aspects.js';
 import { PlanetPosition } from '@node-jhora/core';
 
 describe('Shadbala - Drig Bala (Aspects)', () => {
-
     describe('Drishti Value', () => {
         test('180 degrees (7th House) is 60 for any planet', () => {
             expect(calculateDrishtiValue(180, 0)).toBe(60); // Sun
@@ -52,12 +51,9 @@ describe('Shadbala - Drig Bala (Aspects)', () => {
 
         test('Benefic Aspect Adds Strength', () => {
             // Jupiter (Benefic) at 180 (Full Aspect 60).
-            const planets = [
-                target,
-                { id: 5, longitude: 180 } as PlanetPosition
-            ];
+            const planets = [target, { id: 5, longitude: 180 } as PlanetPosition];
 
-            // Angle = 0 - 180 = -180 -> 180. 
+            // Angle = 0 - 180 = -180 -> 180.
             // Drishti = 60.
             // Benefic adds 60/4 = 15.
             expect(calculateDrigBala(target, planets)).toBe(15);
@@ -65,10 +61,7 @@ describe('Shadbala - Drig Bala (Aspects)', () => {
 
         test('Malefic Aspect Subtracts Strength', () => {
             // Saturn (Malefic) at 180 (Full Aspect 60).
-            const planets = [
-                target,
-                { id: 6, longitude: 180 } as PlanetPosition
-            ];
+            const planets = [target, { id: 6, longitude: 180 } as PlanetPosition];
 
             // Malefic subtracts 60/4 = 15.
             expect(calculateDrigBala(target, planets)).toBe(-15);
@@ -81,7 +74,7 @@ describe('Shadbala - Drig Bala (Aspects)', () => {
             const planets = [
                 target,
                 { id: 5, longitude: 180 } as PlanetPosition,
-                { id: 6, longitude: 180 } as PlanetPosition
+                { id: 6, longitude: 180 } as PlanetPosition,
             ];
             expect(calculateDrigBala(target, planets)).toBe(0);
         });

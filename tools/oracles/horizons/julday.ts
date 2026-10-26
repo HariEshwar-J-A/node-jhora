@@ -8,9 +8,14 @@ export function julday(year: number, month: number, day: number, hourUT: number)
     }
     const A = Math.floor(y / 100);
     const B = 2 - A + Math.floor(A / 4);
-    return Math.floor(365.25 * (y + 4716))
-        + Math.floor(30.6001 * (m + 1))
-        + day + hourUT / 24.0 + B - 1524.5;
+    return (
+        Math.floor(365.25 * (y + 4716)) +
+        Math.floor(30.6001 * (m + 1)) +
+        day +
+        hourUT / 24.0 +
+        B -
+        1524.5
+    );
 }
 
 export function jdFromUtc(utc: {

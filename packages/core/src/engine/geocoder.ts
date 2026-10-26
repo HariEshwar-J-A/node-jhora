@@ -18,10 +18,14 @@ export interface CityData {
  */
 export class Geocoder {
     constructor() {
-        console.warn("Geocoder is not available in browser environments. Use an external geocoding API.");
+        console.warn(
+            'Geocoder is not available in browser environments. Use an external geocoding API.',
+        );
     }
 
     public async searchCity(query: string): Promise<CityData | null> {
-        throw new Error("Geocoder is not available in browser environments. Use an external geocoding API (e.g., OpenStreetMap Nominatim) instead.");
+        throw new Error(
+            'Geocoder is not available in browser environments. Use an external geocoding API (e.g., OpenStreetMap Nominatim) instead.',
+        );
     }
 }

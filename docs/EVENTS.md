@@ -11,7 +11,7 @@ The package centers on the `TransitScanner` class, which wraps the `EphemerisEng
 ```typescript
 import { TransitScanner } from '@node-jhora/events';
 
-const scanner = new TransitScanner();       // Uses EphemerisEngine singleton
+const scanner = new TransitScanner(); // Uses EphemerisEngine singleton
 // or
 const scanner = new TransitScanner(engine); // Pass a specific engine instance
 ```
@@ -24,10 +24,10 @@ The core algorithm: a **recursive binary search** that finds the exact moment a 
 
 ```typescript
 const eventTime = await scanner.findEventTime(
-    startDate,   // DateTime — window start
-    endDate,     // DateTime — window end
-    checkFn,     // (date: DateTime) => boolean — condition function
-    config       // Optional: { precisionSeconds, maxIterations }
+    startDate, // DateTime — window start
+    endDate, // DateTime — window end
+    checkFn, // (date: DateTime) => boolean — condition function
+    config, // Optional: { precisionSeconds, maxIterations }
 );
 ```
 
@@ -43,7 +43,7 @@ const eventTime = await scanner.findEventTime(
 ```typescript
 interface TransitSearchConfig {
     precisionSeconds?: number; // Default: 60 (1 minute precision)
-    maxIterations?: number;    // Safety limit for recursion
+    maxIterations?: number; // Safety limit for recursion
 }
 ```
 
@@ -59,7 +59,7 @@ const event = await scanner.findEventTime(
         const moonSign = Math.floor(moon.longitude / 30);
         return moonSign === natalSunSign;
     },
-    { precisionSeconds: 10 } // 10-second precision
+    { precisionSeconds: 10 }, // 10-second precision
 );
 ```
 
@@ -73,10 +73,10 @@ Finds when a planet enters a specific zodiac sign:
 
 ```typescript
 const ingressTime = await scanner.findIngress(
-    5,           // Planet ID (Jupiter)
-    0,           // Target sign index (0 = Aries, 11 = Pisces)
+    5, // Planet ID (Jupiter)
+    0, // Target sign index (0 = Aries, 11 = Pisces)
     searchStart, // DateTime
-    searchEnd    // Optional — defaults to +1 month
+    searchEnd, // Optional — defaults to +1 month
 );
 
 if (ingressTime) {
@@ -90,12 +90,13 @@ Automatically determines the next sign boundary based on the planet's current po
 
 ```typescript
 const nextIngress = await scanner.findNextIngress(
-    5,         // Planet ID (Jupiter)
-    startDate  // DateTime — search from this point
+    5, // Planet ID (Jupiter)
+    startDate, // DateTime — search from this point
 );
 ```
 
 **How it works:**
+
 1. Gets the planet's current position and speed.
 2. Calculates which sign boundary is next (forward for direct, backward for retrograde).
 3. Estimates the crossing time using linear interpolation.
@@ -109,9 +110,9 @@ Finds the exact moment a planet's speed crosses zero — the **retrograde statio
 
 ```typescript
 const stationTime = await scanner.findStationaryPoint(
-    6,           // Planet ID (Saturn)
-    startDate,   // DateTime
-    searchEnd    // Optional — defaults to +6 months
+    6, // Planet ID (Saturn)
+    startDate, // DateTime
+    searchEnd, // Optional — defaults to +6 months
 );
 
 if (stationTime) {
@@ -155,12 +156,12 @@ export type { TransitSearchConfig };
 
 ## 💡 Usage Tips
 
-| Scenario | Method | Typical Precision |
-| :--- | :--- | :--- |
-| "When does Mars enter Gemini?" | `findIngress(4, 2, ...)` | 1 minute |
-| "When is Mercury's next retrograde?" | `findStationaryPoint(2, ...)` | 1 minute |
-| "When does Moon cross my Ascendant?" | `findEventTime(start, end, fn)` | Custom |
-| "Next full moon" | `findEventTime(start, end, fn)` | Custom |
+| Scenario                             | Method                          | Typical Precision |
+| :----------------------------------- | :------------------------------ | :---------------- |
+| "When does Mars enter Gemini?"       | `findIngress(4, 2, ...)`        | 1 minute          |
+| "When is Mercury's next retrograde?" | `findStationaryPoint(2, ...)`   | 1 minute          |
+| "When does Moon cross my Ascendant?" | `findEventTime(start, end, fn)` | Custom            |
+| "Next full moon"                     | `findEventTime(start, end, fn)` | Custom            |
 
 ### Custom Condition Examples
 

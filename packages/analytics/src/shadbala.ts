@@ -1,4 +1,13 @@
-import { Body, getRelationship, getShortestDistance, HouseData,normalize360, PLANET_IDS, PlanetPosition, Relationship } from '@node-jhora/core';
+import {
+    Body,
+    getRelationship,
+    getShortestDistance,
+    HouseData,
+    normalize360,
+    PLANET_IDS,
+    PlanetPosition,
+    Relationship,
+} from '@node-jhora/core';
 
 import { calculateDrigBala } from './aspects.js';
 import {
@@ -7,19 +16,20 @@ import {
     calculateDigBala,
     calculateNatonataBala,
     calculatePakshaBala,
-    calculateTribhagaBala} from './shadbala_time.js';
+    calculateTribhagaBala,
+} from './shadbala_time.js';
 
 // Exaltation Points (Deep Exaltation Degree)
 // Sun: 10 Aries, Moon: 3 Taurus, Mars: 28 Capricorn, Merc: 15 Virgo
 // Jup: 5 Cancer, Ven: 27 Pisces, Sat: 20 Libra
 const EXALTATION_POINTS: { [key: number]: number } = {
-    [Body.Sun]: 10,   // Sun (Aries 10)
-    [Body.Moon]: 33,   // Moon (Taurus 3 => 30+3)
-    [Body.Mercury]: 165,  // Mercury (Virgo 15 => 150+15)
-    [Body.Venus]: 357,  // Venus (Pisces 27 => 330+27)
-    [Body.Mars]: 298,  // Mars (Capricorn 28 => 270+28)
-    [Body.Jupiter]: 95,   // Jupiter (Cancer 5 => 90+5)
-    [Body.Saturn]: 200,   // Saturn (Libra 20 => 180+20)
+    [Body.Sun]: 10, // Sun (Aries 10)
+    [Body.Moon]: 33, // Moon (Taurus 3 => 30+3)
+    [Body.Mercury]: 165, // Mercury (Virgo 15 => 150+15)
+    [Body.Venus]: 357, // Venus (Pisces 27 => 330+27)
+    [Body.Mars]: 298, // Mars (Capricorn 28 => 270+28)
+    [Body.Jupiter]: 95, // Jupiter (Cancer 5 => 90+5)
+    [Body.Saturn]: 200, // Saturn (Libra 20 => 180+20)
 };
 
 const FEMALE_PLANETS = [Body.Moon, Body.Venus];
@@ -29,13 +39,13 @@ const MALE_PLANETS = [Body.Sun, Body.Mercury, Body.Mars, Body.Jupiter, Body.Satu
 // Sun=60*(7/7)=60, Moon=60*(6/7)≈51.4286, Venus=60*(5/7)≈42.8571
 // Jupiter=60*(4/7)≈34.2857, Mercury=60*(3/7)≈25.7143, Mars=60*(2/7)≈17.1429, Saturn=60*(1/7)≈8.5714
 const NAISARGIKA_BALA: { [key: number]: number } = {
-    [Body.Sun]: 60.000000,
-    [Body.Moon]: 60 * 6 / 7,
-    [Body.Venus]: 60 * 5 / 7,
-    [Body.Jupiter]: 60 * 4 / 7,
-    [Body.Mercury]: 60 * 3 / 7,
-    [Body.Mars]: 60 * 2 / 7,
-    [Body.Saturn]: 60 * 1 / 7,
+    [Body.Sun]: 60.0,
+    [Body.Moon]: (60 * 6) / 7,
+    [Body.Venus]: (60 * 5) / 7,
+    [Body.Jupiter]: (60 * 4) / 7,
+    [Body.Mercury]: (60 * 3) / 7,
+    [Body.Mars]: (60 * 2) / 7,
+    [Body.Saturn]: (60 * 1) / 7,
 };
 
 export interface ShadbalaInput {
@@ -75,7 +85,7 @@ export interface ShadbalaResult {
         chesta: number;
         naisargika: number;
         drig: number;
-    }
+    };
 }
 
 /**
@@ -123,7 +133,7 @@ export function calculateShadbala(input: ShadbalaInput): ShadbalaResult {
     // d. Ojayugmarasyamsa
     // Need Navamsa Sign.
     // vargaPositions should contain D9.
-    const d9 = vargaPositions.find(v => v.vargaName === 'D9' || v.vargaName === 'Navamsa');
+    const d9 = vargaPositions.find((v) => v.vargaName === 'D9' || v.vargaName === 'Navamsa');
     const navamsaSign = d9 ? d9.sign : 0; // Fallback?
     const ojayugma = calculateOjayugmarasyamsaBala(planet.id, planetRashiSign, navamsaSign);
 
@@ -135,7 +145,12 @@ export function calculateShadbala(input: ShadbalaInput): ShadbalaResult {
     // 3. Kaala Bala
     const natonata = calculateNatonataBala(planet.id, sun.longitude, houses.mc);
     const paksha = calculatePakshaBala(planet.id, sun.longitude, moon.longitude);
-    const tribhaga = calculateTribhagaBala(planet.id, timeDetails.birthHour, timeDetails.sunrise, timeDetails.sunset);
+    const tribhaga = calculateTribhagaBala(
+        planet.id,
+        timeDetails.birthHour,
+        timeDetails.sunrise,
+        timeDetails.sunset,
+    );
     const ayana = calculateAyanabala(planet.id, planet.declination); // Requires declination
 
     // Kaala Total (excluding Yuddha/Ayan? Just sum these 4 is standard Kaala subset).
@@ -182,11 +197,10 @@ export function calculateShadbala(input: ShadbalaInput): ShadbalaResult {
             ayana,
             chesta,
             naisargika,
-            drig
-        }
+            drig,
+        },
     };
 }
-
 
 /**
  * Calculates Uchcha Bala (Exaltation Strength).
@@ -208,7 +222,7 @@ export function calculateUchchaBala(planetId: number, longitude: number): number
  * Kendra (1, 4, 7, 10): 60
  * Panapara (2, 5, 8, 11): 30
  * Apoklima (3, 6, 9, 12): 15
- * 
+ *
  * @param houseNumber - 1-based house number relative to Ascendant
  */
 export function calculateKendraBala(houseNumber: number): number {
@@ -222,7 +236,11 @@ export function calculateKendraBala(houseNumber: number): number {
  * Female: 15 in Even Rashi / Even Navamsa.
  * Male: 15 in Odd Rashi / Odd Navamsa.
  */
-export function calculateOjayugmarasyamsaBala(planetId: number, rashiSign: number, navamsaSign: number): number {
+export function calculateOjayugmarasyamsaBala(
+    planetId: number,
+    rashiSign: number,
+    navamsaSign: number,
+): number {
     let score = 0;
     const isOddRashi = rashiSign % 2 !== 0;
     const isOddNavamsa = navamsaSign % 2 !== 0;
@@ -244,25 +262,29 @@ export function calculateOjayugmarasyamsaBala(planetId: number, rashiSign: numbe
  * D1, D2, D3, D7, D9, D12, D30.
  * Uses Compound Relationship (Panchadha Maitri) with the Lord of the Sign occupied.
  * Scores: GF=22.5, F=15, N=11.25, E=7.5, GE=3.75
- * 
+ *
  * @param planetId
  * @param vargaData - Array of objects { vargaName: string, sign: number, lordId: number, rashiSignOfLord: number }
  * Note: We need rashiSignOfLord to calculate Tatkalika (Temprary) relationship from the Rashi Chart relative to current Planet's Rashi position?
  * User Prompt: "Calculate the relationship of the planet with the lord of the sign it resides in."
  * Typically, Tatkalika is from Rashi Asc? No, from Planet A to Planet B in Rashi.
  * So we need: Planet A's Rashi Sign and Planet B (Lord)'s Rashi Sign.
- * 
+ *
  * @param planetRashiSign - Sign of the planet in D1 (for Tatkalika calculation base)
  * @param vargaLords - Maps vargaName/Id -> { lordId: number, lordRashiSign: number }
  */
 export interface VargaInfo {
     vargaName: string;
-    sign: number;       // Sign occupied by planet in this varga
-    lordId: number;     // Planet ID of the lord of that sign
+    sign: number; // Sign occupied by planet in this varga
+    lordId: number; // Planet ID of the lord of that sign
     lordRashiSign: number; // Rashi sign of that lord (needed for Tatkalika)
 }
 
-export function calculateSaptavargajaBala(planetId: number, planetRashiSign: number, vargaPositions: VargaInfo[]): number {
+export function calculateSaptavargajaBala(
+    planetId: number,
+    planetRashiSign: number,
+    vargaPositions: VargaInfo[],
+): number {
     let totalScore = 0;
 
     for (const v of vargaPositions) {
@@ -282,7 +304,7 @@ export function calculateSaptavargajaBala(planetId: number, planetRashiSign: num
         // A planet's relationship with itself?
         // Naisargika: N/A. Tatkalika: 1st house is Enemy.
         // Logic breaks for self.
-        // Convention: Own Sign = 30 or 22.5. I will use 30 (Swakshetra typically > GF). 
+        // Convention: Own Sign = 30 or 22.5. I will use 30 (Swakshetra typically > GF).
         // BUT strict constraint: "Use standard BPHS values".
         // BPHS 7-varga: Swakshetra=30, Adhim=22.5, Mitra=15, Sama=11.25, Satru=7.5, Adhis=3.75.
         // I'll assume Swakshetra is 30.
@@ -293,11 +315,21 @@ export function calculateSaptavargajaBala(planetId: number, planetRashiSign: num
         } else {
             const rel = getRelationship(planetId, planetRashiSign, v.lordId, v.lordRashiSign);
             switch (rel) {
-                case Relationship.GreatFriend: score = 22.5; break;
-                case Relationship.Friend: score = 15; break;
-                case Relationship.Neutral: score = 11.25; break;
-                case Relationship.Enemy: score = 7.5; break;
-                case Relationship.GreatEnemy: score = 3.75; break;
+                case Relationship.GreatFriend:
+                    score = 22.5;
+                    break;
+                case Relationship.Friend:
+                    score = 15;
+                    break;
+                case Relationship.Neutral:
+                    score = 11.25;
+                    break;
+                case Relationship.Enemy:
+                    score = 7.5;
+                    break;
+                case Relationship.GreatEnemy:
+                    score = 3.75;
+                    break;
             }
         }
         totalScore += score;

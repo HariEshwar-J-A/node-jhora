@@ -28,37 +28,37 @@ curl -X POST http://localhost:3000/v1/chart \
 
 ## API Endpoints
 
-| Method | Path | Description |
-| :---: | :--- | :--- |
-| `GET` | `/health` | Server health check |
-| `POST` | `/v1/chart` | Full birth chart (planets, houses, panchanga) |
-| `POST` | `/v1/chart/vargas` | All 16 divisional charts |
-| `POST` | `/v1/panchanga` | Panchanga (5 limbs) |
-| `POST` | `/v1/dasha` | Vimshottari Dasha periods |
-| `POST` | `/v1/shadbala` | 6-fold planetary strengths |
-| `POST` | `/v1/kp` | KP sub-lords and ruling planets |
-| `POST` | `/v1/match` | Marriage compatibility matching |
+| Method | Path               | Description                                   |
+| :----: | :----------------- | :-------------------------------------------- |
+| `GET`  | `/health`          | Server health check                           |
+| `POST` | `/v1/chart`        | Full birth chart (planets, houses, panchanga) |
+| `POST` | `/v1/chart/vargas` | All 16 divisional charts                      |
+| `POST` | `/v1/panchanga`    | Panchanga (5 limbs)                           |
+| `POST` | `/v1/dasha`        | Vimshottari Dasha periods                     |
+| `POST` | `/v1/shadbala`     | 6-fold planetary strengths                    |
+| `POST` | `/v1/kp`           | KP sub-lords and ruling planets               |
+| `POST` | `/v1/match`        | Marriage compatibility matching               |
 
 ## Features
 
-| Feature | Description |
-| :--- | :--- |
-| **Fastify** | High-performance web server |
-| **Zod Validation** | Compile-time safe schemas + runtime validation |
+| Feature             | Description                                                     |
+| :------------------ | :-------------------------------------------------------------- |
+| **Fastify**         | High-performance web server                                     |
+| **Zod Validation**  | Compile-time safe schemas + runtime validation                  |
 | **City Resolution** | Pass `city` name instead of lat/lon — auto-resolves coordinates |
-| **Pino Logging** | Structured JSON logs (pretty-print in development) |
-| **CORS** | Configurable via `CORS_ORIGIN` environment variable |
-| **WASM Singleton** | Engine initialized once at startup for fast responses |
+| **Pino Logging**    | Structured JSON logs (pretty-print in development)              |
+| **CORS**            | Configurable via `CORS_ORIGIN` environment variable             |
+| **WASM Singleton**  | Engine initialized once at startup for fast responses           |
 
 ## Environment Variables
 
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `HOST` | `0.0.0.0` | Server bind address |
-| `PORT` | `3000` | Server port |
-| `LOG_LEVEL` | `info` | Log level |
-| `NODE_ENV` | — | `development` for pretty logs |
-| `CORS_ORIGIN` | `true` | CORS allowed origins |
+| Variable      | Default   | Description                   |
+| :------------ | :-------- | :---------------------------- |
+| `HOST`        | `0.0.0.0` | Server bind address           |
+| `PORT`        | `3000`    | Server port                   |
+| `LOG_LEVEL`   | `info`    | Log level                     |
+| `NODE_ENV`    | —         | `development` for pretty logs |
+| `CORS_ORIGIN` | `true`    | CORS allowed origins          |
 
 ## Dependencies
 
