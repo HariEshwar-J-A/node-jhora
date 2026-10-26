@@ -43,6 +43,8 @@ Panchanga percents are exact oracle numbers. Their comparison slack is `meta.pan
 
 Regenerate the JSON Schema and the converted fixtures with `pnpm --filter @node-jhora/testkit generate` (the testkit Jest project with `WRITE_GOLDENS=1`). Plain `pnpm test` fails if either file has drifted from the generator. Do not loosen a tolerance without a decision record.
 
+Refresh JPL Horizons astrometry oracles with `pnpm horizons:refresh` (writes `packages/core/tests/fixtures/horizons_golden.ts` from the public Horizons API), then run `pnpm --filter @node-jhora/testkit generate`. `pnpm horizons:refresh --check` verifies the TypeScript fixture is current without writing files.
+
 ## Comparator
 
 `@node-jhora/testkit` compares a golden case to a flat `actual` map keyed by feature path:

@@ -48,6 +48,8 @@ const SAMPLES: Record<string, string> = {
     'meta-epoch-bodies': 'meta.epoch.bodies[0]',
     'meta-deltat-year': 'meta.contract.lastObservedDeltaTYear',
     'meta-tolerance': 'meta.contract.futureTolerance.latitude',
+    'meta-horizons-api': 'meta.horizons.ephemeris',
+    'meta-horizons-params': 'meta.horizons.requestParameters',
 };
 
 function entryFor(rule: FeaturePathRule): ExpectedEntry {
@@ -87,7 +89,7 @@ describe('feature path registry', () => {
     });
 
     it('rejects unknown paths', () => {
-        for (const path of ['d1.planets.Sun.speed', 'd1.planets.Pluto.lon', 'd99.planets.Sun.lon', 'd61.planets.Sun.lon', 'd0.planets.Sun.lon', 'd01.planets.Sun.lon', 'dasa.vimshottari.lord', 'dasa.vimshottari[0][1][2][3][4][5][6].end', 'dasa.unknown[0].lord', 'dasa.vimshottari[0].middle', 'D1.planets.Sun.lon']) {
+        for (const path of ['d1.planets.Sun.speed', 'd1.planets.Ceres.lon', 'd99.planets.Sun.lon', 'd61.planets.Sun.lon', 'd0.planets.Sun.lon', 'd01.planets.Sun.lon', 'dasa.vimshottari.lord', 'dasa.vimshottari[0][1][2][3][4][5][6].end', 'dasa.unknown[0].lord', 'dasa.vimshottari[0].middle', 'D1.planets.Sun.lon']) {
             expect(matchFeaturePath(path)).toBeUndefined();
             const parsed = GoldenCaseSchema.safeParse(makeCase({
                 'd1.planets.Sun.lon': { value: 1, tolerance: { type: 'arcsec', arcsec: 1 } },

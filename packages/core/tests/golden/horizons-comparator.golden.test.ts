@@ -12,6 +12,7 @@ import { parseGoldenCorpus, expectGolden, signedAngleDeltaDegrees } from '@node-
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import { nutation } from '../../src/engine/nutation.js';
 import { deltaT } from '../../src/engine/deltat.js';
+import { HORIZONS_ENGINE_COMPARE_BODIES } from '../fixtures/horizons_golden.js';
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), '../fixtures/horizons.golden.json');
 const HORIZONS_CASES = parseGoldenCorpus(readFileSync(fixturePath, 'utf8'));
@@ -40,7 +41,12 @@ function actualFor(golden: (typeof HORIZONS_CASES)[number]): Record<string, numb
 }
 
 function planetPaths(golden: (typeof HORIZONS_CASES)[number]): string[] {
-    return Object.keys(golden.expected).filter((path) => path.startsWith('horizons.planets.'));
+    const compare = new Set<string>(HORIZONS_ENGINE_COMPARE_BODIES);
+    return Object.keys(golden.expected).filter((path) => {
+        if (!path.startsWith('horizons.planets.')) return false;
+        const name = path.slice('horizons.planets.'.length).replace(/\.(lon|lat)$/, '');
+        return compare.has(name);
+    });
 }
 
 describe('Horizons golden comparator', () => {

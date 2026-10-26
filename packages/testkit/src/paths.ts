@@ -24,7 +24,7 @@ const VARGA = 'd(?:[1-9]|[1-5]\\d|60)';
 const DASA = 'vimshottari';
 /** Maha dasa `[n]`, then up to five sub-levels (antar to deha) as `[n][m]...`. */
 const DASA_PERIOD = `dasa\\.(?:${DASA})(?:\\[\\d+\\]){1,6}`;
-const BODY = 'Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu';
+const BODY = 'Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu';
 
 function rule(
     id: string,
@@ -67,6 +67,8 @@ export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
     rule('meta-epoch-bodies', 'meta\\.epoch\\.bodies\\[\\d+\\]', 'exact', 'string'),
     rule('meta-deltat-year', 'meta\\.contract\\.lastObservedDeltaTYear', 'exact', 'integer'),
     rule('meta-tolerance', 'meta\\.contract\\.(?:tolerance|futureTolerance)\\.(?:longitude|latitude)', 'exact', 'number'),
+    rule('meta-horizons-api', 'meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate)', 'exact', 'string'),
+    rule('meta-horizons-params', 'meta\\.horizons\\.requestParameters', 'exact', 'string'),
 ];
 
 interface CompiledRule extends FeaturePathRule {
