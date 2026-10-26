@@ -286,6 +286,9 @@ importers:
       '@node-jhora/ephe':
         specifier: workspace:*
         version: link:../ephe
+      '@node-jhora/testkit':
+        specifier: workspace:*
+        version: link:../testkit
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
