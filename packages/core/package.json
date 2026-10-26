@@ -9,6 +9,7 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
         },
+        "./browser": "./dist/browser/index.js",
         "./node/register": {
             "types": "./node/register.d.ts",
             "import": "./node/register.mjs"

@@ -26,3 +26,10 @@ const slice = session.collect(['houses', 'panchanga']);
 ```
 
 Worker packaging is described in [docs/decisions/0005-chartsession-worker-host.md](../../docs/decisions/0005-chartsession-worker-host.md).
+
+## Browser / Web Worker
+
+- `@node-jhora/engine/browser` — `connectChartWorker()` (SharedWorker with dedicated Worker fallback) and Comlink RPC over `worker-api`.
+- `@node-jhora/core/browser` — ephemeris bootstrap via `fetch` with IndexedDB / Cache API offline cache (`ensureEphemerisBytes`).
+- Bundle budget: `pnpm run check:browser-bundle` (core browser entry &lt; 150 KiB gzip, excluding `de440s.bsp`).
+- Playwright parity harness: `apps/browser-harness` (`pnpm test:browser`).

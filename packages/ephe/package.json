@@ -11,6 +11,10 @@
             "types": "./index.d.ts",
             "import": "./index.mjs"
         },
+        "./constants.mjs": {
+            "types": "./constants.d.ts",
+            "import": "./constants.mjs"
+        },
         "./de440s.bsp": "./de440s.bsp",
         "./package.json": "./package.json"
     },
@@ -25,6 +29,8 @@
     "files": [
         "index.mjs",
         "index.d.ts",
+        "constants.mjs",
+        "constants.d.ts",
         "de440s.bsp",
         "NOTICE.md",
         "README.md"

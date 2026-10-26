@@ -20,6 +20,8 @@ lerna-debug.log*
 # Testing
 coverage/
 .turbo/
+apps/browser-harness/fixtures/node-chart-snapshots.json
+apps/browser-harness/test-results/
 packages/bench/artifacts/*.json
 
 # Ephemeris data (downloaded from JPL — large binary, not tracked in git)
