@@ -41,6 +41,7 @@ pnpm generate          # turbo run generate — @node-jhora/testkit WRITE_GOLDEN
 pnpm --filter @node-jhora/core test
 pnpm run check:links   # relative Markdown links, no network
 pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, decompiler markers
+pnpm run check:licenses    # no AGPL/GPL in production dependency graph
 pnpm run validate-github-templates
 pnpm run docs:build   # Starlight site in apps/docs (standalone; not part of the turbo graph, which is filtered to packages/*)
 pnpm run docs:dev

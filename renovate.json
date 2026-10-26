@@ -1,0 +1,66 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":separateMajorReleases"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 6am on Monday"],
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on Monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Group weekly patch and minor updates for runtime libraries",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "runtime dependencies (non-major)",
+      "groupSlug": "runtime-non-major"
+    },
+    {
+      "description": "Group weekly devDependency patch and minor updates",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "dev dependencies (non-major)",
+      "groupSlug": "dev-non-major"
+    },
+    {
+      "description": "TypeScript toolchain — review together",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["typescript", "ts-jest", "@types/node", "@types/jest"],
+      "groupName": "typescript toolchain",
+      "groupSlug": "typescript-toolchain"
+    },
+    {
+      "description": "Jest — review together",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["jest", "@types/jest", "ts-jest"],
+      "groupName": "jest",
+      "groupSlug": "jest"
+    },
+    {
+      "description": "Luxon affects civil-time parsing; never auto-merge major bumps",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["luxon", "@types/luxon"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Zod major bumps need coordinated API/schema migration",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["zod", "fastify-type-provider-zod"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
