@@ -230,14 +230,18 @@ export function normalizeUtcInstant(dt: DateTime): string {
 
 /** Find an IANA zone whose offset at `local` matches `offsetMinutes` (for offset-only imports). */
 export function ianaZoneForOffset(offsetMinutes: number, local: LocalClock): string | undefined {
-    const probe = DateTime.fromObject({
-        year: local.year,
-        month: local.month,
-        day: local.day,
-        hour: local.hour,
-        minute: local.minute,
-        second: local.second,
-    });
+    const probe = DateTime.fromObject(
+        {
+            year: local.year,
+            month: local.month,
+            day: local.day,
+            hour: local.hour,
+            minute: local.minute,
+            second: local.second,
+        },
+        // UTC has no DST gaps, so the probe keeps the exact wall clock whatever the host zone.
+        { zone: 'utc' },
+    );
     if (!probe.isValid) return undefined;
     const supported =
         typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl
@@ -245,7 +249,16 @@ export function ianaZoneForOffset(offsetMinutes: number, local: LocalClock): str
             : [];
     for (const tz of supported) {
         const zoned = probe.setZone(tz, { keepLocalTime: true });
-        if (zoned.isValid && zoned.offset === offsetMinutes) return tz;
+        // Skip zones where this wall clock falls in a DST gap: Luxon shifts such
+        // times forward, so the offset would describe a different clock reading.
+        if (
+            zoned.isValid &&
+            zoned.offset === offsetMinutes &&
+            zoned.hour === local.hour &&
+            zoned.minute === local.minute
+        ) {
+            return tz;
+        }
     }
     return undefined;
 }

@@ -10,6 +10,7 @@ export type {
     CsvParsedTable,
     CsvParseOptions,
     CsvRowError,
+    CsvRowWarning,
     CsvValidateResult,
 } from './csv/index.js';
 export {

@@ -9,6 +9,7 @@ import type {
     CsvParsedTable,
     CsvParseOptions,
     CsvRowError,
+    CsvRowWarning,
     CsvValidateResult,
 } from './types.js';
 
@@ -64,16 +65,22 @@ export function csvWizardValidate(
     mappings: CsvColumnMapping[],
 ): CsvValidateResult {
     const errors: CsvRowError[] = [];
+    const warnings: CsvRowWarning[] = [];
     let validRowCount = 0;
 
     for (let i = 0; i < table.rows.length; i++) {
         const line = dataLineNumber(table.hasHeader, i);
-        const { errors: rowErrors } = parseMappedRow(table.rows[i]!, mappings, line);
+        const { errors: rowErrors, warnings: rowWarnings } = parseMappedRow(
+            table.rows[i]!,
+            mappings,
+            line,
+        );
+        warnings.push(...rowWarnings);
         if (rowErrors.length === 0) validRowCount += 1;
         else errors.push(...rowErrors);
     }
 
-    return { validRowCount, errors };
+    return { validRowCount, errors, warnings };
 }
 
 /**
@@ -85,30 +92,36 @@ export function csvWizardBuildCharts(
     options: CsvImportOptions = {},
 ): CsvImportResult {
     const errors: CsvRowError[] = [];
+    const warnings: CsvRowWarning[] = [];
     const results: CsvImportResult['results'] = [];
     const charts: CsvImportResult['charts'] = [];
 
     for (let i = 0; i < table.rows.length; i++) {
         const line = dataLineNumber(table.hasHeader, i);
-        const { parsed, errors: rowErrors } = parseMappedRow(table.rows[i]!, mappings, line);
+        const {
+            parsed,
+            errors: rowErrors,
+            warnings: rowWarnings,
+        } = parseMappedRow(table.rows[i]!, mappings, line);
+        warnings.push(...rowWarnings);
         if (rowErrors.length > 0 || !parsed) {
             errors.push(...rowErrors);
-            results.push({ line, errors: rowErrors });
+            results.push({ line, errors: rowErrors, warnings: rowWarnings });
             continue;
         }
         try {
             const chart = buildChartFromParsedRow(parsed, options);
             charts.push(chart);
-            results.push({ line, chart, errors: [] });
+            results.push({ line, chart, errors: [], warnings: rowWarnings });
         } catch (e) {
             const message = e instanceof Error ? e.message : String(e);
             const err: CsvRowError = { line, message };
             errors.push(err);
-            results.push({ line, errors: [err] });
+            results.push({ line, errors: [err], warnings: rowWarnings });
         }
     }
 
-    return { results, charts, errors };
+    return { results, charts, errors, warnings };
 }
 
 /** Run all wizard steps in order (convenience for batch import). */

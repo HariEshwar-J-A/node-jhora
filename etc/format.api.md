@@ -144,6 +144,8 @@ export interface CsvImportResult {
     errors: CsvRowError[];
     // (undocumented)
     results: CsvImportRowResult[];
+    // (undocumented)
+    warnings: CsvRowWarning[];
 }
 
 // @public (undocumented)
@@ -154,6 +156,8 @@ export interface CsvImportRowResult {
     errors: CsvRowError[];
     // (undocumented)
     line: number;
+    // (undocumented)
+    warnings: CsvRowWarning[];
 }
 
 // @public
@@ -189,12 +193,25 @@ export interface CsvRowError {
     message: string;
 }
 
+// @public
+export interface CsvRowWarning {
+    // (undocumented)
+    code: 'dst_gap';
+    // (undocumented)
+    column?: string;
+    line: number;
+    // (undocumented)
+    message: string;
+}
+
 // @public (undocumented)
 export interface CsvValidateResult {
     // (undocumented)
     errors: CsvRowError[];
     // (undocumented)
     validRowCount: number;
+    // (undocumented)
+    warnings: CsvRowWarning[];
 }
 
 // @public
