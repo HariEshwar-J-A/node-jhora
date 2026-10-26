@@ -83,9 +83,10 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
             return this.de440s;
         }
         if (!this.de431) {
-            throw new Error(
-                `Ephemeris date ${jdTdb} is outside DE440s (${DE440S_JD_TDB_START}–${DE440S_JD_TDB_END}). ` +
-                    'Install @node-jhora/ephe-long and load chunks, or use a date within 1849–2150.',
+            throw new RangeError(
+                `Ephemeris date JD(TDB) ${jdTdb} is outside DE440s coverage, 1849-12-26 to 2150-01-22 ` +
+                    `(JD ${DE440S_JD_TDB_START}–${DE440S_JD_TDB_END}). ` +
+                    'Install @node-jhora/ephe-long and attach its chunks with setChunkStore().',
             );
         }
         return this.de431;

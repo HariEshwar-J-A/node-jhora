@@ -13,7 +13,7 @@ const CHART_B_BODY = {
     date: '1985-07-12',
     time: '00:30:00',
     latitude: 28.6139,
-    longitude: 77.2090,
+    longitude: 77.209,
     timezone: 'Asia/Kolkata',
     ayanamsa: 'lahiri',
     nodeType: 'mean',
@@ -22,14 +22,12 @@ const CHART_B_BODY = {
 
 /**
  * SHA-256 of canonical JSON with volatile envelope fields removed.
- * Re-pinned after #260 added `ephemerisPolicy` (default `auto`) to CalculationSettings:
- * only `settingsHash` changed (d9d9dac978004ca9 → 73e104c667187242); all calculation
- * output is byte-identical to the previous pins.
+ * Re-pinned for E3-ACC (#255): JHora-DLL parity changes sub-arcsecond values.
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': 'f900db70d2c849f61a9ce7f451cf44b5785047d304456397c089b8dd61ee72c8',
-    '/v1/shadbala': 'e643bb53a0d805972dd6ba2741cfe22d8c63de9ef8bf812f14b65203b2aed39f',
-    '/v1/kp/significators': '258b95eeb3fed32eb6665cfa5db202579be9ebefcc156b3701c3a7cb491f4b9e',
+    '/v1/chart': '2edbf1b088c76e71f4db6dc02be66a3b597f2afb5f1ac6290cc92190412d774d',
+    '/v1/shadbala': '72fc38f257533ced8a97937c9c69a5a71d69e503f76be6d610ea9abc40673fd7',
+    '/v1/kp/significators': '276b342f80f8b52d2cdd55bd925641d501b4e0b59e3aafd22c71ed3aebeea894',
 };
 
 function stripVolatileEnvelope(value: unknown): unknown {
@@ -38,7 +36,17 @@ function stripVolatileEnvelope(value: unknown): unknown {
         const source = value as Record<string, unknown>;
         const out: Record<string, unknown> = {};
         for (const [key, val] of Object.entries(source)) {
-            if (['computedAt', 'uptime', 'engineVersion', 'tzdbVersion', 'ephemerisProvider', 'deltaTModel', 'warnings'].includes(key)) {
+            if (
+                [
+                    'computedAt',
+                    'uptime',
+                    'engineVersion',
+                    'tzdbVersion',
+                    'ephemerisProvider',
+                    'deltaTModel',
+                    'warnings',
+                ].includes(key)
+            ) {
                 continue;
             }
             out[key] = stripVolatileEnvelope(val);
@@ -49,7 +57,9 @@ function stripVolatileEnvelope(value: unknown): unknown {
 }
 
 function responseHash(body: unknown): string {
-    return createHash('sha256').update(canonicalJson(stripVolatileEnvelope(body))).digest('hex');
+    return createHash('sha256')
+        .update(canonicalJson(stripVolatileEnvelope(body)))
+        .digest('hex');
 }
 
 let app: FastifyInstance;

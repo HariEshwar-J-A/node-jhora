@@ -14,7 +14,10 @@ import { nutation } from '../../src/engine/nutation.js';
 import { deltaT } from '../../src/engine/deltat.js';
 import { HORIZONS_ENGINE_COMPARE_BODIES } from '../fixtures/horizons_golden.js';
 
-const fixturePath = join(dirname(fileURLToPath(import.meta.url)), '../fixtures/horizons.golden.json');
+const fixturePath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    '../fixtures/horizons.golden.json',
+);
 const HORIZONS_CASES = parseGoldenCorpus(readFileSync(fixturePath, 'utf8'));
 
 let engine: EphemerisEngine;
@@ -27,13 +30,14 @@ beforeAll(async () => {
 function actualFor(golden: (typeof HORIZONS_CASES)[number]): Record<string, number> {
     const utc = DateTime.fromISO(golden.input.instant, { zone: 'utc' });
     const jd = engine.julday(utc);
-    const ayan = engine.getAyanamsa(jd);
+    // Apparent places subtract the apparent ayanamsa, so add that back.
+    const ayan = engine.getAyanamsa(jd, undefined, 0, 'apparent');
     const T = (jd + deltaT(jd) / 86400 - 2451545.0) / 36525;
     const dpsi = nutation(T).dpsi;
 
     const actual: Record<string, number> = {};
     for (const p of engine.getPlanets(utc, undefined, { positionMode: 'apparent' })) {
-        const lon = ((p.longitude + ayan + dpsi) % 360 + 360) % 360;
+        const lon = (((p.longitude + ayan + dpsi) % 360) + 360) % 360;
         actual[`horizons.planets.${p.name}.lon`] = lon;
         actual[`horizons.planets.${p.name}.lat`] = p.latitude;
     }
@@ -66,7 +70,7 @@ describe('Horizons golden comparator', () => {
                 const { value, tolerance } = golden.expected[path];
                 if (tolerance.type !== 'arcsec') continue;
                 const residual = signedAngleDeltaDegrees(value as number, actual[path]);
-                const shift = (residual >= 0 ? 1 : -1) * (tolerance.arcsec + 1) / 3600;
+                const shift = ((residual >= 0 ? 1 : -1) * (tolerance.arcsec + 1)) / 3600;
                 const perturbed = { ...actual, [path]: actual[path] + shift };
                 expect(() => expectGolden(golden, perturbed, { only })).toThrow(path);
                 checked++;

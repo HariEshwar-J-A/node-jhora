@@ -19,12 +19,12 @@ const chart = await NodeJHora.calculate(
     new Date('2000-01-01T12:00:00Z'),
     { latitude: 13.08, longitude: 80.27 },
     'Lahiri', // 'Lahiri' | 'Raman' | 'KP'
-    { topocentric: true, nodeType: 'mean' }
+    { topocentric: true, nodeType: 'mean' },
 );
 
 // Returns: { planets, houses, panchanga, ascendant, ayanamsa }
-console.log("Ascendant:", chart.ascendant);
-console.log("Tithi:", chart.panchanga.tithi);
+console.log('Ascendant:', chart.ascendant);
+console.log('Tithi:', chart.panchanga.tithi);
 ```
 
 ### Instance API (Full Control)
@@ -37,25 +37,25 @@ import { DateTime } from 'luxon';
 
 const jhora = new NodeJHora(
     { latitude: 13.08, longitude: 80.27 },
-    { ayanamsaOrder: 1, topocentric: true, nodeType: 'mean' }
+    { ayanamsaOrder: 1, topocentric: true, nodeType: 'mean' },
 );
 await jhora.init();
 
 const date = DateTime.fromISO('2000-01-01T12:00:00Z');
-const planets = jhora.getPlanets(date);     // PlanetPosition[]
+const planets = jhora.getPlanets(date); // PlanetPosition[]
 const houses = jhora.getHouses(date, 'Placidus'); // HouseData
-const chart = jhora.getChart(date);           // { planets, houses }
-const panchanga = jhora.getPanchanga(date);   // PanchangaResult
+const chart = jhora.getChart(date); // { planets, houses }
+const panchanga = jhora.getPanchanga(date); // PanchangaResult
 ```
 
 ### Configuration (`NodeJHoraConfig`)
 
 ```typescript
 interface NodeJHoraConfig {
-    ayanamsaOrder?: number;    // 1 = Lahiri (default), 3 = Raman, 5 = KP
-    topocentric?: boolean;     // Apply observer-surface parallax correction
+    ayanamsaOrder?: number; // 1 = Lahiri (default), 3 = Raman, 5 = KP
+    topocentric?: boolean; // Apply observer-surface parallax correction
     nodeType?: 'mean' | 'true'; // Rahu/Ketu node type
-    ayanamsaOffset?: number;   // Custom offset in degrees
+    ayanamsaOffset?: number; // Custom offset in degrees
 }
 ```
 
@@ -84,31 +84,31 @@ Supports Sidereal (Vedic) calculations with optional **Topocentric Parallax** co
 const planets = eph.getPlanets(date, location, {
     ayanamsaOrder: 1,
     topocentric: true,
-    nodeType: 'mean'
+    nodeType: 'mean',
 });
 ```
 
 Each `PlanetPosition` contains:
 
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `number` | Planet identifier |
-| `name` | `string` | Planet name |
-| `longitude` | `number` | Sidereal longitude (degrees) |
-| `latitude` | `number` | Ecliptic latitude |
-| `distance` | `number` | Distance from Earth (AU) |
-| `speed` | `number` | Daily speed (deg/day) |
-| `declination` | `number` | Declination |
+| Field         | Type     | Description                  |
+| :------------ | :------- | :--------------------------- |
+| `id`          | `number` | Planet identifier            |
+| `name`        | `string` | Planet name                  |
+| `longitude`   | `number` | Sidereal longitude (degrees) |
+| `latitude`    | `number` | Ecliptic latitude            |
+| `distance`    | `number` | Distance from Earth (AU)     |
+| `speed`       | `number` | Daily speed (deg/day)        |
+| `declination` | `number` | Declination                  |
 
 **Planet IDs:**
 
-| ID | Planet | ID | Planet |
-| :---: | :--- | :---: | :--- |
-| `0` | Sun | `5` | Jupiter |
-| `1` | Moon | `6` | Saturn |
-| `2` | Mercury | `10` | Rahu (Mean Node) |
-| `3` | Venus | `99` | Ketu (Rahu + 180°) |
-| `4` | Mars | | |
+| ID  | Planet  |  ID  | Planet             |
+| :-: | :------ | :--: | :----------------- |
+| `0` | Sun     | `5`  | Jupiter            |
+| `1` | Moon    | `6`  | Saturn             |
+| `2` | Mercury | `10` | Rahu (Mean Node)   |
+| `3` | Venus   | `99` | Ketu (Rahu + 180°) |
+| `4` | Mars    |      |                    |
 
 Use the `Body` enum (`Body.Rahu === 10`, `Body.Ketu === 99`) rather than literals. `EphemerisInterpolator.unpack()` uses the same ids.
 
@@ -118,23 +118,23 @@ Use the `Body` enum (`Body.Rahu === 10`, `Body.Ketu === 99`) rather than literal
 import { AYANAMSA } from '@node-jhora/core';
 
 // Available constants:
-AYANAMSA.LAHIRI         // 1 — Chitra Paksha (default)
-AYANAMSA.RAMAN          // 3
-AYANAMSA.KRISHNAMURTI   // 5 — KP System
-AYANAMSA.YUKTESHWAR     // 7
-AYANAMSA.JN_BHASIN      // 8
-AYANAMSA.TRUE_PUSHYA    // 29
-AYANAMSA.GALACTIC_CTR   // 28
+AYANAMSA.LAHIRI; // 1 — Chitra Paksha (default)
+AYANAMSA.RAMAN; // 3
+AYANAMSA.KRISHNAMURTI; // 5 — KP System
+AYANAMSA.YUKTESHWAR; // 7
+AYANAMSA.JN_BHASIN; // 8
+AYANAMSA.TRUE_PUSHYA; // 29
+AYANAMSA.GALACTIC_CTR; // 28
 ```
 
 ### Additional Engine Methods
 
 ```typescript
-eph.julday(date);              // Julian Day Number (UT)
-eph.getAyanamsa(julday);       // Ayanamsa value in degrees
-eph.getSiderealTime(julday);   // Local Sidereal Time
-eph.getEclipticObliquity(jd);  // { eps, dpsi, deps }
-eph.setAyanamsa(mode);         // Switch Ayanamsa at runtime
+eph.julday(date); // Julian Day Number (UT)
+eph.getAyanamsa(julday); // Ayanamsa value in degrees
+eph.getSiderealTime(julday); // Local Sidereal Time
+eph.getEclipticObliquity(jd); // { eps, dpsi, deps }
+eph.setAyanamsa(mode); // Switch Ayanamsa at runtime
 eph.getHouses(jd, lat, lon, method, sidereal); // Raw SE house cusps
 ```
 
@@ -153,11 +153,11 @@ const houses = calculateHouseCusps(date, latitude, longitude, 'WholeSign', engin
 
 **Supported Methods:**
 
-| Method | Description |
-| :--- | :--- |
+| Method        | Description                                           |
+| :------------ | :---------------------------------------------------- |
 | `'WholeSign'` | Vedic standard — cusps snapped to 30° sign boundaries |
-| `'Placidus'` | Quadrant-based — requires functioning WASM |
-| `'Porphyry'` | Trisection between angles |
+| `'Placidus'`  | Quadrant-based — requires functioning WASM            |
+| `'Porphyry'`  | Trisection between angles                             |
 
 ### Bhava Sandhi
 
@@ -231,8 +231,8 @@ const cities = await geo.search('Chennai');
 
 ```typescript
 import { normalize360 } from '@node-jhora/core';
-normalize360(370);  // 10
-normalize360(-10);  // 350
+normalize360(370); // 10
+normalize360(-10); // 350
 ```
 
 ### Precision Math (Decimal.js)
@@ -242,9 +242,9 @@ For eliminating floating-point drift in Varga and Dasha calculations:
 ```typescript
 import { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from '@node-jhora/core';
 
-const lon = D(123.456789);     // Create a Decimal
+const lon = D(123.456789); // Create a Decimal
 const norm = normalize360D(lon); // Normalize with full precision
-const num = toNum(norm);        // Convert back to number
+const num = toNum(norm); // Convert back to number
 ```
 
 ### Panchanga (The Five Limbs)
@@ -264,8 +264,8 @@ All 16 standard Parashara Vargas using `Decimal.js` arithmetic:
 ```typescript
 import { calculateVarga, calculateShashtyamsa, VargaDeities } from '@node-jhora/core';
 
-const navamsa = calculateVarga(planetLongitude, 9);   // D9
-const d60 = calculateShashtyamsa(planetLongitude);     // D60 with deity
+const navamsa = calculateVarga(planetLongitude, 9); // D9
+const d60 = calculateShashtyamsa(planetLongitude); // D60 with deity
 
 // Supported divisions: 1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60
 ```
@@ -275,9 +275,9 @@ Each `VargaPoint` returns:
 ```typescript
 interface VargaPoint {
     longitude: number; // Position in the divisional chart
-    sign: number;      // 1-12
-    degree: number;    // Degree within sign
-    deity?: string;    // Deity name (D60 Shashtyamsa)
+    sign: number; // 1-12
+    degree: number; // Degree within sign
+    deity?: string; // Deity name (D60 Shashtyamsa)
 }
 ```
 
@@ -298,13 +298,13 @@ Seven Jaimini and Parashara special ascendant points:
 
 ```typescript
 import {
-    calculatePranapada,    // Breath Lagna — extremely fast-moving
-    calculateInduLagna,    // Wealth Point — 9th lord rays
-    calculateShreeLagna,   // Prosperity Point
-    calculateHoraLagna,    // Hora Lagna — 1 sign/hour
-    calculateGhatiLagna,   // Ghati Lagna — 1 sign/ghati (24 min)
-    calculateBhavaLagna,   // Bhava Lagna — Sun-based mean lagna
-    calculateVarnadaLagna  // Varnada Lagna — Lagna + HL combined
+    calculatePranapada, // Breath Lagna — extremely fast-moving
+    calculateInduLagna, // Wealth Point — 9th lord rays
+    calculateShreeLagna, // Prosperity Point
+    calculateHoraLagna, // Hora Lagna — 1 sign/hour
+    calculateGhatiLagna, // Ghati Lagna — 1 sign/ghati (24 min)
+    calculateBhavaLagna, // Bhava Lagna — Sun-based mean lagna
+    calculateVarnadaLagna, // Varnada Lagna — Lagna + HL combined
 } from '@node-jhora/core';
 
 // Pranapada — requires birth time, sunrise, and Sun longitude
@@ -341,16 +341,16 @@ const gulikadi = calculateTimeUpagrahas(birthTime, sunrise, sunset, sunLong, moo
 // Returns: { kaala, paridhi, mrityu, ardhaprahara, yamakantaka, kodanda, mandi, gulika }
 ```
 
-| Upagraha | Planet Ruler | Timing |
-| :--- | :--- | :--- |
-| Kaala | Sun | Start of segment |
-| Paridhi | Moon | Middle of segment |
-| Mrityu | Mars | Start of segment |
-| Ardhaprahara | Mercury | Start of segment |
-| Yamakantaka | Jupiter | Start of segment |
-| Kodanda | Venus | Middle of segment |
-| Gulika | Saturn | Start of segment |
-| Mandi | Saturn | Middle of Gulika's segment |
+| Upagraha     | Planet Ruler | Timing                     |
+| :----------- | :----------- | :------------------------- |
+| Kaala        | Sun          | Start of segment           |
+| Paridhi      | Moon         | Middle of segment          |
+| Mrityu       | Mars         | Start of segment           |
+| Ardhaprahara | Mercury      | Start of segment           |
+| Yamakantaka  | Jupiter      | Start of segment           |
+| Kodanda      | Venus        | Middle of segment          |
+| Gulika       | Saturn       | Start of segment           |
+| Mandi        | Saturn       | Middle of Gulika's segment |
 
 ### Dhumadi Group (Angular)
 
@@ -363,13 +363,13 @@ const dhumadi = calculateDhumadiUpagrahas(sunLongitude);
 // Returns: { dhuma, vyatipata, parivesha, indrachapa, upaketu }
 ```
 
-| Upagraha | Formula |
-| :--- | :--- |
-| Dhuma | Sun + 133°20′ |
-| Vyatipata | 360° − Dhuma |
-| Parivesha | Vyatipata + 180° |
-| Indrachapa | 360° − Parivesha |
-| Upaketu | Indrachapa + 16°40′ |
+| Upagraha   | Formula             |
+| :--------- | :------------------ |
+| Dhuma      | Sun + 133°20′       |
+| Vyatipata  | 360° − Dhuma        |
+| Parivesha  | Vyatipata + 180°    |
+| Indrachapa | 360° − Parivesha    |
+| Upaketu    | Indrachapa + 16°40′ |
 
 ---
 
@@ -385,7 +385,6 @@ const kp = KPSubLord.getSignificators(planetLongitude);
 ```
 
 > **Node ids in KP significators:** `KPSubLord` lord ids keep the legacy KP values **Rahu = 7, Ketu = 8** (API-stable; the `/v1/kp` response uses them). These differ intentionally from the ephemeris `Body` ids (Rahu = 10, Ketu = 99); don't compare them directly.
-
 
 ### Ruling Planets
 
@@ -406,8 +405,8 @@ For real-time applications (tickers, Prashna UI), use `PlanetaryStream` for peri
 const stream = client.createStream(1000); // 1 second interval
 
 stream.on('reading', (update) => {
-    console.log("Current Ascendant:", update.houses?.ascendant);
-    console.log("Moon:", update.planets.find(p => p.id === 1)?.longitude);
+    console.log('Current Ascendant:', update.houses?.ascendant);
+    console.log('Moon:', update.planets.find((p) => p.id === 1)?.longitude);
 });
 
 stream.start();
