@@ -5,7 +5,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 // The 7 vargas used in Saptavargaja Bala (BPHS): D1, D2, D3, D7, D9, D12, D30
@@ -61,27 +61,21 @@ export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/shadbala', { schema: { body: BirthInputSchema } }, async (req, reply) => {
+        const parsed = parseBirthInput(req.body);
         const {
             dt,
             location,
             ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
             ayanamsaOffset,
             sunriseHour,
             houseSystem,
             settingsHash,
-        } = parseBirthInput(req.body);
+            julianDayUt,
+        } = parsed;
         const engine = getEngine();
+        const ephOpts = birthEphemerisOptions(parsed);
 
-        const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-        });
+        const planets = engine.getPlanets(dt, location, ephOpts);
         const housesResult = calculateHouseCusps(
             dt,
             location.latitude,
@@ -90,6 +84,7 @@ export async function shadbalaRoutes(app: FastifyInstance): Promise<void> {
             engine,
             ayanamsaOrder,
             ayanamsaOffset,
+            { julianDayUt, calendar: parsed.settings.calendar },
         );
 
         const houses = {

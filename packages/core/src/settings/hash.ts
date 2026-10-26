@@ -5,6 +5,7 @@
  * Arrays keep their order. `undefined` values are dropped.
  */
 
+import { normalizeCalculationSettings } from './normalize.js';
 import {
     type CalculationSettings,
     CalculationSettingsSchema,
@@ -31,6 +32,6 @@ function sortValue(value: unknown): unknown {
 
 /** SHA-256 of the canonical settings JSON, truncated to {@link SETTINGS_HASH_HEX_LENGTH}. */
 export function hashSettings(input: CalculationSettings | unknown): string {
-    const settings = CalculationSettingsSchema.parse(input);
+    const settings = normalizeCalculationSettings(CalculationSettingsSchema.parse(input));
     return sha256Utf8(canonicalJson(settings)).slice(0, SETTINGS_HASH_HEX_LENGTH);
 }

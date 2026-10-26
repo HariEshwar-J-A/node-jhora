@@ -11,6 +11,7 @@ import {
     TROPICAL_YEAR_DAYS,
 } from '../config.js';
 import { hashSettings } from './hash.js';
+import { normalizeCalculationSettings } from './normalize.js';
 import { getPreset, isPresetId, type PresetId } from './presets.js';
 import {
     AYANAMSA_MODE_BY_ID,
@@ -61,6 +62,7 @@ export type SettingsInput = PresetId | Partial<CalculationSettings> | LegacyCalc
 const SETTINGS_MARKS = [
     'schemaVersion',
     'ephemerisPolicy',
+    'calendar',
     'ayanamsa',
     'ayanamsaOffsetDeg',
     'dasaYear',
@@ -104,6 +106,9 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         ...(settings.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: settings.deltaTOverrideSeconds }
             : {}),
+        ...(settings.calendar !== undefined && settings.calendar !== 'auto'
+            ? { calendar: settings.calendar }
+            : {}),
     };
 }
 
@@ -117,6 +122,9 @@ export function jyotishConfigToSettings(
         precisionProfile: config.precisionProfile ?? base.precisionProfile,
         ...(config.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: config.deltaTOverrideSeconds }
+            : {}),
+        ...(config.calendar !== undefined && config.calendar !== 'auto'
+            ? { calendar: config.calendar }
             : {}),
         ayanamsa: known ?? base.ayanamsa,
         ayanamsaOffsetDeg: config.ayanamsaOffset,
@@ -146,14 +154,16 @@ function mergeSettings(
     base: CalculationSettings,
     patch: Partial<CalculationSettings>,
 ): CalculationSettings {
-    return CalculationSettingsSchema.parse({
-        ...base,
-        ...patch,
-        schemaVersion: 1,
-        sunrise: { ...base.sunrise, ...patch.sunrise },
-        dasaYear: { ...base.dasaYear, ...patch.dasaYear },
-        vargaVariants: { ...base.vargaVariants, ...patch.vargaVariants },
-    });
+    return normalizeCalculationSettings(
+        CalculationSettingsSchema.parse({
+            ...base,
+            ...patch,
+            schemaVersion: 1,
+            sunrise: { ...base.sunrise, ...patch.sunrise },
+            dasaYear: { ...base.dasaYear, ...patch.dasaYear },
+            vargaVariants: { ...base.vargaVariants, ...patch.vargaVariants },
+        }),
+    );
 }
 
 export function resolveCalculationInput(
@@ -197,6 +207,7 @@ export function describeCalculation(
 }
 
 export interface FlatBirthSettings {
+    calendar?: CalculationSettings['calendar'];
     ayanamsa: AyanamsaId;
     ayanamsaOffsetDeg: number;
     nodeType: CalculationSettings['nodeType'];
@@ -221,6 +232,9 @@ export function settingsFromFlat(fields: FlatBirthSettings): CalculationSettings
     const days = fields.dasaYearDays ?? TROPICAL_YEAR_DAYS;
     return CalculationSettingsSchema.parse({
         schemaVersion: 1,
+        ...(fields.calendar !== undefined && fields.calendar !== 'auto'
+            ? { calendar: fields.calendar }
+            : {}),
         ayanamsa: fields.ayanamsa,
         ayanamsaOffsetDeg: fields.ayanamsaOffsetDeg,
         ...(fields.customAyanamsaMode !== undefined
@@ -246,6 +260,9 @@ export function settingsFromFlat(fields: FlatBirthSettings): CalculationSettings
 
 export function flatFromSettings(settings: CalculationSettings): Record<string, unknown> {
     return {
+        ...(settings.calendar !== undefined && settings.calendar !== 'auto'
+            ? { calendar: settings.calendar }
+            : {}),
         ayanamsa: settings.ayanamsa,
         ayanamsaOffset: settings.ayanamsaOffsetDeg,
         ...(settings.customAyanamsaMode !== undefined

@@ -182,12 +182,17 @@ export {
     settingsToJyotishConfig,
     SUNRISE_LIMBS,
 } from './settings/index.js';
-export type { HistoricalDateTime } from './time/historical.js';
+export type { CalendarMode, HistoricalDateTime } from './time/historical.js';
 export {
+    assertValidCivilDate,
+    CALENDAR_MODES,
     civilDateFromJulianDay,
+    GregorianReformGapError,
+    isGregorianReformGap,
     julianDayUt,
     parseHistoricalDateString,
     parseHistoricalTimeString,
+    resolveCalendar,
     usesProlepticJulian,
 } from './time/historical.js';
 export type {
@@ -206,6 +211,7 @@ export type {
 export {
     CIVIL_YEAR_MAX,
     CIVIL_YEAR_MIN,
+    dateTimeToJulianDayUt,
     formatUtcIso,
     getTzdbVersion,
     isValidIanaTimeZone,
@@ -366,6 +372,7 @@ export class NodeJHora {
                 positionMode: c.positionMode,
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                calendar: c.calendar,
             },
         );
         const housesResult = calculateHouseCusps(
@@ -379,6 +386,7 @@ export class NodeJHora {
             {
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                calendar: c.calendar,
             },
         );
 
@@ -422,6 +430,7 @@ export class NodeJHora {
                 positionMode: c.positionMode,
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                calendar: c.calendar,
             },
         );
     }
@@ -439,6 +448,7 @@ export class NodeJHora {
             {
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                calendar: c.calendar,
             },
         );
         return {

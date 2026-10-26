@@ -4,7 +4,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 const PLANET_NAMES: Record<number, string> = {
@@ -23,25 +23,11 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
     const typed = app.withTypeProvider<ZodTypeProvider>();
 
     typed.post('/kp/significators', { schema: { body: BirthInputSchema } }, async (req, reply) => {
-        const {
-            dt,
-            location,
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-            settingsHash,
-        } = parseBirthInput(req.body);
+        const parsed = parseBirthInput(req.body);
+        const { dt, settingsHash } = parsed;
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-        });
+        const planets = engine.getPlanets(dt, parsed.location, birthEphemerisOptions(parsed));
 
         const significators = planets.map((p) => {
             const kp = KPSubLord.calculateKPSignificators(p.longitude);

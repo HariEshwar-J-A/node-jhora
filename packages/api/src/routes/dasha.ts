@@ -5,7 +5,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { DashaInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 /**
@@ -28,27 +28,10 @@ export async function dashaRoutes(app: FastifyInstance): Promise<void> {
 
     typed.post('/dasha', { schema: { body: DashaInputSchema } }, async (req, reply) => {
         const parsed = parseBirthInput(req.body);
-        const {
-            dt,
-            location,
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-            settingsHash,
-            applyDasaYear,
-            dashaYearDays,
-        } = parsed;
+        const { dt, settingsHash, applyDasaYear, dashaYearDays } = parsed;
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, {
-            ayanamsaOrder,
-            nodeType,
-            positionMode,
-            topocentric,
-            ayanamsaOffset,
-        });
+        const planets = engine.getPlanets(dt, parsed.location, birthEphemerisOptions(parsed));
         const moon = planets.find((p) => p.id === Body.Moon)!;
 
         const balance = calculateDashaBalance(moon.longitude);

@@ -42,6 +42,13 @@ describe('SHA-256', () => {
     });
 });
 
+describe('settings hash normalization', () => {
+    test('explicit calendar auto matches omitted calendar', () => {
+        const base = getPreset('node-jhora-default');
+        expect(hashSettings({ ...base, calendar: 'auto' })).toBe(hashSettings(base));
+    });
+});
+
 describe('canonical JSON', () => {
     test('object key order does not change the text', () => {
         const left = { z: 1, a: { d: true, c: [1, { b: 2, a: 1 }] }, m: 'x' };

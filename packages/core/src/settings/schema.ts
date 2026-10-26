@@ -100,6 +100,10 @@ export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
 export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 
+/** Civil calendar for birth dates; omitted means `'auto'` (JHora / SE). */
+export const CALENDAR_MODES = ['auto', 'gregorian', 'julian'] as const;
+export type CalendarModeId = (typeof CALENDAR_MODES)[number];
+
 export const CalculationSettingsSchema = z
     .object({
         schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
@@ -116,6 +120,11 @@ export const CalculationSettingsSchema = z
          * `de440s` / `de431_long` force a single kernel (long-range requires chunks).
          */
         ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
+        /**
+         * Omitted = `'auto'` (Julian before 1582-10-15). Non-default values are
+         * hashed; `'auto'` is left out so existing settings hashes stay stable.
+         */
+        calendar: z.enum(CALENDAR_MODES).optional(),
         ayanamsa: z.enum(AYANAMSA_IDS),
         ayanamsaOffsetDeg: finite,
         /**

@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { attachResultEnvelope } from '../lib/result-envelope.js';
 import { type TransitInput, TransitInputSchema } from '../schemas/birth-input.js';
-import { parseBirthInput } from '../schemas/helpers.js';
+import { birthEphemerisOptions, parseBirthInput } from '../schemas/helpers.js';
 import { getEngine } from '../server.js';
 
 /**
@@ -52,24 +52,26 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
 
     typed.post('/transits', { schema: { body: TransitInputSchema } }, async (req, reply) => {
         const body = req.body as TransitInput;
+        const parsed = parseBirthInput(body);
         const {
             dt,
             location,
             ayanamsaOrder,
             nodeType,
             positionMode,
-            topocentric,
             ayanamsaOffset,
             houseSystem,
             settingsHash,
-        } = parseBirthInput(body);
+            julianDayUt,
+        } = parsed;
         const engine = getEngine();
 
         const asOf = body.asOf
             ? DateTime.fromISO(body.asOf).setZone(dt.zone)
             : DateTime.now().setZone(dt.zone);
 
-        const opts = { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset };
+        const opts = birthEphemerisOptions(parsed);
+        const housePrecision = { julianDayUt, calendar: parsed.settings.calendar };
 
         // ── Natal ───────────────────────────────────────────────────────────
         const natal = engine.getPlanets(dt, location, opts);
@@ -81,6 +83,7 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
             engine,
             ayanamsaOrder,
             ayanamsaOffset,
+            housePrecision,
         );
         const natalAscSign = Math.floor(natalHouse.ascendant / 30) + 1;
         const natalMoon = natal.find((p) => p.name === 'Moon')!;
@@ -178,7 +181,13 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
                     savBySign: sav,
                     meta: {
                         ayanamsaName: body.ayanamsa,
-                        ayanamsaValue: engine.getAyanamsa(engine.julday(asOf), ayanamsaOrder),
+                        ayanamsaValue: engine.getAyanamsa(
+                            engine.julday(asOf, {
+                                latitude: location.latitude,
+                                longitude: location.longitude,
+                            }),
+                            ayanamsaOrder,
+                        ),
                         positionMode: body.positionMode,
                         nodeType: body.nodeType,
                         note:

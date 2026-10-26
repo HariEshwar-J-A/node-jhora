@@ -34,7 +34,13 @@ export function calculateHouseCusps(
     const engine = engineInstance || EphemerisEngine.getInstance();
 
     // 1. Get Julian Day via the engine's public API
-    const jd = engine.julday(date);
+    const jd =
+        precision?.julianDayUt ??
+        engine.julday(date, {
+            calendar: precision?.calendar,
+            latitude: lat,
+            longitude: lon,
+        });
 
     // If method is supported natively by SwissEph, try using it first.
     // 'Placidus' -> 'P'

@@ -4,6 +4,9 @@ import {
     type DasaYearKind,
     hashSettings,
     type HouseSystemId,
+    parseHistoricalDateString,
+    parseHistoricalTimeString,
+    resolveCivilTime,
     settingsFromFlat,
     type SunriseLimb,
 } from '@node-jhora/core';
@@ -14,6 +17,8 @@ import { AYANAMSA_MAP, AyanamsaKey, BirthInput } from './birth-input.js';
 
 export interface ParsedBirth {
     dt: DateTime;
+    /** UT Julian Day from civil date + zone (JHora / SE calendar rules). */
+    julianDayUt: number;
     location: { latitude: number; longitude: number };
     ayanamsaOrder: number;
     nodeType: 'mean' | 'true';
@@ -32,6 +37,19 @@ export interface ParsedBirth {
     dashaYearDays?: number;
     resolvedCity?: string;
     resolvedTimezone?: string;
+}
+
+/** Options for {@link EphemerisEngine.getPlanets} from a parsed birth request. */
+export function birthEphemerisOptions(parsed: ParsedBirth) {
+    return {
+        ayanamsaOrder: parsed.ayanamsaOrder,
+        nodeType: parsed.nodeType,
+        positionMode: parsed.positionMode,
+        topocentric: parsed.topocentric,
+        ayanamsaOffset: parsed.ayanamsaOffset,
+        julianDayUt: parsed.julianDayUt,
+        calendar: parsed.settings.calendar,
+    };
 }
 
 export function parseBirthInput(input: BirthInput): ParsedBirth {
@@ -54,14 +72,46 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
         tz = input.timezone!;
     }
 
-    const dt = DateTime.fromISO(`${input.date}T${input.time}`, { zone: tz });
+    const dateParts = parseHistoricalDateString(input.date);
+    const timeParts = parseHistoricalTimeString(input.time);
+    const calendar = input.calendar ?? 'auto';
+
+    const local = {
+        year: dateParts.astronomicalYear,
+        month: dateParts.month,
+        day: dateParts.day,
+        hour: timeParts.hour,
+        minute: timeParts.minute,
+        second: timeParts.second,
+    };
+    const civil = resolveCivilTime({
+        local,
+        timezone: tz,
+        latitude: lat,
+        longitude: lon,
+        calendar,
+    });
+    let dt = DateTime.fromObject(
+        {
+            year: local.year,
+            month: local.month,
+            day: local.day,
+            hour: local.hour,
+            minute: local.minute,
+            second: local.second,
+        },
+        { zone: tz },
+    );
     if (!dt.isValid) {
-        throw new Error(`Invalid date/time or timezone: ${dt.invalidReason ?? ''}`);
+        dt = DateTime.fromMillis(Math.round((civil.julianDayUt - 2440587.5) * 86_400_000), {
+            zone: tz,
+        });
     }
 
     const ayanamsaOrder = input.customAyanamsaMode ?? AYANAMSA_MAP[input.ayanamsa as AyanamsaKey];
     const location = { latitude: lat, longitude: lon, altitude: input.altitudeMetres };
     const settings = settingsFromFlat({
+        calendar,
         // The HTTP name `true_chitra` and the settings id `true_citra` are one mode.
         ayanamsa: (input.ayanamsa === 'true_chitra' ? 'true_citra' : input.ayanamsa) as AyanamsaId,
         ayanamsaOffsetDeg: input.ayanamsaOffset,
@@ -84,6 +134,7 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
 
     return {
         dt,
+        julianDayUt: civil.julianDayUt,
         location,
         ayanamsaOrder,
         nodeType: input.nodeType,
