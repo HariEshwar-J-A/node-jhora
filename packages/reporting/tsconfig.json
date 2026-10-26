@@ -7,7 +7,15 @@
         "types": [
             "node",
             "jest"
-        ]
+        ],
+        "paths": {
+            "@node-jhora/core": [
+                "../core/src/index.ts"
+            ],
+            "@node-jhora/analytics": [
+                "../analytics/src/index.ts"
+            ]
+        }
     },
     "include": [
         "src/**/*"

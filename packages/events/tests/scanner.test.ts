@@ -68,4 +68,24 @@ describe('TransitScanner', () => {
             expect(after).toBe(true);
         }
     });
+
+    test('Uses the engine\'s configured ayanamsa, not a hardcoded one', async () => {
+        // Saturn enters sidereal Aries in mid-2027. Lahiri and True Chitrapaksha
+        // differ by ~0.02 deg, i.e. ~5 hours of Saturn's motion, so the reported
+        // ingress must agree with the engine's default ayanamsa to the minute.
+        const start = DateTime.fromISO('2027-05-01T00:00:00Z');
+        const end = DateTime.fromISO('2027-07-15T00:00:00Z');
+        const ingress = await scanner.findIngress(6, 0, start, end);
+        expect(ingress).not.toBeNull();
+
+        const signAt = (t: DateTime, opts: { ayanamsaOrder?: number } = {}) => {
+            const saturn = engine.getPlanets(t, { latitude: 0, longitude: 0 }, opts).find(p => p.id === 6)!;
+            return Math.floor(saturn.longitude / 30);
+        };
+        expect(signAt(ingress!.minus({ minutes: 2 }))).toBe(11);
+        expect(signAt(ingress!.plus({ minutes: 2 }))).toBe(0);
+        // Lahiri (order 1) is the larger ayanamsa here, so under it Saturn is still
+        // in Pisces hours later; a hardcoded Lahiri scanner would report that time.
+        expect(signAt(ingress!.plus({ hours: 2 }), { ayanamsaOrder: 1 })).toBe(11);
+    });
 });

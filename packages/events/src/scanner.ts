@@ -121,10 +121,16 @@ export class TransitScanner {
     }
 
     /**
-     * Helper: Get planet position using internal ephemeris
+     * Helper: Get planet position using internal ephemeris.
+     *
+     * The ayanamsa is deliberately not passed: positions follow the engine's
+     * configured ayanamsa (`EphemerisEngine.setAyanamsa`, default True Chitrapaksha),
+     * so ingress and station times match the charts built with the same engine.
+     * Hardcoding Lahiri here would shift every longitude by ~0.02 deg -- hours of
+     * motion for slow planets (see TransitEngine in @node-jhora/core).
      */
     private getPlanetPos(planetId: number, date: DateTime): PlanetPosition {
-        const planets = this.ephemeris.getPlanets(date, { latitude: 0, longitude: 0 }, 1, false);
+        const planets = this.ephemeris.getPlanets(date, { latitude: 0, longitude: 0 }, { topocentric: false });
         const target = planets.find(p => p.id === planetId);
         if (!target) throw new Error(`Planet ID ${planetId} not found`);
         return target;
