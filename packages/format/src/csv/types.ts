@@ -47,21 +47,40 @@ export interface CsvRowError {
     message: string;
 }
 
+/**
+ * Non-fatal row diagnostic: the row imports, but the caller should review it.
+ *
+ * `dst_gap` — the wall-clock time does not exist in the row's IANA zone because
+ * clocks jumped forward over it (spring-forward). The chart keeps the recorded
+ * wall clock in `birth.local`; `resolvedUtc` reads it with the offset in force
+ * just before the transition, and `birth.tzResolution` gains a `gap_skip` step.
+ */
+export interface CsvRowWarning {
+    /** 1-based line number in the original CSV text (header is line 1 when present). */
+    line: number;
+    column?: string;
+    code: 'dst_gap';
+    message: string;
+}
+
 export interface CsvValidateResult {
     validRowCount: number;
     errors: CsvRowError[];
+    warnings: CsvRowWarning[];
 }
 
 export interface CsvImportRowResult {
     line: number;
     chart?: NjhChartV2;
     errors: CsvRowError[];
+    warnings: CsvRowWarning[];
 }
 
 export interface CsvImportResult {
     results: CsvImportRowResult[];
     charts: NjhChartV2[];
     errors: CsvRowError[];
+    warnings: CsvRowWarning[];
 }
 
 export interface CsvParseOptions {

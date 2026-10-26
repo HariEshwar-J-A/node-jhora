@@ -20,6 +20,7 @@ export type {
     CsvParsedTable,
     CsvParseOptions,
     CsvRowError,
+    CsvRowWarning,
     CsvValidateResult,
 } from './types.js';
 export {
