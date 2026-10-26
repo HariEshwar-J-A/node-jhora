@@ -158,7 +158,8 @@ export const STARS: Record<string, StarData> = {
 export function starLongitudeOfDate(star: StarData, jdUT: number, observerAU?: Vec): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
-    return toSpherical(icrfToMeanEclipticOfDate(starIcrfVector(star, jdUT, observerAU), T)).lon;
+    return toSpherical(icrfToMeanEclipticOfDate(starIcrfVector(star, jdUT, observerAU), T, jdTT))
+        .lon;
 }
 
 /**
@@ -257,7 +258,7 @@ function starApparentLongitude(star: StarData, jdUT: number): number {
     const apparent = apparentStarDirection(geometric, kin.velocityKmS, kin.sunToObserverKm);
 
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-    return toSpherical(icrfToMeanEclipticOfDate(apparent, julianCenturies(jdTT))).lon;
+    return toSpherical(icrfToMeanEclipticOfDate(apparent, julianCenturies(jdTT), jdTT)).lon;
 }
 
 // ---------------------------------------------------------------------------
@@ -404,8 +405,13 @@ export function ayanamsaName(mode: number): string {
  * Returned in (−180, 180] so that epochs before `jdFrom` give negative values.
  */
 export function accumulatedPrecession(jdFrom: number, jdTo: number): number {
-    const vernalAtFrom: Vec = matTransposeVec(precessionMatrix(julianCenturies(jdFrom)), [1, 0, 0]);
-    const lon = toSpherical(icrfToMeanEclipticOfDate(vernalAtFrom, julianCenturies(jdTo))).lon;
+    const vernalAtFrom: Vec = matTransposeVec(
+        precessionMatrix(julianCenturies(jdFrom), jdFrom),
+        [1, 0, 0],
+    );
+    const lon = toSpherical(
+        icrfToMeanEclipticOfDate(vernalAtFrom, julianCenturies(jdTo), jdTo),
+    ).lon;
     return lon > 180 ? lon - 360 : lon;
 }
 

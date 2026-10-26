@@ -25,9 +25,9 @@ const CHART_B_BODY = {
  * Re-pinned for E3-ACC (#255): JHora-DLL parity changes sub-arcsecond values.
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': '2edbf1b088c76e71f4db6dc02be66a3b597f2afb5f1ac6290cc92190412d774d',
+    '/v1/chart': '39d36b99e3f1a41e8875eb08cce1552ac5002521503e286a224cbdb8d1b9af19',
     '/v1/shadbala': '72fc38f257533ced8a97937c9c69a5a71d69e503f76be6d610ea9abc40673fd7',
-    '/v1/kp/significators': '276b342f80f8b52d2cdd55bd925641d501b4e0b59e3aafd22c71ed3aebeea894',
+    '/v1/kp/significators': 'eaa7eff434316d7962c6498f1d48aed77ac566d60bba64165055882dd20ab659',
 };
 
 function stripVolatileEnvelope(value: unknown): unknown {

@@ -10,10 +10,12 @@
  */
 
 import { deltaT } from './deltat.js';
+import { equationOfOriginsComplementaryDegrees } from './iers-eo-complementary.js';
 import { nutation } from './nutation.js';
 import {
     julianCenturies,
     matTransposeVec,
+    matVec,
     meanObliquity,
     precessionMatrix,
     rotateX,
@@ -68,54 +70,24 @@ export function julday(year: number, month: number, day: number, hourUT: number)
 // ---------------------------------------------------------------------------
 
 /**
- * Validity window of the IAU 2006 sidereal-time polynomial, as JD (UT):
- * 1850-01-01 0h and 2050-01-01 0h. Swiss Ephemeris documents the same window
- * (general documentation §6.1) and leaves the polynomial for a long-term
- * expression outside it; the 'jhora' profile follows that.
+ * Validity window of the IAU 2006 GMST polynomial (IERS Conventions 2010,
+ * eq. 5.32; Capitaine, Wallace & Chapront 2005, A&A 432, 355), as JD (UT):
+ * 1850-01-01 0h and 2050-01-01 0h. Outside this interval the long-term model
+ * below (Vondrák precession + Simon et al. mean Earth longitude) is used,
+ * joined with a constant offset at the nearer boundary (Capitaine et al.
+ * 2003c; Vondrák, Capitaine & Wallace 2011).
  */
 const IAU2006_SIDEREAL_FIRST_JD = 2396758.5;
 const IAU2006_SIDEREAL_LAST_JD = 2469807.5;
 
-/**
- * @provenance Periodic terms of the general precession in longitude p_A:
- * Vondrák, Capitaine & Wallace (2011), "New precession expressions, valid for
- * long time intervals", A&A 534, A22, Table 3 (cosine C, sine S, ″; period
- * P, Julian centuries). Polynomial part: eq. (10) of the same paper.
- */
-const VONDRAK_PA_PERIODIC: readonly (readonly [number, number, number])[] = [
-    [-6908.287473, -2845.175469, 409.9],
-    [-3198.706291, 449.844989, 396.15],
-    [1453.674527, -1255.915323, 537.22],
-    [-857.748557, 886.736783, 402.9],
-    [1173.231614, 418.887514, 417.15],
-    [-156.981465, 997.912441, 288.92],
-    [371.83655, -240.97971, 4043.0],
-    [-216.61904, 76.541307, 306.0],
-    [193.691479, -36.788069, 277.0],
-    [11.891524, -170.964086, 203.0],
-];
-
-/** Long-term general precession in longitude p_A, arcseconds (VCW 2011 eq. 10). */
-function vondrakGeneralPrecession(T: number): number {
-    let p = 8134.017132 + 5043.0520035 * T - 0.00710733 * T * T + 271e-9 * T ** 3;
-    for (const [c, sn, period] of VONDRAK_PA_PERIODIC) {
-        const a = (2 * Math.PI * T) / period;
-        p += c * Math.cos(a) + sn * Math.sin(a);
-    }
-    return p;
-}
-
-/** IAU 2006 GMST (ERA + IERS 2010 eq. 5.32), degrees, unreduced. */
+/** IAU 2006 GMST (ERA + IERS 2010 eq. 5.32 + Table 5.2e EO complement), degrees. */
 function gmstIAU2006(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
     const jdTT = jdUT + dtSeconds / 86400.0;
     const T = (jdTT - 2451545.0) / 36525.0;
-    const Du = jdUT - 2451545.0;
+    const jdrel = jdUT - 2451545.0;
 
-    // ERA in degrees. Capitaine, Guinot & McCarthy, A&A 355, 398 (2000);
-    // IERS Conventions (2010) eq. 5.15.
-    const era = 360 * (0.779057273264 + 0.00273781191135448 * Du + (jdUT % 1));
+    const era = mod360((0.779057273264 + (1 + 0.00273781191135448) * jdrel) * 360);
 
-    // GMST − ERA, arcseconds. IERS Conventions (2010) eq. 5.32.
     const polyAs =
         0.014506 +
         4612.156534 * T +
@@ -123,39 +95,53 @@ function gmstIAU2006(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
         0.00000044 * T ** 3 -
         0.000029956 * T ** 4 -
         0.0000000368 * T ** 5;
-    return era + polyAs / 3600;
+    return mod360(era + polyAs / 3600 + equationOfOriginsComplementaryDegrees(T));
 }
 
+/** AU / c in days (light-time day fraction). */
+const LIGHT_TIME_DAYS = 149597870700 / 299792458 / 86400;
+
 /**
- * Long-term mean sidereal time, degrees, up to a constant: the hour angle of
- * the mean Sun, i.e. 360°·(UT day fraction from midnight) + 180° plus the mean
- * longitude of the Sun of date. The Sun's mean longitude is the Earth–Moon
- * barycentre's mean longitude on the J2000 ecliptic (Simon et al. 1994,
- * A&A 282, 663, Table 6 — 100.46645683° + 1295977422.83429″ t − 2.04411″ t²,
- * t in Julian millennia TT; the same coefficients ERFA's eraPlan94 uses)
- * + 180°, carried to the equinox of date with the long-term general
- * precession p_A of Vondrák, Capitaine & Wallace (2011).
+ * Long-term mean sidereal time (degrees) outside the IAU 2006 polynomial window.
+ *
+ * Mean geocentric longitude of Earth (Simon et al. 1994, A&A 282, 663, Table 3.5)
+ * on the J2000 mean ecliptic, corrected for light-time, precessed to the mean
+ * equinox of date with Vondrák et al. (2011), then converted to right ascension;
+ * the UT day fraction is added (Capitaine et al. 2003c; Vondrák et al. 2011).
+ * Nutation enters in {@link getGAST}.
  */
 function gmstLongTerm(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
     const jdTT = jdUT + dtSeconds / 86400.0;
-    const T = (jdTT - 2451545.0) / 36525.0;
-    const t = T / 10;
-    const lambdaEMB = 100.46645683 + (1295977422.83429 * t - 2.04411 * t * t) / 3600;
-    const sunMeanLonOfDate = lambdaEMB + 180 + vondrakGeneralPrecession(T) / 3600;
+    const t = (jdTT - 2451545.0) / 365250.0;
+    const t2 = t * t;
+    const t3 = t * t2;
+    let meanEarthLonDeg =
+        100.46645683 + (1295977422.83429 * t - 2.04411 * t2 - 0.00523 * t3) / 3600;
+    meanEarthLonDeg = mod360(meanEarthLonDeg - (LIGHT_TIME_DAYS * 360) / 365.2425);
+
+    const lam = meanEarthLonDeg * DEG;
+    const oblJ2000 = meanObliquity(0, 2451545.0) * DEG;
+    let v: Vec = [
+        Math.cos(lam),
+        Math.cos(oblJ2000) * Math.sin(lam),
+        Math.sin(oblJ2000) * Math.sin(lam),
+    ];
+
+    const T = julianCenturies(jdTT);
+    v = matVec(precessionMatrix(T, jdTT), v);
+    v = rotateX(v, meanObliquity(T, jdTT));
+
+    const raDeg = Math.atan2(v[1], v[0]) * RAD;
     const dayFraction = (((jdUT - 0.5) % 1) + 1) % 1;
-    return 360 * dayFraction + 180 + sunMeanLonOfDate;
+    return mod360(raDeg + dayFraction * 360);
 }
 
 /**
  * Continuity constants, computed on first use at each boundary.
  *
  * They belong to the sidereal-time formulation, not to a ΔT prediction, so
- * they are always evaluated with the 'jhora' ΔT model (the documented
- * formulas of deltat.ts) at the boundary instant, whatever profile or
- * deltaTOverrideSeconds is in force. Sidereal time therefore does not jump
- * when a ΔT prediction changes. Swiss Ephemeris 2.10, probed as a black box,
- * behaves the same way: its 2050 join is continuous only under that ΔT
- * (it steps by 1.9″ under its own 2.10 ΔT).
+ * they are always evaluated with the 'jhora' ΔT model (deltat.ts) at the
+ * boundary instant, whatever profile or deltaTOverrideSeconds is in force.
  */
 const longTermOffsets = new Map<number, number>();
 
@@ -167,10 +153,9 @@ function angleDiff(a: number, b: number): number {
 /**
  * Greenwich Mean Sidereal Time in degrees.
  *
- * 1850–2050: IAU 2006 / IERS Conventions (2010) eq. 5.32 — the Earth Rotation
- * Angle (defined on UT1) plus the accumulated precession in right ascension.
- * UTC stands in for UT1, which is the same substitution Swiss Ephemeris makes;
- * |UT1−UTC| ≤ 0.9 s is a separate, shared uncertainty of up to ~14″.
+ * 1850–2050: IAU 2006 / IERS Conventions (2010) eq. 5.32 — ERA(UT1) plus the
+ * accumulated precession in right ascension (Capitaine et al. 2003c). UTC is
+ * used in place of UT1; |UT1−UTC| ≤ 0.9 s is a separate uncertainty (~14″).
  *
  * Outside 1850–2050 the IAU polynomial is not valid, and the long-term
  * expression above is used, shifted by the constant that makes the two agree
@@ -195,24 +180,23 @@ export function getGMST(jdUT: number): number {
 /**
  * Greenwich Apparent Sidereal Time in degrees.
  *
- * Equation of the equinoxes: Δψ cos ε_true, plus the two complementary terms
- * in the longitude of the lunar node (IERS Conventions 2010 eq. 5.16). Those
- * terms are at most a few milliarcseconds; they are what makes GAST match
- * `swe_sidtime` rather than sitting 0.002″ off it.
+ * Equation of the equinoxes Δψ cos ε_true (IERS Conventions 2010 eq. 5.16;
+ * Wallace & Capitaine 2006). Complementary terms in Ω and 2Ω are already in
+ * Table 5.2e via {@link equationOfOriginsComplementaryDegrees} inside {@link getGMST}.
  */
 export function getGAST(jdUT: number): number {
-    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const T = julianCenturies(jdTT);
     const { dpsi, deps } = nutation(T);
-    const epsTrue = meanObliquity(T) + deps;
-    const omega = (125.04455501 - 1934.13626197 * T + 0.0020756 * T * T) * DEG;
-    const compAs = 0.00264096 * Math.sin(omega) + 0.00006396 * Math.sin(2 * omega);
-    return mod360(getGMST(jdUT) + dpsi * Math.cos(epsTrue * DEG) + compAs / 3600);
+    const epsTrue = meanObliquity(T, jdTT) + deps;
+    return mod360(getGMST(jdUT) + dpsi * Math.cos(epsTrue * DEG));
 }
 
 /** True obliquity of the ecliptic (mean + nutation in obliquity), degrees. */
 export function trueObliquity(jdUT: number): number {
-    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-    return meanObliquity(T) + nutation(T).deps;
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const T = julianCenturies(jdTT);
+    return meanObliquity(T, jdTT) + nutation(T).deps;
 }
 
 // ---------------------------------------------------------------------------
@@ -264,8 +248,9 @@ export function observerGeocentricVector(
 
     // True equator of date → ICRF. Nutation is a sub-arcsecond rotation of the
     // observer vector (< 1 m of position), so only precession is undone.
-    const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-    const P = precessionMatrix(T);
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const T = julianCenturies(jdTT);
+    const P = precessionMatrix(T, jdTT);
 
     return {
         position: matTransposeVec(P, posDate),

@@ -31,7 +31,7 @@
  *                                  geocentric vector when topocentric
  * 3. apparentPlace()               light-time (iterated), solar deflection,
  *                                  relativistic aberration → ICRF direction
- * 4. icrfToMeanEclipticOfDate()    IAU 2006 precession rotation + mean obliquity
+ * 4. icrfToMeanEclipticOfDate()    Vondrák et al. 2011 precession at all epochs
  * 5. toSidereal(lon, ayanamsa)     sidereal longitude
  *
  * Nutation is applied to the *angles* (via apparent sidereal time and true
@@ -523,8 +523,9 @@ export class EphemerisEngine {
         const observer = observerState(this.source, NAIF.Earth, et, offset);
         const place = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
 
-        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-        const ecl = toSpherical(icrfToMeanEclipticOfDate(place.direction as Vec, T));
+        const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+        const T = julianCenturies(jdTT);
+        const ecl = toSpherical(icrfToMeanEclipticOfDate(place.direction as Vec, T, jdTT));
 
         return { lon: ecl.lon, lat: ecl.lat, dist: place.distanceAU };
     }
@@ -571,7 +572,8 @@ export class EphemerisEngine {
      */
     private trueNodeLongitude(jdUT: number): number {
         const et = jdUTtoET(jdUT);
-        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
+        const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+        const T = julianCenturies(jdTT);
 
         const moon = this.source.getBarycentric(NAIF.Moon, et);
         const earth = this.source.getBarycentric(NAIF.Earth, et);
@@ -580,8 +582,8 @@ export class EphemerisEngine {
         const v: Vec = [moon.vx - earth.vx, moon.vy - earth.vy, moon.vz - earth.vz];
 
         // Work in the ecliptic of date so that "ecliptic plane" means z = 0.
-        const rEcl = icrfToMeanEclipticOfDate(r, T);
-        const vEcl = icrfToMeanEclipticOfDate(v, T);
+        const rEcl = icrfToMeanEclipticOfDate(r, T, jdTT);
+        const vEcl = icrfToMeanEclipticOfDate(v, T, jdTT);
 
         // h = r × v  (normal to the orbit plane)
         const hx = rEcl[1] * vEcl[2] - rEcl[2] * vEcl[1];
@@ -593,8 +595,9 @@ export class EphemerisEngine {
 
     /** Equatorial declination from mean-of-date ecliptic longitude and latitude. */
     private declinationOf(jdUT: number, lon: number, lat: number): number {
-        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-        const eps = (meanObliquity(T) * Math.PI) / 180;
+        const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+        const T = julianCenturies(jdTT);
+        const eps = (meanObliquity(T, jdTT) * Math.PI) / 180;
         const l = (lon * Math.PI) / 180;
         const b = (lat * Math.PI) / 180;
         return (
@@ -762,9 +765,10 @@ export class EphemerisEngine {
      */
     public getEclipticObliquity(jd: number): { eps: number; dpsi: number; deps: number } {
         this.checkInit();
-        const T = julianCenturies(jd + deltaT(jd) / 86400.0);
+        const jdTT = jd + deltaT(jd) / 86400.0;
+        const T = julianCenturies(jdTT);
         const { dpsi, deps } = nutation(T);
-        return { eps: meanObliquity(T), dpsi, deps };
+        return { eps: meanObliquity(T, jdTT), dpsi, deps };
     }
 
     /** ΔT = TT − UT in seconds at `jd`, exposed for diagnostics. */
