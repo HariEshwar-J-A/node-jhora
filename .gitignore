@@ -27,6 +27,10 @@ de440s.bsp
 **/de440s.bsp
 de440s.bsp.partial
 **/de440s.bsp.partial
+de431.bsp
+**/de431.bsp
+packages/ephe-long/.cache/
+packages/ephe-long/dist/
 
 # Debug / scratch scripts (not part of the codebase)
 debug_*.mjs
@@ -43,3 +47,6 @@ CLAUDE.md
 # Birth data — personal records, never committed
 data/
 charts/
+de431*.bsp
+*.bsp.partial
+*.njce

@@ -43,7 +43,7 @@ Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `
 
 ### `@node-jhora/core`
 
-- **Ephemeris**: `EphemerisEngine` in `src/engine/ephemeris.ts`. Pure TypeScript SPK reader for JPL DE440s. No Swiss Ephemeris package and no WASM binary. Kernel coverage recorded in `packages/ephe/download.mjs` and in the engine header: **1849-12-26 to 2150-01-22**. `SpkFile.getState` throws when no Type-2 segment covers the requested ephemeris time.
+- **Ephemeris**: `EphemerisEngine` in `src/engine/ephemeris.ts` routes through `EphemerisProvider` (`packages/core/src/engine/provider/`). Default kernel: pure TypeScript SPK reader for JPL **DE440s** (`@node-jhora/ephe`, **1849-12-26 to 2150-01-22**). Optional long range: **DE431** compact chunks (`@node-jhora/ephe-long`, 10000 BCE–10000 CE) loaded on demand via an injectable chunk loader (HTTP in the browser, filesystem in Node). Policy `auto` keeps DE440s byte-identical inside its span. No Swiss Ephemeris package and no WASM binary.
 - **Resolution order** for `de440s.bsp`: `NODE_JHORA_EPHE_PATH`, then `@node-jhora/ephe`, then `de440s.bsp` beside the `packages/` directory.
 - **Ayanamsa**: `DEFAULT_AYANAMSA` and `DEFAULT_CONFIG.ayanamsaMode` are `AYANAMSA.TRUE_CITRA` (`27`), True Chitrapaksha, from Spica at 180°. `NodeJHora.calculate` defaults its name argument to `'TrueChitra'`. The HTTP schema defaults to `'true_chitra'`.
 - **Registry**: `AYANAMSA_MODELS` in `src/engine/ayanamsa.ts` has modes 27, 29, 30, 35, 0, 1, 3, 5, 7, 8, and 18. Mode `2` (`AYANAMSA.LAHIRI_ICRC`) is not in that map. `getAyanamsa` uses mode 27 when the requested mode has no model.

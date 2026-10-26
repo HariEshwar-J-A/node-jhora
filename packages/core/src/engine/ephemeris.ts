@@ -48,6 +48,7 @@ import { DateTime }          from 'luxon';
 import { Body } from '../core/body.js';
 import {
 APPARENT,
+    type BarycentricSource,
     computePlace,     GEOMETRIC, observerState,
     type PlaceCorrections,
 } from './apparent.js';
@@ -79,6 +80,12 @@ import {
     toSpherical,
     type Vec,
 } from './precession.js';
+import {
+    CompositeEphemerisProvider,
+    type De431ChunkStore,
+    type EphemerisPolicy,
+    type EphemerisProvenance,
+} from './provider/index.js';
 import type { SpkFile }      from './spk.js';
 import { loadSpkFromBytes, NAIF } from './spk.js';
 
@@ -218,6 +225,9 @@ export class EphemerisEngine {
     private initialized     = false;
 
     private spk!:         SpkFile;
+    private source!:      BarycentricSource;
+    private composite!:   CompositeEphemerisProvider;
+    private chunkStore?:  De431ChunkStore;
     private ayanamsaMode: number = DEFAULT_AYANAMSA;
 
     public constructor() {}
@@ -256,8 +266,40 @@ export class EphemerisEngine {
             );
         }
 
-        this.spk = loadSpkFromBytes(bytes);
+        this.spk         = loadSpkFromBytes(bytes);
+        this.composite   = new CompositeEphemerisProvider(this.spk, {
+            policy: this.ephemerisPolicy,
+            longRange: this.chunkStore
+                ? { getChunk: this.chunkStore.asGetter() }
+                : undefined,
+        });
+        this.source      = this.composite;
         this.initialized = true;
+    }
+
+    private ephemerisPolicy: EphemerisPolicy = 'auto';
+
+    /**
+     * Attach a DE431 chunk store (browser loader or Node filesystem cache).
+     * Call before {@link initialize} when long-range dates are needed.
+     */
+    public setChunkStore(store: De431ChunkStore): void {
+        this.chunkStore = store;
+    }
+
+    /** Force DE440s, DE431 long-range, or auto (default). */
+    public setEphemerisPolicy(policy: EphemerisPolicy): void {
+        this.ephemerisPolicy = policy;
+        if (this.composite) this.composite.setPolicy(policy);
+    }
+
+    public getEphemerisPolicy(): EphemerisPolicy {
+        return this.ephemerisPolicy;
+    }
+
+    public getEphemerisProvenance(jd: number): EphemerisProvenance {
+        this.checkInit();
+        return this.composite.provenance(jd);
     }
 
     // -----------------------------------------------------------------------
@@ -407,8 +449,8 @@ export class EphemerisEngine {
             ? observerGeocentricVector(jdUT, location.latitude, location.longitude, location.altitude ?? 0)
             : undefined;
 
-        const observer = observerState(this.spk, NAIF.Earth, et, offset);
-        const place    = computePlace(this.spk, naifId, NAIF.Sun, et, observer, corrections);
+        const observer = observerState(this.source, NAIF.Earth, et, offset);
+        const place    = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
 
         const T   = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
         const ecl = toSpherical(icrfToMeanEclipticOfDate(place.direction as Vec, T));
@@ -455,8 +497,8 @@ export class EphemerisEngine {
         const et = jdUTtoET(jdUT);
         const T  = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
 
-        const moon  = this.spk.getBarycentric(NAIF.Moon,  et);
-        const earth = this.spk.getBarycentric(NAIF.Earth, et);
+        const moon  = this.source.getBarycentric(NAIF.Moon,  et);
+        const earth = this.source.getBarycentric(NAIF.Earth, et);
 
         const r: Vec = [moon.x - earth.x, moon.y - earth.y, moon.z - earth.z];
         const v: Vec = [moon.vx - earth.vx, moon.vy - earth.vy, moon.vz - earth.vz];

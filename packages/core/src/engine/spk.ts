@@ -85,6 +85,10 @@ export class SpkFile {
         this.parseSegments();
     }
 
+    static fromBuffer(buf: Uint8Array | ArrayBuffer): SpkFile {
+        return new SpkFile(buf instanceof Uint8Array ? buf : new Uint8Array(buf));
+    }
+
     // ─── File parsing ──────────────────────────────────────────────────────
 
     private detectEndian(): boolean {
@@ -275,6 +279,32 @@ export class SpkFile {
     /** Expose segment list for diagnostics. */
     get segmentList(): readonly SpkSegment[] {
         return this.segments;
+    }
+
+    /**
+     * Copy a Type-2 segment's coefficient block for chunk encoding (DE431 build).
+     */
+    readType2SegmentPayload(seg: SpkSegment): {
+        target: number;
+        center: number;
+        init: number;
+        intlen: number;
+        rsize: number;
+        n: number;
+        data: Float64Array;
+    } {
+        const metaBase = (seg.finalAddr - 4) * 8;
+        const init   = this.readF64(metaBase);
+        const intlen = this.readF64(metaBase + 8);
+        const rsize  = Math.round(this.readF64(metaBase + 16));
+        const n      = Math.round(this.readF64(metaBase + 24));
+        const total  = n * rsize;
+        const data   = new Float64Array(total);
+        const recordBase = (seg.initAddr - 1) * 8;
+        for (let i = 0; i < total; i++) {
+            data[i] = this.readF64(recordBase + i * 8);
+        }
+        return { target: seg.target, center: seg.center, init, intlen, rsize, n, data };
     }
 }
 

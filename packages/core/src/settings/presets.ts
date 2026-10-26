@@ -19,6 +19,7 @@ import {
 
 const NODE_JHORA_RAW = {
     schemaVersion: 1 as const,
+    ephemerisPolicy: 'auto' as const,
     ayanamsa: 'true_citra' as const,
     ayanamsaOffsetDeg: 0,
     nodeType: 'true' as const,
