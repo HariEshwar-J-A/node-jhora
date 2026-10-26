@@ -48,6 +48,18 @@ pnpm 12 needs a recent Corepack. The Corepack 0.34 bundled with Node 22.21 downl
 
 Packages in this repo depend on each other with `workspace:*`. Publish with pnpm; it rewrites that protocol to a version.
 
+## Versioning and releases
+
+Published packages under `packages/*` use [Changesets](https://github.com/changesets/changesets) with **independent** semver (`@node-jhora/testkit` and `apps/docs` are private and ignored). When a pull request changes a published package, add a changeset:
+
+```bash
+pnpm changeset
+```
+
+CI runs `pnpm changeset status --since=origin/main` on pull requests and fails if a published package changed without a changeset. Add the `no-changeset` label when the change does not need a release (for example docs-only or internal refactors with no publish impact).
+
+Releases are triggered manually from the **Release** workflow (dry-run by default). npm publish stays off until an owner runs the workflow with `dry_run: false` and `publish: true` and configures the `NPM_TOKEN` repository secret.
+
 `de440s.bsp` is not committed. `@node-jhora/ephe`'s `postinstall` runs `download.mjs`, and the root `postinstall` runs the same script so a workspace install still fetches the kernel when pnpm skips a dependency's lifecycle scripts. The script pins the kernel's SHA-256. NAIF publishes the MD5 of those bytes as `3917ee56769db332790c751e2168843d` in `aa_checksums.txt`. When `packages/ephe/de440s.bsp` already has the pinned SHA-256, the download is skipped. Cache that path in CI with the SHA-256 as the key.
 
 pnpm 12 will not finish an install while a dependency's lifecycle script is neither approved nor denied (`ERR_PNPM_IGNORED_BUILDS`). Decisions are `allowBuilds` in `pnpm-workspace.yaml`. The linker stays isolated; there is no `.npmrc` hoist.
