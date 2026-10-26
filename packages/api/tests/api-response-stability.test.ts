@@ -20,11 +20,16 @@ const CHART_B_BODY = {
     houseSystem: 'whole_sign',
 };
 
-/** SHA-256 of canonical JSON with volatile envelope fields removed. */
+/**
+ * SHA-256 of canonical JSON with volatile envelope fields removed.
+ * Re-pinned after #260 added `ephemerisPolicy` (default `auto`) to CalculationSettings:
+ * only `settingsHash` changed (d9d9dac978004ca9 → 73e104c667187242); all calculation
+ * output is byte-identical to the previous pins.
+ */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': '43e1421cfa126cc56f444fe4e9c49fbf39df0146ad5f240100ac5f7067fe908c',
-    '/v1/shadbala': 'db2cf3e989be39816cf6601b96ed16824248df64dcc2041b7ff6581e2f15b4fc',
-    '/v1/kp/significators': '613b16cd070e9e681c359b2ab935a1e28c5d66d230607e3659c2fd47c4791b81',
+    '/v1/chart': 'f900db70d2c849f61a9ce7f451cf44b5785047d304456397c089b8dd61ee72c8',
+    '/v1/shadbala': 'e643bb53a0d805972dd6ba2741cfe22d8c63de9ef8bf812f14b65203b2aed39f',
+    '/v1/kp/significators': '258b95eeb3fed32eb6665cfa5db202579be9ebefcc156b3701c3a7cb491f4b9e',
 };
 
 function stripVolatileEnvelope(value: unknown): unknown {

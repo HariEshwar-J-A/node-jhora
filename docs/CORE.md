@@ -170,6 +170,47 @@ const bhavas = calculateBhavaSandhi(cusps);
 
 ---
 
+## Civil time resolver
+
+Convert a **local wall-clock** birth time (IANA zone + latitude/longitude) to UTC with a
+structured trace compatible with `.njh` `birth.tzResolution` (`@node-jhora/format` v2).
+
+```typescript
+import { resolveCivilTime, getTzdbVersion } from '@node-jhora/core';
+
+const { resolvedUtc, julianDayUt, tzResolution, warnings } = resolveCivilTime({
+    local: { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+    timezone: 'Asia/Kolkata',
+    latitude: 13.0827,
+    longitude: 80.2707,
+    policy: { ambiguous: 'earlier', gap: 'forward' },
+});
+
+console.log(resolvedUtc, getTzdbVersion(), tzResolution.steps);
+```
+
+Behaviour highlights:
+
+- **IANA rules** come from the runtime's `Intl` tz database (read through Luxon); no
+  offsets are hard-coded. `getTzdbVersion()` returns the tzdata release the runtime
+  actually uses (`process.versions.tz` in Node, e.g. `2025b`) or `undefined` when the
+  environment does not report it.
+- **LMT** is exactly 4 minutes of time per degree of longitude (not rounded to whole
+  minutes). It applies before the Gregorian reform (1582-10-15), outside the
+  1800–2400 window where `Intl` zone history is used, for **India before 1900**
+  (`Asia/Kolkata`, unless `preferIanaForIndia`), or when `forceLmt` is set.
+- **Calendar**: the shared `time/historical.ts` implementation — proleptic Julian before
+  1582-10-15, Gregorian from that date, astronomical year numbering (year `0` = 1 BC).
+  Supported civil years: −9999 … 10000 (10 000 BC … 10 000 AD). `resolvedUtc` is ISO-8601,
+  which is always proleptic Gregorian; use `julianDayUt` for exact pre-1582 instants.
+- **Manual / war-time** offsets via `manualOffset`.
+- **DST gap and overlap** policies: `gap: 'forward' | 'backward' | 'reject'` (default
+  `forward`, e.g. 02:30 in a spring-forward gap becomes 03:30 DST) and
+  `ambiguous: 'earlier' | 'later' | 'reject'` (default `earlier`). Both surface `warnings`
+  and trace steps (`gap_skip`, `ambiguous_fold`).
+
+---
+
 ## 🧭 Geocoder
 
 A high-performance, stream-based city lookup tool using a local CSV database:
