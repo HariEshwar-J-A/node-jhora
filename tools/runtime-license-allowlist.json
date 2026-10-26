@@ -1,0 +1,4 @@
+{
+  "$comment": "Packages listed here are permitted to carry a copyleft SPDX id at runtime. Each key is name@version; value is a short reason with a link to docs/SECURITY-AUDIT.md if needed.",
+  "packages": {}
+}

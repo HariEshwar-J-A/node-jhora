@@ -36,7 +36,7 @@ export function registerErrorHandler(app: FastifyInstance): void {
                 title:   'Validation Error',
                 status:  422,
                 detail:  'Input validation failed',
-                errors:  error.errors.map(e => ({
+                errors:  error.issues.map(e => ({
                     path:    e.path.join('.'),
                     message: e.message,
                 })),

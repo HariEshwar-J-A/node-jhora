@@ -9,7 +9,7 @@
         "build": "node -e \"process.exit(0)\"",
         "typecheck": "node -e \"process.exit(0)\"",
         "lint": "eslint .",
-        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config ../../tools/jest.config.js && node --test ../../tools/check-forbidden-assets.test.mjs",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config ../../tools/jest.config.js && node --test ../../tools/check-forbidden-assets.test.mjs ../../tools/check-runtime-licenses.test.mjs",
         "postinstall": "node download.mjs"
     },
     "files": [

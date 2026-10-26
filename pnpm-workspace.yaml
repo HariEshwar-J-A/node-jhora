@@ -22,8 +22,7 @@ allowBuilds:
 # (fastify's inject() then fails every API test). 6.6.0 depends on cookie
 # ^1, the pair the previous npm lockfile tested, and it still satisfies
 # fastify's light-my-request range (^6.0.0). Do not override zod: api stays
-# on zod 3 and testkit stays on zod 4.6.7, which the isolated linker keeps
-# as two copies.
+# All workspace packages pin zod 4.6.7 (patched for GHSA-mrhx-c7xc-m3w5).
 # Why cookie 2 breaks Jest: cookie 2.0.0 is ESM-only
 #   https://github.com/jshttp/cookie/releases/tag/v2.0.0
 # and Jest loads CommonJS node_modules through its own require(), not Node's

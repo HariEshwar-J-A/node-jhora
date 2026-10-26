@@ -63,6 +63,7 @@ pnpm lint
 pnpm run format:check
 pnpm run check:links
 pnpm run check:clean-room
+pnpm run check:licenses
 pnpm run validate-github-templates
 ```
 
