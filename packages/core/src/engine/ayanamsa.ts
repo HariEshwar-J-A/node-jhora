@@ -29,16 +29,16 @@
  * from `precession.ts`, and the true-star family carries no fitted constant.
  */
 
+import { AU_KM } from './apparent.js';
 import { deltaT } from './deltat.js';
 import {
-    julianCenturies,
-    precessionMatrix,
-    matTransposeVec,
     icrfToMeanEclipticOfDate,
+    julianCenturies,
+    matTransposeVec,
+    precessionMatrix,
     toSpherical,
     type Vec,
 } from './precession.js';
-import { AU_KM } from './apparent.js';
 
 const DEG = Math.PI / 180;
 const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);

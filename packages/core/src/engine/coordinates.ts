@@ -9,10 +9,10 @@
  * All angles are in degrees unless documented otherwise.
  */
 
-import { nutation }                                from './nutation.js';
 import { deltaT }                                  from './deltat.js';
-import { meanObliquity, julianCenturies, rotateX,
-         matTransposeVec, precessionMatrix,
+import { nutation }                                from './nutation.js';
+import { julianCenturies,          matTransposeVec, meanObliquity, precessionMatrix,
+rotateX,
          type Vec }                                from './precession.js';
 
 const DEG = Math.PI / 180;
@@ -25,7 +25,7 @@ const EARTH_F = 1 / 298.257223563;
 /** Earth rotation rate, rad/s (including precession in RA). */
 const OMEGA_EARTH = 7.292115146706979e-5;
 
-export { meanObliquity, julianCenturies };
+export { julianCenturies,meanObliquity };
 
 /** Reduce an angle to [0, 360). */
 export function mod360(x: number): number {

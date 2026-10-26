@@ -9,18 +9,19 @@
  */
 
 import { Decimal } from 'decimal.js';
+
 import {
+    D,
+    decimalToDmsD,
+    dmsToDecimalD,
+    midpointD,
     normalize360D,
     shortestArcD,
-    dmsToDecimalD,
-    decimalToDmsD,
-    midpointD,
-    D,
     toNum,
 } from './precise.js';
 
 // Re-export Decimal utilities for packages that need them directly
-export { Decimal, normalize360D, shortestArcD, dmsToDecimalD, decimalToDmsD, midpointD, D as toDecimal, toNum } from './precise.js';
+export { Decimal, decimalToDmsD, dmsToDecimalD, midpointD, normalize360D, shortestArcD, D as toDecimal, toNum } from './precise.js';
 
 /**
  * Normalises an angle to [0, 360).

@@ -1,6 +1,6 @@
 
 import { PlanetPosition } from '../engine/ephemeris.js';
-import { KPSubLord, KPSignificator } from './sublord.js';
+import { KPSignificator,KPSubLord } from './sublord.js';
 
 export interface RulingPlanetsResult {
     lagnaSignLord: number;

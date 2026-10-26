@@ -1,5 +1,5 @@
-export { ChartSession } from './chart-session.js';
 export type { ChartSessionDeps, ChartSessionInput } from './chart-session.js';
+export { ChartSession } from './chart-session.js';
 export {
     CHART_SECTION_IDS,
     type ChartSectionId,

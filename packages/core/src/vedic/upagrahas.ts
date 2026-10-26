@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+
 import { normalize360 } from '../core/math.js';
 import { PlanetPosition } from '../engine/ephemeris.js';
 
@@ -187,7 +188,7 @@ export function calculateTimeUpagrahas(
         
         // Time From Sunrise to TimeOfInterest (which could be in night)
         // Be careful with day wrapping.
-        let msFromSunrise = diffMs;
+        const msFromSunrise = diffMs;
         // If night segment, timeOfInterest > sunset.
         
         const degrees = (msFromSunrise / (1000 * 60 * 4)); // 4 min = 1 degree

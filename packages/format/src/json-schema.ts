@@ -25,7 +25,8 @@ export function buildNjhChartJsonSchema(): Record<string, unknown> {
     return {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
         title: 'NjhChartV2',
-        description: 'node-jhora .njh chart file (schemaVersion 2). Inline settings must validate against @node-jhora/core CalculationSettings.',
+        description:
+            'node-jhora .njh chart file (schemaVersion 2). Inline settings must validate against @node-jhora/core CalculationSettings.',
         ...embedded(NjhChartV2Schema),
         $defs: {
             metadata: embedded(ChartMetadataSchema),

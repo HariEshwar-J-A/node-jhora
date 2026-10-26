@@ -3,26 +3,26 @@
  * Excludes Node.js-only modules (Geocoder, PlanetaryStream)
  */
 import { DateTime } from 'luxon';
-import { EphemerisEngine, PlanetPosition, HouseData } from './engine/ephemeris.js';
-import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
-import { calculateVarga, calculateShashtyamsa, VargaPoint } from './vedic/vargas.js';
-import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
-import { calculateTimeUpagrahas, calculateDhumadiUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
-import { calculatePranapada, calculateInduLagna, calculateShreeLagna, calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna } from './vedic/special_lagnas.js';
-import { getRelationship, Relationship, PLANET_IDS } from './core/relationships.js';
-import { KPSubLord, KPSignificator } from './kp/sublord.js';
+
+import { getRelationship, PLANET_IDS,Relationship } from './core/relationships.js';
+import { EphemerisEngine, HouseData,PlanetPosition } from './engine/ephemeris.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
+import { KPSignificator,KPSubLord } from './kp/sublord.js';
 import { VargaDeities } from './vedic/deities.js';
+import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
+import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
+import { calculateBhavaLagna, calculateGhatiLagna, calculateHoraLagna, calculateInduLagna, calculatePranapada, calculateShreeLagna, calculateVarnadaLagna } from './vedic/special_lagnas.js';
+import { calculateDhumadiUpagrahas, calculateTimeUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
+import { calculateShashtyamsa, calculateVarga, VargaPoint } from './vedic/vargas.js';
 
 // Re-export Interfaces
 export type {
-    PlanetPosition, HouseData,
-    PanchangaResult,
-    KPSignificator, RulingPlanetsResult,
-    VargaPoint,
+HouseData,
+    HouseSystemMethod,
+    KPSignificator,     PanchangaResult,
+    PlanetPosition, RulingPlanetsResult,
     UpagrahaPositions,
-    HouseSystemMethod
-};
+    VargaPoint};
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -35,8 +35,8 @@ export interface ChartData {
 export type Ayanamsa = 'Lahiri' | 'Raman' | 'KP';
 
 // Re-export Utils
-export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
-export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
+export { decimalToDms,dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
+export { calculateShashtyamsa, calculateVarga, getRelationship, PLANET_IDS, Relationship,VargaDeities };
 
 export interface NodeJHoraConfig {
     ayanamsaOrder?: number; // 1 = Lahiri
@@ -178,11 +178,11 @@ export class NodeJHora {
 
 // Functional Exports (Browser-safe only)
 export {
+calculateBhavaLagna, calculateDhumadiUpagrahas,
+calculateGhatiLagna,     calculateHoraLagna,     calculateHouseCusps,
+calculateInduLagna,     calculatePanchanga,
+    calculatePranapada, calculateShreeLagna,
+    calculateTimeUpagrahas, calculateVarnadaLagna,
     EphemerisEngine,
-    calculateHouseCusps,
-    calculatePanchanga,
-    KPSubLord, KPRuling,
-    calculateTimeUpagrahas, calculateDhumadiUpagrahas,
-    calculatePranapada, calculateInduLagna, calculateShreeLagna,
-    calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna
-};
+KPRuling,
+    KPSubLord};

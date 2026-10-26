@@ -1,4 +1,4 @@
-import { GoldenCaseSchema, type GoldenCase } from './schema.js';
+import { type GoldenCase,GoldenCaseSchema } from './schema.js';
 
 /** Parse a JSON array, a single JSON object, or JSON Lines into golden cases. */
 export function parseGoldenCorpus(text: string): GoldenCase[] {

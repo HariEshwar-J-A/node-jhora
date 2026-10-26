@@ -1,4 +1,5 @@
-import { PlanetPosition, HouseData } from '@node-jhora/core';
+import { HouseData,PlanetPosition } from '@node-jhora/core';
+
 import { DoshaResult } from '../types.js';
 
 // Mars ID = 2.

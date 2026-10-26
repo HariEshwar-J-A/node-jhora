@@ -59,6 +59,8 @@ From the repository root, after the Corepack commands above:
 ```bash
 pnpm install --frozen-lockfile
 pnpm build && pnpm typecheck && pnpm test
+pnpm lint
+pnpm run format:check
 pnpm run check:links
 pnpm run check:clean-room
 pnpm run validate-github-templates

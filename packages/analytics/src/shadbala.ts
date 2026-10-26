@@ -1,13 +1,13 @@
-import { normalize360, getShortestDistance, getRelationship, Relationship, PLANET_IDS, PlanetPosition, HouseData } from '@node-jhora/core';
+import { getRelationship, getShortestDistance, HouseData,normalize360, PLANET_IDS, PlanetPosition, Relationship } from '@node-jhora/core';
+
+import { calculateDrigBala } from './aspects.js';
 import {
+    calculateAyanabala,
+    calculateChestaBala,
     calculateDigBala,
     calculateNatonataBala,
     calculatePakshaBala,
-    calculateTribhagaBala,
-    calculateAyanabala,
-    calculateChestaBala
-} from './shadbala_time.js';
-import { calculateDrigBala } from './aspects.js';
+    calculateTribhagaBala} from './shadbala_time.js';
 
 // Exaltation Points (Deep Exaltation Degree)
 // Sun: 10 Aries, Moon: 3 Taurus, Mars: 28 Capricorn, Merc: 15 Virgo
@@ -144,7 +144,7 @@ export function calculateShadbala(input: ShadbalaInput): ShadbalaResult {
     const kaala = natonata + paksha + tribhaga + ayana;
 
     // 4. Chesta Bala
-    let chesta = calculateChestaBala(planet);
+    const chesta = calculateChestaBala(planet);
 
     // 5. Naisargika Bala
     const naisargika = NAISARGIKA_BALA[planet.id] || 0;

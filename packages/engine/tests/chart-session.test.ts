@@ -96,13 +96,13 @@ describe('ChartSession', () => {
         expect(a.settingsHash).toHaveLength(SETTINGS_HASH_HEX_LENGTH);
     });
 
-    test.each(CHART_SECTION_IDS)('%s survives structuredClone unchanged', id => {
+    test.each(CHART_SECTION_IDS)('%s survives structuredClone unchanged', (id) => {
         const section = session().getSection(id);
         expect(section).toBeDefined();
         expect(structuredClone(section)).toEqual(section);
     });
 
-    test.each(CHART_SECTION_IDS)('%s is memoised (same object on repeat calls)', id => {
+    test.each(CHART_SECTION_IDS)('%s is memoised (same object on repeat calls)', (id) => {
         const s = session();
         expect(s.getSection(id)).toBe(s.getSection(id));
     });

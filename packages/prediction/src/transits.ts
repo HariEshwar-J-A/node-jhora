@@ -1,6 +1,6 @@
 
+import { EphemerisEngine, normalize360,PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
-import { EphemerisEngine, PlanetPosition, normalize360 } from '@node-jhora/core';
 
 export interface TransitEvent {
     planetId: number;
@@ -153,7 +153,7 @@ export class TransitEngine {
         let cursor = start;
         const stepHours = 24; // Initial crude scan
         
-        let prevDiff = 0;
+        const prevDiff = 0;
         let prevTime = start;
         
         // Helper: Get Angle Difference (0-360) ensuring minimal distance logic?

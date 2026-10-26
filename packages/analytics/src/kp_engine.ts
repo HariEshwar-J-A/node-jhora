@@ -1,4 +1,4 @@
-import { PlanetPosition, HouseData, KPSubLord, KPSignificator } from '@node-jhora/core';
+import { HouseData, KPSignificator,KPSubLord, PlanetPosition } from '@node-jhora/core';
 
 export interface KPPlanetSignificator extends KPSignificator {
     planetName: string;

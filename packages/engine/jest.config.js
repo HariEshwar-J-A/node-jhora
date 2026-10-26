@@ -2,6 +2,7 @@
 export default {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
+    setupFiles: ['<rootDir>/../../tools/jest-bsp-setup.mjs'],
     extensionsToTreatAsEsm: ['.ts'],
     moduleNameMapper: {
         '^@node-jhora/core$': '<rootDir>/../core/src/index.ts',

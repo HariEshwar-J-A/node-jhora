@@ -15,7 +15,15 @@ function v1At(instant: string, timezone: string) {
 function instantFromLocal(v2: ReturnType<typeof migrateV1ToV2>): number {
     const { local } = v2.birth;
     const offset = v2.birth.tzResolution.steps[0].offsetMinutes!;
-    const wall = Date.UTC(local.year, local.month - 1, local.day, local.hour, local.minute, local.second, local.millisecond ?? 0);
+    const wall = Date.UTC(
+        local.year,
+        local.month - 1,
+        local.day,
+        local.hour,
+        local.minute,
+        local.second,
+        local.millisecond ?? 0,
+    );
     return wall - offset * 60_000;
 }
 
@@ -72,10 +80,9 @@ describe('njh migrations', () => {
         const expected = DateTime.fromISO(instant, { zone: 'utc' }).toMillis();
         expect(DateTime.fromISO(v2.birth.tzResolution.resolvedUtc).toMillis()).toBe(expected);
         expect(instantFromLocal(v2)).toBe(expected);
-        expect(DateTime.fromObject(
-            { ...v2.birth.local },
-            { zone: v2.birth.timezone },
-        ).isValid).toBe(true);
+        expect(
+            DateTime.fromObject({ ...v2.birth.local }, { zone: v2.birth.timezone }).isValid,
+        ).toBe(true);
         // The migrated document survives serialisation unchanged.
         expect(parseNjh(serializeNjh(v2))).toEqual(v2);
     });
@@ -86,11 +93,15 @@ describe('njh migrations', () => {
         expect(first.birth.local).toEqual(second.birth.local);
         expect(first.birth.tzResolution.steps[0].offsetMinutes).toBe(-240);
         expect(second.birth.tzResolution.steps[0].offsetMinutes).toBe(-300);
-        expect(first.birth.tzResolution.resolvedUtc).not.toBe(second.birth.tzResolution.resolvedUtc);
+        expect(first.birth.tzResolution.resolvedUtc).not.toBe(
+            second.birth.tzResolution.resolvedUtc,
+        );
     });
 
     it('refuses to drop sub-millisecond digits, but accepts trailing zeros', () => {
-        expect(() => migrateV1ToV2(v1At('2000-01-01T00:00:00.1234567Z', 'UTC'))).toThrow(/sub-millisecond/);
+        expect(() => migrateV1ToV2(v1At('2000-01-01T00:00:00.1234567Z', 'UTC'))).toThrow(
+            /sub-millisecond/,
+        );
         const v2 = migrateV1ToV2(v1At('2000-01-01T00:00:00.123000Z', 'UTC'));
         expect(v2.birth.tzResolution.resolvedUtc).toBe('2000-01-01T00:00:00.123Z');
     });

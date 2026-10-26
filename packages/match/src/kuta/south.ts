@@ -1,5 +1,5 @@
-import { MatchResult, KutaScore, Gana, YoniAnimal, Rajju } from '../types.js';
-import { GANA_TABLE, YONI_TABLE, YONI_MATRIX, GRAHA_MAITRI, SIGN_LORDS, VASHYA_PAIRS } from './data.js';
+import { Gana, KutaScore, MatchResult, Rajju,YoniAnimal } from '../types.js';
+import { GANA_TABLE, GRAHA_MAITRI, SIGN_LORDS, VASHYA_PAIRS,YONI_MATRIX, YONI_TABLE } from './data.js';
 
 // Vedha Pairs (Mutual Obstruction)
 // Pairs of Nakshatra Indices (0-26) which are incompatible.

@@ -1,4 +1,4 @@
-import { normalize360, getShortestDistance } from './math.js';
+import { getShortestDistance,normalize360 } from './math.js';
 
 export enum Relationship {
     GreatFriend = 'GreatFriend',
@@ -84,7 +84,7 @@ export function getTatkalikaMaitri(posA: number, posB: number): 'Friend' | 'Enem
     // If A=1, B=2. (2-1+12)%12 = 1. +1 = 2nd house.
     // If A=1, B=1. (1-1+12)%12 = 0. +1 = 1st house.
 
-    let houseDiff = (posB - posA + 12) % 12 + 1;
+    const houseDiff = (posB - posA + 12) % 12 + 1;
 
     // Friends: 2, 3, 4, 10, 11, 12
     if ([2, 3, 4, 10, 11, 12].includes(houseDiff)) {

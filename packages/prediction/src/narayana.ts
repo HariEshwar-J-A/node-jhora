@@ -1,7 +1,8 @@
-import { PlanetPosition } from '@node-jhora/core';
-import { JaiminiDashas, CharaDashaPeriod } from './jaimini/dashas.js';
 import { ChartData } from '@node-jhora/analytics';
+import { PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
+
+import { CharaDashaPeriod,JaiminiDashas } from './jaimini/dashas.js';
 
 /**
  * Narayana Dasha (General/Rasi Dasha).

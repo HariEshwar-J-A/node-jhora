@@ -37,12 +37,32 @@ describe('njh round-trip', () => {
             },
             tags: ['తెలుగు', '中文', '🔭'],
             rectification: {
-                notes: [{ text: 'జన్మ సమయం ±2 నిమిషాలు', createdAt: '2026-10-26T04:00:00.123456789Z', author: 'José' }],
+                notes: [
+                    {
+                        text: 'జన్మ సమయం ±2 నిమిషాలు',
+                        createdAt: '2026-10-26T04:00:00.123456789Z',
+                        author: 'José',
+                    },
+                ],
             },
             attachments: [
-                { id: '6f1c1d36-5d0a-4a52-9a43-1c1b6d1e2f30', kind: 'url' as const, ref: 'https://example.com/ఫైల్.pdf?q=1&r=ü', label: 'జాతకం', mediaType: 'application/pdf' },
-                { id: '0b7f6f0e-9b4e-4f6e-8f3a-2c3d4e5f6a7b', kind: 'relative_path' as const, ref: 'scans/जन्म पत्री.jpg' },
-                { id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', kind: 'content_hash' as const, ref: 'sha256:' + 'ab'.repeat(32) },
+                {
+                    id: '6f1c1d36-5d0a-4a52-9a43-1c1b6d1e2f30',
+                    kind: 'url' as const,
+                    ref: 'https://example.com/ఫైల్.pdf?q=1&r=ü',
+                    label: 'జాతకం',
+                    mediaType: 'application/pdf',
+                },
+                {
+                    id: '0b7f6f0e-9b4e-4f6e-8f3a-2c3d4e5f6a7b',
+                    kind: 'relative_path' as const,
+                    ref: 'scans/जन्म पत्री.jpg',
+                },
+                {
+                    id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+                    kind: 'content_hash' as const,
+                    ref: 'sha256:' + 'ab'.repeat(32),
+                },
             ],
         };
         const text = serializeNjh(chart);

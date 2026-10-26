@@ -11,9 +11,5 @@
         }
     },
     "include": ["src/**/*"],
-    "references": [
-        { "path": "../core" },
-        { "path": "../analytics" },
-        { "path": "../prediction" }
-    ]
+    "references": [{ "path": "../core" }, { "path": "../analytics" }, { "path": "../prediction" }]
 }

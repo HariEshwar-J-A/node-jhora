@@ -1,4 +1,4 @@
-import { Gana, YoniAnimal, Nadi, Varna, Vashya } from '../types.js';
+import { Gana, Nadi, Varna, Vashya,YoniAnimal } from '../types.js';
 
 // Table mapping Nakshatra 0-26 to Properties
 

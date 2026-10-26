@@ -1,12 +1,7 @@
 import { DateTime } from 'luxon';
 
 import { NJH_SCHEMA_VERSION } from './constants.js';
-import {
-    NjhChartV1,
-    NjhChartV1Schema,
-    NjhChartV2,
-    NjhChartV2Schema,
-} from './schema.js';
+import { NjhChartV1, NjhChartV1Schema, NjhChartV2, NjhChartV2Schema } from './schema.js';
 
 function newChartId(): string {
     const cryptoObj = globalThis.crypto;
@@ -69,14 +64,17 @@ export function migrateV1ToV2(v1: NjhChartV1): NjhChartV2 {
             longitude: v1.birth.longitude,
             altitudeMetres: v1.birth.altitudeMetres,
             tzResolution: {
-                steps: [{
-                    code: 'legacy_import',
-                    summary: 'Imported from .njh schema v1 (UTC instant expanded in the recorded time zone)',
-                    at: resolvedUtc,
-                    // Disambiguates a repeated wall-clock hour (DST fold) for readers of local + zone.
-                    offsetMinutes: zoned.offset,
-                    ianaZone: v1.birth.timezone,
-                }],
+                steps: [
+                    {
+                        code: 'legacy_import',
+                        summary:
+                            'Imported from .njh schema v1 (UTC instant expanded in the recorded time zone)',
+                        at: resolvedUtc,
+                        // Disambiguates a repeated wall-clock hour (DST fold) for readers of local + zone.
+                        offsetMinutes: zoned.offset,
+                        ianaZone: v1.birth.timezone,
+                    },
+                ],
                 resolvedUtc,
             },
         },

@@ -1,5 +1,5 @@
-import PDFDocument from 'pdfkit';
 import { PlanetPosition } from '@node-jhora/core';
+import PDFDocument from 'pdfkit';
 
 export class ChartDrawer {
     private doc: PDFKit.PDFDocument;
@@ -147,8 +147,8 @@ export class ChartDrawer {
                  // Intermediates
                  // 1-4 gap (Left side): 2, 3.
                  // Assume 2 is Top-Left, 3 is Bottom-Left.
-                 case 2: return {cx: 0.15, cy: 0.15}; // TL
-                 case 3: return {cx: 0.15, cy: 0.85}; // BL?? (Wait, 4 is Bottom).
+                 // Removed unreachable duplicate case 2/3 (no-duplicate-case). The earlier case 2/3
+                 // always matched first, so {0.15,0.15} / {0.15,0.85} were never returned.
                  // If 4 is Bottom. 2,3 must be between Top and Bottom.
                  // If 10 is Left.
                  // Then 2,3 coexist with 10?

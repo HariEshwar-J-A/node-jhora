@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { Ashtakavarga, YOGA_LIBRARY, YogaEngine } from '@node-jhora/analytics';
 import {
     calculateHouseCusps,
     calculatePanchanga,
@@ -11,8 +11,13 @@ import {
     type PlanetPosition,
     type SettingsInput,
 } from '@node-jhora/core';
-import { Ashtakavarga, YogaEngine, YOGA_LIBRARY } from '@node-jhora/analytics';
-import { calculateDashaBalance, generateVimshottari, type DashaPeriod } from '@node-jhora/prediction';
+import {
+    calculateDashaBalance,
+    type DashaPeriod,
+    generateVimshottari,
+} from '@node-jhora/prediction';
+import { DateTime } from 'luxon';
+
 import { computeShadbalaSection } from './sections/shadbala.js';
 import type {
     ChartSectionId,
@@ -131,7 +136,11 @@ export class ChartSession {
 
     private loadRawPlanets(): PlanetPosition[] {
         if (!this.rawPlanets) {
-            this.rawPlanets = this.ephemeris.getPlanets(this.instant, this.location, this.ephemerisOpts());
+            this.rawPlanets = this.ephemeris.getPlanets(
+                this.instant,
+                this.location,
+                this.ephemerisOpts(),
+            );
         }
         return this.rawPlanets;
     }
@@ -145,7 +154,8 @@ export class ChartSession {
 
     getHouses(): SerializableHouses {
         if (!this.housesOut) {
-            const method = (this.houseSystemOverride ?? this.config.houseSystem) as HouseSystemMethod;
+            const method = (this.houseSystemOverride ??
+                this.config.houseSystem) as HouseSystemMethod;
             const result = this.deps.calculateHouseCusps(
                 this.instant,
                 this.location.latitude,
@@ -170,8 +180,8 @@ export class ChartSession {
     getPanchanga(): PanchangaResult {
         if (!this.panchangaOut) {
             const raw = this.loadRawPlanets();
-            const sun = raw.find(p => p.id === 0)!;
-            const moon = raw.find(p => p.id === 1)!;
+            const sun = raw.find((p) => p.id === 0)!;
+            const moon = raw.find((p) => p.id === 1)!;
             this.panchangaOut = this.deps.calculatePanchanga(
                 sun.longitude,
                 moon.longitude,
@@ -191,7 +201,7 @@ export class ChartSession {
             };
             const out: Record<string, SerializableVargaPoint[]> = {};
             for (const d of VARGA_DIVISIONS) {
-                out[`D${d}`] = raw.map(p => {
+                out[`D${d}`] = raw.map((p) => {
                     const v = this.deps.calculateVarga(p.longitude, d, vargaOptions);
                     return {
                         planetId: p.id,
@@ -210,7 +220,7 @@ export class ChartSession {
 
     getDasha(): NonNullable<ChartSectionsSnapshot['dasha']> {
         if (!this.dashaOut) {
-            const moon = this.loadRawPlanets().find(p => p.id === 1)!;
+            const moon = this.loadRawPlanets().find((p) => p.id === 1)!;
             const balance = calculateDashaBalance(moon.longitude);
             const depth = this.dashaOpts.depth ?? 2;
             const yearDays =
@@ -267,7 +277,7 @@ export class ChartSession {
                 { planets: raw, cusps: houses.cusps, ascendant: houses.ascendant },
                 YOGA_LIBRARY,
             );
-            this.yogasOut = hits.map(h => ({
+            this.yogasOut = hits.map((h) => ({
                 key: h.yoga.key,
                 name: h.yoga.name,
                 category: h.yoga.category,
@@ -305,14 +315,22 @@ export class ChartSession {
 
     getSection(id: ChartSectionId): unknown {
         switch (id) {
-            case 'planets': return this.getPlanets();
-            case 'houses': return this.getHouses();
-            case 'panchanga': return this.getPanchanga();
-            case 'vargas': return this.getVargas();
-            case 'dasha': return this.getDasha();
-            case 'shadbala': return this.getShadbala();
-            case 'yogas': return this.getYogas();
-            case 'ashtakavarga': return this.getAshtakavarga();
+            case 'planets':
+                return this.getPlanets();
+            case 'houses':
+                return this.getHouses();
+            case 'panchanga':
+                return this.getPanchanga();
+            case 'vargas':
+                return this.getVargas();
+            case 'dasha':
+                return this.getDasha();
+            case 'shadbala':
+                return this.getShadbala();
+            case 'yogas':
+                return this.getYogas();
+            case 'ashtakavarga':
+                return this.getAshtakavarga();
             default: {
                 const _exhaustive: never = id;
                 return _exhaustive;
@@ -326,7 +344,9 @@ export class ChartSession {
      * output stays deterministic.
      */
     collect(include: readonly ChartSectionId[]): ChartSectionsSnapshot {
-        const { settingsHash: _hash, ...envelope } = createResultEnvelope({ settingsHash: this.settingsHash });
+        const { settingsHash: _hash, ...envelope } = createResultEnvelope({
+            settingsHash: this.settingsHash,
+        });
         const snapshot: ChartSectionsSnapshot = {
             settingsHash: this.settingsHash,
             settings: this.settings,
@@ -334,15 +354,32 @@ export class ChartSession {
         };
         for (const id of include) {
             switch (id) {
-                case 'planets': snapshot.planets = this.getPlanets(); break;
-                case 'houses': snapshot.houses = this.getHouses(); break;
-                case 'panchanga': snapshot.panchanga = this.getPanchanga(); break;
-                case 'vargas': snapshot.vargas = this.getVargas(); break;
-                case 'dasha': snapshot.dasha = this.getDasha(); break;
-                case 'shadbala': snapshot.shadbala = this.getShadbala(); break;
-                case 'yogas': snapshot.yogas = this.getYogas(); break;
-                case 'ashtakavarga': snapshot.ashtakavarga = this.getAshtakavarga(); break;
-                default: break;
+                case 'planets':
+                    snapshot.planets = this.getPlanets();
+                    break;
+                case 'houses':
+                    snapshot.houses = this.getHouses();
+                    break;
+                case 'panchanga':
+                    snapshot.panchanga = this.getPanchanga();
+                    break;
+                case 'vargas':
+                    snapshot.vargas = this.getVargas();
+                    break;
+                case 'dasha':
+                    snapshot.dasha = this.getDasha();
+                    break;
+                case 'shadbala':
+                    snapshot.shadbala = this.getShadbala();
+                    break;
+                case 'yogas':
+                    snapshot.yogas = this.getYogas();
+                    break;
+                case 'ashtakavarga':
+                    snapshot.ashtakavarga = this.getAshtakavarga();
+                    break;
+                default:
+                    break;
             }
         }
         return snapshot;

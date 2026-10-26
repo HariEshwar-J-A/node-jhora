@@ -87,7 +87,7 @@ export class PoruthamMatch {
         const boyG = GANA_TABLE[boyNak];
         const girlG = GANA_TABLE[girlNak];
         let ganaScore = 0;
-        let ganaMax = 4;
+        const ganaMax = 4;
         let ganaDesc = 'Mismatch';
 
         if (boyG === girlG) {
@@ -115,7 +115,7 @@ export class PoruthamMatch {
         const boyY = YONI_MAP[boyNak];
         const girlY = YONI_MAP[girlNak];
         let yoniScore = 0;
-        let yoniMax = 4;
+        const yoniMax = 4;
         
         if (boyY === girlY) {
             yoniScore = 4;

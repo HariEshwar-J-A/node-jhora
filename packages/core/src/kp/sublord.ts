@@ -14,7 +14,8 @@
  */
 
 import { Decimal } from 'decimal.js';
-import { normalize360D, D, toNum } from '../core/precise.js';
+
+import { D, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Constants

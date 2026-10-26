@@ -1,65 +1,89 @@
 import { DateTime } from 'luxon';
-import { EphemerisEngine, PlanetPosition, HouseData } from './engine/ephemeris.js';
-import { Geocoder, CityData } from './engine/geocoder.js';
-import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
-import { calculateVarga, calculateShashtyamsa, VargaPoint } from './vedic/vargas.js';
-import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
-import { calculateTimeUpagrahas, calculateDhumadiUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
-import { calculatePranapada, calculateInduLagna, calculateShreeLagna, calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna } from './vedic/special_lagnas.js';
-import { PlanetaryStream, StreamConfig } from './stream/planetary_stream.js';
-import { getRelationship, Relationship, PLANET_IDS } from './core/relationships.js';
-import { KPSubLord, KPSignificator } from './kp/sublord.js';
-import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
-import { EphemerisInterpolator } from './engine/interpolator.js';
-import { VargaDeities } from './vedic/deities.js';
-import { AYANAMSA } from './engine/ephemeris.js';
+
 import { type JyotishConfig } from './config.js';
-import { describeCalculation, isSettingsShape, type CalculationSettings, type SettingsInput } from './settings/index.js';
+import { getRelationship, PLANET_IDS,Relationship } from './core/relationships.js';
+import { EphemerisEngine, HouseData,PlanetPosition } from './engine/ephemeris.js';
+import { AYANAMSA } from './engine/ephemeris.js';
+import { CityData,Geocoder } from './engine/geocoder.js';
+import { EphemerisInterpolator } from './engine/interpolator.js';
+import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
+import { KPSignificator,KPSubLord } from './kp/sublord.js';
+import { type CalculationSettings, describeCalculation, isSettingsShape, type SettingsInput } from './settings/index.js';
+import { PlanetaryStream, StreamConfig } from './stream/planetary_stream.js';
+import { VargaDeities } from './vedic/deities.js';
+import { calculateHouseCusps, HouseSystemMethod } from './vedic/houses.js';
+import { calculatePanchanga, PanchangaResult } from './vedic/panchanga.js';
+import { calculateBhavaLagna, calculateGhatiLagna, calculateHoraLagna, calculateInduLagna, calculatePranapada, calculateShreeLagna, calculateVarnadaLagna } from './vedic/special_lagnas.js';
+import { calculateDhumadiUpagrahas, calculateTimeUpagrahas, UpagrahaPositions } from './vedic/upagrahas.js';
+import { calculateShashtyamsa, calculateVarga, VargaPoint } from './vedic/vargas.js';
 
 // Re-export Interfaces
 export type {
-    PlanetPosition, HouseData,
-    PanchangaResult,
-    KPSignificator, RulingPlanetsResult,
-    VargaPoint,
+HouseData,
+    HouseSystemMethod,
+    KPSignificator,     PanchangaResult,
+    PlanetPosition, RulingPlanetsResult,
     UpagrahaPositions,
-    HouseSystemMethod
-};
+    VargaPoint};
 
 // Re-export Utils
-export { normalize360, getShortestDistance, dmsToDecimal, decimalToDms } from './core/math.js';
-export { D, toNum, normalize360D, NAKSHATRA_SPAN_D, DASHA_YEAR_DAYS } from './core/precise.js';
-export { calculateVarga, calculateShashtyamsa, VargaDeities, getRelationship, PLANET_IDS, Relationship };
-export { AYANAMSA, DEFAULT_AYANAMSA, DEFAULT_POSITION_MODE, DEFAULT_NODE_TYPE } from './engine/ephemeris.js';
-export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
-export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
-export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
-export { ayanamsaName, AYANAMSA_MODELS } from './engine/ayanamsa.js';
+export { decimalToDms,dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
+export { D, DASHA_YEAR_DAYS,NAKSHATRA_SPAN_D, normalize360D, toNum } from './core/precise.js';
+export { calculateShashtyamsa, calculateVarga, getRelationship, PLANET_IDS, Relationship,VargaDeities };
+export type { HouseSystem, JyotishConfig, NodeType } from './config.js';
 export {
     DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS,
 } from './config.js';
-export type { JyotishConfig, HouseSystem, NodeType } from './config.js';
+export { AYANAMSA_MODELS,ayanamsaName } from './engine/ayanamsa.js';
+export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
+export { AYANAMSA, DEFAULT_AYANAMSA, DEFAULT_NODE_TYPE,DEFAULT_POSITION_MODE } from './engine/ephemeris.js';
+export type {
+    ResultEnvelope,
+    ResultEnvelopeOptions,
+    SettingsHashValue,
+    WithResultEnvelopeOptions,
+} from './envelope.js';
 export {
-    AYANAMSA_IDS, AYANAMSA_MODE_BY_ID, CalculationSettingsSchema, DASA_YEAR_KINDS,
-    HOUSE_SYSTEM_IDS, LEGACY_DASHA_YEAR_DAYS, LEGACY_DASHA_YEAR_DAYS_TEXT,
-    PRESET_IDS, PRESETS, SETTINGS_HASH_HEX_LENGTH, SUNRISE_LIMBS,
-    canonicalJson, describeCalculation, expandCalculationBody, expandRequestBody,
-    flatFromSettings, getPreset, hashSettings, inferDasaYearKind, isPresetId,
-    isSettingsShape, resolveCalculationInput, settingsFromFlat, settingsToJyotishConfig,
-} from './settings/index.js';
+    createResultEnvelope,
+    DELTA_T_MODEL,
+    EPHEMERIS_PROVIDER,
+    withResultEnvelope,
+} from './envelope.js';
+export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
+export type { JhdBody,JhdChart } from './io/jhd.js';
+export { hasPositions, JHD_BODY_ORDER,jhdToUtcISO, parseJhd, sexagesimalToDecimal } from './io/jhd.js';
 export type {
     AyanamsaId, CalculationSettings, DasaYearKind, HouseSystemId, PresetId,
     ResolvedCalculation, SettingsInput, SunriseLimb,
 } from './settings/index.js';
 export {
-    DELTA_T_MODEL, EPHEMERIS_PROVIDER, createResultEnvelope, withResultEnvelope,
-} from './envelope.js';
-export type {
-    ResultEnvelope, ResultEnvelopeOptions, SettingsHashValue, WithResultEnvelopeOptions,
-} from './envelope.js';
-export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
-export { parseJhd, jhdToUtcISO, hasPositions, sexagesimalToDecimal, JHD_BODY_ORDER } from './io/jhd.js';
-export type { JhdChart, JhdBody } from './io/jhd.js';
+    AYANAMSA_IDS,
+    AYANAMSA_MODE_BY_ID,
+    CalculationSettingsSchema,
+    canonicalJson,
+    DASA_YEAR_KINDS,
+    describeCalculation,
+    expandCalculationBody,
+    expandRequestBody,
+    flatFromSettings,
+    getPreset,
+    hashSettings,
+    HOUSE_SYSTEM_IDS,
+    inferDasaYearKind,
+    isPresetId,
+    isSettingsShape,
+    LEGACY_DASHA_YEAR_DAYS,
+    LEGACY_DASHA_YEAR_DAYS_TEXT,
+    PRESET_IDS,
+    PRESETS,
+    resolveCalculationInput,
+    SETTINGS_HASH_HEX_LENGTH,
+    settingsFromFlat,
+    settingsToJyotishConfig,
+    SUNRISE_LIMBS,
+} from './settings/index.js';
+export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
+export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -289,11 +313,11 @@ export class NodeJHora {
 
 // Functional Exports (Browser-safe only)
 export {
+calculateBhavaLagna, calculateDhumadiUpagrahas,
+calculateGhatiLagna,     calculateHoraLagna,     calculateHouseCusps,
+calculateInduLagna,     calculatePanchanga,
+    calculatePranapada, calculateShreeLagna,
+    calculateTimeUpagrahas, calculateVarnadaLagna,
     EphemerisEngine,
-    calculateHouseCusps,
-    calculatePanchanga,
-    KPSubLord, KPRuling,
-    calculateTimeUpagrahas, calculateDhumadiUpagrahas,
-    calculatePranapada, calculateInduLagna, calculateShreeLagna,
-    calculateHoraLagna, calculateGhatiLagna, calculateBhavaLagna, calculateVarnadaLagna
-};
+KPRuling,
+    KPSubLord};

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { FEATURE_PATH_RULES, anchoredPattern } from './paths.js';
+import { anchoredPattern,FEATURE_PATH_RULES } from './paths.js';
 import {
     ArcsecEntrySchema,
     ExactEntrySchema,

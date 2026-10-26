@@ -54,14 +54,14 @@ Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`
 | :--- | :--- |
 | `build` | `tsc` |
 | `typecheck` | `tsc --noEmit --pretty false` |
-| `lint` | exits 0. `TODO(E1-S3-T1)`: ESLint is not installed yet. |
+| `lint` | `eslint .` |
 | `test` | `node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js` |
 
 `typecheck` reads referenced projects from `dist/`. Run `pnpm build` first. A task runner must run `^build` before `typecheck`.
 
 `@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` is `turbo run test` across workspace packages; the sum of per-package Jest totals plus the seven `node:test` guard cases from `@node-jhora/ephe` matches what the old root Jest multi-project run reported (no double counting). The kernel is not in git. `postinstall` (the package's, and the root's) runs `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256.
 
-Root `pnpm run lint` runs `turbo run lint` (package placeholders) and then ESLint on `packages/**/src`. ESLint is not a root `devDependency`.
+Root `pnpm run lint` runs `turbo run lint --filter=./packages/*`, i.e. `eslint .` in every workspace package (cached per package). Rule set: [docs/LINT.md](docs/LINT.md).
 
 Internal dependencies use `workspace:*`. There is no `.npmrc`: pnpm's isolated `node_modules` is unchanged. pnpm 12 records dependency lifecycle-script decisions in `allowBuilds` inside `pnpm-workspace.yaml`.
 
