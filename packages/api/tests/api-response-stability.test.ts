@@ -22,12 +22,12 @@ const CHART_B_BODY = {
 
 /**
  * SHA-256 of canonical JSON with volatile envelope fields removed.
- * Re-pinned for E3-ACC (#255): JHora-DLL parity changes sub-arcsecond values.
+ * Re-pinned: Lahiri mode 1 (37.76″ ICRC anchor), lahiri_icrc → SE mode 46, equatorial Vertex.
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': '39d36b99e3f1a41e8875eb08cce1552ac5002521503e286a224cbdb8d1b9af19',
-    '/v1/shadbala': '72fc38f257533ced8a97937c9c69a5a71d69e503f76be6d610ea9abc40673fd7',
-    '/v1/kp/significators': 'eaa7eff434316d7962c6498f1d48aed77ac566d60bba64165055882dd20ab659',
+    '/v1/chart': '64bf5ecabfee8f86f8863918d35bf1372f946f7cc36b91996618d97c6d1a1758',
+    '/v1/shadbala': 'ae8a741916374ed5df82a810288a0a6abf035d5a0dee844cee2845810d1de61b',
+    '/v1/kp/significators': 'df3e36794292ed38d6f43555862f1227a39650b3bf924b1961e707ce3c09eebe',
 };
 
 function stripVolatileEnvelope(value: unknown): unknown {

@@ -107,10 +107,10 @@ import { loadSpkFromBytes, NAIF } from './spk.js';
 /** @provenance Swiss Ephemeris public API `SE_SIDM_*` mode numbers (identifiers, not data). */
 export const AYANAMSA = {
     FAGAN_BRADLEY: 0,
-    /** Lahiri as JHora reports it (see AYANAMSA_MODELS note). */
+    /** Lahiri (SE_SIDM_LAHIRI). */
     LAHIRI: 1,
-    /** Lahiri per the Indian Calendar Reform Committee definition. */
-    LAHIRI_ICRC: 2,
+    /** De Luce (SE_SIDM_DELUCE). */
+    DE_LUCE: 2,
     RAMAN: 3,
     KRISHNAMURTI: 5,
     YUKTESHWAR: 7,
@@ -119,8 +119,10 @@ export const AYANAMSA = {
     /** True Chitrapaksha — Spica pinned to 180°. The project's reference model. */
     TRUE_CITRA: 27,
     TRUE_PUSHYA: 29,
-    TRUE_REVATI: 30,
+    TRUE_REVATI: 28,
     TRUE_MULA: 35,
+    /** Lahiri ICRC variant (SE_SIDM_LAHIRI_ICRC). */
+    LAHIRI_ICRC: 46,
 } as const;
 
 /**

@@ -24,7 +24,7 @@ Verified in source. Do not document a different engine or a different default ay
 - Ephemeris: pure TypeScript JPL DE440s SPK reader (`packages/core/src/engine/ephemeris.ts`) and `@node-jhora/ephe`. No Swiss Ephemeris dependency and no WASM binary.
 - Kernel coverage recorded in `packages/ephe/download.mjs` and the engine header: **1849-12-26 to 2150-01-22**. `SpkFile.getState` throws when no Type-2 segment covers the time.
 - Default ayanamsa: `AYANAMSA.TRUE_CITRA` (`27`), True Chitrapaksha. `DEFAULT_CONFIG.ayanamsaMode` is the same value. `NodeJHora.calculate` defaults the name argument to `'TrueChitra'`. The API schema defaults to `'true_chitra'`.
-- `getAyanamsa` uses mode 27 when the mode is absent from `AYANAMSA_MODELS`. Mode `2` (`LAHIRI_ICRC`) is such a mode.
+- `getAyanamsa` uses mode 27 when the mode is absent from `AYANAMSA_MODELS`. Registry modes: 0, 1, 3, 5, 18, 27, 29, 35, 46. Modes 2, 7, 8, and 28 throw `UnsupportedAyanamsaModeError`.
 - `EphemerisEngine.getHouses` computes Equal cusps only for method `'E'`. Any other method gets Whole Sign cusps.
 
 ## Commands

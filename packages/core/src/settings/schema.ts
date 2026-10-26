@@ -24,30 +24,24 @@ export const LEGACY_DASHA_YEAR_DAYS = Number(LEGACY_DASHA_YEAR_DAYS_TEXT);
 export const AYANAMSA_IDS = [
     'true_citra',
     'true_pushya',
-    'true_revati',
     'true_mula',
     'fagan_bradley',
     'lahiri',
     'lahiri_icrc',
     'raman',
     'kp',
-    'yukteshwar',
-    'jn_bhasin',
     'j2000',
 ] as const;
 
 export const AYANAMSA_MODE_BY_ID = {
     fagan_bradley: 0,
     lahiri: 1,
-    lahiri_icrc: 2,
+    lahiri_icrc: 46,
     raman: 3,
     kp: 5,
-    yukteshwar: 7,
-    jn_bhasin: 8,
     j2000: 18,
     true_citra: 27,
     true_pushya: 29,
-    true_revati: 30,
     true_mula: 35,
 } as const satisfies Record<(typeof AYANAMSA_IDS)[number], number>;
 

@@ -13,7 +13,12 @@
 
 import { DateTime } from 'luxon';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
-import { getAyanamsa, AYANAMSA_MODELS, accumulatedPrecession } from '../../src/engine/ayanamsa.js';
+import {
+    getAyanamsa,
+    AYANAMSA_MODELS,
+    accumulatedPrecession,
+    trueAyanamsaFromModel,
+} from '../../src/engine/ayanamsa.js';
 import { calculatePanchanga } from '../../src/vedic/panchanga.js';
 import { calculateVarga, DEFAULT_DASAMSA_SCHEME } from '../../src/vedic/vargas.js';
 import {
@@ -117,8 +122,16 @@ describe('JHora Bridge: Ayanamsa', () => {
         expect(model).toMatchObject({ kind: 'star', star: 'Spica', atLongitude: 180 });
     });
 
-    test('ICRC Lahiri reproduces its definition: 23°15′00″ at 1956-03-21', () => {
-        expect(getAyanamsa(1, 2435553.5)).toBeCloseTo(23.250182, 6);
+    test('Lahiri (mode 1) matches the ICRC 1900-01-0.5 ET anchor at 1956-03-21 (~23°14′44″)', () => {
+        expect(getAyanamsa(1, 2435553.5)).toBeCloseTo(23.245538364160836, 8);
+    });
+
+    test('Lahiri ICRC (mode 46) true ayanamsa = 23°15′00″ at 1956-03-21 (CRC declaration)', () => {
+        const model = AYANAMSA_MODELS[46];
+        expect(model?.kind).toBe('true_epoch');
+        if (model?.kind === 'true_epoch') {
+            expect(trueAyanamsaFromModel(model, 2435553.5)).toBeCloseTo(23.25, 10);
+        }
     });
 
     test('advances at the general precession rate, ~50.3″/year', () => {
