@@ -10,6 +10,7 @@
         "build": "tsc -b",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js && node --test tools/check-forbidden-assets.test.mjs",
         "check:clean-room": "node tools/check-forbidden-assets.mjs",
+        "check:links": "node tools/check-markdown-links.mjs",
         "lint": "eslint packages/**/src --ext .ts"
     },
     "devDependencies": {
