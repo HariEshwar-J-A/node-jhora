@@ -1,0 +1,57 @@
+/**
+ * API surface reports must not depend on stale Turbo-restored dist or build order.
+ * TypeScript declaration emit for Zod enums is stable on clean builds; flakes came from
+ * mismatched dist/** vs etc/** when tsconfig.tsbuildinfo was not in Turbo outputs.
+ */
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
+import { readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
+
+function sha256(path) {
+    return createHash('sha256')
+        .update(readFileSync(join(root, path)))
+        .digest('hex');
+}
+
+function run(cmd) {
+    execSync(cmd, { cwd: root, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '0' } });
+}
+
+test('core/format .d.ts enum order is stable across clean rebuilds', () => {
+    const digests = new Set();
+    for (let i = 0; i < 3; i++) {
+        rmSync(join(root, 'packages/core/dist'), { recursive: true, force: true });
+        rmSync(join(root, 'packages/format/dist'), { recursive: true, force: true });
+        rmSync(join(root, 'packages/core/tsconfig.tsbuildinfo'), { force: true });
+        rmSync(join(root, 'packages/format/tsconfig.tsbuildinfo'), { force: true });
+        run('pnpm exec tsc -b packages/core/tsconfig.json packages/format/tsconfig.json');
+        digests.add(
+            sha256('packages/format/dist/schema.d.ts') +
+                ':' +
+                sha256('packages/core/dist/settings/schema.d.ts'),
+        );
+    }
+    assert.equal(digests.size, 1);
+});
+
+test('api-extractor reports match committed etc after a forced package build', () => {
+    rmSync(join(root, 'temp'), { recursive: true, force: true });
+    run('pnpm exec turbo run build --force --filter=@node-jhora/core --filter=@node-jhora/format');
+    for (const pkg of ['core', 'format']) {
+        rmSync(join(root, 'temp'), { recursive: true, force: true });
+        run(`pnpm --filter @node-jhora/${pkg} api:report`);
+        const report = `etc/${pkg}.api.md`;
+        const temp = `temp/${pkg}.api.md`;
+        assert.equal(
+            sha256(report),
+            sha256(temp),
+            `${report} must match api-extractor output (rebuild packages if this fails)`,
+        );
+    }
+});

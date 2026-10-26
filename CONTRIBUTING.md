@@ -82,6 +82,8 @@ pnpm run validate-github-templates
 
 [Turborepo](https://turbo.build/) orchestrates `build`, `typecheck`, `lint`, `test`, and `generate` (`turbo.json`). Root scripts call `turbo run …`; local task output is cached under `.turbo/` (gitignored). A second `pnpm test` with no file changes should be a full cache hit. Regenerate goldens with `pnpm generate` only when you intend to refresh `@node-jhora/testkit` outputs.
 
+`pnpm run api:check` and `pnpm run api:report` run a full package `build` first so `dist/**` and `tsconfig.tsbuildinfo` match the sources before api-extractor runs. If `api:check` complains about `positionMode` or `ChartKindSchema` key order only, run `pnpm exec turbo run build --force --filter=./packages/*` (stale `dist/` with current `etc/` — not a real API change).
+
 Paste the build and test summary into the pull request until CI is required.
 
 ## Clean-room
