@@ -35,8 +35,9 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 | [`@node-jhora/events`](./packages/events) | `TransitScanner`. ([Docs](./docs/EVENTS.md)) |
 | [`@node-jhora/reporting`](./packages/reporting) | PDF reports. ([Docs](./docs/REPORTING.md)) |
 | [`@node-jhora/api`](./packages/api) | Fastify + Zod HTTP API. ([Docs](./docs/API.md)) |
+| [`@node-jhora/testkit`](./packages/testkit) | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md)) |
 
-`npm run build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, and `reporting`. `ephe` is a data package with no `tsconfig.json`.
+`npm run build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, and `testkit`. `ephe` is a data package with no `tsconfig.json`.
 
 ## Documentation
 
@@ -50,6 +51,7 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 *   **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
 *   **[Events](./docs/EVENTS.md)** — `TransitScanner`.
 *   **[PDF reporting](./docs/REPORTING.md)**
+*   **[Golden cases](./docs/GOLDENS.md)** — schema for accuracy fixtures.
 *   **[Market notes](./docs/MARKET_POSITION.md)**
 
 ## Installation
@@ -220,7 +222,7 @@ Commands are from the monorepo root.
 npm install
 
 # tsc -b over the root tsconfig references:
-# core, analytics, prediction, match, api, events, reporting.
+# core, analytics, prediction, match, api, events, reporting, testkit.
 npm run build
 
 # Jest 30: one project per packages/*/jest.config.js (ephe has none) plus

@@ -17,6 +17,7 @@ graph TD
         Events["@node-jhora/events"]
         Reporting["@node-jhora/reporting"]
         API["@node-jhora/api"]
+        Testkit["@node-jhora/testkit (private)"]
     end
 
     Core -.-> Ephe
@@ -36,7 +37,7 @@ graph TD
 
 `@node-jhora/ephe` is a data package (a downloader plus `de440s.bsp`). `@node-jhora/core` lists it as a required peer dependency and resolves the kernel at runtime. The dotted edge is that runtime lookup, not a TypeScript project reference.
 
-Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, so `npm run build` (`tsc -b`) compiles every TypeScript workspace. `tools/check-tsrefs.test.ts` fails if a `packages/*/tsconfig.json` is missing from that list. `ephe` is not a TypeScript project.
+Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, `testkit`, so `npm run build` (`tsc -b`) compiles every TypeScript workspace. `tools/check-tsrefs.test.ts` fails if a `packages/*/tsconfig.json` is missing from that list. `ephe` is not a TypeScript project.
 
 ## Packages
 
@@ -107,6 +108,10 @@ Depends on core, analytics, prediction, and match. Fastify 5, `fastify-type-prov
 | POST | `/v1/match` |
 
 `BirthInputSchema` defaults `ayanamsa` to `'true_chitra'`.
+
+### `@node-jhora/testkit`
+
+Private. No dependency on the engine. `GoldenCaseSchema` and `schema/golden-case.schema.json` describe one accuracy case. `FEATURE_PATH_RULES` is the allow-list of feature paths (`d1.planets.Sun.lon`, `dasa.vimshottari[0].start`, and the other patterns in [docs/GOLDENS.md](./GOLDENS.md)). Converters in `src/convert.ts` map `jhora_golden.ts` and `horizons_golden.ts` onto that schema. The package is in the root TypeScript project references.
 
 ## `apps/`
 

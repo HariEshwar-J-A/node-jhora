@@ -1,0 +1,42 @@
+{
+    "name": "@node-jhora/testkit",
+    "version": "3.1.0",
+    "private": true,
+    "type": "module",
+    "description": "Golden-case schema, feature-path registry, and legacy fixture converters.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./schema/golden-case.schema.json": "./schema/golden-case.schema.json"
+    },
+    "files": [
+        "dist",
+        "schema",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit --pretty false",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js",
+        "generate": "WRITE_GOLDENS=1 node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js"
+    },
+    "dependencies": {
+        "zod": "4.6.7"
+    },
+    "devDependencies": {
+        "@types/jest": "*",
+        "@types/node": "*",
+        "jest": "*",
+        "ts-jest": "*",
+        "typescript": "*"
+    },
+    "license": "LicenseRef-NodeJHora-Source-Available",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/testkit"
+    }
+}
