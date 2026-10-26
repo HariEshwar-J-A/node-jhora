@@ -15,7 +15,7 @@ pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeS
 | `docs/` | Technical documentation. |
 | `tools/` | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test. |
 
-Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `api`, and private `testkit` (golden-case schema). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, and private `testkit` (golden-case schema). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Engine facts to keep intact
 
@@ -34,7 +34,7 @@ From the repository root:
 ```bash
 corepack enable && corepack prepare --activate
 pnpm install --frozen-lockfile
-pnpm build             # tsc -b — root references: core, analytics, prediction, match, api, events, reporting, testkit
+pnpm build             # tsc -b — root references: core, analytics, prediction, match, engine, api, events, reporting, testkit
 pnpm test              # Jest projects: packages/*/jest.config.js and tools/jest.config.js, then node --test tools/check-forbidden-assets.test.mjs
 pnpm --filter @node-jhora/core test
 pnpm run check:links   # relative Markdown links, no network
@@ -42,7 +42,7 @@ pnpm run check:clean-room  # forbidden binaries/help files, stray .jhd charts, d
 pnpm run validate-github-templates
 ```
 
-Library packages (`core`, `analytics`, `prediction`, `match`, `events`, `reporting`, `api`, `testkit`) share one script shape:
+Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`, `reporting`, `api`, `testkit`) share one script shape:
 
 | Script | Shape |
 | :--- | :--- |

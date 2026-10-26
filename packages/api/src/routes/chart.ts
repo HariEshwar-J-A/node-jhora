@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { calculateHouseCusps, calculatePanchanga, calculateVarga } from '@node-jhora/core';
+import { calculateVarga } from '@node-jhora/core';
+import { ChartSession } from '@node-jhora/engine';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
@@ -12,29 +13,23 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
     // POST /v1/chart — full birth chart (planets, houses, panchanga)
     typed.post('/chart', { schema: { body: BirthInputSchema } }, async (req, reply) => {
         const parsed = parseBirthInput(req.body);
-        const { dt, location, ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset, sunriseHour, houseSystem, settingsHash } = parsed;
+        const { dt, location, ayanamsaOrder, houseSystem, settingsHash, settings } = parsed;
         const engine = getEngine();
 
-        const planets = engine.getPlanets(dt, location, { ayanamsaOrder, nodeType, positionMode, topocentric, ayanamsaOffset });
-        const housesResult = calculateHouseCusps(dt, location.latitude, location.longitude, houseSystem as any, engine, ayanamsaOrder, ayanamsaOffset);
+        const session = new ChartSession({
+            instant: dt,
+            location,
+            settings,
+            ephemeris: engine,
+            houseSystemOverride: houseSystem,
+        });
+        const planets = session.getPlanets();
+        const housesResult = session.getHouses();
+        const panchanga = session.getPanchanga();
         const ayanamsa = engine.getAyanamsa(engine.julday(dt), ayanamsaOrder);
 
-        const sun  = planets.find(p => p.id === 0)!;
-        const moon = planets.find(p => p.id === 1)!;
-        const panchanga = calculatePanchanga(sun.longitude, moon.longitude, dt, sunriseHour);
-
         return reply.status(200).send(attachResultEnvelope({
-            planets: planets.map(p => ({
-                id:          p.id,
-                name:        p.name,
-                longitude:   p.longitude,
-                latitude:    p.latitude,
-                speed:       p.speed,
-                distance:    p.distance,
-                declination: p.declination,
-                sign:        Math.floor(p.longitude / 30) + 1,
-                degree:      p.longitude % 30,
-            })),
+            planets,
             houses: {
                 system:    houseSystem,
                 ascendant: housesResult.ascendant,

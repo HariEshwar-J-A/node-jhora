@@ -37,6 +37,9 @@
         },
         {
             "path": "./packages/testkit"
+        },
+        {
+            "path": "./packages/engine"
         }
     ]
 }
