@@ -10,6 +10,7 @@ import { TransitEngine }                         from '@node-jhora/prediction';
 import { getEngine }        from '../server.js';
 import { TransitInputSchema, type TransitInput } from '../schemas/birth-input.js';
 import { parseBirthInput }  from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 /**
  * Gochara: where the planets are *now*, relative to a natal chart.
@@ -127,7 +128,7 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
         }
         upcoming.sort((a, b) => String(a.at).localeCompare(String(b.at)));
 
-        return reply.status(200).send({
+        return reply.status(200).send(attachResultEnvelope({
             asOf: asOf.toISO(),
             settingsHash,
             natal: {
@@ -149,6 +150,6 @@ export async function transitRoutes(app: FastifyInstance): Promise<void> {
                     + 'and from the natal ascendant. savBindus is the Ashtakavarga strength '
                     + 'of the transited sign.',
             },
-        });
+        }, { settingsHash }));
     });
 }

@@ -51,6 +51,13 @@ export type {
     AyanamsaId, CalculationSettings, DasaYearKind, HouseSystemId, PresetId,
     ResolvedCalculation, SettingsInput, SunriseLimb,
 } from './settings/index.js';
+export {
+    DELTA_T_MODEL, EPHEMERIS_PROVIDER, createResultEnvelope, withResultEnvelope,
+} from './envelope.js';
+export type {
+    ResultEnvelope, ResultEnvelopeOptions, SettingsHashValue, WithResultEnvelopeOptions,
+} from './envelope.js';
+export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 export { parseJhd, jhdToUtcISO, hasPositions, sexagesimalToDecimal, JHD_BODY_ORDER } from './io/jhd.js';
 export type { JhdChart, JhdBody } from './io/jhd.js';
 

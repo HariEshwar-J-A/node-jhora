@@ -4,6 +4,7 @@ import { KPSubLord } from '@node-jhora/core';
 import { getEngine } from '../server.js';
 import { BirthInputSchema } from '../schemas/birth-input.js';
 import { parseBirthInput } from '../schemas/helpers.js';
+import { attachResultEnvelope } from '../lib/result-envelope.js';
 
 const PLANET_NAMES: Record<number, string> = {
     0: 'Sun', 1: 'Moon', 2: 'Mercury', 3: 'Venus', 4: 'Mars',
@@ -32,6 +33,6 @@ export async function kpRoutes(app: FastifyInstance): Promise<void> {
             };
         });
 
-        return reply.status(200).send({ significators, settingsHash });
+        return reply.status(200).send(attachResultEnvelope({ significators, settingsHash }, { settingsHash }));
     });
 }
