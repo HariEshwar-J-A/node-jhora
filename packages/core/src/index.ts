@@ -49,6 +49,11 @@ export {
 export { AYANAMSA_MODELS,ayanamsaName } from './engine/ayanamsa.js';
 export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
 export { AYANAMSA, DEFAULT_AYANAMSA, DEFAULT_NODE_TYPE,DEFAULT_POSITION_MODE } from './engine/ephemeris.js';
+export type { EphemerisPolicy, EphemerisProvenance, EphemerisProvider } from './engine/provider/index.js';
+export {
+    CachingChunkLoader, CompositeEphemerisProvider, De431ChunkFile, De431ChunkStore,
+    DE440S_JD_TDB_END, DE440S_JD_TDB_START, fetchChunkLoader, nodeFsChunkLoader,
+} from './engine/provider/index.js';
 export type {
     ResultEnvelope,
     ResultEnvelopeOptions,
@@ -63,7 +68,7 @@ export {
 } from './envelope.js';
 export { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
 export type {
-    AyanamsaId, CalculationSettings, DasaYearKind, HouseSystemId, PresetId,
+    AyanamsaId, CalculationSettings, DasaYearKind, EphemerisPolicyId, HouseSystemId, PresetId,
     ResolvedCalculation, SettingsInput, SunriseLimb,
 } from './settings/index.js';
 export {
@@ -73,6 +78,7 @@ export {
     canonicalJson,
     DASA_YEAR_KINDS,
     describeCalculation,
+    EPHEMERIS_POLICIES,
     expandCalculationBody,
     expandRequestBody,
     flatFromSettings,
@@ -92,6 +98,10 @@ export {
     settingsToJyotishConfig,
     SUNRISE_LIMBS,
 } from './settings/index.js';
+export type { HistoricalDateTime } from './time/historical.js';
+export {
+    civilDateFromJulianDay, julianDayUt, parseHistoricalDateString, parseHistoricalTimeString, usesProlepticJulian,
+} from './time/historical.js';
 export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
 export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
 
@@ -164,6 +174,7 @@ export class NodeJHora {
         this.location = location;
         this.ephemeris = EphemerisEngine.getInstance();
         const resolved = describeCalculation(config);
+        this.ephemeris.setEphemerisPolicy(resolved.settings.ephemerisPolicy);
         this.config = resolved.config;
         this.settings = resolved.settings;
         this.settingsHash = resolved.settingsHash;
@@ -208,9 +219,10 @@ export class NodeJHora {
                 ayanamsaMode: config.ayanamsaMode ?? config.ayanamsaOrder ?? AYANAMSA_BY_NAME[ayanamsaName],
                 ...config,
             };
-        const { config: c, settingsHash } = describeCalculation(requested);
+        const { config: c, settingsHash, settings } = describeCalculation(requested);
 
         const engine = EphemerisEngine.getInstance();
+        engine.setEphemerisPolicy(settings.ephemerisPolicy);
         await engine.initialize();
 
         const dt = DateTime.fromJSDate(date);

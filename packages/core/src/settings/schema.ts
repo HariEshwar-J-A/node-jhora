@@ -69,8 +69,16 @@ export const DasaYearSchema = z.object({
     days: finite.positive(),
 }).strict();
 
+export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
+export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
+
 export const CalculationSettingsSchema = z.object({
     schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
+    /**
+     * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
+     * `de440s` / `de431_long` force a single kernel (long-range requires chunks).
+     */
+    ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
     ayanamsa: z.enum(AYANAMSA_IDS),
     ayanamsaOffsetDeg: finite,
     /**

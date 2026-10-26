@@ -1,0 +1,4 @@
+{
+  "provenance": "Tolerance for tests/engine/de431-fidelity.test.ts, which compares NJCE chunks against the JPL DE431 kernel (de431t.bsp) read directly. Coefficients are copied verbatim, so agreement is exact to float64 evaluation.",
+  "toleranceArcsec": 0.001
+}

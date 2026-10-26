@@ -1,0 +1,34 @@
+{
+    "name": "@node-jhora/ephe-long",
+    "version": "0.1.0",
+    "description": "Long-range JPL DE431 ephemeris chunks (10000 BCE\u201310000 CE) for node-jhora",
+    "type": "module",
+    "license": "LicenseRef-NASA-Open-Government",
+    "scripts": {
+        "build": "node -e \"process.exit(0)\"",
+        "build:chunks": "node scripts/build-chunks.mjs",
+        "typecheck": "node -e \"process.exit(0)\"",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node -e \"process.exit(0)\""
+    },
+    "files": [
+        "README.md",
+        "FORMAT.md",
+        "scripts/build-chunks.mjs",
+        "dist"
+    ],
+    "keywords": [
+        "jpl",
+        "de431",
+        "ephemeris",
+        "vedic-astrology"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/harieshwar-ai/node-jhora.git",
+        "directory": "packages/ephe-long"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

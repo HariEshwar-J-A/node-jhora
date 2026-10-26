@@ -22,6 +22,7 @@ export type {
     AyanamsaId,
     CalculationSettings,
     DasaYearKind,
+    EphemerisPolicyId,
     HouseSystemId,
     SunriseLimb,
 } from './schema.js';
@@ -32,6 +33,7 @@ export {
     CalculationSettingsSchema,
     DASA_YEAR_KINDS,
     DasaYearSchema,
+    EPHEMERIS_POLICIES,
     HOUSE_SYSTEM_IDS,
     inferDasaYearKind,
     LEGACY_DASHA_YEAR_DAYS,

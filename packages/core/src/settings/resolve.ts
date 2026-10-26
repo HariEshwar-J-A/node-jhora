@@ -59,7 +59,7 @@ export interface LegacyCalculationInput {
 export type SettingsInput = PresetId | Partial<CalculationSettings> | LegacyCalculationInput;
 
 const SETTINGS_MARKS = [
-    'schemaVersion', 'ayanamsa', 'ayanamsaOffsetDeg', 'dasaYear',
+    'schemaVersion', 'ephemerisPolicy', 'ayanamsa', 'ayanamsaOffsetDeg', 'dasaYear',
     'vargaVariants', 'cuspsInMiddle', 'customAyanamsaMode',
 ] as const;
 

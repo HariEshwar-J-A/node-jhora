@@ -39,7 +39,12 @@ export const DEFAULT_AYANAMSA_KEY: AyanamsaKey = 'true_chitra';
 // ---------------------------------------------------------------------------
 
 const BirthBaseSchema = z.object({
-    date:        z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD'),
+    /**
+     * Civil date in astronomical year numbering (year `0000` = 1 BC, `-0001` = 2 BC).
+     * Before 1582-10-15 the proleptic Julian calendar applies; on and after that date,
+     * Gregorian — matching Swiss Ephemeris / JHora conventions.
+     */
+    date:        z.string().regex(/^-?\d{1,5}-\d{2}-\d{2}$/, 'Must be astronomical YYYY-MM-DD'),
     time:        z.string().regex(/^\d{2}:\d{2}:\d{2}$/, 'Must be HH:MM:SS'),
     ayanamsa:    z.enum(AYANAMSA_KEYS).default(DEFAULT_AYANAMSA_KEY),
     nodeType:    z.enum(['mean', 'true']).default('true'),

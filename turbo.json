@@ -57,6 +57,9 @@
         "@node-jhora/ephe#build": {
             "outputs": []
         },
+        "@node-jhora/ephe-long#build": {
+            "outputs": []
+        },
         "@node-jhora/ephe#test": {
             "dependsOn": [],
             "inputs": [
