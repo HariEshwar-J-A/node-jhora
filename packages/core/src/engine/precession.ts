@@ -196,12 +196,64 @@ export function matTransposeVec(m: Mat, v: Vec): Vec {
     ];
 }
 
-/** Rotate about the x-axis by `angleDeg` (equatorial → ecliptic uses +ε). */
+/** Rotate about the x-axis by `angleDeg` (equatorial → ecliptic uses +ε). R₁. */
 export function rotateX(v: Vec, angleDeg: number): Vec {
     const a = angleDeg * DEG;
     const c = Math.cos(a);
     const s = Math.sin(a);
     return [v[0], v[1] * c + v[2] * s, -v[1] * s + v[2] * c];
+}
+
+/** Rotate about the y-axis by `angleDeg`. R₂. */
+export function rotateY(v: Vec, angleDeg: number): Vec {
+    const a = angleDeg * DEG;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    return [v[0] * c - v[2] * s, v[1], v[0] * s + v[2] * c];
+}
+
+/** Rotate about the z-axis by `angleDeg`. R₃. */
+export function rotateZ(v: Vec, angleDeg: number): Vec {
+    const a = angleDeg * DEG;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    return [v[0] * c + v[1] * s, -v[0] * s + v[1] * c, v[2]];
+}
+
+/**
+ * IAU 2000 frame bias: GCRS → mean dynamical equator and equinox of J2000.0.
+ *
+ * IERS Conventions (2003) §1.1; IERS Conventions (2010) eq. (5.32) with
+ * dα₀ at eq. (5.21):
+ *   B = R₁(−η₀) R₂(ξ₀) R₃(dα₀)
+ *   η₀ = −6.8192 mas, ξ₀ = −16.6170 mas, dα₀ = −14.6 mas.
+ *
+ * Chart ecliptic longitudes stay on the ICRF; {@link chartEclipticFromIcrfDirection}
+ * applies B only for latitude (Swiss Ephemeris TRUEPOS oracle convention).
+ */
+const FRAME_BIAS_DALPHA0_DEG = -0.0146 / 3600;
+const FRAME_BIAS_XI0_DEG = -0.016617 / 3600;
+const FRAME_BIAS_ETA0_DEG = -0.0068192 / 3600;
+
+export function iau2000FrameBias(v: Vec): Vec {
+    return rotateX(
+        rotateY(rotateZ(v, FRAME_BIAS_DALPHA0_DEG), FRAME_BIAS_XI0_DEG),
+        -FRAME_BIAS_ETA0_DEG,
+    );
+}
+
+/**
+ * TRUEPOS chart ecliptic from an ICRF direction: longitude on the ICRF
+ * equator, latitude after the IAU 2000 frame bias (oracle default).
+ */
+export function chartEclipticFromIcrfDirection(
+    v: Vec,
+    T: number,
+    jdTT?: number,
+): { lon: number; lat: number } {
+    const lon = toSpherical(icrfToMeanEclipticOfDate(v, T, jdTT)).lon;
+    const lat = toSpherical(icrfToMeanEclipticOfDate(iau2000FrameBias(v), T, jdTT)).lat;
+    return { lon, lat };
 }
 
 /** Cartesian → spherical. Returns longitude/latitude in degrees, radius in input units. */

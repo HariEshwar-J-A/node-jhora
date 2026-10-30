@@ -31,7 +31,9 @@
  *                                  geocentric vector when topocentric
  * 3. apparentPlace()               light-time (iterated), solar deflection,
  *                                  relativistic aberration → ICRF direction
- * 4. icrfToMeanEclipticOfDate()    Vondrák et al. 2011 precession at all epochs
+ * 4. chartEclipticFromIcrfDirection()  mean ecliptic of date; longitude on
+ *                                  the ICRF, latitude after IAU 2000 frame bias
+ *                                  (IERS 2010 eq. 5.16; ADR 0008)
  * 5. toSidereal(lon, ayanamsa)     sidereal longitude
  *
  * Nutation is applied to the *angles* (via apparent sidereal time and true
@@ -123,7 +125,11 @@ import {
     sphericalRatesDegPerDay,
 } from './kinematics.js';
 import { nutation } from './nutation.js';
-import { icrfToMeanEclipticOfDate, toSpherical, type Vec } from './precession.js';
+import {
+    chartEclipticFromIcrfDirection,
+    icrfToMeanEclipticOfDate,
+    type Vec,
+} from './precession.js';
 import { centuryIndex, jdTdbToAstronomicalYear } from './provider/de431-chunk.js';
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
 import {
@@ -625,7 +631,7 @@ export class EphemerisEngine {
 
         const jdTT = jdUT + deltaT(jdUT) / 86400.0;
         const T = julianCenturies(jdTT);
-        const ecl = toSpherical(icrfToMeanEclipticOfDate(place.direction as Vec, T, jdTT));
+        const ecl = chartEclipticFromIcrfDirection(place.direction as Vec, T, jdTT);
 
         return { lon: ecl.lon, lat: ecl.lat, dist: place.distanceAU };
     }
