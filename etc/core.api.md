@@ -349,6 +349,11 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     state(jdTdb: number, body: EphemerisBodyId, frame: EphemerisFrame): EphemerisState;
 }
 
+// Warning: (ae-forgotten-export) The symbol "GeoLocation" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function computeRiseSetTable(engine: EphemerisEngine, bodyId: RiseSetBodyId, jdStartUt: number, location: GeoLocation, def?: RiseSetDefinition): RiseSetTable;
+
 // @public
 export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnvelope;
 
@@ -522,7 +527,6 @@ export class EphemerisEngine {
     getEphemerisProvenance(jd: number): EphemerisProvenance;
     getHouses(jd: number, lat: number, lon: number, method?: string, sidereal?: boolean, ayanamsaMode?: number, ayanamsaOffset?: number, siderealFrame?: 'jhora' | 'se-apparent', precision?: PrecisionOptions): HouseData;
     static getInstance(): EphemerisEngine;
-    // Warning: (ae-forgotten-export) The symbol "GeoLocation" needs to be exported by the entry point index.d.ts
     getPlanets(date: DateTime, location?: GeoLocation, options?: {
         ayanamsaOrder?: number;
         topocentric?: boolean;
@@ -531,6 +535,16 @@ export class EphemerisEngine {
         ayanamsaOffset?: number;
     } & PrecisionOptions): PlanetPosition[];
     getSiderealTime(jd: number): number;
+    getTopocentricEquatorial(jdUT: number, bodyId: number, location: GeoLocation, positionMode?: PositionMode): {
+        raDeg: number;
+        decDeg: number;
+        distAu: number;
+    };
+    getTopocentricTropicalEcliptic(jdUT: number, bodyId: number, location: GeoLocation, positionMode?: PositionMode): {
+        lonDeg: number;
+        latDeg: number;
+        distAu: number;
+    };
     initialize(options?: {
         kernel?: Uint8Array;
     }): Promise<void>;
@@ -598,6 +612,9 @@ export function expandRequestBody(body: Record<string, unknown>): Record<string,
 
 // @public
 export function fetchChunkLoader(baseUrl: string): EphemerisChunkLoader;
+
+// @public
+export function findRiseSetEvent(engine: EphemerisEngine, bodyId: RiseSetBodyId, event: RiseSetEvent, jdStartUt: number, location: GeoLocation, def: RiseSetDefinition): RiseSetOutcome;
 
 // @public
 export function firstAvailableChunkLoader(loaders: readonly EphemerisChunkLoader[]): EphemerisChunkLoader;
@@ -706,6 +723,9 @@ export function isSettingsShape(value: object): value is Partial<CalculationSett
 
 // @public
 export function isValidIanaTimeZone(tz: string): boolean;
+
+// @public
+export function jdUtFromDateTime(dt: DateTime): number;
 
 // @public
 export const JHORA_PRESET: Partial<JyotishConfig>;
@@ -1086,6 +1106,55 @@ export interface ResultEnvelopeOptions {
     settingsHash: SettingsHashValue;
     // (undocumented)
     warnings?: readonly string[];
+}
+
+// @public (undocumented)
+export const RISE_SET_BODY_NAMES: Record<RiseSetBodyId, string>;
+
+// @public (undocumented)
+export type RiseSetBodyId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+// @public (undocumented)
+export interface RiseSetDefinition {
+    deltaTOverrideSeconds?: number;
+    horizonAltitudeDeg: number;
+    // (undocumented)
+    limb: SunriseLimb;
+    // (undocumented)
+    positionMode: PositionMode;
+    precisionProfile: PrecisionProfileId;
+    pressureHPa: number;
+    // (undocumented)
+    refraction: boolean;
+    temperatureC: number;
+}
+
+// @public (undocumented)
+export function riseSetDefinitionFromSettings(settings?: CalculationSettings, overrides?: Partial<RiseSetDefinition>): RiseSetDefinition;
+
+// @public (undocumented)
+export type RiseSetEvent = 'rise' | 'set' | 'upper_transit' | 'lower_transit';
+
+// @public (undocumented)
+export type RiseSetOutcome = {
+    kind: 'time';
+    jdUt: number;
+    dateTime: DateTime;
+} | {
+    kind: 'none';
+    reason: 'polar_day' | 'polar_night';
+};
+
+// @public (undocumented)
+export interface RiseSetTable {
+    // (undocumented)
+    lowerTransit: RiseSetOutcome;
+    // (undocumented)
+    rise: RiseSetOutcome;
+    // (undocumented)
+    set: RiseSetOutcome;
+    // (undocumented)
+    upperTransit: RiseSetOutcome;
 }
 
 // @public (undocumented)

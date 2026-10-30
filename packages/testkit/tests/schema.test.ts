@@ -54,6 +54,8 @@ const SAMPLES: Record<string, string> = {
     'meta-tolerance': 'meta.contract.futureTolerance.latitude',
     'meta-horizons-api': 'meta.horizons.ephemeris',
     'meta-horizons-params': 'meta.horizons.requestParameters',
+    'riseset-kind': 'riseset.Sun.rise.kind',
+    'riseset-jd': 'riseset.Moon.set.jdUt',
 };
 
 function entryFor(rule: FeaturePathRule): ExpectedEntry {

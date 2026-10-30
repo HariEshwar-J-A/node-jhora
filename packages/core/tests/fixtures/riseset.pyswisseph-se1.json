@@ -1,0 +1,1041 @@
+[
+  {
+    "id": "riseset-029-sun-20080915",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2008-09-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -13.131001000334216,
+      "lon": 61.80730546978191,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.rise.jdUt": {
+        "value": 2454724.5768916667,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.jdUt": {
+        "value": 2454725.0730690975,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2454724.8249186343,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2454725.32479375,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-015-moon-19890505",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1989-05-05T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -13.567852862113646,
+      "lon": 149.23713230659564,
+      "alt": 250,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.rise.jdUt": {
+        "value": 2447652.36288125,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.jdUt": {
+        "value": 2447651.8045875,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2447651.562327083,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2447652.0825498844,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-042-moon-19890410",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1989-04-10T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 64.4049496340528,
+      "lon": 20.076596426022547,
+      "alt": 250,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2447627.116751273,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2447626.5955690974,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-002-moon-20180118",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2018-01-18T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -61.126361473050856,
+      "lon": -101.2903290707028,
+      "alt": 1200,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.rise.jdUt": {
+        "value": 2458136.997358912,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.jdUt": {
+        "value": 2458136.6608496527,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2458137.3428385416,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2458136.8265994214,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-050-mercury-20120505",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2012-05-05T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 64.49253822116228,
+      "lon": -153.62614040413212,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mercury.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.rise.jdUt": {
+        "value": 2456053.0785109955,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.set.jdUt": {
+        "value": 2456052.657570486,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.upperTransit.jdUt": {
+        "value": 2456053.369542824,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.lowerTransit.jdUt": {
+        "value": 2456052.8688469906,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-004-mercury-20240711",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2024-07-11T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 40.22595936811746,
+      "lon": -177.66044651589803,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mercury.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.rise.jdUt": {
+        "value": 2460503.276094097,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.set.jdUt": {
+        "value": 2460502.861183333,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.upperTransit.jdUt": {
+        "value": 2460502.5677971067,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.lowerTransit.jdUt": {
+        "value": 2460503.068342361,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-024-venus-19801011",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1980-10-11T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 34.12640400976966,
+      "lon": 14.176450843065254,
+      "alt": 1200,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Venus.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.rise.jdUt": {
+        "value": 2444523.5792565974,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.set.jdUt": {
+        "value": 2444524.115167361,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.upperTransit.jdUt": {
+        "value": 2444523.8474100693,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.lowerTransit.jdUt": {
+        "value": 2444524.3475925927,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-010-jupiter-20030607",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2003-06-07T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -6.056660692103385,
+      "lon": 120.27975359067011,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Jupiter.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.rise.jdUt": {
+        "value": 2452797.591650463,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.set.jdUt": {
+        "value": 2452798.079896528,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.upperTransit.jdUt": {
+        "value": 2452797.8357699076,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.lowerTransit.jdUt": {
+        "value": 2452798.3346262733,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-196-jupiter-19960304",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1996-03-04T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 62.92365714020606,
+      "lon": 175.50982957182202,
+      "alt": 1200,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Jupiter.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.rise.jdUt": {
+        "value": 2450147.25014375,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.set.jdUt": {
+        "value": 2450147.444627315,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.upperTransit.jdUt": {
+        "value": 2450147.3473555557,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.lowerTransit.jdUt": {
+        "value": 2450146.8484809026,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-068-mars-19870506",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1987-05-06T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 62.54945933577382,
+      "lon": 13.03766369233989,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mars.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.rise.jdUt": {
+        "value": 2446921.6483113426,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.set.jdUt": {
+        "value": 2446922.4781194446,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.upperTransit.jdUt": {
+        "value": 2446922.062917824,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.lowerTransit.jdUt": {
+        "value": 2446921.563290278,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-025-mars-19950108",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1995-01-08T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -62.4680234898418,
+      "lon": 154.47550185526217,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mars.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.rise.jdUt": {
+        "value": 2449726.034826852,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.set.jdUt": {
+        "value": 2449726.3737071757,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.upperTransit.jdUt": {
+        "value": 2449726.2043368057,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.lowerTransit.jdUt": {
+        "value": 2449725.705779167,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-100-saturn-19810407",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "1981-04-07T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -56.07961184113998,
+      "lon": 164.6228169994926,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Saturn.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.rise.jdUt": {
+        "value": 2444701.7678747685,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.set.jdUt": {
+        "value": 2444702.264534028,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.upperTransit.jdUt": {
+        "value": 2444702.0162346065,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.lowerTransit.jdUt": {
+        "value": 2444701.517695602,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "riseset-180-saturn-20100524",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "JHora 8.0 jhcore/ephe .se1 (DE431)",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "tools/generate-riseset-goldens.py @ 00c379604a85aa1d1edcb56d15a9b7a2251e74ad"
+    },
+    "input": {
+      "instant": "2010-05-24T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 53.753306682620604,
+      "lon": 118.97014304426307,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Saturn.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.rise.jdUt": {
+        "value": 2455340.7336034724,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.set.jdUt": {
+        "value": 2455341.2556836805,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.upperTransit.jdUt": {
+        "value": 2455340.994642477,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.lowerTransit.jdUt": {
+        "value": 2455341.4932621527,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  }
+]

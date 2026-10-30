@@ -1,0 +1,1531 @@
+[
+  {
+    "id": "hl-sun-19000621-n55",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1900-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 55,
+      "lon": 128,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.rise.jdUt": {
+        "value": 2415192.289150463,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.jdUt": {
+        "value": 2415192.0017505786,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2415191.6453767363,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2415192.1454518517,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-sun-19000621-n90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1900-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 90,
+      "lon": 118,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2415191.673158565,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2415192.173233912,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-moon-19000621-s90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1900-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -90,
+      "lon": 118,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2415192.48550544,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2415191.967277199,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-mercury-19501221-n60",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1950-12-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 60,
+      "lon": -114,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mercury.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.rise.jdUt": {
+        "value": 2433637.2526214123,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.set.jdUt": {
+        "value": 2433637.490418287,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.upperTransit.jdUt": {
+        "value": 2433637.3712420138,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.lowerTransit.jdUt": {
+        "value": 2433636.872146875,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-venus-19501221-n60p5",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1950-12-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 60.5,
+      "lon": -109,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Venus.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.rise.jdUt": {
+        "value": 2433637.2236478007,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.set.jdUt": {
+        "value": 2433637.4353770833,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.upperTransit.jdUt": {
+        "value": 2433637.3294270835,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.lowerTransit.jdUt": {
+        "value": 2433636.8288855324,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-mars-19841206-n65",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1984-12-06T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 65,
+      "lon": -30,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mars.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.rise.jdUt": {
+        "value": 2446041.1258326387,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.set.jdUt": {
+        "value": 2446041.391664699,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.upperTransit.jdUt": {
+        "value": 2446041.258446412,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.lowerTransit.jdUt": {
+        "value": 2446040.758764699,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-jupiter-19841206-n65p5",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "1984-12-06T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 65.5,
+      "lon": -25,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Jupiter.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.rise.jdUt": {
+        "value": 2446041.092698727,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.set.jdUt": {
+        "value": 2446041.2213287037,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.upperTransit.jdUt": {
+        "value": 2446041.156963426,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.lowerTransit.jdUt": {
+        "value": 2446040.6580072916,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-saturn-20000320-n63",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2000-03-20T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 63,
+      "lon": -61,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Saturn.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.rise.jdUt": {
+        "value": 2451623.959949537,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.set.jdUt": {
+        "value": 2451623.6249005785,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.upperTransit.jdUt": {
+        "value": 2451624.291222338,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.lowerTransit.jdUt": {
+        "value": 2451623.792446296,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-sun-20000320-n89",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2000-03-20T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 89,
+      "lon": -161,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.rise.jdUt": {
+        "value": 2451624.1794280093,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.jdUt": {
+        "value": 2451623.6947733797,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2451624.452251852,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2451623.952355671,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-sun-20000320-n90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2000-03-20T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 90,
+      "lon": -151,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.rise.jdUt": {
+        "value": 2451623.8164212964,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2451624.4244798613,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2451623.924583565,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-sun-20000320-s90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2000-03-20T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -90,
+      "lon": -151,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.jdUt": {
+        "value": 2451623.8040439817,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2451624.4244798613,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2451623.924583565,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-moon-20000320-n90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2000-03-20T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 90,
+      "lon": -151,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.jdUt": {
+        "value": 2451624.327346412,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2451623.937157986,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2451624.453701968,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-venus-20270621-n70",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2027-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 70,
+      "lon": 45,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Venus.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.upperTransit.jdUt": {
+        "value": 2461577.8337799767,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Venus.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Venus.lowerTransit.jdUt": {
+        "value": 2461578.3342267363,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-mars-20270621-n80",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2027-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 80,
+      "lon": 145,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mars.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.rise.jdUt": {
+        "value": 2461578.468948148,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.set.jdUt": {
+        "value": 2461578.164664468,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.upperTransit.jdUt": {
+        "value": 2461577.816863426,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mars.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mars.lowerTransit.jdUt": {
+        "value": 2461578.3161471067,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-moon-21000115-n89",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2100-01-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 89,
+      "lon": -67,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.rise.jdUt": {
+        "value": 2488084.4931460647,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2488084.356930556,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2488083.843285301,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-moon-21000115-s90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2100-01-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -90,
+      "lon": -57,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Moon.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.set.jdUt": {
+        "value": 2488084.2936855326,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.upperTransit.jdUt": {
+        "value": 2488084.328398264,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Moon.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Moon.lowerTransit.jdUt": {
+        "value": 2488083.814744097,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-sun-21000115-n90",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2100-01-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": 90,
+      "lon": -57,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Sun.rise.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.set.kind": {
+        "value": "none",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.upperTransit.jdUt": {
+        "value": 2488084.1648010416,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Sun.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Sun.lowerTransit.jdUt": {
+        "value": 2488083.6646789354,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-jupiter-21000115-s80",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2100-01-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -80,
+      "lon": -157,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Jupiter.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.rise.jdUt": {
+        "value": 2488083.7920726854,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.set.jdUt": {
+        "value": 2488083.560881829,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.upperTransit.jdUt": {
+        "value": 2488084.175255787,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Jupiter.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Jupiter.lowerTransit.jdUt": {
+        "value": 2488083.6765314816,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-saturn-21000115-s65p5",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2100-01-15T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -65.5,
+      "lon": 58,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Saturn.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.rise.jdUt": {
+        "value": 2488084.2900828705,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.set.jdUt": {
+        "value": 2488083.8887453703,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.upperTransit.jdUt": {
+        "value": 2488083.5907375,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Saturn.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Saturn.lowerTransit.jdUt": {
+        "value": 2488084.0894194446,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  },
+  {
+    "id": "hl-mercury-20270621-s60",
+    "provenance": {
+      "source": "pyswisseph",
+      "toolVersion": "2.10.03",
+      "ephemeris": "sepl_18.se1 + semo_18.se1; default call matches the DE431 fixture to 0.011 s",
+      "capturedAt": "2026-10-26",
+      "casesFrom": "high-latitude oracle grid, latitudes 55 to 90, years 1900 to 2100"
+    },
+    "input": {
+      "instant": "2027-06-21T00:00:00Z",
+      "timezone": "UTC",
+      "lat": -60,
+      "lon": -55,
+      "alt": 0,
+      "settingsPresetId": "jhora-default@8.0",
+      "settingsHash": "d7bda965501b60ac0e95478954658068018641467cfd6feac47e6322d6d9c913"
+    },
+    "settings": {
+      "limb": "disc_centre",
+      "refraction": false,
+      "positionMode": "geometric",
+      "pressureHPa": 1013.25,
+      "temperatureC": 15,
+      "horizonAltitudeDeg": 0
+    },
+    "expected": {
+      "riseset.Mercury.rise.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.rise.jdUt": {
+        "value": 2461578.019291667,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.set.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.set.jdUt": {
+        "value": 2461578.304235301,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.upperTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.upperTransit.jdUt": {
+        "value": 2461578.1615625,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      },
+      "riseset.Mercury.lowerTransit.kind": {
+        "value": "time",
+        "tolerance": {
+          "type": "exact"
+        }
+      },
+      "riseset.Mercury.lowerTransit.jdUt": {
+        "value": 2461577.663763773,
+        "tolerance": {
+          "type": "seconds",
+          "seconds": 1
+        }
+      }
+    }
+  }
+]
