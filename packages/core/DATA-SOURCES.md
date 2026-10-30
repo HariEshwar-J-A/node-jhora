@@ -40,3 +40,9 @@ Hand-off over 100 years from the last bridge sample follows the manual’s descr
 (paraphrased in source comments; no Swiss Ephemeris code or identifiers in the engine).
 
 Test oracles that compare against pyswisseph 2.10 live under `tests/fixtures/` only.
+
+## Chart ecliptic latitude frame bias (`src/engine/precession.ts`)
+
+| Quantity    | Source                                                                                                | Licence                 | Notes                                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| η₀, ξ₀, dα₀ | IERS Conventions (2003) §1.1; IERS Conventions (2010) eqs. (5.21), (5.32); B = R₁(−η₀) R₂(ξ₀) R₃(dα₀) | IERS technical document | η₀ = −6.8192 mas, ξ₀ = −16.6170 mas, dα₀ = −14.6 mas. Applied to graha ecliptic latitude only; longitudes stay on the ICRF path. |
