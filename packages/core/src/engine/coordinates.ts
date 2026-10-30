@@ -414,50 +414,72 @@ export function porphyryCusps(asc: number, mc: number): number[] {
 }
 
 /**
- * Ecliptic longitude whose right ascension and diurnal semi-arc satisfy a
- * Placidus hour-angle condition. Newton iteration on λ; δ and the semi-arc
- * both depend on λ, so it cannot be written in closed form.
- *
- * Diurnal semi-arc H0 = acos(−tan φ tan δ), δ = asin(sin ε sin λ) for a point
- * on the ecliptic. Eastern hour angle is negative (west-positive convention).
- *
- *   • above the horizon, `fraction` is |H| / H0 measured from the meridian
- *     (1/3 → 11th cusp, 2/3 → 12th);
- *   • below it, `fraction` is the fraction of the nocturnal semi-arc already
- *     completed since the lower meridian (2/3 → 2nd cusp, 1/3 → 3rd).
- *
- * That is the definition in Swiss Ephemeris general documentation §6.2.1
- * (Placidus de Titis: cusps divide the semi-arcs into thirds).
+ * Stopping tolerance on Placidus right ascension α (radians) for the
+ * `'converged'` scheme. 1e-13 rad ≈ 2.1e-11° ≪ 0.01″ (houses evidence brief).
  */
-function placidusLongitude(
+export const PLACIDUS_CONVERGED_TOL_RAD = 1e-13;
+
+/** Iteration cap for `'converged'` Placidus (contraction rate &lt; 2/3 below the polar circle). */
+export const PLACIDUS_CONVERGED_MAX_ITER = 96;
+
+/** Bisection refinement steps if the fixed-point loop stalls (defensive). */
+const PLACIDUS_BISECT_STEPS = 64;
+
+/** Ecliptic longitude λ for a point on the ecliptic with right ascension α (degrees). */
+function eclipticLongitudeFromRa(alphaRad: number, eps: number): number {
+    const cosE = Math.cos(eps * DEG);
+    return mod360(Math.atan2(Math.sin(alphaRad), Math.cos(alphaRad) * cosE) * RAD);
+}
+
+/**
+ * Placidus cusp right ascension α (radians) by fixed-point iteration.
+ *
+ * Unified form (Holden 1977; morinus-astrology.com Placidus note, cited in
+ * oxiephemeris-astro clean-room spec): with `t = tan φ · tan ε`, `|t| &lt; 1`,
+ *
+ *   α = θ + c + g · SDA(α),   SDA(α) = acos(−t · sin α).
+ *
+ * Cusps 11, 12, 2, 3 use `(c, g)` = `(0, 1/3)`, `(0, 2/3)`, `(π/3, 2/3)`,
+ * `(2π/3, 1/3)` respectively; `θ` is RAMC in radians.
+ */
+function placidusAlphaRad(thetaRad: number, cRad: number, g: number, tanProduct: number): number {
+    const base = thetaRad + cRad;
+    const sda = (alpha: number): number => {
+        const arg = Math.max(-1, Math.min(1, -tanProduct * Math.sin(alpha)));
+        return Math.acos(arg);
+    };
+
+    let alpha = base + g * (Math.PI / 2);
+    for (let i = 0; i < PLACIDUS_CONVERGED_MAX_ITER; i++) {
+        const next = base + g * sda(alpha);
+        const step = next - alpha;
+        alpha = next;
+        if (Math.abs(step) < PLACIDUS_CONVERGED_TOL_RAD) return alpha;
+    }
+
+    // Defensive bisection on F(α) = α − base − g·SDA(α) ∈ [base, base + gπ].
+    let lo = base;
+    let hi = base + g * Math.PI;
+    for (let i = 0; i < PLACIDUS_BISECT_STEPS; i++) {
+        const mid = 0.5 * (lo + hi);
+        if (mid - base - g * sda(mid) < 0) lo = mid;
+        else hi = mid;
+    }
+    return 0.5 * (lo + hi);
+}
+
+/** Fully converged Placidus ecliptic longitude; undefined at |tan φ tan ε| ≥ 1. */
+function placidusLongitudeConverged(
     ramc: number,
     lat: number,
     eps: number,
-    fraction: number,
-    nocturnal: boolean,
+    cRad: number,
+    g: number,
 ): number {
-    let lam = mod360(ramc + (nocturnal ? 270 : 90));
     const latR = Math.max(-89.999, Math.min(89.999, lat)) * DEG;
-    const epsR = eps * DEG;
-    const cosE = Math.cos(epsR);
-
-    for (let i = 0; i < 40; i++) {
-        const L = lam * DEG;
-        const sd = Math.max(-1, Math.min(1, Math.sin(epsR) * Math.sin(L)));
-        const dec = Math.asin(sd);
-        let arg = -Math.tan(latR) * Math.tan(dec);
-        if (arg > 1) arg = 1;
-        else if (arg < -1) arg = -1;
-        const H0 = Math.acos(arg);
-        const H = nocturnal ? -(Math.PI - fraction * (Math.PI - H0)) : -fraction * H0;
-        const alpha = ramc * DEG - H;
-        const lamNew = Math.atan2(Math.sin(alpha), Math.cos(alpha) * cosE) * RAD;
-        let d = mod360(lamNew - lam);
-        if (d > 180) d -= 360;
-        lam = mod360(lam + d);
-        if (Math.abs(d) < 1e-12) break;
-    }
-    return lam;
+    const tanProduct = Math.tan(latR) * Math.tan(eps * DEG);
+    const alpha = placidusAlphaRad(ramc * DEG, cRad, g, tanProduct);
+    return eclipticLongitudeFromRa(alpha, eps);
 }
 
 /**
@@ -482,8 +504,11 @@ function placidusLongitude(
  *   probed DLL cusp to < 3e-9″ (its 12-decimal print precision). The
  *   truncation error vs the exact cusp is 0 below ~25°, ~1e-4″ at 40°,
  *   ~0.01″ at 50°, ~0.5″ at 55°, ~70″ at 60° and ~2000″ near 65°.
- * • `'converged'` solves the hour-angle condition to 1e-12° (Newton on λ).
- *   This is what the 'modern' precision profile will use.
+ * • `'converged'` solves the classical fixed point
+ *   `α = RAMC + c + g·acos(−tan φ tan ε · sin α)` to {@link PLACIDUS_CONVERGED_TOL_RAD}
+ *   radians on α (pyswisseph / SE 2.10). Below ~30° latitude this agrees with
+ *   `'jhora'` to &lt; 0.001″; near 66° the two oracles differ by up to ~26″ on
+ *   some cusps because SE 2.02 stops after three pole refinements.
  */
 export type PlacidusScheme = 'jhora' | 'converged';
 
@@ -549,10 +574,10 @@ export function placidusCusps(
         scheme === 'jhora'
             ? [11, 12, 2, 3].map(pole)
             : [
-                  placidusLongitude(ramc, lat, eps, 1 / 3, false),
-                  placidusLongitude(ramc, lat, eps, 2 / 3, false),
-                  placidusLongitude(ramc, lat, eps, 2 / 3, true),
-                  placidusLongitude(ramc, lat, eps, 1 / 3, true),
+                  placidusLongitudeConverged(ramc, lat, eps, 0, 1 / 3),
+                  placidusLongitudeConverged(ramc, lat, eps, 0, 2 / 3),
+                  placidusLongitudeConverged(ramc, lat, eps, Math.PI / 3, 2 / 3),
+                  placidusLongitudeConverged(ramc, lat, eps, (2 * Math.PI) / 3, 1 / 3),
               ];
     return [
         asc,
