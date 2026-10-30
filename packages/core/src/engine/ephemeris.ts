@@ -536,9 +536,10 @@ export class EphemerisEngine {
         const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
         const ayan = computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset;
         const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
-        // pyswisseph 2.10 (modern): sidereal speed = tropical rate − d(ayan)/dt with the
-        // same geometric True-Chitra ayanamsa subtracted from longitude (≈50″/cy).
-        // JHora 2.02 DLL: tropical daily motion at TRUEPOS (verified vs oracle kit).
+        // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
+        // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
+        // lower by d(ayan)/dt (~0.138″/day). `modern` reports sidereal rate =
+        // tropical − d(ayan)/dt (geometric True Citra, same 1 s step on ayanamsa).
         const ayanRateForSiderealSpeed =
             precisionProfile === 'modern'
                 ? this.ayanamsaRateDegPerDay(jd, effectiveMode, 'geometric', ayanamsaOffset)
@@ -675,9 +676,8 @@ export class EphemerisEngine {
     /**
      * Tropical mean-ecliptic daily motions (deg/day, AU/day).
      *
-     * Geometric places: DE Chebyshev velocity through the IAU 2006 frame
-     * (see kinematics.ts). Apparent places: 1 s central difference on
-     * longitude (APPARENT_SPEED_STEP_DAYS).
+     * Geometric places: DE Chebyshev velocity through the mean ecliptic frame
+     * (see kinematics.ts). Apparent places: central difference on longitude.
      */
     private meanEclipticDailyMotion(
         jdUT: number,
