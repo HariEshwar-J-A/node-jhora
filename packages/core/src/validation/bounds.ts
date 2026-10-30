@@ -42,7 +42,10 @@ export const EPHEMERIS_JD_UT_MAX =
  */
 export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864_000;
 
-/** Central-difference step for daily motion, days (must stay inside chunk margin). */
+/**
+ * Legacy 0.25-day step (Swiss Ephemeris pre-velocity FD). Planet speeds use
+ * analytic kinematics (ADR 0008); this constant sizes DE431 chunk prefetch only.
+ */
 export const PLANET_SPEED_STEP_DAYS = 0.25;
 
 /** Extra margin (days) when prefetching DE431 chunks for ΔT and speed steps. */

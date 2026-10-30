@@ -114,6 +114,35 @@ real chart:
 Nothing can be concluded from it. Benchmarking PyJHora requires running PyJHora
 and capturing its output.
 
+## Daily motion (speed)
+
+Longitude speed (deg/day) is validated separately from position. See
+[ADR 0008](decisions/0008-daily-motion-oracle-conventions.md): black-box oracles match
+**~0.001 d** symmetric FD on tropical TRUEPOS longitude (equivalent to the engine’s
+SPK Chebyshev derivative for Sun–Saturn). The **Moon** uses the same analytic path.
+The `jhora` profile reports **tropical** daily motion (sidereal FD is ~0.138″/day
+lower, O3); `modern` subtracts `d(ayan)/dt` (geometric True Citra). Apparent places
+use a **1 s** FD step in the engine.
+
+| Era (kit sweep)            | Typical max ‖Δspeed‖ (J / M) | Dominant bodies     |
+| -------------------------- | ---------------------------- | ------------------- |
+| 1582–2150 (DE440s overlap) | 0.02–0.05″/d / similar       | Moon, Saturn        |
+| 0–1582                     | 0.13–0.2″/d                  | Moon                |
+| −5000–0                    | 0.5–0.8″/d                   | Moon                |
+| −10000–−5000               | 0.79–2.1″/d                  | Moon, outer planets |
+| 2150–5000                  | 0.15–0.46″/d                 | Moon                |
+| 5000–10000                 | 0.79–1.85″/d                 | Moon                |
+
+Case 48 (2000-10-19) is pinned at **≤0.01″/day** for all grahas in both
+profiles (`speed-oracle.golden.test.ts`). Remaining sweep gaps are primarily
+**DE440s vs DE431** in the overlap window and **ΔT / deep-time ephemeris**
+elsewhere, not the differentiation step size.
+
+```bash
+node tools/probe-speed-oracle.mjs          # black-box model check (case 48)
+NJCE_DIR=/path/to/njce node tools/speed-sweep.mjs /path/to/oracle-kit
+```
+
 ## Reproducing everything
 
 ```bash
