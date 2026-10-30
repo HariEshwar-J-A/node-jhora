@@ -33,7 +33,8 @@
  *                                  relativistic aberration → ICRF direction
  * 4. chartEclipticFromIcrfDirection()  mean ecliptic of date; longitude on
  *                                  the ICRF, latitude after IAU 2000 frame bias
- *                                  (IERS 2010 eq. 5.16; ADR 0008)
+ *                                  (IERS 2010 §5.4.5 and §5.9; dα₀ eq. 5.21,
+ *                                  ξ₀ and η₀ eq. 5.33; ADR 0009)
  * 5. toSidereal(lon, ayanamsa)     sidereal longitude
  *
  * Nutation is applied to the *angles* (via apparent sidereal time and true
@@ -128,7 +129,9 @@ import { trueAscendingNodeLongitude } from './lunar-node.js';
 import { nutation } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
+    iau2000FrameBias,
     icrfToMeanEclipticOfDate,
+    toSpherical,
     type Vec,
 } from './precession.js';
 import { centuryIndex, jdTdbToAstronomicalYear } from './provider/de431-chunk.js';
@@ -285,6 +288,29 @@ export const DEFAULT_NODE_TYPE: 'mean' | 'true' = 'true';
 
 function correctionsFor(mode: PositionMode): Required<PlaceCorrections> {
     return mode === 'apparent' ? APPARENT : GEOMETRIC;
+}
+
+const DEG_RAD = Math.PI / 180;
+const RAD_DEG = 180 / Math.PI;
+
+/** Mean ecliptic of date → true equatorial of date (degrees). */
+function equatorialFromEcliptic(
+    lonDeg: number,
+    latDeg: number,
+    epsTrueDeg: number,
+): {
+    raDeg: number;
+    decDeg: number;
+} {
+    const eps = epsTrueDeg * DEG_RAD;
+    const lon = lonDeg * DEG_RAD;
+    const lat = latDeg * DEG_RAD;
+    const sinDec = Math.sin(lat) * Math.cos(eps) + Math.cos(lat) * Math.sin(eps) * Math.sin(lon);
+    const dec = Math.asin(sinDec);
+    const y = Math.sin(lon) * Math.cos(eps) - Math.tan(lat) * Math.sin(eps);
+    const x = Math.cos(lon);
+    const ra = Math.atan2(y, x) * RAD_DEG;
+    return { raDeg: mod360(ra), decDeg: dec * RAD_DEG };
 }
 
 // ---------------------------------------------------------------------------
@@ -617,8 +643,23 @@ export class EphemerisEngine {
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
     ): { lon: number; lat: number; dist: number } {
-        const et = jdUTtoET(jdUT);
+        const place = this.icrfPlace(jdUT, naifId, corrections, location);
+        const ecl = chartEclipticFromIcrfDirection(place.direction, place.T, place.jdTT);
+        return { lon: ecl.lon, lat: ecl.lat, dist: place.dist };
+    }
 
+    /**
+     * ICRF direction before the chart latitude bias. Rise/set applies
+     * {@link iau2000FrameBias} to this vector once; chart latitude applies
+     * it separately inside {@link chartEclipticFromIcrfDirection}.
+     */
+    private icrfPlace(
+        jdUT: number,
+        naifId: number,
+        corrections: Required<PlaceCorrections>,
+        location?: GeoLocation,
+    ): { direction: Vec; dist: number; jdTT: number; T: number } {
+        const et = jdUTtoET(jdUT);
         const offset = location
             ? observerGeocentricVector(
                   jdUT,
@@ -627,15 +668,15 @@ export class EphemerisEngine {
                   location.altitude ?? 0,
               )
             : undefined;
-
         const observer = observerState(this.source, NAIF.Earth, et, offset);
         const place = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
-
         const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-        const T = julianCenturies(jdTT);
-        const ecl = chartEclipticFromIcrfDirection(place.direction as Vec, T, jdTT);
-
-        return { lon: ecl.lon, lat: ecl.lat, dist: place.distanceAU };
+        return {
+            direction: place.direction as Vec,
+            dist: place.distanceAU,
+            jdTT,
+            T: julianCenturies(jdTT),
+        };
     }
 
     /**
@@ -938,6 +979,61 @@ export class EphemerisEngine {
     /** Human-readable label for the active (or given) ayanamsa model. */
     public getAyanamsaName(mode?: number): string {
         return ayanamsaName(mode ?? this.ayanamsaMode);
+    }
+
+    /**
+     * Topocentric tropical ecliptic (mean equinox of date), geometric or apparent
+     * per `positionMode`. Rise/set applies nutation when forming horizontal coords.
+     */
+    public getTopocentricTropicalEcliptic(
+        jdUT: number,
+        bodyId: number,
+        location: GeoLocation,
+        positionMode: PositionMode = DEFAULT_POSITION_MODE,
+    ): { lonDeg: number; latDeg: number; distAu: number } {
+        this.checkInit();
+        const naifId = ID_TO_NAIF[bodyId];
+        if (naifId === undefined) {
+            throw new Error(`Rise/set does not support body id ${bodyId}`);
+        }
+        const corrections = correctionsFor(positionMode);
+        const ecl = this.meanEclipticOfDate(jdUT, naifId, corrections, location);
+        return { lonDeg: ecl.lon, latDeg: ecl.lat, distAu: ecl.dist };
+    }
+
+    /**
+     * Topocentric equatorial place for rise, set, and culmination.
+     *
+     * The ecliptic place is the mean equinox of date on the ICRF. Before
+     * nutation it is rotated by the IAU 2000 frame bias (IERS Conventions
+     * 2010, §5.4.5 and §5.9; dα₀ is eq. 5.21, ξ₀ and η₀ are eq. 5.33),
+     * which is the equator the rise/set oracle uses.
+     * Chart longitudes are not rotated. Nutation in longitude and the true
+     * obliquity then form the true equinox of date. `positionMode` selects
+     * the geometric or the apparent place; the bias and nutation apply either
+     * way, so a comparison of the two discs is unchanged.
+     */
+    public getTopocentricEquatorial(
+        jdUT: number,
+        bodyId: number,
+        location: GeoLocation,
+        positionMode: PositionMode = DEFAULT_POSITION_MODE,
+    ): { raDeg: number; decDeg: number; distAu: number } {
+        this.checkInit();
+        const naifId = ID_TO_NAIF[bodyId];
+        if (naifId === undefined) {
+            throw new Error(`Rise/set does not support body id ${bodyId}`);
+        }
+        const place = this.icrfPlace(jdUT, naifId, correctionsFor(positionMode), location);
+        // Bias the ICRF vector itself. Chart latitude is a different cut
+        // (longitude left on the ICRF), so round-tripping that mix would
+        // apply the bias twice.
+        const biased = toSpherical(
+            icrfToMeanEclipticOfDate(iau2000FrameBias(place.direction), place.T, place.jdTT),
+        );
+        const { eps, dpsi, deps } = this.getEclipticObliquity(jdUT);
+        const eq = equatorialFromEcliptic(biased.lon + dpsi, biased.lat, eps + deps);
+        return { raDeg: eq.raDeg, decDeg: eq.decDeg, distAu: place.dist };
     }
 
     // -----------------------------------------------------------------------

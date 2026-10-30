@@ -223,13 +223,17 @@ export function rotateZ(v: Vec, angleDeg: number): Vec {
 /**
  * IAU 2000 frame bias: GCRS → mean dynamical equator and equinox of J2000.0.
  *
- * IERS Conventions (2003) §1.1; IERS Conventions (2010) eq. (5.32) with
- * dα₀ at eq. (5.21):
+ * IERS Conventions (2010), §5.4.5 and §5.9: the separate frame-bias
+ * rotation in the equinox-based product N×P×B (SOFA BI00). TN36
+ * numbers the angles, not that product:
  *   B = R₁(−η₀) R₂(ξ₀) R₃(dα₀)
- *   η₀ = −6.8192 mas, ξ₀ = −16.6170 mas, dα₀ = −14.6 mas.
+ *   dα₀ = −14.6 mas (eq. 5.21); ξ₀ = −16.6170 mas, η₀ = −6.8192 mas (eq. 5.33).
+ * Eq. (5.16) is the CIP X, Y series and eq. (5.32) is GMST.
  *
- * Chart ecliptic longitudes stay on the ICRF; {@link chartEclipticFromIcrfDirection}
- * applies B only for latitude (Swiss Ephemeris TRUEPOS oracle convention).
+ * These are the published angles, not a fitted offset. Chart ecliptic
+ * longitudes stay on the ICRF; {@link chartEclipticFromIcrfDirection}
+ * applies B only for latitude. The horizon place applies B to the whole
+ * vector because that is the equator the rise/set oracle matches (ADR 0009).
  */
 const FRAME_BIAS_DALPHA0_DEG = -0.0146 / 3600;
 const FRAME_BIAS_XI0_DEG = -0.016617 / 3600;
@@ -254,6 +258,14 @@ export function chartEclipticFromIcrfDirection(
     const lon = toSpherical(icrfToMeanEclipticOfDate(v, T, jdTT)).lon;
     const lat = toSpherical(icrfToMeanEclipticOfDate(iau2000FrameBias(v), T, jdTT)).lat;
     return { lon, lat };
+}
+
+/** Spherical (degrees) → cartesian. Longitude is from x toward y; latitude toward z. */
+export function fromSpherical(lonDeg: number, latDeg: number, r = 1): Vec {
+    const lon = lonDeg * DEG;
+    const lat = latDeg * DEG;
+    const cl = Math.cos(lat);
+    return [r * cl * Math.cos(lon), r * cl * Math.sin(lon), r * Math.sin(lat)];
 }
 
 /** Cartesian → spherical. Returns longitude/latitude in degrees, radius in input units. */

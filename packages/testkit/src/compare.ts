@@ -119,7 +119,8 @@ function comparePath(path: string, entry: ExpectedEntry, actual: GoldenActual): 
                 return { ...base, pass: false, message: 'seconds path value kind mismatch' };
             }
             if (typeof entry.value === 'number' && typeof raw === 'number') {
-                const scale = featureId === 'sidereal-hours' ? 3600 : 1;
+                const scale =
+                    featureId === 'sidereal-hours' ? 3600 : featureId === 'riseset-jd' ? 86400 : 1;
                 const delta = (raw - entry.value) * scale;
                 const limit = entry.tolerance.seconds;
                 const pass = Math.abs(delta) <= limit;

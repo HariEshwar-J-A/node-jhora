@@ -111,12 +111,20 @@
       "type": "object",
       "properties": {
         "source": {
-          "type": "string",
-          "enum": [
-            "jhora",
-            "horizons",
-            "pyswisseph",
-            "published-text"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "jhora",
+                "horizons",
+                "pyswisseph",
+                "published-text"
+              ]
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
           ]
         },
         "toolVersion": {
@@ -133,6 +141,14 @@
               "type": "null"
             }
           ]
+        },
+        "ephemeris": {
+          "type": "string",
+          "minLength": 1
+        },
+        "casesFrom": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
@@ -318,6 +334,12 @@
         },
         "^(?:meta\\.horizons\\.requestParameters)$": {
           "$ref": "#/$defs/exactEntry"
+        },
+        "^(?:riseset\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.(?:rise|set|upperTransit|lowerTransit)\\.kind)$": {
+          "$ref": "#/$defs/exactEntry"
+        },
+        "^(?:riseset\\.(?:Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Uranus|Neptune|Pluto|Rahu|Ketu)\\.(?:rise|set|upperTransit|lowerTransit)\\.jdUt)$": {
+          "$ref": "#/$defs/secondsEntry"
         }
       }
     }

@@ -53,11 +53,19 @@ export const ExpectedEntrySchema = z.union([
 ]);
 
 export const ProvenanceSchema = z.strictObject({
-    source: z.enum(['jhora', 'horizons', 'pyswisseph', 'published-text']),
+    source: z.union([
+        z.enum(['jhora', 'horizons', 'pyswisseph', 'published-text']),
+        /** Long-form oracle labels, such as a JHora DLL capture. */
+        z.string().min(1),
+    ]),
     /** Tool build that produced the oracle numbers. `unrecorded` when the legacy fixture did not say. */
     toolVersion: z.string().min(1),
     /** Calendar date of the capture, or null when the legacy fixture did not record one. */
     capturedAt: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.null()]),
+    /** Ephemeris files or kernel named at capture time. */
+    ephemeris: z.string().min(1).optional(),
+    /** Generator script and revision that produced the corpus. */
+    casesFrom: z.string().min(1).optional(),
 });
 
 export const GoldenInputSchema = z.strictObject({

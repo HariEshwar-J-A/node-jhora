@@ -104,6 +104,18 @@ export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
         'string',
     ),
     rule('meta-horizons-params', 'meta\\.horizons\\.requestParameters', 'exact', 'string'),
+    rule(
+        'riseset-kind',
+        `riseset\\.(?:${BODY})\\.(?:rise|set|upperTransit|lowerTransit)\\.kind`,
+        'exact',
+        'string',
+    ),
+    rule(
+        'riseset-jd',
+        `riseset\\.(?:${BODY})\\.(?:rise|set|upperTransit|lowerTransit)\\.jdUt`,
+        'seconds',
+        'number',
+    ),
 ];
 
 interface CompiledRule extends FeaturePathRule {

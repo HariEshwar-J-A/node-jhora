@@ -72,6 +72,20 @@ export {
     SEVEN_GRAHAS_JHORA_ORDER,
     VargaDeities,
 };
+export type {
+    RiseSetBodyId,
+    RiseSetDefinition,
+    RiseSetEvent,
+    RiseSetOutcome,
+    RiseSetTable,
+} from './astro/riseset.js';
+export {
+    computeRiseSetTable,
+    findRiseSetEvent,
+    jdUtFromDateTime,
+    RISE_SET_BODY_NAMES,
+    riseSetDefinitionFromSettings,
+} from './astro/riseset.js';
 export type { HouseSystem, JyotishConfig, NodeType } from './config.js';
 export { DEFAULT_CONFIG, JHORA_PRESET, resolveConfig, TROPICAL_YEAR_DAYS } from './config.js';
 export type { UnknownAyanamsaModeCode } from './engine/ayanamsa.js';

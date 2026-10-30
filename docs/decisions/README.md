@@ -24,3 +24,4 @@ log. The clean-room rule those records must respect is
 | [0006](0006-npm-packaging-and-ephemeris-data-distribution.md) | npm packaging and ephemeris data distribution | accepted |
 | [0007](0007-modern-deltat-se210-black-box.md)                 | Modern ΔT vs SE 2.10 black-box                | accepted |
 | [0008](0008-daily-motion-oracle-conventions.md)               | Daily motion oracle conventions               | accepted |
+| [0009](0009-rise-set-horizon-and-high-latitude.md)            | Rise/set horizon and high latitude            | accepted |

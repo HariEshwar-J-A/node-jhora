@@ -1,6 +1,6 @@
 /**
- * Chart ecliptic latitude uses the IAU 2000 frame bias (IERS 2003 §1.1;
- * IERS 2010 eq. (5.32), dα₀ at eq. (5.21)); longitude stays on the ICRF path.
+ * Chart ecliptic latitude uses the IAU 2000 frame bias (IERS 2010 §5.4.5
+ * and §5.9; dα₀ eq. 5.21, ξ₀ and η₀ eq. 5.33). Longitude stays on the ICRF.
  */
 
 import { readFileSync } from 'node:fs';
