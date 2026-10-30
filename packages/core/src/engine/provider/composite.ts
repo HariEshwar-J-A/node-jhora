@@ -6,6 +6,7 @@
 import { NodeJHoraError, NodeJHoraErrorCode } from '../../errors.js';
 import type { BarycentricSource } from '../apparent.js';
 import type { Vec3 } from '../chebyshev.js';
+import type { PrecisionProfile } from '../deltat.js';
 import type { SpkFile } from '../spk.js';
 import { type De431ChunkFile, De431LongEphemerisProvider } from './de431-chunk.js';
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START, De440sEphemerisProvider } from './de440s.js';
@@ -107,5 +108,22 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     /** ET seconds interface used by apparent-place and legacy engine paths. */
     getBarycentric(naifBody: number, et: number): Vec3 {
         return this.state(etToJdTdb(et), naifBody, 'barycentric');
+    }
+
+    /**
+     * Barycentric state for the osculating lunar node. Outside DE440s coverage,
+     * `'modern'` uses DE431 when chunks are loaded. Inside DE440s, keep `auto`
+     * routing so node speed/longitude match main on DE440s.
+     */
+    getBarycentricForLunarNode(naifBody: number, et: number, profile: PrecisionProfile): Vec3 {
+        const jdTdb = etToJdTdb(et);
+        if (
+            profile === 'modern' &&
+            this.de431 &&
+            (jdTdb < DE440S_JD_TDB_START || jdTdb > DE440S_JD_TDB_END)
+        ) {
+            return this.de431.state(jdTdb, naifBody, 'barycentric');
+        }
+        return this.getBarycentric(naifBody, et);
     }
 }
