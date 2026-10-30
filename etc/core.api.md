@@ -332,6 +332,7 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     };
     // Warning: (ae-forgotten-export) The symbol "Vec3" needs to be exported by the entry point index.d.ts
     getBarycentric(naifBody: number, et: number): Vec3;
+    getBarycentricForLunarNode(naifBody: number, et: number, profile: PrecisionProfile): Vec3;
     // (undocumented)
     getPolicy(): EphemerisPolicy;
     // (undocumented)

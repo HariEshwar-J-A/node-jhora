@@ -124,6 +124,7 @@ import {
     meanEclipticRelativeKinematics,
     sphericalRatesDegPerDay,
 } from './kinematics.js';
+import { trueAscendingNodeLongitude } from './lunar-node.js';
 import { nutation } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
@@ -564,7 +565,7 @@ export class EphemerisEngine {
         }
 
         // ── Lunar nodes ─────────────────────────────────────────────────────
-        const node = this.lunarNode(jd, nodeType);
+        const node = this.lunarNode(jd, nodeType, precisionProfile);
         planets.push({
             id: Body.Rahu,
             name: 'Rahu',
@@ -646,6 +647,7 @@ export class EphemerisEngine {
     private lunarNode(
         jdUT: number,
         nodeType: 'mean' | 'true',
+        precisionProfile: PrecisionProfile,
     ): {
         lon: number;
         dist: number;
@@ -659,9 +661,11 @@ export class EphemerisEngine {
             return { lon: meanLunarNode(T), dist: 0.002569, speed };
         }
 
-        const lon = this.trueNodeLongitude(jdUT);
+        const lon = this.trueNodeLongitude(jdUT, precisionProfile);
         const h = APPARENT_SPEED_STEP_DAYS;
-        let d = this.trueNodeLongitude(jdUT + h) - this.trueNodeLongitude(jdUT - h);
+        let d =
+            this.trueNodeLongitude(jdUT + h, precisionProfile) -
+            this.trueNodeLongitude(jdUT - h, precisionProfile);
         if (d > 180) d -= 360;
         if (d < -180) d += 360;
 
@@ -718,24 +722,19 @@ export class EphemerisEngine {
      * orbital angular momentum vector h = r × v is normal to the orbit plane, so
      * the ascending node lies along ẑ × h.
      */
-    private trueNodeLongitude(jdUT: number): number {
-        const et = jdUTtoET(jdUT);
-        const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-        const T = julianCenturies(jdTT);
-
-        const moon = this.source.getBarycentric(NAIF.Moon, et);
-        const earth = this.source.getBarycentric(NAIF.Earth, et);
-
-        const r: Vec = [moon.x - earth.x, moon.y - earth.y, moon.z - earth.z];
-        const v: Vec = [moon.vx - earth.vx, moon.vy - earth.vy, moon.vz - earth.vz];
-
-        const rEcl = icrfToMeanEclipticOfDate(r, T, jdTT);
-        const vEcl = icrfToMeanEclipticOfDate(v, T, jdTT);
-
-        const hx = rEcl[1] * vEcl[2] - rEcl[2] * vEcl[1];
-        const hy = rEcl[2] * vEcl[0] - rEcl[0] * vEcl[2];
-
-        return mod360((Math.atan2(hx, -hy) * 180) / Math.PI);
+    private trueNodeLongitude(jdUT: number, profile: PrecisionProfile): number {
+        const source = {
+            getBarycentric: (naifBody: number, et: number) =>
+                this.composite.getBarycentricForLunarNode(naifBody, et, profile),
+        };
+        // Black-box (modern + JHora DLL oracles): best match omits ∂(ecliptic frame)/∂t on
+        // velocity (~0.26″ offset vs spin=true). Moon daily motion still uses full spin in
+        // meanEclipticRelativeKinematics. See tests/engine/true-node-frame-probe.test.ts.
+        return trueAscendingNodeLongitude(jdUT, source, {
+            eclipticFrame: 'mean_ecliptic_of_date',
+            velocityMode: 'spk_analytic',
+            precessionSpin: false,
+        });
     }
 
     /** Equatorial declination from mean-of-date ecliptic longitude and latitude. */
