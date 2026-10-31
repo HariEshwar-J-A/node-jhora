@@ -3,7 +3,8 @@
  * a number (ayanamsa, nodes, houses, sunrise, dasa year, varga rules).
  *
  * Display choices are not part of this object. `vargaVariants` is stored and
- * hashed, and is not read by the varga routines yet — those still follow
+ * hashed, and is resolved into {@link calculateVarga} options by
+ * {@link vargaOptionsFromVariants}. Named schemes also live in
  * `horaScheme` and `dasamsaScheme`.
  */
 
@@ -143,7 +144,7 @@ export const CalculationSettingsSchema = z
         dasaYear: DasaYearSchema,
         dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
         horaScheme: z.enum(['parashara', 'parivritti']),
-        /** Placeholder division → variant id. Not applied by `calculateVarga`. */
+        /** Division → variant id; applied by {@link calculateVarga} via {@link vargaOptionsFromVariants}. */
         vargaVariants: z.record(z.string(), z.string()).default({}),
     })
     .strict()

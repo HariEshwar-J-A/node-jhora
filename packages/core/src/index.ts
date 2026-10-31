@@ -5,6 +5,7 @@ import {
     Body,
     BODY_ASHTAKAVARGA_LAGNA_DONOR,
     EPHEMERIS_BODIES,
+    OUTER_PLANET_BODIES,
     SEVEN_GRAHAS_JHORA_ORDER,
 } from './core/body.js';
 import { getRelationship, PLANET_IDS, Relationship } from './core/relationships.js';
@@ -43,6 +44,7 @@ import {
     calculateTimeUpagrahas,
     UpagrahaPositions,
 } from './vedic/upagrahas.js';
+import { vargaOptionsFromVariants } from './vedic/varga-variants.js';
 import { calculateShashtyamsa, calculateVarga, VargaPoint } from './vedic/vargas.js';
 
 // Re-export Interfaces
@@ -67,6 +69,7 @@ export {
     calculateVarga,
     EPHEMERIS_BODIES,
     getRelationship,
+    OUTER_PLANET_BODIES,
     PLANET_IDS,
     Relationship,
     SEVEN_GRAHAS_JHORA_ORDER,
@@ -107,6 +110,7 @@ export {
 } from './engine/deltat.js';
 export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
 export type { PrecisionOptions } from './engine/ephemeris.js';
+export type { ZodiacOutput } from './engine/ephemeris.js';
 export {
     AYANAMSA,
     DEFAULT_AYANAMSA,
@@ -276,8 +280,20 @@ export {
     EPHEMERIS_JD_UT_MAX,
     EPHEMERIS_JD_UT_MIN,
 } from './validation/bounds.js';
+export { vargaOptionsFromVariants } from './vedic/varga-variants.js';
 export type { DasamsaScheme, HoraScheme, VargaOptions } from './vedic/vargas.js';
-export { DEFAULT_DASAMSA_SCHEME, DEFAULT_HORA_SCHEME } from './vedic/vargas.js';
+export {
+    calculateD5,
+    calculateD6,
+    calculateD8,
+    calculateD11,
+    calculateD81,
+    calculateD108,
+    calculateD144,
+    calculateD150,
+    DEFAULT_DASAMSA_SCHEME,
+    DEFAULT_HORA_SCHEME,
+} from './vedic/vargas.js';
 
 // Chart Data type for convenience
 export interface ChartData {
@@ -551,9 +567,10 @@ export class NodeJHora {
         division: number,
         override?: SettingsInput,
     ): VargaPoint & { settingsHash: string } {
-        const { config: c, settingsHash } = this.bind(override);
+        const { config: c, settings, settingsHash } = this.bind(override);
         return {
             ...calculateVarga(longitude, division, {
+                ...vargaOptionsFromVariants(settings.vargaVariants),
                 dasamsaScheme: c.dasamsaScheme,
                 horaScheme: c.horaScheme,
             }),

@@ -1,4 +1,4 @@
-import { calculateVarga } from '@node-jhora/core';
+import { calculateVarga, vargaOptionsFromVariants } from '@node-jhora/core';
 import { ChartSession } from '@node-jhora/engine';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -70,12 +70,19 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
         const engine = getEngine();
 
         const planets = engine.getPlanets(dt, location, birthEphemerisOptions(parsed));
-        const DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
+        const DIVISIONS = [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60, 81, 108, 144,
+            150,
+        ];
 
         const vargas: Record<string, any[]> = {};
         for (const d of DIVISIONS) {
             vargas[`D${d}`] = planets.map((p) => {
-                const v = calculateVarga(p.longitude, d, { dasamsaScheme, horaScheme });
+                const v = calculateVarga(p.longitude, d, {
+                    ...vargaOptionsFromVariants(parsed.settings.vargaVariants),
+                    dasamsaScheme,
+                    horaScheme,
+                });
                 return {
                     planetId: p.id,
                     planetName: p.name,

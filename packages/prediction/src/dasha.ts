@@ -107,7 +107,7 @@ function addYears(date: DateTime, years: Decimal, yearDays: Decimal): DateTime {
     return date.plus({ milliseconds: ms.toNumber() });
 }
 
-function yearLength(options?: VimshottariOptions): { days: Decimal; settingsHash?: string } {
+export function yearLength(options?: VimshottariOptions): { days: Decimal; settingsHash?: string } {
     if (!options || (options.yearDays == null && options.settings == null)) {
         return { days: LEGACY_YEAR_DAYS };
     }

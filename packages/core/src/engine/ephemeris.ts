@@ -243,6 +243,9 @@ const PLANET_NAMES: Record<number, string> = {
     [Body.Mars]: 'Mars',
     [Body.Jupiter]: 'Jupiter',
     [Body.Saturn]: 'Saturn',
+    [Body.Uranus]: 'Uranus',
+    [Body.Neptune]: 'Neptune',
+    [Body.Pluto]: 'Pluto',
     [Body.Rahu]: 'Rahu',
     [Body.Ketu]: 'Ketu',
 };
@@ -256,9 +259,12 @@ const ID_TO_NAIF: Record<number, number> = {
     [Body.Mars]: NAIF.Mars,
     [Body.Jupiter]: NAIF.Jupiter,
     [Body.Saturn]: NAIF.Saturn,
+    [Body.Uranus]: NAIF.Uranus,
+    [Body.Neptune]: NAIF.Neptune,
+    [Body.Pluto]: NAIF.Pluto,
 };
 
-/** Bodies drawn from the SPK file, in the order they are reported. */
+/** Bodies drawn from the SPK file, in the order they are reported (classical default). */
 const SPK_BODY_IDS = [
     Body.Sun,
     Body.Moon,
@@ -268,6 +274,10 @@ const SPK_BODY_IDS = [
     Body.Jupiter,
     Body.Saturn,
 ] as const;
+
+const OUTER_SPK_BODY_IDS = [Body.Uranus, Body.Neptune, Body.Pluto] as const;
+
+export type ZodiacOutput = 'sidereal' | 'tropical';
 
 /**
  * Whether to report where a body *is* or where it is *seen*.
@@ -532,6 +542,10 @@ export class EphemerisEngine {
             positionMode?: PositionMode;
             /** Constant added to the ayanamsa, degrees. */
             ayanamsaOffset?: number;
+            /** When true, append Uranus, Neptune and Pluto after Saturn. Default false. */
+            includeOuterPlanets?: boolean;
+            /** Sidereal subtracts ayanamsa (default); tropical returns ecliptic of date. */
+            zodiac?: ZodiacOutput;
         } & PrecisionOptions = {},
     ): PlanetPosition[] {
         this.checkInit();
@@ -556,6 +570,8 @@ export class EphemerisEngine {
             ayanamsaOffset = 0,
             calendar = 'auto',
             julianDayUt: jdOverride,
+            includeOuterPlanets = false,
+            zodiac = 'sidereal',
         } = options;
         const nodeType = assertNodeType(nodeTypeOpt);
         const positionMode = assertPositionMode(positionModeOpt);
@@ -577,20 +593,25 @@ export class EphemerisEngine {
         // place. Apparent positions subtract the same apparent ayanamsa
         // getAyanamsa() reports, so adding it back recovers the tropical place.
         const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
-        const ayan = computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset;
+        const ayan =
+            zodiac === 'sidereal' ? computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset : 0;
         const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
         // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
         // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
         // lower by d(ayan)/dt (~0.138″/day). `modern` reports sidereal rate =
         // tropical − d(ayan)/dt (geometric True Citra, same 1 s step on ayanamsa).
         const ayanRateForSiderealSpeed =
-            precisionProfile === 'modern'
+            zodiac === 'sidereal' && precisionProfile === 'modern'
                 ? this.ayanamsaRateDegPerDay(jd, effectiveMode, 'geometric', ayanamsaOffset)
                 : 0;
 
         const planets: PlanetPosition[] = [];
 
-        for (const pid of SPK_BODY_IDS) {
+        const bodyIds = includeOuterPlanets
+            ? [...SPK_BODY_IDS, ...OUTER_SPK_BODY_IDS]
+            : [...SPK_BODY_IDS];
+
+        for (const pid of bodyIds) {
             const naifId = ID_TO_NAIF[pid];
 
             const topoLoc = topocentric ? loc : undefined;

@@ -151,7 +151,9 @@ function d2(lon: Decimal, scheme: HoraScheme = DEFAULT_HORA_SCHEME): VargaPoint 
 // 10-20°: 5th from sign (trine 1)
 // 20-30°: 9th from sign (trine 2)
 // ---------------------------------------------------------------------------
-function d3(lon: Decimal): VargaPoint {
+export type DrekkanaScheme = 'parashara' | 'parivritti';
+
+function d3Parashara(lon: Decimal): VargaPoint {
     const norm = normalize360D(lon);
     const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
@@ -165,11 +167,29 @@ function d3(lon: Decimal): VargaPoint {
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
+/** Parivritti drekkana: three consecutive signs from the occupied sign. */
+function d3Parivritti(lon: Decimal): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const part = degInSign.div(10).floor().toNumber();
+    const targetIdx = (signIdx + part) % 12;
+    const vargaDeg = degInSign.mod(10).times(3);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+function d3(lon: Decimal, scheme: DrekkanaScheme = 'parashara'): VargaPoint {
+    return scheme === 'parivritti' ? d3Parivritti(lon) : d3Parashara(lon);
+}
+
 // ---------------------------------------------------------------------------
 // D4 — Chaturthamsa
 // Sequence of 4 quadrants: sign, 4th, 7th, 10th (Kendra signs from given sign)
 // ---------------------------------------------------------------------------
-function d4(lon: Decimal): VargaPoint {
+export type ChaturthamsaScheme = 'parashara' | 'parivritti';
+
+function d4Parashara(lon: Decimal): VargaPoint {
     const norm = normalize360D(lon);
     const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = norm.mod(D30);
@@ -179,6 +199,92 @@ function d4(lon: Decimal): VargaPoint {
     const targetIdx = (signIdx + offsets[part]) % 12;
 
     const vargaDeg = degInSign.mod(new Decimal(7.5)).times(4);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+function d4Parivritti(lon: Decimal): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = new Decimal(7.5);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const targetIdx = (signIdx + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(4);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+function d4(lon: Decimal, scheme: ChaturthamsaScheme = 'parashara'): VargaPoint {
+    return scheme === 'parivritti' ? d4Parivritti(lon) : d4Parashara(lon);
+}
+
+// ---------------------------------------------------------------------------
+// D5 — Panchamsa (BPHS / Jaimini fame chart)
+// Odd:  Aries, Aquarius, Sagittarius, Gemini, Libra for parts 1–5.
+// Even: Taurus, Virgo, Pisces, Capricorn, Scorpio (reversed benefic order).
+// ---------------------------------------------------------------------------
+const PANCHAMSA_ODD = [0, 10, 8, 2, 6] as const;
+const PANCHAMSA_EVEN = [1, 5, 11, 9, 7] as const;
+
+export type PanchamsaScheme = 'bphs';
+
+function d5(lon: Decimal): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(5);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const table = signIdx % 2 === 0 ? PANCHAMSA_ODD : PANCHAMSA_EVEN;
+    const targetIdx = table[Math.min(part, 4)];
+    const vargaDeg = degInSign.mod(partSpan).times(5);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+// ---------------------------------------------------------------------------
+// D6 — Shashthamsa (health)
+// Odd signs: six parts from Aries; even signs: six parts from Libra.
+// ---------------------------------------------------------------------------
+function d6(lon: Decimal): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(6);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const start = signIdx % 2 === 0 ? 0 : 6;
+    const targetIdx = (start + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(6);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+// ---------------------------------------------------------------------------
+// D8 — Ashtamsa
+// Movable: from Aries; fixed: from Leo; dual: from Sagittarius (BPHS modality rule).
+// Variant `fixed_from_sagittarius` swaps fixed/dual anchors (some software traditions).
+// ---------------------------------------------------------------------------
+export type AshtamsaScheme = 'parashara' | 'fixed_from_sagittarius';
+
+function d8Start(signIdx: number, scheme: AshtamsaScheme): number {
+    const kind = signType(signIdx);
+    if (scheme === 'fixed_from_sagittarius') {
+        if (kind === 'movable') return 0;
+        if (kind === 'fixed') return 8;
+        return 4;
+    }
+    const starts = { movable: 0, fixed: 4, dual: 8 };
+    return starts[kind];
+}
+
+function d8(lon: Decimal, scheme: AshtamsaScheme = 'parashara'): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(8);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const targetIdx = (d8Start(signIdx, scheme) + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(8);
     const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
     return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
@@ -215,8 +321,28 @@ function d7(lon: Decimal): VargaPoint {
 //   Fixed Taurus:  30° * 9 = 270 (Capricorn, 9th from Taurus) ✓
 //   Dual Gemini:   60° * 9 = 540 % 360 = 180 (Libra, 5th from Gemini) ✓
 // ---------------------------------------------------------------------------
-function d9(lon: Decimal): VargaPoint {
-    return harmonic(lon, 9);
+// ---------------------------------------------------------------------------
+// D9 — Navamsa
+// ---------------------------------------------------------------------------
+export type NavamsaScheme = 'harmonic' | 'kendra';
+
+function d9Kendra(lon: Decimal): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(9);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const kind = signType(signIdx);
+    const start =
+        kind === 'movable' ? signIdx : kind === 'fixed' ? (signIdx + 8) % 12 : (signIdx + 4) % 12;
+    const targetIdx = (start + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(9);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+function d9(lon: Decimal, scheme: NavamsaScheme = 'harmonic'): VargaPoint {
+    return scheme === 'kendra' ? d9Kendra(lon) : harmonic(lon, 9);
 }
 
 // ---------------------------------------------------------------------------
@@ -319,10 +445,41 @@ export const DEFAULT_DASAMSA_SCHEME: DasamsaScheme = 'parashara';
 export interface VargaOptions {
     dasamsaScheme?: DasamsaScheme;
     horaScheme?: HoraScheme;
+    d3Scheme?: DrekkanaScheme;
+    d4Scheme?: ChaturthamsaScheme;
+    d5Scheme?: PanchamsaScheme;
+    d8Scheme?: AshtamsaScheme;
+    d9Scheme?: NavamsaScheme;
+    d11Scheme?: EkadasamsaScheme;
+    d30Scheme?: TrimsamsaScheme;
+    d81Scheme?: NavNavamsaScheme;
+    d108Scheme?: AshtottaramsaScheme;
+    d150Scheme?: NadiamsaScheme;
 }
 
 function d10(lon: Decimal, scheme: DasamsaScheme = DEFAULT_DASAMSA_SCHEME): VargaPoint {
     return scheme === 'parashara' ? d10Parashara(lon) : d10Jhora58(lon);
+}
+
+// ---------------------------------------------------------------------------
+// D11 — Ekadasamsa / Rudramsa
+// BPHS: count from Aries to the sign, then the same count antizodiacally from Aries
+// for the starting sign; eleven parts run forward through the zodiac.
+// Variant: start from the occupied sign (forward parivritti).
+// ---------------------------------------------------------------------------
+export type EkadasamsaScheme = 'parashara' | 'forward_from_sign';
+
+function d11(lon: Decimal, scheme: EkadasamsaScheme = 'parashara'): VargaPoint {
+    const norm = normalize360D(lon);
+    const signIdx = norm.div(D30).floor().toNumber();
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(11);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const start = scheme === 'forward_from_sign' ? signIdx : (12 - (signIdx + 1)) % 12; // antizodiacal count from Aries
+    const targetIdx = (start + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(11);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
 }
 
 // ---------------------------------------------------------------------------
@@ -465,14 +622,19 @@ const TRIMSAMSA_EVEN = [
     [30, 7],
 ] as const;
 
-function d30(lon: Decimal): VargaPoint {
+export type TrimsamsaScheme = 'parashara' | 'even_reverse';
+
+function d30(lon: Decimal, scheme: TrimsamsaScheme = 'parashara'): VargaPoint {
+    if (scheme === 'even_reverse') {
+        const signIdx = normalize360D(lon).div(D30).floor().toNumber();
+        return equalPartsFromSign(lon, 30, signIdx);
+    }
     const norm = normalize360D(lon);
     const signIdx = norm.div(D30).floor().toNumber();
     const degInSign = toNum(norm.mod(D30));
     const isOdd = signIdx % 2 === 0; // 0-indexed even = traditional odd sign
     const table = isOdd ? TRIMSAMSA_ODD : TRIMSAMSA_EVEN;
 
-    // Find first range whose upper bound >= degInSign (matches PyJHora first-match)
     let targetIdx = table[table.length - 1][1];
     for (const [ub, si] of table) {
         if (degInSign <= ub) {
@@ -626,6 +788,57 @@ function d60(lon: Decimal): VargaPoint {
     };
 }
 
+/** Equal subdivisions of 30° mapped to consecutive signs from `startIdx`. */
+function equalPartsFromSign(lon: Decimal, division: number, startIdx: number): VargaPoint {
+    const norm = normalize360D(lon);
+    const degInSign = norm.mod(D30);
+    const partSpan = D30.div(division);
+    const part = degInSign.div(partSpan).floor().toNumber();
+    const targetIdx = (startIdx + part) % 12;
+    const vargaDeg = degInSign.mod(partSpan).times(division);
+    const vLon = new Decimal(targetIdx).times(D30).plus(vargaDeg);
+    return { longitude: toNum(normalize360D(vLon)), sign: targetIdx + 1, degree: toNum(vargaDeg) };
+}
+
+// ---------------------------------------------------------------------------
+// Higher harmonics (Sanjay Rath / JHora naming)
+// ---------------------------------------------------------------------------
+export type NavNavamsaScheme = 'nav_navamsa' | 'parivritti_81';
+export type AshtottaramsaScheme = 'astottaramsa' | 'nav_dwadasamsa' | 'dwadas_navamsa';
+export type NadiamsaScheme = 'parivritti_150' | 'nadi_equal';
+
+function d81(lon: Decimal, scheme: NavNavamsaScheme = 'nav_navamsa'): VargaPoint {
+    if (scheme === 'nav_navamsa') {
+        const n9 = d9(lon, 'harmonic');
+        return d9(new Decimal(n9.longitude), 'harmonic');
+    }
+    const signIdx = normalize360D(new Decimal(lon)).div(D30).floor().toNumber();
+    return equalPartsFromSign(new Decimal(lon), 81, signIdx);
+}
+
+function d108(lon: Decimal, scheme: AshtottaramsaScheme = 'astottaramsa'): VargaPoint {
+    if (scheme === 'nav_dwadasamsa') {
+        const n9 = d9(lon, 'harmonic');
+        return d12(new Decimal(n9.longitude));
+    }
+    if (scheme === 'dwadas_navamsa') {
+        const n12 = d12(new Decimal(lon));
+        return d9(new Decimal(n12.longitude), 'harmonic');
+    }
+    const signIdx = normalize360D(new Decimal(lon)).div(D30).floor().toNumber();
+    return equalPartsFromSign(new Decimal(lon), 108, signIdx);
+}
+
+function d144(lon: Decimal): VargaPoint {
+    const n12 = d12(new Decimal(lon));
+    return d12(new Decimal(n12.longitude));
+}
+
+function d150(lon: Decimal, _scheme: NadiamsaScheme = 'parivritti_150'): VargaPoint {
+    const signIdx = normalize360D(new Decimal(lon)).div(D30).floor().toNumber();
+    return equalPartsFromSign(new Decimal(lon), 150, signIdx);
+}
+
 // ---------------------------------------------------------------------------
 // Dispatch table
 // ---------------------------------------------------------------------------
@@ -633,20 +846,28 @@ function d60(lon: Decimal): VargaPoint {
 const VARGA_FNS: Record<number, (lon: Decimal) => VargaPoint> = {
     1: d1,
     2: d2,
-    3: d3,
-    4: d4,
+    3: (lon) => d3(lon),
+    4: (lon) => d4(lon),
+    5: d5,
+    6: d6,
     7: d7,
-    9: d9,
-    10: d10,
+    8: (lon) => d8(lon),
+    9: (lon) => d9(lon),
+    10: (lon) => d10(lon),
+    11: (lon) => d11(lon),
     12: d12,
     16: d16,
     20: d20,
     24: d24,
     27: d27,
-    30: d30,
+    30: (lon) => d30(lon),
     40: d40,
     45: d45,
     60: d60,
+    81: (lon) => d81(lon),
+    108: (lon) => d108(lon),
+    144: (lon) => d144(lon),
+    150: (lon) => d150(lon),
 };
 
 // ---------------------------------------------------------------------------
@@ -657,7 +878,7 @@ const VARGA_FNS: Record<number, (lon: Decimal) => VargaPoint> = {
  * Calculate a planet's position in a given Divisional Chart.
  *
  * @param longitude  Sidereal longitude in degrees [0, 360)
- * @param division   Chart divisor (1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60)
+ * @param division   Chart divisor (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60, 81, 108, 144, 150)
  * @param options    Per-call overrides; currently only the D10 scheme
  * @returns VargaPoint with sign (1-12), degree (0-30), and longitude
  */
@@ -668,12 +889,38 @@ export function calculateVarga(
 ): VargaPoint {
     const lon = new Decimal(longitude);
 
-    // D2 and D10 are the two vargas with competing schemes in circulation.
     if (division === 2) {
         return d2(lon, options.horaScheme ?? DEFAULT_HORA_SCHEME);
     }
+    if (division === 3) {
+        return d3(lon, options.d3Scheme ?? 'parashara');
+    }
+    if (division === 4) {
+        return d4(lon, options.d4Scheme ?? 'parashara');
+    }
+    if (division === 8) {
+        return d8(lon, options.d8Scheme ?? 'parashara');
+    }
+    if (division === 9) {
+        return d9(lon, options.d9Scheme ?? 'harmonic');
+    }
     if (division === 10) {
         return d10(lon, options.dasamsaScheme ?? DEFAULT_DASAMSA_SCHEME);
+    }
+    if (division === 11) {
+        return d11(lon, options.d11Scheme ?? 'parashara');
+    }
+    if (division === 30) {
+        return d30(lon, options.d30Scheme ?? 'parashara');
+    }
+    if (division === 81) {
+        return d81(lon, options.d81Scheme ?? 'nav_navamsa');
+    }
+    if (division === 108) {
+        return d108(lon, options.d108Scheme ?? 'astottaramsa');
+    }
+    if (division === 150) {
+        return d150(lon, options.d150Scheme ?? 'parivritti_150');
     }
 
     const fn = VARGA_FNS[division];
@@ -688,10 +935,26 @@ export function calculateVarga(
 export const calculateD1 = (lon: number): VargaPoint => calculateVarga(lon, 1);
 export const calculateD2 = (lon: number, options: VargaOptions = {}): VargaPoint =>
     calculateVarga(lon, 2, options);
-export const calculateD3 = (lon: number): VargaPoint => calculateVarga(lon, 3);
-export const calculateD4 = (lon: number): VargaPoint => calculateVarga(lon, 4);
+export const calculateD5 = (lon: number): VargaPoint => calculateVarga(lon, 5);
+export const calculateD6 = (lon: number): VargaPoint => calculateVarga(lon, 6);
+export const calculateD8 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 8, options);
+export const calculateD11 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 11, options);
+export const calculateD81 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 81, options);
+export const calculateD108 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 108, options);
+export const calculateD144 = (lon: number): VargaPoint => calculateVarga(lon, 144);
+export const calculateD150 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 150, options);
+export const calculateD3 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 3, options);
+export const calculateD4 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 4, options);
+export const calculateD9 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 9, options);
 export const calculateD7 = (lon: number): VargaPoint => calculateVarga(lon, 7);
-export const calculateD9 = (lon: number): VargaPoint => calculateVarga(lon, 9);
 export const calculateD10 = (lon: number, options: VargaOptions = {}): VargaPoint =>
     calculateVarga(lon, 10, options);
 export const calculateD12 = (lon: number): VargaPoint => calculateVarga(lon, 12);
@@ -699,7 +962,8 @@ export const calculateD16 = (lon: number): VargaPoint => calculateVarga(lon, 16)
 export const calculateD20 = (lon: number): VargaPoint => calculateVarga(lon, 20);
 export const calculateD24 = (lon: number): VargaPoint => calculateVarga(lon, 24);
 export const calculateD27 = (lon: number): VargaPoint => calculateVarga(lon, 27);
-export const calculateD30 = (lon: number): VargaPoint => calculateVarga(lon, 30);
+export const calculateD30 = (lon: number, options: VargaOptions = {}): VargaPoint =>
+    calculateVarga(lon, 30, options);
 export const calculateD40 = (lon: number): VargaPoint => calculateVarga(lon, 40);
 export const calculateD45 = (lon: number): VargaPoint => calculateVarga(lon, 45);
 export const calculateD60 = (lon: number): VargaPoint => calculateVarga(lon, 60);
