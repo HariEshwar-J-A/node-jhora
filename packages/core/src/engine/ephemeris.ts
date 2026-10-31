@@ -244,6 +244,8 @@ export interface PlanetPosition {
     distance: number; // AU
     speed: number; // Degrees per day (negative = retrograde)
     declination: number; // Equatorial declination (degrees)
+    /** Right ascension (degrees); always set when `coordinateOutput` is `equatorial`. */
+    rightAscension?: number;
 }
 
 export interface HouseData {
@@ -307,6 +309,15 @@ const SPK_BODY_IDS = [
 const OUTER_SPK_BODY_IDS = [Body.Uranus, Body.Neptune, Body.Pluto] as const;
 
 export type ZodiacOutput = 'sidereal' | 'tropical';
+
+/** Origin for body vectors: geocentric (default) or heliocentric (Sun-centered). */
+export type ObservationCenter = 'geocentric' | 'heliocentric';
+
+/** Primary output: ecliptic long/lat (default) or equatorial RA/Dec fields. */
+export type CoordinateOutput = 'ecliptic' | 'equatorial';
+
+export const DEFAULT_OBSERVATION_CENTER: ObservationCenter = 'geocentric';
+export const DEFAULT_COORDINATE_OUTPUT: CoordinateOutput = 'ecliptic';
 
 /**
  * Whether to report where a body *is* or where it is *seen*.
@@ -576,6 +587,8 @@ export class EphemerisEngine {
             includeOuterPlanets?: boolean;
             /** Sidereal subtracts ayanamsa (default); tropical returns ecliptic of date. */
             zodiac?: ZodiacOutput;
+            observationCenter?: ObservationCenter;
+            coordinateOutput?: CoordinateOutput;
         } & PrecisionOptions = {},
     ): PlanetPosition[] {
         this.checkInit();
@@ -603,6 +616,8 @@ export class EphemerisEngine {
             julianDayUt: jdOverride,
             includeOuterPlanets = false,
             zodiac = 'sidereal',
+            observationCenter = DEFAULT_OBSERVATION_CENTER,
+            coordinateOutput = DEFAULT_COORDINATE_OUTPUT,
         } = options;
         const nodeType = assertNodeType(nodeTypeOpt);
         const positionMode = assertPositionMode(positionModeOpt);
@@ -669,9 +684,22 @@ export class EphemerisEngine {
             const naifId = ID_TO_NAIF[pid];
 
             const topoLoc = topocentric ? loc : undefined;
-            const here = this.meanEclipticOfDate(jd, naifId, corrections, topoLoc);
-            const motion = this.meanEclipticDailyMotion(jd, naifId, corrections, topoLoc);
+            const here = this.meanEclipticOfDate(
+                jd,
+                naifId,
+                corrections,
+                topoLoc,
+                observationCenter,
+            );
+            const motion = this.meanEclipticDailyMotion(
+                jd,
+                naifId,
+                corrections,
+                topoLoc,
+                observationCenter,
+            );
 
+            const eq = this.equatorialOf(jd, here.lon, here.lat);
             planets.push({
                 id: pid,
                 name: PLANET_NAMES[pid] ?? `P${pid}`,
@@ -679,7 +707,8 @@ export class EphemerisEngine {
                 latitude: here.lat,
                 distance: here.dist,
                 speed: motion.lon - ayanRateForSiderealSpeed,
-                declination: this.declinationOf(jd, here.lon, here.lat),
+                declination: eq.dec,
+                ...(coordinateOutput === 'equatorial' ? { rightAscension: eq.ra } : {}),
             });
         }
 
@@ -687,6 +716,7 @@ export class EphemerisEngine {
         const node = this.lunarNode(jd, nodeType, precisionProfile, positionMode);
         const nodeAyan = nodeType === 'mean' ? ayanForMeanNode : ayan;
         const nodeAyanRate = nodeType === 'mean' ? ayanRateForMeanNode : ayanRateForSiderealSpeed;
+        const rahuEq = this.equatorialOf(jd, node.lon, 0);
         planets.push({
             id: Body.Rahu,
             name: 'Rahu',
@@ -694,7 +724,8 @@ export class EphemerisEngine {
             latitude: 0,
             distance: node.dist,
             speed: node.speed - nodeAyanRate,
-            declination: this.declinationOf(jd, node.lon, 0),
+            declination: rahuEq.dec,
+            ...(coordinateOutput === 'equatorial' ? { rightAscension: rahuEq.ra } : {}),
         });
 
         const rahu = planets[planets.length - 1];
@@ -737,7 +768,25 @@ export class EphemerisEngine {
         naifId: number,
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
+        center: ObservationCenter = DEFAULT_OBSERVATION_CENTER,
     ): { lon: number; lat: number; dist: number } {
+        if (center === 'heliocentric') {
+            if (naifId === NAIF.Sun) {
+                return { lon: 0, lat: 0, dist: 0 };
+            }
+            const et = jdUTtoET(jdUT);
+            const sun = this.source.getBarycentric(NAIF.Sun, et);
+            const body = this.source.getBarycentric(naifId, et);
+            const rx = body.x - sun.x;
+            const ry = body.y - sun.y;
+            const rz = body.z - sun.z;
+            const r = Math.hypot(rx, ry, rz);
+            const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+            const T = julianCenturies(jdTT);
+            const direction: Vec = r > 0 ? [rx / r, ry / r, rz / r] : [1, 0, 0];
+            const ecl = chartEclipticFromIcrfDirection(direction, T, jdTT);
+            return { lon: ecl.lon, lat: ecl.lat, dist: r / AU_KM };
+        }
         const place = this.icrfPlace(jdUT, naifId, corrections, location);
         const ecl = chartEclipticFromIcrfDirection(place.direction, place.T, place.jdTT);
         return { lon: ecl.lon, lat: ecl.lat, dist: place.dist };
@@ -822,11 +871,12 @@ export class EphemerisEngine {
         naifId: number,
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
+        center: ObservationCenter = DEFAULT_OBSERVATION_CENTER,
     ): { lon: number; lat: number; dist: number } {
-        if (!isGeometricPlace(corrections)) {
+        if (!isGeometricPlace(corrections) || center === 'heliocentric') {
             const h = APPARENT_SPEED_STEP_DAYS;
-            const before = this.meanEclipticOfDate(jdUT - h, naifId, corrections, location);
-            const after = this.meanEclipticOfDate(jdUT + h, naifId, corrections, location);
+            const before = this.meanEclipticOfDate(jdUT - h, naifId, corrections, location, center);
+            const after = this.meanEclipticOfDate(jdUT + h, naifId, corrections, location, center);
             let dLon = after.lon - before.lon;
             if (dLon > 180) dLon -= 360;
             if (dLon < -180) dLon += 360;
@@ -852,18 +902,27 @@ export class EphemerisEngine {
         return sphericalRatesDegPerDay(pos, velEcl);
     }
 
-    /** Equatorial declination from mean-of-date ecliptic longitude and latitude. */
-    private declinationOf(jdUT: number, lon: number, lat: number): number {
+    /** Mean equatorial RA/Dec from mean ecliptic longitude and latitude (degrees). */
+    private equatorialOf(jdUT: number, lon: number, lat: number): { ra: number; dec: number } {
         const jdTT = jdUT + deltaT(jdUT) / 86400.0;
         const T = julianCenturies(jdTT);
         const eps = (meanObliquity(T, jdTT) * Math.PI) / 180;
         const l = (lon * Math.PI) / 180;
         const b = (lat * Math.PI) / 180;
-        return (
+        const dec =
             (Math.asin(Math.sin(b) * Math.cos(eps) + Math.cos(b) * Math.sin(eps) * Math.sin(l)) *
                 180) /
-            Math.PI
-        );
+            Math.PI;
+        const ra =
+            (Math.atan2(Math.sin(l) * Math.cos(eps) - Math.tan(b) * Math.sin(eps), Math.cos(l)) *
+                180) /
+            Math.PI;
+        return { ra: mod360(ra), dec };
+    }
+
+    /** @deprecated internal alias */
+    private declinationOf(jdUT: number, lon: number, lat: number): number {
+        return this.equatorialOf(jdUT, lon, lat).dec;
     }
 
     // -----------------------------------------------------------------------

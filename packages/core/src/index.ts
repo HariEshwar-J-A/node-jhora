@@ -113,13 +113,20 @@ export {
     lastObservedDeltaTYear,
     modernDeltaTModelId,
 } from './engine/deltat.js';
-export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
+export type {
+    AyanamsaMode,
+    CoordinateOutput,
+    ObservationCenter,
+    PositionMode,
+} from './engine/ephemeris.js';
 export type { PrecisionOptions } from './engine/ephemeris.js';
 export type { ZodiacOutput } from './engine/ephemeris.js';
 export {
     AYANAMSA,
     DEFAULT_AYANAMSA,
+    DEFAULT_COORDINATE_OUTPUT,
     DEFAULT_NODE_TYPE,
+    DEFAULT_OBSERVATION_CENTER,
     DEFAULT_POSITION_MODE,
 } from './engine/ephemeris.js';
 export type { ChunkKey, EphemerisChunkLoader } from './engine/provider/index.js';

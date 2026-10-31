@@ -418,6 +418,9 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
 export function computeRiseSetTable(engine: EphemerisEngine, bodyId: RiseSetBodyId, jdStartUt: number, location: GeoLocation, def?: RiseSetDefinition): RiseSetTable;
 
 // @public
+export type CoordinateOutput = 'ecliptic' | 'equatorial';
+
+// @public
 export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnvelope;
 
 // @public
@@ -572,6 +575,9 @@ export const DEFAULT_AYANAMSA: number;
 // @public
 export const DEFAULT_CONFIG: JyotishConfig;
 
+// @public (undocumented)
+export const DEFAULT_COORDINATE_OUTPUT: CoordinateOutput;
+
 // @public
 export const DEFAULT_DASAMSA_SCHEME: DasamsaScheme;
 
@@ -580,6 +586,9 @@ export const DEFAULT_HORA_SCHEME: HoraScheme;
 
 // @public
 export const DEFAULT_NODE_TYPE: 'mean' | 'true';
+
+// @public (undocumented)
+export const DEFAULT_OBSERVATION_CENTER: ObservationCenter;
 
 // @public
 export const DEFAULT_POSITION_MODE: PositionMode;
@@ -672,6 +681,8 @@ export class EphemerisEngine {
         ayanamsaOffset?: number;
         includeOuterPlanets?: boolean;
         zodiac?: ZodiacOutput;
+        observationCenter?: ObservationCenter;
+        coordinateOutput?: CoordinateOutput;
     } & PrecisionOptions): PlanetPosition[];
     getSiderealTime(jd: number): number;
     getTopocentricEquatorial(jdUT: number, bodyId: number, location: GeoLocation, positionMode?: PositionMode): {
@@ -1149,6 +1160,9 @@ export function normalize360(angle: number): number;
 export function normalize360D(angle: Decimal): Decimal;
 
 // @public
+export type ObservationCenter = 'geocentric' | 'heliocentric';
+
+// @public
 export const OUTER_PLANET_BODIES: readonly Body_2[];
 
 // @public (undocumented)
@@ -1206,6 +1220,7 @@ export interface PlanetPosition {
     longitude: number;
     // (undocumented)
     name: string;
+    rightAscension?: number;
     // (undocumented)
     speed: number;
 }
