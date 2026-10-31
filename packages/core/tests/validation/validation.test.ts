@@ -28,7 +28,7 @@ describe('input validation', () => {
             expect(err).toMatchObject({ code: NodeJHoraErrorCode.OUT_OF_RANGE });
         }
         try {
-            engine.getHouses(jd, 10, 0, 'X');
+            engine.getHouses(jd, 10, 0, 'Z');
             throw new Error('expected throw');
         } catch (err) {
             expect(err).toMatchObject({ code: NodeJHoraErrorCode.INVALID_INPUT });

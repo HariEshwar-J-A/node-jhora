@@ -12,6 +12,7 @@ import { getRelationship, PLANET_IDS, Relationship } from './core/relationships.
 import { EphemerisEngine, HouseData, PlanetPosition } from './engine/ephemeris.js';
 import { AYANAMSA } from './engine/ephemeris.js';
 import { CityData, Geocoder } from './engine/geocoder.js';
+import { houseSystemIdFromLegacy } from './engine/house-registry.js';
 import { EphemerisInterpolator } from './engine/interpolator.js';
 import { KPRuling, RulingPlanetsResult } from './kp/ruling.js';
 import { KPSignificator, KPSubLord } from './kp/sublord.js';
@@ -198,6 +199,7 @@ export type {
     CalculationSettings,
     DasaYearKind,
     EphemerisPolicyId,
+    HouseAnchorId,
     HouseSystemId,
     PrecisionProfileId,
     PresetId,
@@ -218,6 +220,7 @@ export {
     flatFromSettings,
     getPreset,
     hashSettings,
+    HOUSE_ANCHOR_IDS,
     HOUSE_SYSTEM_IDS,
     inferDasaYearKind,
     isPresetId,
@@ -460,6 +463,9 @@ export class NodeJHora {
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
                 calendar: c.calendar,
+                houseSystemId: houseSystemIdFromLegacy(c.houseSystem),
+                houseAnchor: c.houseAnchor,
+                cuspsInMiddle: c.cuspsInMiddle,
             },
         );
 
@@ -522,6 +528,9 @@ export class NodeJHora {
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
                 calendar: c.calendar,
+                houseSystemId: houseSystemIdFromLegacy(c.houseSystem),
+                houseAnchor: c.houseAnchor,
+                cuspsInMiddle: c.cuspsInMiddle,
             },
         );
         return {

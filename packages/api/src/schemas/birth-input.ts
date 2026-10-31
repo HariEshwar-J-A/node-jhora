@@ -1,6 +1,7 @@
 import {
     assertValidAyanamsaMode,
     DASA_YEAR_KINDS,
+    HOUSE_ANCHOR_IDS,
     HOUSE_SYSTEM_IDS,
     PRESET_IDS,
     SUNRISE_LIMBS,
@@ -87,6 +88,7 @@ const BirthBaseSchema = z.object({
     /** Local sunrise as a decimal hour; the Vedic weekday begins at sunrise. */
     sunriseHour: z.number().min(0).max(24).default(6),
     houseSystem: z.enum(HOUSE_SYSTEM_IDS).default('whole_sign'),
+    houseAnchor: z.enum(HOUSE_ANCHOR_IDS).optional(),
     /**
      * Preset id. Explicit fields on the same body win. Consumed before
      * validation by `expandRequestBody`, which also accepts a `settings` object.

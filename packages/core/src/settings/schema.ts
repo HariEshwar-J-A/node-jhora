@@ -15,6 +15,9 @@ import {
     UnknownAyanamsaModeError,
     UnsupportedAyanamsaModeError,
 } from '../engine/ayanamsa.js';
+import { HOUSE_ANCHOR_IDS, HOUSE_SYSTEM_IDS } from '../engine/house-registry.js';
+
+export { HOUSE_ANCHOR_IDS, HOUSE_SYSTEM_IDS };
 
 export const SETTINGS_SCHEMA_VERSION = 1 as const;
 
@@ -52,7 +55,6 @@ export const AYANAMSA_MODE_BY_ID = {
     true_mula: 35,
 } as const satisfies Record<(typeof AYANAMSA_IDS)[number], number>;
 
-export const HOUSE_SYSTEM_IDS = ['whole_sign', 'equal', 'placidus', 'porphyry'] as const;
 export const SUNRISE_LIMBS = ['disc_centre', 'upper_limb'] as const;
 export const DASA_YEAR_KINDS = [
     'mean_tropical',
@@ -66,6 +68,7 @@ export const DASA_YEAR_KINDS = [
 
 export type AyanamsaId = (typeof AYANAMSA_IDS)[number];
 export type HouseSystemId = (typeof HOUSE_SYSTEM_IDS)[number];
+export type HouseAnchorId = (typeof HOUSE_ANCHOR_IDS)[number];
 export type SunriseLimb = (typeof SUNRISE_LIMBS)[number];
 export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
@@ -135,7 +138,9 @@ export const CalculationSettingsSchema = z
         customAyanamsaMode: z.number().finite().int().optional(),
         nodeType: z.enum(['mean', 'true']),
         houseSystem: z.enum(HOUSE_SYSTEM_IDS),
-        /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
+        /** Equal / whole-sign wheels may start at the ascendant, Moon, Sun, or 0° Aries. */
+        houseAnchor: z.enum(HOUSE_ANCHOR_IDS).optional(),
+        /** When true, equal-house cusps are shifted so the ascendant sits at the middle of house 1. */
         cuspsInMiddle: z.boolean(),
         positionMode: z.enum(['apparent', 'geometric']),
         topocentric: z.boolean(),

@@ -33,6 +33,7 @@ import {
     DEFAULT_POSITION_MODE,
     type PositionMode,
 } from './engine/ephemeris.js';
+import type { HouseAnchorId, HouseSystemLegacy } from './engine/house-registry.js';
 import type { CalendarMode } from './time/historical.js';
 import {
     type DasamsaScheme,
@@ -41,8 +42,8 @@ import {
     type HoraScheme,
 } from './vedic/vargas.js';
 
-/** House systems the engine can produce. */
-export type HouseSystem = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
+/** House systems the engine can produce (legacy PascalCase names). */
+export type HouseSystem = HouseSystemLegacy;
 
 /** Mean or true (osculating) lunar node for Rahu/Ketu. */
 export type NodeType = 'mean' | 'true';
@@ -89,6 +90,12 @@ export interface JyotishConfig {
 
     /** House system. Whole Sign is the Parashari standard. */
     houseSystem: HouseSystem;
+
+    /** Where the house wheel is anchored for equal / whole-sign variants. */
+    houseAnchor: HouseAnchorId;
+
+    /** Shift equal-house cusps so the ascendant sits in the middle of house 1. */
+    cuspsInMiddle: boolean;
 
     /**
      * D10 rule for even signs. `'parashara'` follows BPHS (ten parts from the
@@ -147,6 +154,8 @@ export const DEFAULT_CONFIG: JyotishConfig = {
 
     nodeType: DEFAULT_NODE_TYPE,
     houseSystem: 'WholeSign',
+    houseAnchor: 'ascendant',
+    cuspsInMiddle: false,
     dasamsaScheme: DEFAULT_DASAMSA_SCHEME,
     horaScheme: DEFAULT_HORA_SCHEME,
     sunriseHour: 6.0,

@@ -120,6 +120,7 @@ export function parseBirthInput(input: BirthInput): ParsedBirth {
         customAyanamsaMode: input.customAyanamsaMode,
         nodeType: input.nodeType,
         houseSystem: input.houseSystem as HouseSystemId,
+        houseAnchor: input.houseAnchor,
         cuspsInMiddle: input.cuspsInMiddle,
         positionMode: input.positionMode,
         topocentric: input.topocentric,

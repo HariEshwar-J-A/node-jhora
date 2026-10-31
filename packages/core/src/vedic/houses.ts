@@ -1,26 +1,35 @@
 import { DateTime } from 'luxon';
 
-import { dmsToDecimal, normalize360 } from '../core/math.js';
+import { normalize360 } from '../core/math.js';
 import { EphemerisEngine, HouseData, type PrecisionOptions } from '../engine/ephemeris.js';
+import type { HouseSystemLegacy } from '../engine/house-registry.js';
+import { houseLetterForId, houseSystemIdFromLegacy } from '../engine/house-registry.js';
+import type { HouseAnchorId, HouseSystemId } from '../settings/schema.js';
+import { houseMethodFromSettings } from '../validation/input.js';
 
-export type HouseSystemMethod = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
+export type HouseSystemMethod = HouseSystemLegacy;
 
 export interface HouseResult {
     system: HouseSystemMethod;
-    cusps: number[]; // 0-11 (1st house start ... 12th house start)
+    cusps: number[];
     ascendant: number;
     mc: number;
     vertex?: number;
     armc: number;
+    equAsc?: number;
+    coAscKoch?: number;
+    coAscMunkasey?: number;
+    polAsc?: number;
+    gauquelinSectors?: number[];
+    houseFallback?: HouseData['houseFallback'];
 }
 
-const RAD_TO_DEG = 180 / Math.PI;
-const DEG_TO_RAD = Math.PI / 180;
+export interface HouseCalculationContext {
+    houseSystemId?: HouseSystemId;
+    houseAnchor?: HouseAnchorId;
+    cuspsInMiddle?: boolean;
+}
 
-/**
- * Calculates House Cusps using manual trigonometric formulas for Ascendant/MC (First Principles),
- * passing dependency on broken `swe_houses`.
- */
 export function calculateHouseCusps(
     date: DateTime,
     lat: number,
@@ -29,11 +38,10 @@ export function calculateHouseCusps(
     engineInstance?: EphemerisEngine,
     ayanamsaMode?: number,
     ayanamsaOffset = 0,
-    precision?: PrecisionOptions,
+    precision?: PrecisionOptions & HouseCalculationContext,
 ): HouseResult {
     const engine = engineInstance || EphemerisEngine.getInstance();
 
-    // 1. Get Julian Day via the engine's public API
     const jd =
         precision?.julianDayUt ??
         engine.julday(date, {
@@ -42,81 +50,49 @@ export function calculateHouseCusps(
             longitude: lon,
         });
 
-    // If method is supported natively by SwissEph, try using it first.
-    // 'Placidus' -> 'P'
-    // 'Porphyry' -> 'O'
-    // 'WholeSign' -> 'W' (Check if SE 'W' matches Vedic Whole Sign. SE 'W' is Equal Whole Sign, usually matches).
+    const houseSystemId = precision?.houseSystemId ?? houseSystemIdFromLegacy(method);
+    const letter = houseMethodFromSettings(method, houseSystemId);
 
-    let seMethod = '';
-    switch (method) {
-        case 'Placidus':
-            seMethod = 'P';
-            break;
-        case 'Porphyry':
-            seMethod = 'O';
-            break;
-        case 'WholeSign':
-            seMethod = 'W';
-            break;
-        case 'Equal':
-            seMethod = 'E';
-            break; // Verify SE behavior manually if specific offset needed?
-        // Vedic Whole Sign is usually: Asc sign is House 1. 0-30 deg of that sign is H1? No, 0-30 of Sign.
-        // SE 'W' (Whole Sign) returns cusps at 0, 30, 60... starting from Sign(Asc).
-        // This exactly matches Vedic Whole Sign.
-        default:
-            seMethod = 'P';
+    const seHouses = engine.getHouses(
+        jd,
+        lat,
+        lon,
+        letter,
+        true,
+        ayanamsaMode,
+        ayanamsaOffset,
+        undefined,
+        {
+            ...precision,
+            houseSystemId,
+        },
+    );
+
+    let cusps = seHouses.cusps;
+    if (houseSystemId === 'whole_sign') {
+        const signStart = Math.floor(seHouses.ascendant / 30) * 30;
+        cusps = Array.from({ length: 12 }, (_, i) => (signStart + i * 30) % 360);
     }
 
-    try {
-        // Attempt Native SwissEph Calculation
-        const seHouses = engine.getHouses(
-            jd,
-            lat,
-            lon,
-            seMethod,
-            true,
-            ayanamsaMode,
-            ayanamsaOffset,
-            undefined,
-            precision,
-        );
+    return {
+        system: method,
+        cusps,
+        ascendant: seHouses.ascendant,
+        mc: seHouses.mc,
+        vertex: seHouses.vertex,
+        armc: seHouses.armc,
+        equAsc: seHouses.equAsc,
+        coAscKoch: seHouses.coAscKoch,
+        coAscMunkasey: seHouses.coAscMunkasey,
+        polAsc: seHouses.polAsc,
+        gauquelinSectors: seHouses.gauquelinSectors,
+        houseFallback: seHouses.houseFallback,
+    };
+}
 
-        // For Whole Sign, snap cusps to sidereal sign boundaries starting from ascendant's sign.
-        // swe_houses returns tropical cusps; after ayanamsa subtraction they no longer fall on
-        // exact 30° boundaries. Vedic Whole Sign requires cusps at 0°, 30°, 60°… of the sidereal zodiac.
-        let cusps = seHouses.cusps;
-        if (method === 'WholeSign') {
-            const signStart = Math.floor(seHouses.ascendant / 30) * 30;
-            cusps = Array.from({ length: 12 }, (_, i) => (signStart + i * 30) % 360);
-        }
-
-        // Map to HouseResult
-        return {
-            system: method,
-            cusps,
-            ascendant: seHouses.ascendant,
-            mc: seHouses.mc,
-            vertex: seHouses.vertex,
-            armc: seHouses.armc,
-        };
-    } catch (e) {
-        // Fallback to Manual Calculation if WASM `swe_houses` fails or not exposed properly
-        // console.warn("Native House Calc failed, falling back to manual", e);
-
-        if (method === 'Placidus') {
-            throw new Error('Placidus system requires functioning WASM module.');
-        }
-
-        // Manual Logic (Existing Porphyry/WholeSign as fallback)
-        // ... (Keep existing manual logic only if needed, or remove to rely on SE)
-        // For robustness, let's keep logic for Porphyry/WholeSign manual if SE fails?
-        // But the previous manual logic was minimal.
-        // Let's rely on SE for Phase 10 as it's the "Superior" path.
-        // If getting house cusps manually is needed, better to implement pure math.
-        // But for now, just re-throw or handle.
-        throw e;
-    }
+/** @deprecated Use {@link houseLetterForId} from the house registry. */
+export function houseLetterFromSystemId(id: HouseSystemId): string {
+    return houseLetterForId(id);
 }
 
 /**
