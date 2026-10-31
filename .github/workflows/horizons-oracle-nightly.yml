@@ -1,0 +1,37 @@
+# Refresh cached Horizons fixtures and compare the modern profile offline.
+# Scheduled nightly; same entry point as `pnpm horizons-oracle:nightly` locally.
+# Note: GitHub Actions may be billing-blocked on some accounts — run locally when needed.
+
+name: Horizons oracle nightly
+
+on:
+    schedule:
+        - cron: '17 6 * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: horizons-oracle-nightly
+    cancel-in-progress: true
+
+jobs:
+    oracle:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm build
+            - name: Refresh fixtures and compare
+              env:
+                  HORIZONS_ORACLE_LIVE: '1'
+              run: pnpm horizons-oracle:nightly
+            - name: Upload fixture diff (if any)
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: horizons-oracle-fixtures
+                  path: tools/horizons-oracle/fixtures/
