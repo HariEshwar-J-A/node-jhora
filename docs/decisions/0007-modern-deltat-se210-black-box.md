@@ -6,12 +6,22 @@ Accepted (2026-10-26), revised 2026-10-31 (USNO preds bridge; no oracle ΔT in l
 
 ## Context
 
-`precisionProfile: 'modern'` must follow the ΔT **layout** described in Swiss Ephemeris
-programmer manual ch. 7 (SMH2016 spline, AA/USNO observations, tidal n′ correction, forecast
-polynomials), using **peer-reviewed coefficients**, **USNO/IERS observations**, and
-**USNO `deltat.preds`** bridge years (2027–2028) where the observed record ends before the
-forecast polynomials. Swiss Ephemeris source code and `swe_deltat()` tables are AGPL and
-forbidden in `packages/core/src`.
+`precisionProfile: 'modern'` follows the ΔT layout described in Swiss Ephemeris
+programmer manual ch. 7 (SMH2016 spline, AA/USNO observations, tidal n′ correction,
+forecast beyond the observed record), built from peer-reviewed coefficients and USNO/IERS
+observations. Swiss Ephemeris source code and its ΔT tables are AGPL-licensed and
+were not consulted; they must not appear in `packages/core/src`.
+
+The **jhora** profile uses Espenak & Meeus polynomials (NASA GSFC
+https://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html, public domain) before a tabulated
+era. The switch Julian day `JHORA_TABLE_SWITCH_JD = 2317746.130902778` (1633-09-02
+15:08:24 UT) is an **oracle-measured** boundary from JHora / SE 2.02 tabulation — no
+open publication uses this date (polynomial branches use 1600/1700; UKHO tables start
+1620).
+
+SMH2016 Table S15 in this codebase uses decimal years from JD 2451545 with a 365.2425-day
+year; that scale is a **code convention** unless confirmed in the S15 supplementary
+readme. Tidal ΔT adjustments cite van Gent / NASA forms (`deltat-tidal.ts`).
 
 ## Decision
 

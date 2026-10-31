@@ -4,9 +4,9 @@
  *
  * Definitions follow Swiss Ephemeris general documentation §6.2–6.4 (swisseph.htm),
  * Holden (*Elements of House Division*), Munkasey (*House Formulary*), Pullen
- * (Astrolog / SE Yahoo group 2016), and closed-form Regiomontanus/Campanus/Koch
- * geometry aligned with oxiephemeris-astro (MIT, docs.rs) — no Swiss Ephemeris
- * or JHora source was consulted.
+ * (Astrolog / SE Yahoo group 2016, prose only), and classical spherical-trigonometry
+ * closed forms for Regiomontanus, Campanus and Koch (docs/derivations/houses.md) —
+ * no Swiss Ephemeris or JHora source was consulted.
  */
 
 import {
@@ -160,7 +160,7 @@ function porphyryFromAngles(asc: number, mc: number): number[] {
 }
 
 // ---------------------------------------------------------------------------
-// Quadrant systems (oxiephemeris closed forms + existing porphyry/placidus)
+// Quadrant systems (classical closed forms; docs/derivations/houses.md)
 // ---------------------------------------------------------------------------
 
 /** Regiomontanus cusp: great circle through equator point at RA offset `kRad` and horizon N/S. */

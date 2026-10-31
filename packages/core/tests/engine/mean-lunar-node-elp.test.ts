@@ -1,36 +1,9 @@
 import { DateTime } from 'luxon';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import { deltaT } from '../../src/engine/deltat.js';
-import {
-    elpMpp02W3NominalArcsec,
-    meanLunarNodeElpBaseTropical,
-    meanLunarNodeMeeus,
-} from '../../src/engine/mean-lunar-node.js';
-import { generalPrecessionLongitudeArcsec } from '../../src/engine/precession.js';
+import { meanLunarNodeFromJdTT, meanLunarNodeMeeus } from '../../src/engine/mean-lunar-node.js';
 
-describe('ELP/MPP02 W3 nominal base', () => {
-    test('J2000 W3 + p_A agrees with Meeus within ~1″', () => {
-        const jdTT = 2451545.0;
-        const elp = meanLunarNodeElpBaseTropical(jdTT);
-        const meeus = meanLunarNodeMeeus(0);
-        let d = (elp - meeus) % 360;
-        if (d > 180) d -= 360;
-        if (d < -180) d += 360;
-        expect(Math.abs(d * 3600)).toBeLessThan(1.0);
-    });
-
-    test('p_A at J2000 is near zero arcsec', () => {
-        expect(Math.abs(generalPrecessionLongitudeArcsec(0))).toBeLessThan(0.01);
-    });
-
-    test('W3 nominal arcsec at J2000 matches published order of magnitude', () => {
-        const w3 = elpMpp02W3NominalArcsec(0);
-        expect(w3).toBeGreaterThan(450_000);
-        expect(w3).toBeLessThan(451_000);
-    });
-});
-
-describe('hybrid production path', () => {
+describe('mean lunar node (Meeus eq. 47.7)', () => {
     let engine: EphemerisEngine;
 
     beforeAll(async () => {
@@ -64,5 +37,10 @@ describe('hybrid production path', () => {
         if (d > 180) d -= 360;
         if (d < -180) d += 360;
         expect(Math.abs(d * 3600)).toBeLessThan(0.001);
+    });
+
+    test('meanLunarNodeFromJdTT equals Meeus at J2000', () => {
+        const jdTT = 2451545.0;
+        expect(meanLunarNodeFromJdTT(jdTT)).toBeCloseTo(meanLunarNodeMeeus(0), 10);
     });
 });

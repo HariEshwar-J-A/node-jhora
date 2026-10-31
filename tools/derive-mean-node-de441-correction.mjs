@@ -2,8 +2,8 @@
 /**
  * Derive mean lunar node long-range corrections from JPL DE441 (public domain).
  *
- * At each Gregorian century (1 Jan, proleptic), subtract the ELP/MPP02 W3 + p_A
- * base from the DE441 osculating node (Q1 clean frame: mean ecliptic of date,
+ * At each Gregorian century (1 Jan, proleptic), subtract the Meeus eq. 47.7 base
+ * from the DE441 osculating node (Q1 clean frame: mean ecliptic of date,
  * no spin, SPK analytic velocity). Fit a Hann-weighted local quadratic over a
  * ~100 yr half-window (≤2-day grid); store the centre value. Linear
  * interpolation between centuries.
@@ -38,9 +38,9 @@ const MEAN_NODE_LT_CORR_LAST_CENTURY = 170;
 
 const { SpkFile } = await imp('packages/core/dist/engine/spk.js');
 const { trueAscendingNodeLongitude } = await imp('packages/core/dist/engine/lunar-node.js');
-const { meanLunarNodeElpBaseTropical } = await imp('packages/core/dist/engine/mean-lunar-node.js');
+const { meanLunarNodeMeeus } = await imp('packages/core/dist/engine/mean-lunar-node.js');
 const { deltaT } = await imp('packages/core/dist/engine/deltat.js');
-const { mod360 } = await imp('packages/core/dist/engine/coordinates.js');
+const { mod360, julianCenturies } = await imp('packages/core/dist/engine/coordinates.js');
 
 function md5File(p) {
     return crypto.createHash('md5').update(fs.readFileSync(p)).digest('hex');
@@ -171,7 +171,7 @@ function smoothedCorrectionDeg(jdCenter, source) {
             precisionProfile: 'modern',
             truePosition: true,
         });
-        const base = meanLunarNodeElpBaseTropical(jdTT);
+        const base = meanLunarNodeMeeus(julianCenturies(jdTT));
         residuals.push(angleDiffDeg(trueLon, base));
     }
     if (offsets.length < 10) return 0;
