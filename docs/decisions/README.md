@@ -34,4 +34,8 @@ log. The clean-room rule those records must respect is
 | [0016](0016-mean-lunar-node-elp-de441.md)                     | ELP/MPP02 + DE441 mean node (hybrid retains Meeus) | accepted |
 | [0017](0017-house-systems-clean-room.md)                      | Clean-room house systems (SE letters)              | accepted |
 | [0018](0018-extended-vargas-dashas-outer-planets.md)          | Extended vargas, dashas, outer planets             | accepted |
+| [0019](0019-gmst-long-term-join.md)                           | Sidereal time: IAU 2006 window and long-term join  | accepted |
+| [0020](0020-extended-dashas-kalachakra-jaimini-tajika.md)     | Extended dashas (Kalachakra, Jaimini, Tajika)      | accepted |
+| [0021](0021-heliocentric-equatorial-output.md)                | Heliocentric and equatorial planet output          | accepted |
 | [0022](0022-makransky-sunshine-wedge.md)                      | Makransky Sunshine wedge (SE letter `i`)           | accepted |
+| [0023](0023-geometric-parallax-long-range.md)                 | Geometric True Citra parallax outside DE440s       | accepted |

@@ -19,5 +19,9 @@ export function normalizeCalculationSettings(settings: CalculationSettings): Cal
         const { deltaTForecast: _deltaTForecast, ...rest } = out;
         out = rest;
     }
+    if (out.starParallax === 'oracle-compat' || out.starParallax === undefined) {
+        const { starParallax: _starParallax, ...rest } = out;
+        out = rest;
+    }
     return out;
 }

@@ -51,7 +51,7 @@ import { DateTime } from 'luxon';
 
 import { Body } from '../core/body.js';
 import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
-import type { DeltaTForecastId } from '../settings/schema.js';
+import type { DeltaTForecastId, StarParallaxId } from '../settings/schema.js';
 import { dateTimeToJulianDayUt } from '../time/civil.js';
 import {
     assertCalendarMode,
@@ -115,6 +115,7 @@ import {
     type PrecisionProfile,
     withDeltaTContext,
 } from './deltat.js';
+import { kmVecToAu, setEarthBarycentricDeProvider } from './earth-geocenter-barycentric.js';
 import {
     type HouseAnchorId,
     houseLetterForId,
@@ -204,6 +205,11 @@ export interface PrecisionOptions {
     deltaTOverrideSeconds?: number;
     /** Post-bridge forecast when `precisionProfile` is `'modern'`. Default `'published'`. */
     deltaTForecast?: DeltaTForecastId;
+    /**
+     * Modern geometric star-ayanamsa parallax. Default `'oracle-compat'` (main /
+     * full-range oracle). `'continuous'` applies VSOP87E outside DE440s with edge blend.
+     */
+    starParallax?: StarParallaxId;
     /** Civil calendar for Luxon inputs; default `'auto'` (JHora / SE). */
     calendar?: CalendarMode;
     /** When set, skips {@link EphemerisEngine.julday} (e.g. civil time from {@link resolveCivilTime}). */
@@ -219,7 +225,8 @@ function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefin
         !p ||
         (p.precisionProfile === undefined &&
             p.deltaTOverrideSeconds === undefined &&
-            p.deltaTForecast === undefined)
+            p.deltaTForecast === undefined &&
+            p.starParallax === undefined)
     ) {
         return undefined;
     }
@@ -227,6 +234,7 @@ function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefin
         profile: p.precisionProfile,
         overrideSeconds: p.deltaTOverrideSeconds,
         forecast: p.deltaTForecast,
+        starParallax: p.starParallax,
     };
 }
 
@@ -434,6 +442,13 @@ export class EphemerisEngine {
                 observerAU: [earth.x / AU_KM, earth.y / AU_KM, earth.z / AU_KM],
             };
         });
+        setEarthBarycentricDeProvider({
+            observerAU: (jdUT) => {
+                const et = jdUTtoET(jdUT);
+                const earth = this.spk.getBarycentric(NAIF.Earth, et);
+                return kmVecToAu(earth);
+            },
+        });
         this.initialized = true;
     }
 
@@ -601,6 +616,7 @@ export class EphemerisEngine {
                 precisionProfile: undefined,
                 deltaTOverrideSeconds: undefined,
                 deltaTForecast: undefined,
+                starParallax: undefined,
             };
             return withDeltaTContext(ctx, () => this.getPlanets(date, location, rest));
         }

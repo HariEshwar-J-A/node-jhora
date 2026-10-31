@@ -103,7 +103,7 @@ export {
     UNSUPPORTED_AYANAMSA_MODES,
     UnsupportedAyanamsaModeError,
 } from './engine/ayanamsa.js';
-export type { DeltaTForecastId } from './engine/deltat.js';
+export type { DeltaTForecastId, StarParallaxId } from './engine/deltat.js';
 export {
     DELTA_T_MODEL_MODERN,
     DELTA_T_MODEL_MODERN_ORACLE_COMPAT,

@@ -105,6 +105,13 @@ export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 export const DELTA_T_FORECASTS = ['published', 'oracle-compat'] as const;
 export type DeltaTForecastId = (typeof DELTA_T_FORECASTS)[number];
 
+/**
+ * Modern geometric star-ayanamsa annual parallax (True/Pushya/Mula … only).
+ * Default `'oracle-compat'` matches main and full-range oracle geometric path.
+ */
+export const STAR_PARALLAX_MODES = ['oracle-compat', 'continuous'] as const;
+export type StarParallaxId = (typeof STAR_PARALLAX_MODES)[number];
+
 export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long', 'de441_long'] as const;
 export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 
@@ -122,6 +129,12 @@ export const CalculationSettingsSchema = z
          * in-house curve that matches pyswisseph 2.10 test extrapolation.
          */
         deltaTForecast: z.enum(DELTA_T_FORECASTS).optional(),
+        /**
+         * Modern geometric star-ayanamsa parallax. `'oracle-compat'` (default): DE440
+         * parallax inside the kernel, barycentric outside (matches pyswisseph 2.10 /
+         * full-range oracle). `'continuous'`: VSOP87E + edge blend (ADR 0023).
+         */
+        starParallax: z.enum(STAR_PARALLAX_MODES).optional(),
         /**
          * Fixed ΔT = TT − UT1 in seconds, replacing the profile's ΔT model for
          * the whole calculation. For dates whose ΔT is known from elsewhere

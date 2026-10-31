@@ -26,6 +26,7 @@
  * sourced from the S15 supplementary readme (ADR 0007).
  */
 
+import type { DeltaTForecastId, StarParallaxId } from '../settings/schema.js';
 import { interpolateBesselFourth } from './deltat-interpolate.js';
 import { JHORA_DELTAT_JAN1, JHORA_DELTAT_LAST_YEAR } from './deltat-jhora-yearly.js';
 import {
@@ -36,14 +37,14 @@ import {
     LAST_OBSERVED_YEAR_MODERN as LAST_OBSERVED_YEAR_MODERN_PROFILE,
     modernDeltaTModelId,
 } from './deltat-modern.js';
-import type { DeltaTForecastId } from './deltat-modern-forecast.js';
 import { OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
 import { TIDAL_ACCELERATION_AA, tidalMeeusCorrection } from './deltat-tidal.js';
 
 /** Supported precision profiles. See CalculationSettings.precisionProfile. */
 export type PrecisionProfile = 'jhora' | 'modern';
 
-export type { DeltaTForecastId } from './deltat-modern-forecast.js';
+export type { DeltaTForecastId, StarParallaxId } from '../settings/schema.js';
+export { STAR_PARALLAX_MODES } from '../settings/schema.js';
 
 /** Identifier recorded in result envelopes for the ΔT model in use. */
 export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-yearly+st1997';
@@ -184,6 +185,11 @@ export interface DeltaTContext {
     overrideSeconds?: number;
     /** Post-bridge forecast when `profile === 'modern'` (default `'published'`). */
     forecast?: DeltaTForecastId;
+    /**
+     * Modern geometric star ayanamsa parallax (True/Pushya/Mula …). Default
+     * `'oracle-compat'` (DE440 parallax inside kernel, barycentric outside).
+     */
+    starParallax?: StarParallaxId;
 }
 
 let active: DeltaTContext = { profile: 'jhora' };
@@ -203,7 +209,8 @@ export function withDeltaTContext<T>(ctx: Partial<DeltaTContext> | undefined, fn
         !ctx ||
         (ctx.profile === undefined &&
             ctx.overrideSeconds === undefined &&
-            ctx.forecast === undefined)
+            ctx.forecast === undefined &&
+            ctx.starParallax === undefined)
     ) {
         return fn();
     }
@@ -212,6 +219,7 @@ export function withDeltaTContext<T>(ctx: Partial<DeltaTContext> | undefined, fn
         profile: ctx.profile ?? previous.profile,
         overrideSeconds: ctx.overrideSeconds ?? previous.overrideSeconds,
         forecast: ctx.forecast ?? previous.forecast,
+        starParallax: ctx.starParallax ?? previous.starParallax,
     };
     try {
         return fn();

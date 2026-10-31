@@ -31,6 +31,7 @@
 
 import { apparentStarDirection, AU_KM } from './apparent.js';
 import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
+import { earthGeocenterBarycentricAu } from './earth-geocenter-barycentric.js';
 import { nutation } from './nutation.js';
 import {
     iau2000FrameBias,
@@ -45,6 +46,7 @@ import {
     type Vec,
 } from './precession.js';
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
+import { effectiveStarParallaxMode } from './star-parallax.js';
 
 const DEG = Math.PI / 180;
 const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);
@@ -336,15 +338,23 @@ function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
 function starGeometricLongitude(star: StarData, jd: number, profile: PrecisionProfile): number {
     if (profile === 'modern') {
         const jdTdb = jd + deltaT(jd) / 86400.0;
-        if (jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END) {
-            const kin = kinematicsProvider?.(jd);
-            if (!kin) {
-                throw new Error(
-                    'Modern geometric star ayanamsa needs the geocentre barycentric position from DE440. ' +
-                        'Call EphemerisEngine.initialize() first.',
-                );
+        const insideKernel = jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END;
+        const mode = effectiveStarParallaxMode();
+        if (mode === 'oracle-compat') {
+            if (insideKernel) {
+                const kin = kinematicsProvider?.(jd);
+                if (!kin) {
+                    throw new Error(
+                        'Modern geometric star ayanamsa needs the geocentre barycentric position from DE440. ' +
+                            'Call EphemerisEngine.initialize() first.',
+                    );
+                }
+                return starLongitudeOfDate(star, jd, kin.observerAU);
             }
-            return starLongitudeOfDate(star, jd, kin.observerAU);
+            return starLongitudeOfDate(star, jd);
+        }
+        if (mode === 'continuous') {
+            return starLongitudeOfDate(star, jd, earthGeocenterBarycentricAu(jd));
         }
     }
     return starLongitudeOfDate(star, jd);

@@ -3,6 +3,7 @@ node_modules
 pnpm-lock.yaml
 **/*.bsp
 packages/core/tests/fixtures/*.json
+packages/core/src/engine/vsop87-earth.data.json
 packages/testkit/schema/*.json
 packages/format/schema/*.json
 packages/format/tests/fixtures/*.json
