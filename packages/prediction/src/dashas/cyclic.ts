@@ -41,7 +41,7 @@ export function calculateCyclicDashaBalance(
     };
 }
 
-function generateSubPeriods(
+export function generateSubPeriods(
     parent: DashaPeriod,
     parentStandardYears: Decimal,
     spec: CyclicDashaSpec,

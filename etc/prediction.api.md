@@ -82,6 +82,15 @@ export interface DashaPeriod {
     subPeriods?: DashaPeriod[];
 }
 
+// @public
+export class DrigDasha {
+    // (undocumented)
+    static calculate(chart: {
+        ascendant: number;
+        planets: PlanetPosition[];
+    }, birthDate: DateTime, cycles?: number, options?: VimshottariOptions): CharaDashaPeriod[];
+}
+
 // @public (undocumented)
 export function generateAshtottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
 
@@ -108,6 +117,9 @@ export function generateShatabdika(birthDate: DateTime, moonLongitude: number, d
 
 // @public (undocumented)
 export function generateShodashottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public
+export function generateTithiAshtottari(birthDate: DateTime, moonLongitude: number, sunLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
 
 // @public
 export function generateVimshottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
@@ -137,20 +149,24 @@ export interface JaiminiKaraka {
     planetId: number;
 }
 
-// @public
+// @public (undocumented)
 export class KalachakraDasha {
-    // (undocumented)
-    static calculate(): never;
+    // Warning: (ae-forgotten-export) The symbol "KalachakraDashaResult" needs to be exported by the entry point index.d.ts
+    static calculate(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): KalachakraDashaResult;
 }
 
 // @public
 export class MoolaDasha {
     // (undocumented)
-    static calculate(chart: ChartData, birthDate: DateTime, years?: number): {
+    static calculate(chart: {
+        ascendant: number;
+        planets: PlanetPosition[];
+    }, birthDate: DateTime, options?: VimshottariOptions): {
         planet: string;
         start: string;
         end: string;
         durationYears: number;
+        cycle: number;
     }[];
 }
 
@@ -161,9 +177,23 @@ export class NarayanaDasha {
 }
 
 // @public
+export class PatyayiniDasha {
+    // Warning: (ae-forgotten-export) The symbol "PatyayiniPeriod" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    static calculate(chart: {
+        ascendant: number;
+        planets: PlanetPosition[];
+    }, varshaphalaStart: DateTime, yearDays?: number): PatyayiniPeriod[];
+}
+
+// @public
 export class SudasaDasha {
     // (undocumented)
-    static calculate(chart: ChartData, sriLagnaLongitude: number, birthDate: DateTime, cycles?: number): CharaDashaPeriod[];
+    static calculate(chart: {
+        ascendant: number;
+        planets: PlanetPosition[];
+    }, birthDate: DateTime, moonLongitude: number, cycles?: number, options?: VimshottariOptions): CharaDashaPeriod[];
 }
 
 // @public (undocumented)
