@@ -16,11 +16,11 @@
 | ----------------- | -------------------------------------------------------------------------- | -------------------- | ---------- |
 | 1973-02 – 2026-10 | USNO `deltat.data` (monthly rows), via `tools/generate-deltat-monthly.mjs` | U.S. Government work | 2026-10-26 |
 
-## Oracle bridge (`src/engine/deltat-modern-bridge.ts`)
+## USNO preds bridge (`src/engine/deltat-modern-bridge.ts`)
 
-| Years     | Source                                                                                                                                                           | Licence                                               | Retrieved       |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------- |
-| 2027–2028 | Measured from **pyswisseph 2.10.03** `swe.deltat(UT)×86400` at 1 January 0h UT (almanac Julian year). Regenerate: `node tools/generate-deltat-modern-bridge.mjs` | Test oracle only; not shipped as Swiss Ephemeris data | See file header |
+| Years     | Source                                                                                                                                                          | Licence              | Retrieved       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------- |
+| 2027–2028 | USNO [deltat.preds](https://maia.usno.navy.mil/ser7/deltat.preds) TT−UT at Year 2027.00 and 2028.00. Regenerate: `node tools/generate-deltat-modern-bridge.mjs` | U.S. Government work | See file header |
 
 These years are **after** the last USNO observation in `deltat-observed.ts` and bridge the observed record to the published forecast polynomials.
 
