@@ -1,3 +1,4 @@
+import { Body } from '../../src/core/body.js';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import { DateTime } from 'luxon';
 
@@ -49,8 +50,22 @@ describe('EphemerisEngine (WASM)', () => {
     test('calculates Moon and other planets', () => {
         const date = DateTime.now();
         const planets = engine.getPlanets(date);
-        expect(planets.length).toBeGreaterThan(5);
+        expect(planets.length).toBe(9);
         expect(planets.find((p) => p.name === 'Moon')).toBeDefined();
         expect(planets.find((p) => p.name === 'Ketu')).toBeDefined();
+        expect(planets.find((p) => p.name === 'Uranus')).toBeUndefined();
+    });
+
+    test('optional outer planets and tropical zodiac', () => {
+        const date = DateTime.fromISO('2000-01-01T12:00:00Z');
+        const sidereal = engine.getPlanets(date);
+        const withOuter = engine.getPlanets(date, undefined, { includeOuterPlanets: true });
+        expect(withOuter.length).toBe(12);
+        const uranus = withOuter.find((p) => p.id === Body.Uranus);
+        expect(uranus?.name).toBe('Uranus');
+        const tropical = engine.getPlanets(date, undefined, { zodiac: 'tropical' });
+        const sidSun = sidereal.find((p) => p.id === Body.Sun)!.longitude;
+        const tropSun = tropical.find((p) => p.id === Body.Sun)!.longitude;
+        expect(tropSun).toBeGreaterThan(sidSun);
     });
 });

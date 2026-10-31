@@ -83,11 +83,16 @@ enum Body_2 {
     // (undocumented)
     Moon = 1,
     // (undocumented)
+    Neptune = 12,
+    // (undocumented)
+    Pluto = 13,
+    // (undocumented)
     Rahu = 10,
     // (undocumented)
     Saturn = 6,
     // (undocumented)
     Sun = 0,
+    Uranus = 11,
     // (undocumented)
     Venus = 3
 }
@@ -105,6 +110,30 @@ export class CachingChunkLoader implements EphemerisChunkLoader {
 
 // @public (undocumented)
 export function calculateBhavaLagna(birthTime: DateTime, sunrise: DateTime, sunLong: number): number;
+
+// @public (undocumented)
+export const calculateD108: (lon: number, options?: VargaOptions) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD11: (lon: number, options?: VargaOptions) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD144: (lon: number) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD150: (lon: number, options?: VargaOptions) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD5: (lon: number) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD6: (lon: number) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD8: (lon: number, options?: VargaOptions) => VargaPoint;
+
+// @public (undocumented)
+export const calculateD81: (lon: number, options?: VargaOptions) => VargaPoint;
 
 // @public
 export function calculateDhumadiUpagrahas(sunLong: number): UpagrahaPositions['dhumadi'];
@@ -597,6 +626,8 @@ export class EphemerisEngine {
         nodeType?: 'mean' | 'true';
         positionMode?: PositionMode;
         ayanamsaOffset?: number;
+        includeOuterPlanets?: boolean;
+        zodiac?: ZodiacOutput;
     } & PrecisionOptions): PlanetPosition[];
     getSiderealTime(jd: number): number;
     getTopocentricEquatorial(jdUT: number, bodyId: number, location: GeoLocation, positionMode?: PositionMode): {
@@ -1042,6 +1073,9 @@ export function normalize360(angle: number): number;
 // @public
 export function normalize360D(angle: Decimal): Decimal;
 
+// @public
+export const OUTER_PLANET_BODIES: readonly Body_2[];
+
 // @public (undocumented)
 export interface PanchangaResult {
     // (undocumented)
@@ -1394,11 +1428,54 @@ export class VargaDeities {
 
 // @public
 export interface VargaOptions {
+    // Warning: (ae-forgotten-export) The symbol "AshtottaramsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d108Scheme?: AshtottaramsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "EkadasamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d11Scheme?: EkadasamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "NadiamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d150Scheme?: NadiamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "TrimsamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d30Scheme?: TrimsamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "DrekkanaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d3Scheme?: DrekkanaScheme;
+    // Warning: (ae-forgotten-export) The symbol "ChaturthamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d4Scheme?: ChaturthamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "PanchamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d5Scheme?: PanchamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "NavNavamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d81Scheme?: NavNavamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "AshtamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d8Scheme?: AshtamsaScheme;
+    // Warning: (ae-forgotten-export) The symbol "NavamsaScheme" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    d9Scheme?: NavamsaScheme;
     // (undocumented)
     dasamsaScheme?: DasamsaScheme;
     // (undocumented)
     horaScheme?: HoraScheme;
 }
+
+// @public
+export function vargaOptionsFromVariants(variants: Record<string, string> | undefined, overrides?: VargaOptions): VargaOptions;
 
 // @public
 export interface VargaPoint {
@@ -1440,6 +1517,9 @@ export interface WithResultEnvelopeOptions {
     // (undocumented)
     warnings?: readonly string[];
 }
+
+// @public (undocumented)
+export type ZodiacOutput = 'sidereal' | 'tropical';
 
 // (No @packageDocumentation comment for this package)
 

@@ -16,6 +16,10 @@ export enum Body {
     Mars = 4,
     Jupiter = 5,
     Saturn = 6,
+    /** Optional outer grahas (not included unless requested). */
+    Uranus = 11,
+    Neptune = 12,
+    Pluto = 13,
     Rahu = 10,
     Ketu = 99,
 }
@@ -34,7 +38,7 @@ export const SEVEN_GRAHAS_JHORA_ORDER: readonly Body[] = [
     Body.Saturn,
 ];
 
-/** All bodies returned by the ephemeris (nine points). */
+/** All bodies returned by the ephemeris by default (nine points). */
 export const EPHEMERIS_BODIES: readonly Body[] = [
     Body.Sun,
     Body.Moon,
@@ -46,3 +50,6 @@ export const EPHEMERIS_BODIES: readonly Body[] = [
     Body.Rahu,
     Body.Ketu,
 ];
+
+/** Trans-Saturnian bodies available when explicitly requested. */
+export const OUTER_PLANET_BODIES: readonly Body[] = [Body.Uranus, Body.Neptune, Body.Pluto];

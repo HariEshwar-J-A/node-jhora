@@ -106,7 +106,7 @@ describe('POST /v1/chart', () => {
 // ---------------------------------------------------------------------------
 
 describe('POST /v1/chart/vargas', () => {
-    test('returns all 16 divisional charts', async () => {
+    test('returns all standard and extended divisional charts', async () => {
         const res = await app.inject({
             method: 'POST',
             url: '/v1/chart/vargas',
@@ -119,9 +119,13 @@ describe('POST /v1/chart/vargas', () => {
             'D2',
             'D3',
             'D4',
+            'D5',
+            'D6',
             'D7',
+            'D8',
             'D9',
             'D10',
+            'D11',
             'D12',
             'D16',
             'D20',
@@ -131,6 +135,10 @@ describe('POST /v1/chart/vargas', () => {
             'D40',
             'D45',
             'D60',
+            'D81',
+            'D108',
+            'D144',
+            'D150',
         ];
         for (const d of DIVISIONS) {
             expect(vargas[d]).toBeDefined();

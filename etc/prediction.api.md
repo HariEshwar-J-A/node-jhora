@@ -20,6 +20,11 @@ export interface ArudhaPada {
     sign: number;
 }
 
+// Warning: (ae-forgotten-export) The symbol "CyclicDashaSpec" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export function calculateCyclicDashaBalance(spec: CyclicDashaSpec, moonLongitude: number): CyclicDashaBalance;
+
 // Warning: (ae-forgotten-export) The symbol "DashaBalance" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -44,6 +49,23 @@ export interface CharaDashaPeriod {
 }
 
 // @public (undocumented)
+export interface CyclicDashaBalance {
+    // (undocumented)
+    fractionTraversed: number;
+    // (undocumented)
+    lord: string;
+    // (undocumented)
+    nakshatraIndex: number;
+    // (undocumented)
+    totalDuration: number;
+    // (undocumented)
+    yearsRemaining: number;
+}
+
+// @public
+export type CyclicDashaId = 'ashtottari' | 'shodashottari' | 'dwadashottari' | 'panchottari' | 'shatabdika' | 'chaturashiti_sama' | 'dwisaptati_sama' | 'shashti_hayani';
+
+// @public (undocumented)
 export interface DashaPeriod {
     // (undocumented)
     durationYears: number;
@@ -59,6 +81,33 @@ export interface DashaPeriod {
     // (undocumented)
     subPeriods?: DashaPeriod[];
 }
+
+// @public (undocumented)
+export function generateAshtottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateChaturashitiSama(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateCyclicDasha(id: CyclicDashaId, birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateDwadashottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateDwisaptatiSama(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generatePanchottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateShashtiHayani(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateShatabdika(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
+
+// @public (undocumented)
+export function generateShodashottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
 
 // @public
 export function generateVimshottari(birthDate: DateTime, moonLongitude: number, depth?: number, options?: VimshottariOptions): DashaPeriod[];
@@ -89,9 +138,32 @@ export interface JaiminiKaraka {
 }
 
 // @public
+export class KalachakraDasha {
+    // (undocumented)
+    static calculate(): never;
+}
+
+// @public
+export class MoolaDasha {
+    // (undocumented)
+    static calculate(chart: ChartData, birthDate: DateTime, years?: number): {
+        planet: string;
+        start: string;
+        end: string;
+        durationYears: number;
+    }[];
+}
+
+// @public
 export class NarayanaDasha {
     // (undocumented)
     static calculate(chart: ChartData, birthDate: DateTime, years?: number): CharaDashaPeriod[];
+}
+
+// @public
+export class SudasaDasha {
+    // (undocumented)
+    static calculate(chart: ChartData, sriLagnaLongitude: number, birthDate: DateTime, cycles?: number): CharaDashaPeriod[];
 }
 
 // @public (undocumented)

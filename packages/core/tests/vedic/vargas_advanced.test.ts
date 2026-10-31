@@ -24,17 +24,15 @@ describe('Advanced Varga Precision', () => {
 
     describe('D3 Drekkana (Parashara)', () => {
         test('1st Drekkana (Aries 5deg) -> Aries (1)', () => {
-            const val = calculateVarga(5, 3, 'Parashara');
+            const val = calculateVarga(5, 3);
             expect(val.sign).toBe(1);
         });
         test('2nd Drekkana (Aries 15deg) -> Leo (5)', () => {
-            // 5th from Aries = Leo.
-            const val = calculateVarga(15, 3, 'Parashara');
+            const val = calculateVarga(15, 3);
             expect(val.sign).toBe(5);
         });
         test('3rd Drekkana (Aries 25deg) -> Sagittarius (9)', () => {
-            // 9th from Aries = Sag.
-            const val = calculateVarga(25, 3, 'Parashara');
+            const val = calculateVarga(25, 3);
             expect(val.sign).toBe(9);
         });
     });
