@@ -41,9 +41,11 @@ stream SP-B1 (JHora DLL 1600 / 2000 / 2026; modern agrees):
 | FD on **reported sidereal** longitude                           | **No** (`jhora`: oracle − sidereal FD ≈ +0.138″/day, all bodies) | Speed omits d(ayan)/dt; offset is geometric True-Citra ayanamsa rate (U1 resolved).         |
 | **Moon:** SPK velocity through geometric frame                  | **Yes** (≤~0.02″/day; SP-B2)                                     | No FD step fits Moon; analytic derivative before LT/aberration (TRUEPOS).                   |
 
-True and mean nodes: oracle tropical FD at **0.001 d** matches reported node speed;
-the engine uses **mean node** constant regression rate and **true node** 1 s FD
-(same as #281), within oracle tolerance in the DE440s window.
+True and mean nodes: oracle tropical FD at **0.001 d** matches reported **mean** node
+speed; true-node speed in the kit matches **1 s** central difference on the
+**legacy** osculating chain (Moon r,v → mean ecliptic without the Q1-only frame
+bias / JHora tilt on the place). After Q1, **positions** use bias + tilt;
+**speed** still differentiates the legacy chain (see `lunar-node.ts`).
 
 ### Profile-specific sidereal speed
 

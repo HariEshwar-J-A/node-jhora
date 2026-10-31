@@ -125,7 +125,7 @@ import {
     meanEclipticRelativeKinematics,
     sphericalRatesDegPerDay,
 } from './kinematics.js';
-import { trueAscendingNodeLongitude } from './lunar-node.js';
+import { computeTrueOsculatingNode } from './lunar-node.js';
 import { nutation } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
@@ -604,7 +604,7 @@ export class EphemerisEngine {
         }
 
         // ── Lunar nodes ─────────────────────────────────────────────────────
-        const node = this.lunarNode(jd, nodeType, precisionProfile);
+        const node = this.lunarNode(jd, nodeType, precisionProfile, positionMode);
         planets.push({
             id: Body.Rahu,
             name: 'Rahu',
@@ -702,6 +702,7 @@ export class EphemerisEngine {
         jdUT: number,
         nodeType: 'mean' | 'true',
         precisionProfile: PrecisionProfile,
+        positionMode: PositionMode,
     ): {
         lon: number;
         dist: number;
@@ -715,15 +716,17 @@ export class EphemerisEngine {
             return { lon: meanLunarNode(T), dist: 0.002569, speed };
         }
 
-        const lon = this.trueNodeLongitude(jdUT, precisionProfile);
-        const h = APPARENT_SPEED_STEP_DAYS;
-        let d =
-            this.trueNodeLongitude(jdUT + h, precisionProfile) -
-            this.trueNodeLongitude(jdUT - h, precisionProfile);
-        if (d > 180) d -= 360;
-        if (d < -180) d += 360;
-
-        return { lon, dist: 0.002569, speed: d / (2 * h) };
+        const source = {
+            getBarycentric: (naifBody: number, et: number) =>
+                this.composite.getBarycentricForLunarNode(naifBody, et, precisionProfile),
+        };
+        const geometric = isGeometricPlace(correctionsFor(positionMode));
+        const osc = computeTrueOsculatingNode(jdUT, source, {
+            precisionProfile,
+            truePosition: geometric,
+            applyNutation: positionMode === 'apparent',
+        });
+        return { lon: osc.lon, dist: osc.distAu, speed: osc.speedDegPerDay };
     }
 
     /**
@@ -765,29 +768,6 @@ export class EphemerisEngine {
         const { rel, vel } = geocentricRelativeState(this.source, naifId, et, observer);
         const { pos, vel: velEcl } = meanEclipticRelativeKinematics(rel, vel, jdUT);
         return sphericalRatesDegPerDay(pos, velEcl);
-    }
-
-    /**
-     * True (osculating) lunar node: the ascending intersection of the Moon's
-     * instantaneous orbital plane with the ecliptic.
-     *
-     * Derived from the geocentric position and velocity of the Moon — the
-     * orbital angular momentum vector h = r × v is normal to the orbit plane, so
-     * the ascending node lies along ẑ × h.
-     */
-    private trueNodeLongitude(jdUT: number, profile: PrecisionProfile): number {
-        const source = {
-            getBarycentric: (naifBody: number, et: number) =>
-                this.composite.getBarycentricForLunarNode(naifBody, et, profile),
-        };
-        // Black-box (modern + JHora DLL oracles): best match omits ∂(ecliptic frame)/∂t on
-        // velocity (~0.26″ offset vs spin=true). Moon daily motion still uses full spin in
-        // meanEclipticRelativeKinematics. See tests/engine/true-node-frame-probe.test.ts.
-        return trueAscendingNodeLongitude(jdUT, source, {
-            eclipticFrame: 'mean_ecliptic_of_date',
-            velocityMode: 'spk_analytic',
-            precessionSpin: false,
-        });
     }
 
     /** Equatorial declination from mean-of-date ecliptic longitude and latitude. */

@@ -89,6 +89,8 @@ const BODIES = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
 
 /** @type {Record<string, Record<string, Record<string, number>>>} */
 const max = {};
+/** @type {Record<string, Record<string, { caseId: number; body: string; err: number; y: number }>>} */
+const argmaxAll = {};
 let evaluated = 0;
 let mEnforcedCases = 0;
 let mSkippedDeltaT = 0;
@@ -139,7 +141,14 @@ for (const c of cases) {
             max[mode] = max[mode] || {};
             max[mode][er] = max[mode][er] || {};
             max[mode][er][key] = Math.max(max[mode][er][key] ?? 0, err);
-            max[mode][er].all = Math.max(max[mode][er].all ?? 0, err);
+            const prevAll = max[mode][er].all ?? 0;
+            if (err > prevAll) {
+                max[mode][er].all = err;
+                argmaxAll[mode] = argmaxAll[mode] || {};
+                argmaxAll[mode][er] = { caseId: c.id, body: key, err, y: c.y };
+            } else {
+                max[mode][er].all = Math.max(prevAll, err);
+            }
             if (mode === 'M' && modernDeltaTComparable) {
                 maxMEnforcedArcsec = Math.max(maxMEnforcedArcsec, err);
             }
@@ -174,6 +183,7 @@ const summary = {
     globalMaxArcsecPerDay,
     globalMaxEnforcedArcsecPerDay: { M: maxMEnforcedArcsec },
     max,
+    argmaxAll,
     violationCount: violations.length,
 };
 console.log(JSON.stringify(summary, null, 2));

@@ -1,0 +1,87 @@
+{
+    "description": "Black-box true-node speed oracle pins (full-range kit). Test data only — not used in src.",
+    "source": "User-verified worst TrueNode speed residuals on ffb062b vs nj-fullrange-oracle-kit (2026-10-31).",
+    "cases": [
+        {
+            "id": 286,
+            "y": -4,
+            "jdUt": 1719658,
+            "jhoraSpeed": -0.018225404408,
+            "modernSpeed": -0.018270814768,
+            "profiles": ["jhora", "modern"]
+        },
+        {
+            "id": 111,
+            "y": -1,
+            "jdUt": 1720704.83991898,
+            "jhoraSpeed": 0.001815397368,
+            "modernSpeed": 0.001771344524,
+            "profiles": ["jhora", "modern"]
+        },
+        {
+            "id": 90,
+            "y": -3010,
+            "jdUt": 621827.32923611,
+            "jhoraSpeed": 0.006169919067,
+            "modernSpeed": 0.006169919067,
+            "profiles": ["jhora"]
+        },
+        {
+            "id": 403,
+            "y": -5853,
+            "jdUt": -416707.65613426,
+            "jhoraSpeed": 0.00078584456,
+            "modernSpeed": 0.00078584456,
+            "profiles": ["jhora"]
+        },
+        {
+            "id": 253,
+            "y": 2499,
+            "jdUt": 2634166.49998843,
+            "jhoraSpeed": -0.187709294381,
+            "modernSpeed": -0.187751639263,
+            "profiles": ["jhora", "modern"]
+        },
+        {
+            "id": 84,
+            "y": -9989,
+            "jdUt": -1927061.32146991,
+            "jhoraSpeed": 0.022830985507,
+            "modernSpeed": 0.022830985507,
+            "profiles": ["jhora"]
+        },
+        {
+            "id": 61,
+            "y": 5250,
+            "jdUt": 3638803.63592593,
+            "jhoraSpeed": -0.035339135651,
+            "modernSpeed": -0.035339135651,
+            "profiles": ["jhora"]
+        },
+        {
+            "id": 429,
+            "y": 7309,
+            "jdUt": 4390903.08763889,
+            "jhoraSpeed": 0.007627777286,
+            "modernSpeed": 0.007627777286,
+            "profiles": ["jhora"]
+        },
+        {
+            "id": 42,
+            "y": 500,
+            "jdUt": 1904024.64634259,
+            "jhoraSpeed": -0.115577,
+            "modernSpeed": -0.115577,
+            "profiles": ["jhora", "modern"],
+            "jhoraSpeedNote": "≈ from sweep; tight assert uses engine vs kit in CI"
+        },
+        {
+            "id": 9,
+            "y": -7750,
+            "jdUt": -1109404.07431713,
+            "jhoraSpeed": 0.010870138361,
+            "modernSpeed": 0.010938005471,
+            "profiles": ["jhora", "modern"]
+        }
+    ]
+}
