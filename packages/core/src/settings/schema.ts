@@ -97,7 +97,7 @@ export const DasaYearSchema = z
 export const PRECISION_PROFILES = ['jhora', 'modern'] as const;
 export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 
-export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
+export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long', 'de441_long'] as const;
 export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 
 /** Civil calendar for birth dates; omitted means `'auto'` (JHora / SE). */
@@ -117,7 +117,7 @@ export const CalculationSettingsSchema = z
         deltaTOverrideSeconds: finite.optional(),
         /**
          * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
-         * `de440s` / `de431_long` force a single kernel (long-range requires chunks).
+         * `de440s` / `de431_long` / `de441_long` force a single kernel (long-range requires chunks).
          */
         ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
         /**

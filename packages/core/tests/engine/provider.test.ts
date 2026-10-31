@@ -168,6 +168,13 @@ describe('EphemerisProvider', () => {
         expect(() => composite.state(jd, NAIF.Sun, 'barycentric')).toThrow(/outside DE440s/);
     });
 
+    test('de441_long policy throws when DE441 chunks are not attached', () => {
+        const spk = loadSpk(bspPath);
+        const composite = new CompositeEphemerisProvider(spk, { policy: 'de441_long' });
+        const jd = DE440S_JD_TDB_START - 10;
+        expect(() => composite.state(jd, NAIF.Sun, 'barycentric')).toThrow(/DE441 long-range/);
+    });
+
     test('chunk boundaries at DE440s edges', () => {
         const spk = loadSpk(bspPath);
         const composite = new CompositeEphemerisProvider(spk, { policy: 'de440s' });

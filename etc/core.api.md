@@ -163,6 +163,7 @@ export const CalculationSettingsSchema: z.ZodObject<{
         auto: "auto";
         de440s: "de440s";
         de431_long: "de431_long";
+        de441_long: "de441_long";
     }>>;
     calendar: z.ZodOptional<z.ZodEnum<{
         auto: "auto";
@@ -387,7 +388,7 @@ export const DE431_SOURCE: Readonly<{
 }>;
 
 // @public (undocumented)
-export class De431ChunkFile {
+class De431ChunkFile {
     constructor(buf: ArrayBuffer | Uint8Array);
     // (undocumented)
     readonly centuryIndex: number;
@@ -403,10 +404,15 @@ export class De431ChunkFile {
     // (undocumented)
     readonly groupId: number;
 }
+export { De431ChunkFile }
+export { De431ChunkFile as De441ChunkFile }
 
 // @public (undocumented)
 export class De431ChunkStore {
-    constructor(loader: EphemerisChunkLoader);
+    constructor(loader: EphemerisChunkLoader, bounds?: {
+        minCentury?: number;
+        maxCentury?: number;
+    });
     // (undocumented)
     asGetter(): (century: number, groupId: number) => De431ChunkFile | undefined;
     ensureForJd(jdTdb: number, marginDays?: number): Promise<void>;
@@ -432,6 +438,64 @@ export const DE440S_PRIMARY_URLS: readonly string[];
 
 // @public
 export function de440sCdnUrl(version?: string): string;
+
+// @public (undocumented)
+export const DE441_LONG_JD_TDB_END: number;
+
+// @public
+export const DE441_LONG_JD_TDB_START: number;
+
+// @public (undocumented)
+export const DE441_NATIVE_JD_TDB_END = 8000016.5;
+
+// @public
+export const DE441_NATIVE_JD_TDB_START = -3100015.5;
+
+// @public
+export const DE441_SOURCE: Readonly<{
+    part1: Readonly<{
+        file: "de441_part-1.bsp";
+        bytes: 1651119104;
+        url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441_part-1.bsp";
+        jdTdbStart: -3100015.5;
+        jdTdbEnd: 2440432.5;
+    }>;
+    part2: Readonly<{
+        file: "de441_part-2.bsp";
+        bytes: 1656830976;
+        url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441_part-2.bsp";
+        jdTdbStart: 2440400.5;
+        jdTdbEnd: 8000016.5;
+    }>;
+    monolith: Readonly<{
+        file: "de441.bsp";
+        bytes: 3308032000;
+        url: "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp";
+    }>;
+}>;
+
+// @public
+export class De441ChunkStore extends De431ChunkStore {
+    constructor(loader: EphemerisChunkLoader);
+}
+
+// @public (undocumented)
+export class De441LongEphemerisProvider implements EphemerisProvider {
+    constructor(getChunk: (century: number, groupId: number) => De431ChunkFile | undefined);
+    // (undocumented)
+    readonly bodies: readonly [10, 1, 2, 399, 301, 4, 5, 6, 7, 8, 9];
+    // (undocumented)
+    readonly coverage: {
+        jdTdbStart: number;
+        jdTdbEnd: number;
+        kernelId: string;
+        version: string;
+    };
+    // (undocumented)
+    readonly id = "de441_long";
+    // (undocumented)
+    state(jdTdb: number, body: EphemerisBodyId, frame: EphemerisFrame): EphemerisState;
+}
 
 // @public
 export function decimalToDms(deg: number): {
@@ -498,7 +562,7 @@ export const EPHEMERIS_JD_UT_MAX: number;
 export const EPHEMERIS_JD_UT_MIN: number;
 
 // @public (undocumented)
-export const EPHEMERIS_POLICIES: readonly ["auto", "de440s", "de431_long"];
+export const EPHEMERIS_POLICIES: readonly ["auto", "de440s", "de431_long", "de441_long"];
 
 // @public
 export const EPHEMERIS_PROVIDER = "jpl-de440s";
@@ -555,6 +619,7 @@ export class EphemerisEngine {
     }): number;
     setAyanamsa(mode: number): void;
     setChunkStore(store: De431ChunkStore): void;
+    setDe441ChunkStore(store: De441ChunkStore): void;
     setEphemerisPolicy(policy: EphemerisPolicy): void;
 }
 
@@ -829,6 +894,29 @@ export interface ManualOffsetOverride {
 
 // @public
 export const NAKSHATRA_SPAN_D: Decimal;
+
+// @public (undocumented)
+export const NJCE441_DATA_VERSION = "441.1.0";
+
+// @public (undocumented)
+export const NJCE441_MAX_CENTURY = 100;
+
+// @public (undocumented)
+export const NJCE441_MIN_CENTURY = -100;
+
+// @public (undocumented)
+export function njce441CdnUrl(key: ChunkKey, version?: string): string;
+
+// Warning: (ae-forgotten-export) The symbol "Njce441ChunkEntry" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export function njce441ChunkEntry(key: ChunkKey): Njce441ChunkEntry | undefined;
+
+// @public (undocumented)
+export function njce441FileName(key: ChunkKey): string;
+
+// @public (undocumented)
+export function njce441PackageName(century: number): string;
 
 // @public
 export const NJCE_DATA_VERSION = "431.1.0";

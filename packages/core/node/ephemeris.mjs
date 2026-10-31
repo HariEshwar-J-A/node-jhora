@@ -226,6 +226,10 @@ export function njceCacheDir(cacheDir = defaultCacheDir(), version) {
     return join(cacheDir, 'de431-njce', version);
 }
 
+export function njce441CacheDir(cacheDir = defaultCacheDir(), version) {
+    return join(cacheDir, 'de441-njce', version);
+}
+
 function toArrayBuffer(buf) {
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
@@ -242,21 +246,39 @@ function toArrayBuffer(buf) {
  * @param {boolean} [options.cdn] use jsDelivr URLs for the published data packages
  * @param {boolean} [options.offline] never touch the network (default NODE_JHORA_OFFLINE)
  * @param {typeof fetch} [options.fetchImpl]
+ * @param {string} [options.kernel] de431 or de441 (default de431)
  */
 export async function createNodeChunkLoader(options = {}) {
     const m = await loadManifest();
+    const kernel = options.kernel ?? 'de431';
+    const is441 = kernel === 'de441';
     const offline = options.offline ?? envFlag('NODE_JHORA_OFFLINE');
-    const cacheRoot = njceCacheDir(options.cacheDir ?? defaultCacheDir(), m.NJCE_DATA_VERSION);
+    const dataVersion = is441 ? m.NJCE441_DATA_VERSION : m.NJCE_DATA_VERSION;
+    const cacheRoot = (is441 ? njce441CacheDir : njceCacheDir)(
+        options.cacheDir ?? defaultCacheDir(),
+        dataVersion,
+    );
     const dirs = [
-        ...(process.env.NODE_JHORA_EPHE_LONG_DIR ? [process.env.NODE_JHORA_EPHE_LONG_DIR] : []),
+        ...(is441
+            ? process.env.NODE_JHORA_EPHE_LONG441_DIR
+                ? [process.env.NODE_JHORA_EPHE_LONG441_DIR]
+                : []
+            : process.env.NODE_JHORA_EPHE_LONG_DIR
+              ? [process.env.NODE_JHORA_EPHE_LONG_DIR]
+              : []),
         ...(options.dirs ?? []),
     ];
+    const fileName = is441 ? m.njce441FileName : m.njceFileName;
+    const packageName = is441 ? m.njce441PackageName : m.njcePackageName;
+    const cdnUrl = is441 ? m.njce441CdnUrl : m.njceCdnUrl;
+    const chunkEntry = is441 ? m.njce441ChunkEntry : m.njceChunkEntry;
+    const manifestLabel = is441 ? 'DE441' : 'DE431';
     const urlFor =
         options.urlFor ??
         (options.baseUrl
-            ? (key) => `${options.baseUrl.replace(/\/?$/, '/')}${m.njceFileName(key)}`
+            ? (key) => `${options.baseUrl.replace(/\/?$/, '/')}${fileName(key)}`
             : options.cdn
-              ? (key) => m.njceCdnUrl(key)
+              ? (key) => cdnUrl(key)
               : undefined);
 
     function readVerified(path, entry) {
@@ -264,7 +286,7 @@ export async function createNodeChunkLoader(options = {}) {
         const buf = readFileSync(path);
         if (buf.length !== entry.bytes || sha256Bytes(buf) !== entry.sha256) {
             throw new m.EphemerisIntegrityError(
-                `${path}: does not match the DE431 manifest`,
+                `${path}: does not match the ${manifestLabel} manifest`,
                 entry.file,
                 path,
             );
@@ -274,13 +296,13 @@ export async function createNodeChunkLoader(options = {}) {
 
     return {
         loadSync(key) {
-            const entry = m.njceChunkEntry(key);
+            const entry = chunkEntry(key);
             if (!entry) return undefined;
             for (const dir of dirs) {
                 const hit = readVerified(join(dir, entry.file), entry);
                 if (hit) return hit;
             }
-            const pkgDir = resolvePackageDir(m.njcePackageName(key.century));
+            const pkgDir = resolvePackageDir(packageName(key.century));
             if (pkgDir) {
                 const hit = readVerified(join(pkgDir, entry.file), entry);
                 if (hit) return hit;
@@ -296,13 +318,13 @@ export async function createNodeChunkLoader(options = {}) {
             return undefined;
         },
         async load(key) {
-            const entry = m.njceChunkEntry(key);
+            const entry = chunkEntry(key);
             if (!entry) return undefined;
             for (const dir of dirs) {
                 const hit = readVerified(join(dir, entry.file), entry);
                 if (hit) return hit;
             }
-            const pkgDir = resolvePackageDir(m.njcePackageName(key.century));
+            const pkgDir = resolvePackageDir(packageName(key.century));
             if (pkgDir) {
                 const hit = readVerified(join(pkgDir, entry.file), entry);
                 if (hit) return hit;
@@ -338,8 +360,8 @@ export function centuriesForYears(fromYear, toYear) {
 }
 
 /** Fill the cache for a year range; returns per-chunk results. */
-export async function prefetchChunks({ fromYear, toYear, ...loaderOptions }) {
-    const loader = await createNodeChunkLoader(loaderOptions);
+export async function prefetchChunks({ fromYear, toYear, kernel = 'de431', ...loaderOptions }) {
+    const loader = await createNodeChunkLoader({ ...loaderOptions, kernel });
     const results = [];
     for (const century of centuriesForYears(fromYear, toYear)) {
         for (const groupId of [0, 1]) {
@@ -354,9 +376,16 @@ export async function prefetchChunks({ fromYear, toYear, ...loaderOptions }) {
     return results;
 }
 
-/** Set a verified Node chunk store on the engine (long-range DE431 support). */
+/** Set a verified Node DE431 chunk store on the engine. */
 export async function registerNodeChunkStore(engine, options = {}) {
     const core = await import('../dist/index.js');
-    const loader = await createNodeChunkLoader(options);
+    const loader = await createNodeChunkLoader({ ...options, kernel: 'de431' });
     engine.setChunkStore(new core.De431ChunkStore(new core.CachingChunkLoader(loader)));
+}
+
+/** Set a verified Node DE441 chunk store on the engine. */
+export async function registerNodeDe441ChunkStore(engine, options = {}) {
+    const core = await import('../dist/index.js');
+    const loader = await createNodeChunkLoader({ ...options, kernel: 'de441' });
+    engine.setDe441ChunkStore(new core.De441ChunkStore(new core.CachingChunkLoader(loader)));
 }

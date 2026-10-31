@@ -1,0 +1,39 @@
+{
+    "name": "@node-jhora/ephe441",
+    "version": "0.1.0",
+    "description": "Build tool for node-jhora long-range JPL DE441 ephemeris chunks (the chunk data ships in separate packages)",
+    "type": "module",
+    "license": "LicenseRef-NASA-Open-Government",
+    "scripts": {
+        "build": "node -e \"process.exit(0)\"",
+        "build:chunks": "node scripts/build-chunks.mjs",
+        "typecheck": "node -e \"process.exit(0)\"",
+        "lint": "node -e \"console.log('TODO(E1-S3-T1): ESLint is not installed yet'); process.exit(0)\"",
+        "test": "node -e \"process.exit(0)\"",
+        "generate:manifest": "node scripts/generate-manifest.mjs",
+        "stage:data": "node scripts/stage-data-packages.mjs"
+    },
+    "files": [
+        "README.md",
+        "FORMAT.md",
+        "NOTICE.md",
+        "scripts/build-chunks.mjs"
+    ],
+    "keywords": [
+        "jpl",
+        "de441",
+        "ephemeris",
+        "vedic-astrology"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/ephe441"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=22"
+    }
+}

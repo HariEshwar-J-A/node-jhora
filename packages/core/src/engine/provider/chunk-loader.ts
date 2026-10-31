@@ -3,6 +3,7 @@
  * Node filesystem).
  */
 
+import { NJCE441_MAX_CENTURY, NJCE441_MIN_CENTURY } from '../../ephemeris-data/manifest.de441.js';
 import { NJCE_MAX_CENTURY, NJCE_MIN_CENTURY } from '../../ephemeris-data/manifest.js';
 import { CHUNK_PREFETCH_MARGIN_DAYS, PLANET_SPEED_STEP_DAYS } from '../../validation/bounds.js';
 import { BODY_GROUP_EMB, BODY_GROUP_PLANETS, centuryIndex, De431ChunkFile } from './de431-chunk.js';
@@ -72,8 +73,16 @@ export function fetchChunkLoader(baseUrl: string): EphemerisChunkLoader {
 
 export class De431ChunkStore {
     private readonly files = new Map<string, De431ChunkFile>();
+    private readonly minCentury: number;
+    private readonly maxCentury: number;
 
-    constructor(private readonly loader: EphemerisChunkLoader) {}
+    constructor(
+        private readonly loader: EphemerisChunkLoader,
+        bounds: { minCentury?: number; maxCentury?: number } = {},
+    ) {
+        this.minCentury = bounds.minCentury ?? NJCE_MIN_CENTURY;
+        this.maxCentury = bounds.maxCentury ?? NJCE_MAX_CENTURY;
+    }
 
     get(century: number, groupId: number): De431ChunkFile | undefined {
         return this.files.get(`${groupId}:${century}`);
@@ -91,18 +100,18 @@ export class De431ChunkStore {
             centuries.add(centuryIndex(jdTdbToAstronomicalYear(jd)));
         }
         for (const cent of centuries) {
-            if (cent < NJCE_MIN_CENTURY || cent > NJCE_MAX_CENTURY) continue;
+            if (cent < this.minCentury || cent > this.maxCentury) continue;
             await Promise.all([
                 this.ensureOne(cent, BODY_GROUP_PLANETS),
                 this.ensureOne(cent, BODY_GROUP_EMB),
             ]);
-            if (cent > NJCE_MIN_CENTURY) {
+            if (cent > this.minCentury) {
                 await Promise.all([
                     this.ensureOne(cent - 1, BODY_GROUP_PLANETS),
                     this.ensureOne(cent - 1, BODY_GROUP_EMB),
                 ]);
             }
-            if (cent < NJCE_MAX_CENTURY) {
+            if (cent < this.maxCentury) {
                 await Promise.all([
                     this.ensureOne(cent + 1, BODY_GROUP_PLANETS),
                     this.ensureOne(cent + 1, BODY_GROUP_EMB),
@@ -130,7 +139,7 @@ export class De431ChunkStore {
         }
         for (const cent of centuries) {
             for (const c of [cent - 1, cent, cent + 1]) {
-                if (c < NJCE_MIN_CENTURY || c > NJCE_MAX_CENTURY) continue;
+                if (c < this.minCentury || c > this.maxCentury) continue;
                 this.ensureOneSync(c, BODY_GROUP_PLANETS);
                 this.ensureOneSync(c, BODY_GROUP_EMB);
             }
@@ -148,8 +157,8 @@ export class De431ChunkStore {
     asGetter(): (century: number, groupId: number) => De431ChunkFile | undefined {
         return (c, g) => {
             this.ensureOneSync(c, g);
-            if (c > NJCE_MIN_CENTURY) this.ensureOneSync(c - 1, g);
-            if (c < NJCE_MAX_CENTURY) this.ensureOneSync(c + 1, g);
+            if (c > this.minCentury) this.ensureOneSync(c - 1, g);
+            if (c < this.maxCentury) this.ensureOneSync(c + 1, g);
             return this.get(c, g);
         };
     }
@@ -157,5 +166,12 @@ export class De431ChunkStore {
     /** Synchronous prefetch for a UT Julian day (applies ΔT margin in the engine). */
     prefetchSyncForJdTdb(jdTdb: number): void {
         this.prefetchSyncAroundJd(jdTdb);
+    }
+}
+
+/** DE441 long-range chunks (same `.njce` layout; separate install directory). */
+export class De441ChunkStore extends De431ChunkStore {
+    constructor(loader: EphemerisChunkLoader) {
+        super(loader, { minCentury: NJCE441_MIN_CENTURY, maxCentury: NJCE441_MAX_CENTURY });
     }
 }

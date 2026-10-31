@@ -1,0 +1,121 @@
+{
+  "measuredAt": "2026-10-31T04:18:18.345Z",
+  "measuredBy": "tools/measure-de440-de441-boundary.mjs",
+  "provenance": {
+    "de440s": {
+      "path": "/workspace/packages/ephe/de440s.bsp",
+      "bytes": 32726016,
+      "md5": "3917ee56769db332790c751e2168843d"
+    },
+    "de441_part2": {
+      "path": "/tmp/de441_part-2.bsp",
+      "bytes": 1656830976,
+      "md5": "ad8dfa4e505ef0e3a5d587a5b4705632"
+    },
+    "de441_part1": {
+      "path": "/tmp/de441_part-1.bsp",
+      "bytes": 1651119104,
+      "md5": "7e5fcf9ecb5d08e1ab70c049baa60cd3"
+    }
+  },
+  "de440sBoundaryArcsec": [
+    {
+      "jdTdb": 2396752.5,
+      "label": "DE440s start 1849-12-26",
+      "body": "Sun",
+      "deltaArcsec": 9.393878478711294e-12
+    },
+    {
+      "jdTdb": 2396752.5,
+      "label": "DE440s start 1849-12-26",
+      "body": "Moon",
+      "deltaArcsec": 0.000025254921757591064
+    },
+    {
+      "jdTdb": 2396752.5,
+      "label": "DE440s start 1849-12-26",
+      "body": "Mercury",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2396752.5,
+      "label": "DE440s start 1849-12-26",
+      "body": "Mars",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2506352.5,
+      "label": "DE440s end 2150-01-22",
+      "body": "Sun",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2506352.5,
+      "label": "DE440s end 2150-01-22",
+      "body": "Moon",
+      "deltaArcsec": 0.000022411637794116995
+    },
+    {
+      "jdTdb": 2506352.5,
+      "label": "DE440s end 2150-01-22",
+      "body": "Mercury",
+      "deltaArcsec": 2.5489455465958474e-11
+    },
+    {
+      "jdTdb": 2506352.5,
+      "label": "DE440s end 2150-01-22",
+      "body": "Mars",
+      "deltaArcsec": 2.837949445755725e-11
+    },
+    {
+      "jdTdb": 2451545,
+      "label": "J2000.0",
+      "body": "Sun",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2451545,
+      "label": "J2000.0",
+      "body": "Moon",
+      "deltaArcsec": 9.34831736266089e-7
+    },
+    {
+      "jdTdb": 2451545,
+      "label": "J2000.0",
+      "body": "Mercury",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2451545,
+      "label": "J2000.0",
+      "body": "Mars",
+      "deltaArcsec": 0
+    }
+  ],
+  "partStitchArcsec": [
+    {
+      "jdTdb": 2440416.5,
+      "label": "DE441 part-1 / part-2 overlap mid-1969",
+      "body": "Sun",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2440416.5,
+      "label": "DE441 part-1 / part-2 overlap mid-1969",
+      "body": "Moon",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2440416.5,
+      "label": "DE441 part-1 / part-2 overlap mid-1969",
+      "body": "Mercury",
+      "deltaArcsec": 0
+    },
+    {
+      "jdTdb": 2440416.5,
+      "label": "DE441 part-1 / part-2 overlap mid-1969",
+      "body": "Mars",
+      "deltaArcsec": 0
+    }
+  ]
+}
