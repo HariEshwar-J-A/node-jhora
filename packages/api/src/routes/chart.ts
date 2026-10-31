@@ -29,7 +29,16 @@ export async function chartRoutes(app: FastifyInstance): Promise<void> {
         const planets = session.getPlanets();
         const housesResult = session.getHouses();
         const panchanga = session.getPanchanga();
-        const ayanamsa = engine.getAyanamsa(julianDayUt, ayanamsaOrder);
+        const ayanamsa = engine.getAyanamsa(
+            julianDayUt,
+            ayanamsaOrder,
+            parsed.ayanamsaOffset,
+            undefined,
+            {
+                precisionProfile: settings.precisionProfile,
+                deltaTOverrideSeconds: settings.deltaTOverrideSeconds,
+            },
+        );
 
         return reply.status(200).send(
             attachResultEnvelope(

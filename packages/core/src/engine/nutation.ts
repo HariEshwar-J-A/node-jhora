@@ -103,6 +103,18 @@ export interface Nutation {
     deps: number;
 }
 
+import type { PrecisionProfile } from './deltat.js';
+import { nutationIau2000a } from './nutation-iau2000a.js';
+
+/**
+ * Nutation for a precision profile. `'modern'` uses IAU 2000A (MHB2000) with the
+ * IAU 2006 adjustment (IERS Conventions 2010 §5.6.3, ERFA nut06a) for GAST,
+ * true obliquity, and apparent house subtraction; `'jhora'` keeps IAU 1980.
+ */
+export function nutationForProfile(T: number, profile: PrecisionProfile): Nutation {
+    return profile === 'modern' ? nutationIau2000a(T) : nutation(T);
+}
+
 /**
  * Nutation in longitude and obliquity (degrees) at Julian centuries T (TT).
  */

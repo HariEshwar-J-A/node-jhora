@@ -22,13 +22,12 @@ const CHART_B_BODY = {
 
 /**
  * SHA-256 of canonical JSON with volatile envelope fields removed.
- * Re-pinned: Lahiri mode 1 (37.76″ ICRC anchor), lahiri_icrc → SE mode 46, equatorial Vertex;
- * chart hash includes analytic body speeds (#281) and frame-biased ecliptic latitude.
+ * Re-pinned: Lahiri IAE 1956 anchor + traditional ecliptic-of-t0 (ADR 0015).
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': 'a6d2a8b32af8b13e3f47b03807d01d4cb9f05562422c85b4abb7594ca57d5806',
-    '/v1/shadbala': 'ae8a741916374ed5df82a810288a0a6abf035d5a0dee844cee2845810d1de61b',
-    '/v1/kp/significators': 'df3e36794292ed38d6f43555862f1227a39650b3bf924b1961e707ce3c09eebe',
+    '/v1/chart': 'dc66cc13514c84504f69757156cd4bf3b2e59d2aa0e8638b5cf76f5e66b29099',
+    '/v1/shadbala': 'c35778ed1735f6c4f18435b4c5dd4f190903492bf2c9a48b686b7fc04c71dd06',
+    '/v1/kp/significators': 'a3704020ea2c849b252367f19c7bd230c5550fa59a074778ce938f5bbdd3b784',
 };
 
 function stripVolatileEnvelope(value: unknown): unknown {

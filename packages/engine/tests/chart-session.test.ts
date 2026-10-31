@@ -46,6 +46,17 @@ describe('ChartSession', () => {
         spy.mockRestore();
     });
 
+    test('modern precision profile reaches house cusps', () => {
+        const houseCusps = jest.fn(calculateHouseCusps);
+        const s = session({
+            settings: { schemaVersion: 1, precisionProfile: 'modern', ayanamsa: 'true_citra' },
+            deps: { calculateHouseCusps: houseCusps },
+        });
+        s.getHouses();
+        const precisionArg = houseCusps.mock.calls[0]![7] as Record<string, unknown>;
+        expect(precisionArg.precisionProfile).toBe('modern');
+    });
+
     test('houses alone does not load planets or panchanga', () => {
         const houseCusps = jest.fn(calculateHouseCusps);
         const panchanga = jest.fn(calculatePanchanga);

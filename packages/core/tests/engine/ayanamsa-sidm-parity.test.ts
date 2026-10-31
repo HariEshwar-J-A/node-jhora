@@ -51,7 +51,7 @@ describe('Ayanamsa SIDM parity (modern + JHora oracles)', () => {
                 const jd = Number(jdStr);
                 test(`modern JD ${jdStr} within 1″ of pyswisseph 2.10`, () => {
                     expect(
-                        gapArcsec(getAyanamsa(mode, jd, modernFrame(mode)), expected),
+                        gapArcsec(getAyanamsa(mode, jd, modernFrame(mode), 'modern'), expected),
                     ).toBeLessThan(LIMIT_ARCSEC);
                 });
             }
@@ -61,7 +61,10 @@ describe('Ayanamsa SIDM parity (modern + JHora oracles)', () => {
                 for (const [jdStr, expected] of Object.entries(jhoraPins)) {
                     test(`jhora geometric JD ${jdStr} within 1″ of DLL oracle`, () => {
                         expect(
-                            gapArcsec(getAyanamsa(mode, Number(jdStr), 'geometric'), expected),
+                            gapArcsec(
+                                getAyanamsa(mode, Number(jdStr), 'geometric', 'jhora'),
+                                expected,
+                            ),
                         ).toBeLessThan(LIMIT_ARCSEC);
                     });
                 }

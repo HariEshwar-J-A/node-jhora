@@ -30,16 +30,21 @@
  */
 
 import { apparentStarDirection, AU_KM } from './apparent.js';
-import { deltaT } from './deltat.js';
+import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
 import { nutation } from './nutation.js';
 import {
+    iau2000FrameBias,
     icrfToMeanEclipticOfDate,
     julianCenturies,
     matTransposeVec,
+    matVec,
+    meanObliquity,
     precessionMatrix,
+    rotateX,
     toSpherical,
     type Vec,
 } from './precession.js';
+import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
 
 const DEG = Math.PI / 180;
 const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);
@@ -142,9 +147,36 @@ const hms = (h: number, m: number, s: number): number => (h + m / 60 + s / 3600)
 const dms = (d: number, m: number, s: number): number =>
     Math.sign(d || 1) * (Math.abs(d) + m / 60 + s / 3600);
 
+/** Spica (α Vir, HIP 65474) for the jhora profile — Hipparcos 1997 (VizieR I/239). */
+const SPICA_JHORA: StarData = {
+    name: 'Spica (Chitra, α Vir)',
+    ra: hms(13, 25, 11.5793),
+    dec: dms(-11, 9, 40.759),
+    pmRA: -42.5,
+    pmDec: -31.73,
+    parallax: 12.44,
+    radVel: 0.0,
+};
+
+/**
+ * Spica for the modern profile — van Leeuwen 2007 new reduction (A&A 474, 653;
+ * VizieR I/311) with SIMBAD radial velocity +1.0 km/s (SE 2.10 built-in star).
+ */
+const SPICA_MODERN: StarData = {
+    name: 'Spica (Chitra, α Vir, vL2007)',
+    ra: hms(13, 25, 11.57937),
+    dec: dms(-11, 9, 40.7501),
+    pmRA: -42.35,
+    pmDec: -30.67,
+    parallax: 13.06,
+    radVel: 1.0,
+};
+
 /**
  * @provenance Star astrometry (J2000 ICRS position, proper motion, parallax):
- *   - Spica (HIP 65474) and λ Sco (HIP 85927): The Hipparcos Catalogue,
+ *   - Spica jhora record: Hipparcos Catalogue, ESA SP-1200 (1997), VizieR I/239.
+ *   - Spica modern record: van Leeuwen 2007, VizieR I/311; RV SIMBAD +1.0 km/s.
+ *   - λ Sco (HIP 85927): The Hipparcos Catalogue,
  *     ESA SP-1200 (1997), VizieR I/239 — parallax and proper motions match
  *     that catalogue exactly.
  *   - δ Cnc (HIP 42911): Hipparcos new reduction, van Leeuwen 2007, VizieR
@@ -160,16 +192,8 @@ const dms = (d: number, m: number, s: number): number =>
  *   across the supported range.
  */
 export const STARS: Record<string, StarData> = {
-    /** Chitra — α Virginis. Defines True Chitrapaksha. */
-    Spica: {
-        name: 'Spica (Chitra, α Vir)',
-        ra: hms(13, 25, 11.5793),
-        dec: dms(-11, 9, 40.759),
-        pmRA: -42.5,
-        pmDec: -31.73,
-        parallax: 12.44,
-        radVel: 0.0,
-    },
+    /** Chitra — α Virginis (jhora profile catalogue; see {@link spicaForProfile}). */
+    Spica: SPICA_JHORA,
     /** Pushya — δ Cancri (Asellus Australis). Defines True Pushya paksha. */
     DeltaCancri: {
         name: 'Asellus Australis (Pushya, δ Cnc)',
@@ -202,6 +226,16 @@ export const STARS: Record<string, StarData> = {
     },
 };
 
+/** True Chitrapaksha Spica catalogue entry for a precision profile (ADR 0015). */
+export function spicaForProfile(profile: PrecisionProfile): StarData {
+    return profile === 'modern' ? SPICA_MODERN : SPICA_JHORA;
+}
+
+function starDataForModel(starKey: keyof typeof STARS, profile: PrecisionProfile): StarData {
+    if (starKey === 'Spica') return spicaForProfile(profile);
+    return STARS[starKey];
+}
+
 // ---------------------------------------------------------------------------
 // Star position → mean ecliptic of date
 // ---------------------------------------------------------------------------
@@ -211,14 +245,16 @@ export const STARS: Record<string, StarData> = {
  * in degrees.
  *
  * Applies space motion (proper motion + radial velocity) and, optionally,
- * annual parallax. Nutation and aberration are excluded: this is the geometric
- * place on the mean ecliptic, which is what True Citra subtracts from geometric
- * (TRUEPOS) planetary longitudes. The value Swiss Ephemeris *reports* from
- * `swe_get_ayanamsa_ut` is the apparent place instead — see {@link getAyanamsa}.
+ * annual parallax (Urban & Seidelmann, *Explanatory Supplement*, §7.2). Nutation
+ * and aberration are excluded: this is the geometric place on the mean ecliptic,
+ * which is what True Citra subtracts from geometric (TRUEPOS) planetary
+ * longitudes. The modern profile passes the geocentre barycentric position here
+ * for star-defined modes; the jhora profile leaves the observer unset (barycentric
+ * star place). See {@link getAyanamsa} for the apparent star place.
  *
  * @param star        Catalogue entry
  * @param jdUT        Julian Day, UT
- * @param observerAU  Optional observer barycentric position (AU, ICRF) for parallax
+ * @param observerAU  Geocentre barycentric position (AU, ICRF) for annual parallax
  */
 export function starLongitudeOfDate(star: StarData, jdUT: number, observerAU?: Vec): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
@@ -287,7 +323,7 @@ function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
         pos[i] = distAU * p[i] + v * years;
     }
 
-    // ── Annual parallax (12 mas for Spica — included for completeness) ───────
+    // ── Annual parallax (geometric observer offset, Explanatory Supplement §7.2) ─
     if (observerAU) {
         pos[0] -= observerAU[0];
         pos[1] -= observerAU[1];
@@ -295,6 +331,23 @@ function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
     }
 
     return pos;
+}
+
+function starGeometricLongitude(star: StarData, jd: number, profile: PrecisionProfile): number {
+    if (profile === 'modern') {
+        const jdTdb = jd + deltaT(jd) / 86400.0;
+        if (jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END) {
+            const kin = kinematicsProvider?.(jd);
+            if (!kin) {
+                throw new Error(
+                    'Modern geometric star ayanamsa needs the geocentre barycentric position from DE440. ' +
+                        'Call EphemerisEngine.initialize() first.',
+                );
+            }
+            return starLongitudeOfDate(star, jd, kin.observerAU);
+        }
+    }
+    return starLongitudeOfDate(star, jd);
 }
 
 /**
@@ -308,7 +361,7 @@ function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
  * both geometrically and apparently, and the ayanamsa that produces each is
  * a different number. `swe_get_ayanamsa_ut` is the apparent one, without nutation.
  */
-function starApparentLongitude(star: StarData, jdUT: number): number {
+function starApparentLongitude(star: StarData, jdUT: number, profile: PrecisionProfile): number {
     const kin = kinematicsProvider?.(jdUT);
     if (!kin) {
         throw new Error(
@@ -320,7 +373,13 @@ function starApparentLongitude(star: StarData, jdUT: number): number {
     const pos = starIcrfVector(star, jdUT, kin.observerAU);
     const n = Math.hypot(pos[0], pos[1], pos[2]);
     const geometric: Vec = [pos[0] / n, pos[1] / n, pos[2] / n];
-    const apparent = apparentStarDirection(geometric, kin.velocityKmS, kin.sunToObserverKm);
+    let apparent = apparentStarDirection(geometric, kin.velocityKmS, kin.sunToObserverKm);
+
+    // IAU 2000 frame bias after aberration, before precession to the mean
+    // equator of date (IERS Conventions 2010 eq. 5.21; ERFA bi00/bp00, BSD-3).
+    if (profile === 'modern') {
+        apparent = iau2000FrameBias(apparent);
+    }
 
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     return toSpherical(icrfToMeanEclipticOfDate(apparent, julianCenturies(jdTT), jdTT)).lon;
@@ -350,6 +409,19 @@ interface EpochModel {
 }
 
 /**
+ * Lahiri (SE_SIDM 1): CRC 1955 / Bhatnagar 1990 true anchor at 1956-03-21 0h UT,
+ * propagated on the mean ecliptic of the anchor (traditional algorithm).
+ */
+interface LahiriModel {
+    kind: 'lahiri';
+    jd: number;
+    /** True (nutation-bearing) ayanamsa at `jd`, degrees. */
+    trueValue: number;
+    label: string;
+    source: 'definition';
+}
+
+/**
  * True ayanamsa at a reference epoch, stored as mean by subtracting IAU 1980
  * nutation in longitude at that instant, then propagated with IAU 2006 precession
  * (same rotation as other epoch modes). Matches Swiss Ephemeris `SIDM_LAHIRI_ICRC`.
@@ -363,7 +435,35 @@ interface TrueEpochModel {
     source: 'definition';
 }
 
-export type AyanamsaModel = StarModel | EpochModel | TrueEpochModel;
+export type AyanamsaModel = StarModel | EpochModel | TrueEpochModel | LahiriModel;
+
+/** 1956-03-21 0h UT — Lahiri anchor (CRC 1955; Bhatnagar 1990, 0h UT). JD is UT. */
+export const LAHIRI_ANCHOR_JD = 2435553.5;
+
+/**
+ * True Lahiri at {@link LAHIRI_ANCHOR_JD}: 23°15′00.658″.
+ *
+ * CRC (1955) and Bhatnagar (1990, IAU Symp. 141 p. 186,
+ * DOI 10.1017/S0074180900086745) define the true tropical ayanamsa as 23°15′00″
+ * on 21 March 1956, 0h UT. The 0.658″ excess matches Bhatnagar's IAE J2000 mean
+ * algorithm A = 23°51′25.532″ + 5029.0966″T + 1.11161″T² (T from J2000) plus
+ * IAU 2000A nutation in longitude Δψ ≈ 16.777″ at the anchor (≈ 23°15′00.666″).
+ */
+export const LAHIRI_TRUE_AT_ANCHOR_DEG = 23 + 15 / 60 + 0.658 / 3600;
+
+/**
+ * IAU 2000A (+ IAU 2006 adjustment) nutation in longitude at the Lahiri anchor,
+ * arcseconds. Derived value: Δψ at T ≈ −0.4378234 (JD 2435553.5); used to demean
+ * the CRC/Bhatnagar true value for the jhora profile (IAU 1980 nutation chain).
+ */
+export const LAHIRI_IAU2000A_DPSI_AT_ANCHOR_ARCSEC = 16.7769;
+
+/**
+ * Accumulated general precession, anchor → J2000, between the IAU 1976 / IAE rate
+ * (Bhatnagar 1990: 5029.0966″/cy, 1.11161″/cy²) and IAU 2006 p_A (Capitaine et al.
+ * 2003; ERFA p06e). Modern profile only; bridges Lahiri under Vondrák 2011.
+ */
+export const LAHIRI_IAU1976_PRECESSION_CORRECTION_ARCSEC = 0.13036;
 
 /** B.V. Raman, *Hindu Predictive Astrology*, App. A: (year − 397) × 50⅓″ at 1900 January 0.5. */
 const RAMAN_AYANAMSA_1900_DEG = ((1900 - 397) * (50 + 1 / 3)) / 3600;
@@ -440,11 +540,11 @@ export const AYANAMSA_MODELS: Record<number, AyanamsaModel> = {
         label: 'Fagan/Bradley',
         source: 'definition',
     },
-    // Lahiri (SE_SIDM_LAHIRI = 1). See docs/DATA-SOURCES.md.
+    // Lahiri (SE_SIDM_LAHIRI = 1). See docs/DATA-SOURCES.md and ADR 0015.
     1: {
-        kind: 'epoch',
-        jd: 2415020.0,
-        value: 22 + 27 / 60 + 37.76 / 3600,
+        kind: 'lahiri',
+        jd: LAHIRI_ANCHOR_JD,
+        trueValue: LAHIRI_TRUE_AT_ANCHOR_DEG,
         label: 'Lahiri',
         source: 'definition',
     },
@@ -508,6 +608,38 @@ export function accumulatedPrecession(jdFrom: number, jdTo: number): number {
     return lon > 180 ? lon - 360 : lon;
 }
 
+/**
+ * Longitude, on the **mean ecliptic of `jdAnchor`**, of the mean equinox at `jd`.
+ * This is the traditional Lahiri precession term P(t0→t) (ecliptic of t0).
+ */
+export function meanEquinoxLongitudeOnEclipticOf(jdAnchor: number, jd: number): number {
+    const jdTTAnchor = jdAnchor + deltaT(jdAnchor) / 86400.0;
+    const jdTT = jd + deltaT(jd) / 86400.0;
+    const TAnchor = julianCenturies(jdTTAnchor);
+    const T = julianCenturies(jdTT);
+    const vernalAtJd: Vec = matTransposeVec(precessionMatrix(T, jdTT), [1, 0, 0]);
+    const onAnchorEcliptic = rotateX(
+        matVec(precessionMatrix(TAnchor, jdTTAnchor), vernalAtJd),
+        meanObliquity(TAnchor, jdTTAnchor),
+    );
+    const lon = toSpherical(onAnchorEcliptic).lon;
+    return lon > 180 ? lon - 360 : lon;
+}
+
+function lahiriMeanAtAnchor(profile: PrecisionProfile): number {
+    const dpsiDeg =
+        profile === 'modern'
+            ? nutationLongitudeDegrees(LAHIRI_ANCHOR_JD)
+            : LAHIRI_IAU2000A_DPSI_AT_ANCHOR_ARCSEC / 3600;
+    const bridgeDeg = profile === 'modern' ? LAHIRI_IAU1976_PRECESSION_CORRECTION_ARCSEC / 3600 : 0;
+    return LAHIRI_TRUE_AT_ANCHOR_DEG - dpsiDeg + bridgeDeg;
+}
+
+function getLahiriAyanamsa(jd: number, profile: PrecisionProfile): number {
+    const mean0 = lahiriMeanAtAnchor(profile);
+    return mod360(mean0 - meanEquinoxLongitudeOnEclipticOf(LAHIRI_ANCHOR_JD, jd));
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -535,16 +667,27 @@ export type AyanamsaFrame = 'apparent' | 'geometric';
  * @param frame  Star-defined modes only. Defaults to the geometric place JHora
  *               subtracts; 'apparent' is the swe_get_ayanamsa_ut value (opt-in).
  */
-export function getAyanamsa(mode: number, jd: number, frame: AyanamsaFrame = 'geometric'): number {
+export function getAyanamsa(
+    mode: number,
+    jd: number,
+    frame: AyanamsaFrame = 'geometric',
+    profile?: PrecisionProfile,
+): number {
     assertValidAyanamsaMode(mode);
     const model = AYANAMSA_MODELS[mode]!;
+    const effectiveProfile = profile ?? getDeltaTContext().profile ?? 'jhora';
 
     if (model.kind === 'star') {
+        const star = starDataForModel(model.star, effectiveProfile);
         const lon =
             frame === 'geometric'
-                ? starLongitudeOfDate(STARS[model.star], jd)
-                : starApparentLongitude(STARS[model.star], jd);
+                ? starGeometricLongitude(star, jd, effectiveProfile)
+                : starApparentLongitude(star, jd, effectiveProfile);
         return mod360(lon - model.atLongitude);
+    }
+
+    if (model.kind === 'lahiri') {
+        return getLahiriAyanamsa(jd, effectiveProfile);
     }
 
     if (model.kind === 'true_epoch') {

@@ -16,7 +16,7 @@ import {
     LAST_OBSERVED_YEAR_MODERN,
     NodeJHora,
 } from '../../src/index.js';
-import { getGAST } from '../../src/engine/coordinates.js';
+import { getGMST } from '../../src/engine/coordinates.js';
 import {
     deltaT,
     getDeltaTContext,
@@ -82,8 +82,8 @@ describe('ΔT context and override', () => {
 
     test('the 2050 sidereal-time join does not depend on the ΔT prediction in force', () => {
         const jd = jdOfYear(2100);
-        const a = withDeltaTContext({ profile: 'jhora', overrideSeconds: 150 }, () => getGAST(jd));
-        const b = withDeltaTContext({ profile: 'modern', overrideSeconds: 150 }, () => getGAST(jd));
+        const a = withDeltaTContext({ profile: 'jhora', overrideSeconds: 150 }, () => getGMST(jd));
+        const b = withDeltaTContext({ profile: 'modern', overrideSeconds: 150 }, () => getGMST(jd));
         expect(a).toBe(b);
     });
 });
