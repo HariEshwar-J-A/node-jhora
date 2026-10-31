@@ -182,6 +182,16 @@ export function vondrakMeanObliquityDegrees(T: number): number {
 }
 
 /**
+ * IAU 2006 / Vondrák Table 3 general precession in longitude p_A (arcseconds),
+ * Julian centuries TT from J2000.0. Added to J2000 ecliptic longitudes for
+ * referral to the mean equinox of date near the DE440s span.
+ */
+export function generalPrecessionLongitudeArcsec(T: number): number {
+    const [pAs] = vondrakPeriodic(T, PE_PER, PE_POL);
+    return pAs;
+}
+
+/**
  * Mean obliquity of the ecliptic (degrees), Vondrák ε_A (eq. 10).
  */
 export function meanObliquity(T: number, _jdTT?: number): number {

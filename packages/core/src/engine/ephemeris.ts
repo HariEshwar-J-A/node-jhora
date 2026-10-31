@@ -90,7 +90,6 @@ import {
     type AyanamsaFrame,
     ayanamsaName,
     getAyanamsa as computeAyanamsa,
-    meanLunarNode,
     setStarKinematicsProvider,
     toSidereal,
 } from './ayanamsa.js';
@@ -126,6 +125,12 @@ import {
     sphericalRatesDegPerDay,
 } from './kinematics.js';
 import { computeTrueOsculatingNode } from './lunar-node.js';
+import {
+    meanLunarNodeFromJdTT,
+    meanLunarNodeMeeus,
+    meanLunarNodeSpeedDegPerDay,
+    meanLunarNodeUsesMeeusHybrid,
+} from './mean-lunar-node.js';
 import { nutation } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
@@ -708,12 +713,16 @@ export class EphemerisEngine {
         dist: number;
         speed: number;
     } {
-        const T = julianCenturies(jdUT + deltaT(jdUT) / 86400.0);
-
         if (nodeType === 'mean') {
-            // Mean regression: −360° per 6798.38 days (18.6-year nodal cycle).
-            const speed = -1934.1362891 / 36525.0;
-            return { lon: meanLunarNode(T), dist: 0.002569, speed };
+            const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+            const T = julianCenturies(jdTT);
+            const year = 2000 + T * 100;
+            if (meanLunarNodeUsesMeeusHybrid(year)) {
+                const speed = -1934.1362891 / 36525.0;
+                return { lon: meanLunarNodeMeeus(T), dist: 0.002569, speed };
+            }
+            const speed = meanLunarNodeSpeedDegPerDay(jdTT);
+            return { lon: meanLunarNodeFromJdTT(jdTT), dist: 0.002569, speed };
         }
 
         const source = {
