@@ -192,6 +192,10 @@ export const CalculationSettingsSchema: z.ZodObject<{
         published: "published";
         "oracle-compat": "oracle-compat";
     }>>;
+    starParallax: z.ZodOptional<z.ZodEnum<{
+        "oracle-compat": "oracle-compat";
+        continuous: "continuous";
+    }>>;
     deltaTOverrideSeconds: z.ZodOptional<z.ZodNumber>;
     ephemerisPolicy: z.ZodDefault<z.ZodEnum<{
         auto: "auto";
@@ -929,6 +933,7 @@ export interface JyotishConfig {
     nodeType: NodeType;
     positionMode: PositionMode;
     precisionProfile?: PrecisionProfile;
+    starParallax?: StarParallaxId;
     sunriseHour: number;
     topocentric: boolean;
 }
@@ -1244,6 +1249,7 @@ export interface PrecisionOptions {
     houseSystemId?: HouseSystemId_2;
     julianDayUt?: number;
     precisionProfile?: PrecisionProfile;
+    starParallax?: StarParallaxId;
 }
 
 // @public
@@ -1417,6 +1423,11 @@ export const SEVEN_GRAHAS_JHORA_ORDER: readonly Body_2[];
 
 // @public
 export function sha256HexAsync(bytes: Uint8Array): Promise<string>;
+
+// Warning: (ae-forgotten-export) The symbol "STAR_PARALLAX_MODES" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export type StarParallaxId = (typeof STAR_PARALLAX_MODES)[number];
 
 // @public (undocumented)
 export const SUNRISE_LIMBS: readonly ["disc_centre", "upper_limb"];

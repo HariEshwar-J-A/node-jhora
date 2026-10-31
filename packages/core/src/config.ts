@@ -34,7 +34,7 @@ import {
     type PositionMode,
 } from './engine/ephemeris.js';
 import type { HouseAnchorId, HouseSystemLegacy } from './engine/house-registry.js';
-import type { DeltaTForecastId } from './settings/schema.js';
+import type { DeltaTForecastId, StarParallaxId } from './settings/schema.js';
 import type { CalendarMode } from './time/historical.js';
 import {
     type DasamsaScheme,
@@ -136,6 +136,13 @@ export interface JyotishConfig {
      * `'published'`. `'oracle-compat'` selects the in-house pyswisseph extrapolation.
      */
     deltaTForecast?: DeltaTForecastId;
+
+    /**
+     * Modern geometric star-ayanamsa parallax when `precisionProfile` is `'modern'`.
+     * Omitted means `'oracle-compat'` (DE440 parallax inside kernel only). `'continuous'`
+     * applies VSOP87E outside DE440s with edge blend (ADR 0023).
+     */
+    starParallax?: StarParallaxId;
 
     /**
      * Civil calendar for date inputs. Omitted means `'auto'` (Julian before

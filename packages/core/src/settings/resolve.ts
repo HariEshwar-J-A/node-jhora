@@ -65,6 +65,7 @@ const SETTINGS_MARKS = [
     'houseAnchor',
     'customAyanamsaMode',
     'deltaTForecast',
+    'starParallax',
 ] as const;
 
 export function isSettingsShape(value: object): value is Partial<CalculationSettings> {
@@ -105,6 +106,7 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         ...(settings.deltaTForecast === 'oracle-compat'
             ? { deltaTForecast: settings.deltaTForecast }
             : {}),
+        ...(settings.starParallax === 'continuous' ? { starParallax: settings.starParallax } : {}),
         ...(settings.calendar !== undefined && settings.calendar !== 'auto'
             ? { calendar: settings.calendar }
             : {}),
@@ -125,6 +127,7 @@ export function jyotishConfigToSettings(
         ...(config.deltaTForecast === 'oracle-compat'
             ? { deltaTForecast: config.deltaTForecast }
             : {}),
+        ...(config.starParallax === 'continuous' ? { starParallax: config.starParallax } : {}),
         ...(config.calendar !== undefined && config.calendar !== 'auto'
             ? { calendar: config.calendar }
             : {}),

@@ -60,3 +60,17 @@ pin `deltaTOverrideSeconds`.
   The constant at that join matches the SE 2.02-era ΔT. So both profiles
   compute the join offset with the `'jhora'` ΔT model. The chart's own ΔT
   (profile or override) still drives sidereal time everywhere else.
+
+## Geometric star parallax (`starParallax`, modern only)
+
+Applies only to **geometric** star-defined ayanamsas (True Citra/Pushya/Mula) when
+`precisionProfile` is `'modern'`. Apparent ayanamsa and the `jhora` profile are
+unchanged.
+
+| Value           | Behaviour                                                                                                                                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `oracle-compat` | **Default.** DE440 annual parallax inside the DE440s kernel; barycentric outside. Matches pre-#322 main and the full-range oracle kit (including the ~8 mas step at each kernel edge).                                                                        |
+| `continuous`    | Opt-in. DE440 inside the kernel, truncated VSOP87E outside, ±30 TDB day smoothstep blend at edges (ADR 0023). Removes the edge step; sidereal positions diverge from the oracle outside the kernel because the oracle geometric path stays barycentric there. |
+
+Set on `CalculationSettings.starParallax` or per call via `PrecisionOptions.starParallax`
+(same pattern as `deltaTForecast`).
