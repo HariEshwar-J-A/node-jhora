@@ -81,7 +81,7 @@ await e.initialize({
 const MODES = {
     J: (c) => ({ precisionProfile: 'jhora' }),
     Jo: (c) => ({ precisionProfile: 'jhora', deltaTOverrideSeconds: OJ[c.id].deltaT }),
-    M: (c) => ({ precisionProfile: 'modern' }),
+    M: (c) => ({ precisionProfile: 'modern', deltaTForecast: 'oracle-compat' }),
     Mo: (c) => ({ precisionProfile: 'modern', deltaTOverrideSeconds: OM[c.id].deltaT }),
 };
 
@@ -105,7 +105,10 @@ for (const c of cases) {
     );
     const er = eraLabel(c.y);
     const jdUt = e.julday(dt);
-    const modernDeltaTNative = withDeltaTContext({ profile: 'modern' }, () => deltaT(jdUt));
+    const modernDeltaTNative = withDeltaTContext(
+        { profile: 'modern', forecast: 'oracle-compat' },
+        () => deltaT(jdUt),
+    );
     const modernDeltaTOracle = OM[c.id].deltaT;
     const modernDeltaTComparable =
         Math.abs(modernDeltaTNative - modernDeltaTOracle) <= M_DELTA_T_MATCH_SEC;
@@ -119,7 +122,11 @@ for (const c of cases) {
         let ps;
         try {
             ps = withDeltaTContext(
-                { profile: P.precisionProfile, overrideSeconds: P.deltaTOverrideSeconds },
+                {
+                    profile: P.precisionProfile,
+                    overrideSeconds: P.deltaTOverrideSeconds,
+                    forecast: P.deltaTForecast,
+                },
                 () =>
                     e.getPlanets(
                         dt,

@@ -78,7 +78,7 @@ export function compareFixture(
         const utc = utcFromRow(row);
         const year = utc.year;
         const jd = engine.julday(utc);
-        const dT = deltaT(jd, 'modern');
+        const dT = deltaT(jd, 'modern', 'oracle-compat');
         const T = (jd + dT / 86400 - 2451545.0) / 36525;
         const { dpsi, deps } = nutation(T);
         const epsTrue = meanObliquity(T, jd + dT / 86400) + deps;
@@ -86,6 +86,7 @@ export function compareFixture(
         const planets = engine.getPlanets(utc, site.geo, {
             positionMode: 'apparent',
             precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
             topocentric,
         });
         const p = planets.find((pl) => pl.name === row.body);

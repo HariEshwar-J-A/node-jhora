@@ -73,6 +73,9 @@ describe('speed oracle (case 48, modern era)', () => {
                         ayanamsaOrder: 27,
                         nodeType: 'true',
                         precisionProfile: profile,
+                        ...(profile === 'modern'
+                            ? { deltaTForecast: 'oracle-compat' as const }
+                            : {}),
                         positionMode: 'geometric',
                     },
                 );

@@ -64,6 +64,7 @@ const SETTINGS_MARKS = [
     'cuspsInMiddle',
     'houseAnchor',
     'customAyanamsaMode',
+    'deltaTForecast',
 ] as const;
 
 export function isSettingsShape(value: object): value is Partial<CalculationSettings> {
@@ -101,6 +102,9 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         ...(settings.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: settings.deltaTOverrideSeconds }
             : {}),
+        ...(settings.deltaTForecast === 'oracle-compat'
+            ? { deltaTForecast: settings.deltaTForecast }
+            : {}),
         ...(settings.calendar !== undefined && settings.calendar !== 'auto'
             ? { calendar: settings.calendar }
             : {}),
@@ -117,6 +121,9 @@ export function jyotishConfigToSettings(
         precisionProfile: config.precisionProfile ?? base.precisionProfile,
         ...(config.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: config.deltaTOverrideSeconds }
+            : {}),
+        ...(config.deltaTForecast === 'oracle-compat'
+            ? { deltaTForecast: config.deltaTForecast }
             : {}),
         ...(config.calendar !== undefined && config.calendar !== 'auto'
             ? { calendar: config.calendar }

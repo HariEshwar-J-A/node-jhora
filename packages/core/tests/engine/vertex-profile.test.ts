@@ -48,7 +48,10 @@ describe('Vertex — precision profiles vs oracles', () => {
     });
 
     describe('modern profile (pyswisseph 2.10 / SE_SIDM_TRUE_CITRA sidereal houses)', () => {
-        const modern: PrecisionOptions = { precisionProfile: 'modern' };
+        const modern: PrecisionOptions = {
+            precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
+        };
 
         test.each(latitudePins.samples.map((s) => [s.lat, s.vertex] as const))(
             'φ = %s° at J2000 within 1″ of SE 2.10 sidereal vertex',
@@ -82,7 +85,10 @@ describe('Vertex — precision profiles vs oracles', () => {
     });
 
     describe('modern profile sweep oracle (oracle ΔT)', () => {
-        const modern: PrecisionOptions = { precisionProfile: 'modern' };
+        const modern: PrecisionOptions = {
+            precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
+        };
 
         test.each(sweepPins.samples.map((s) => [s.id, s.lat, s] as const))(
             'sweep case #%i φ = %s° within 1″ of pyswisseph oracle',

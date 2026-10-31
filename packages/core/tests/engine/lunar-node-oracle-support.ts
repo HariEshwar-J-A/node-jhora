@@ -104,7 +104,7 @@ export function gapArcsec(a: number, b: number): number {
 export function modeOptions(c: NodeCase, mode: NodeMode): PrecisionOptions {
     if (mode === 'J') return { precisionProfile: 'jhora' };
     if (mode === 'Jo') return { precisionProfile: 'jhora', deltaTOverrideSeconds: c.jhora.deltaT };
-    if (mode === 'M') return { precisionProfile: 'modern' };
+    if (mode === 'M') return { precisionProfile: 'modern', deltaTForecast: 'oracle-compat' };
     return { precisionProfile: 'modern', deltaTOverrideSeconds: c.modern.deltaT };
 }
 
@@ -134,7 +134,11 @@ function mod360(x: number): number {
 export function meanSidereal(engine: EphemerisEngine, c: NodeCase, mode: NodeMode): number {
     const options = modeOptions(c, mode);
     return withDeltaTContext(
-        { profile: options.precisionProfile, overrideSeconds: options.deltaTOverrideSeconds },
+        {
+            profile: options.precisionProfile,
+            overrideSeconds: options.deltaTOverrideSeconds,
+            forecast: options.deltaTForecast,
+        },
         () => {
             const jd = fixtureJd(engine, c);
             const trop = meanLunarNode(julianCenturies(jd + deltaT(jd) / 86400));

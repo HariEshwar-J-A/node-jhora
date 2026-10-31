@@ -51,12 +51,18 @@ function siderealNode(
     profile: PrecisionProfile,
     opts: Parameters<typeof trueAscendingNodeLongitude>[2],
 ): number {
-    const trop = withDeltaTContext({ profile }, () =>
-        trueAscendingNodeLongitude(jd, source, { ...opts, precisionProfile: profile }),
+    const ctx =
+        profile === 'modern' ? { profile, forecast: 'oracle-compat' as const } : { profile };
+    const trop = withDeltaTContext(ctx, () =>
+        trueAscendingNodeLongitude(jd, source, {
+            ...opts,
+            precisionProfile: profile,
+            ...(profile === 'modern' ? { deltaTForecast: 'oracle-compat' as const } : {}),
+        }),
     );
     return toSidereal(
         trop,
-        withDeltaTContext({ profile }, () => getAyanamsa(27, jd, 'geometric')),
+        withDeltaTContext(ctx, () => getAyanamsa(27, jd, 'geometric')),
     );
 }
 

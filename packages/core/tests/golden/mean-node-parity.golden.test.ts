@@ -73,7 +73,10 @@ describe('mean node golden max error (DE440s)', () => {
     });
 
     test('modern profile ≤ 0.14″ vs SE 2.10 (Meeus eq. 47.7)', () => {
-        const max = maxMeanNodeError(MODERN.cases, { precisionProfile: 'modern' });
+        const max = maxMeanNodeError(MODERN.cases, {
+            precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
+        });
         expect(max).toBeLessThan(0.14);
     });
 });

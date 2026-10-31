@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-26), revised 2026-10-31 (USNO preds bridge; no oracle ΔT in library)
+Accepted (2026-10-26), revised 2026-10-31 (USNO preds bridge; dual post-bridge forecast)
 
 ## Context
 
@@ -25,7 +25,7 @@ readme. Tidal ΔT adjustments cite van Gent / NASA forms (`deltat-tidal.ts`).
 
 ## Decision
 
-Implement `deltaTModern(jdUT)` in `packages/core/src/engine/deltat-modern.ts`:
+Implement `deltaTModern(jdUT, forecast)` in `packages/core/src/engine/deltat-modern.ts`:
 
 1. **Y < −720** — SMH2016 Table S15 parabola (eq. 4.1) minus the published join offset at
    −720, plus van Gent tidal correction to DE431 n′.
@@ -38,32 +38,39 @@ Implement `deltaTModern(jdUT)` in `packages/core/src/engine/deltat-modern.ts`:
 4. **2027–2028** — USNO `deltat.preds` TT−UT at Year 2027.00 and 2028.00
    (`deltat-modern-bridge.ts`, `tools/generate-deltat-modern-bridge.mjs`).
 
-5. **Y > 2028** — UKHO near-term cubic, millennial parabola from 2500 CE, and a **100-year
-   linear hand-off** from the last bridge second (`deltat-modern-forecast.ts`).
+5. **Y > 2028** — post-bridge forecast selected by **`deltaTForecast`** on
+   `CalculationSettings` / `PrecisionOptions` (default **`'published'`**):
+    - **`published`** — UKHO HMNAO lod integration (LVM page) through 2500 CE, SMH2016 eq. 4.1
+      beyond with a 100-year linear blend at 2500, plus the existing 100-year hand-off from
+      the last bridge second (`deltat-modern-forecast-published.ts`).
+    - **`oracle-compat`** — the previous in-house cubic + `42.5 + 32.5c²` curve kept
+      byte-for-byte for pyswisseph 2.10 test fixtures only (`deltat-modern-forecast-oracle-compat.ts`).
+      It is **not** a published model and must not be cited as UKHO/SMH2016.
 
-Envelope id: `modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-cubic+smh2016-parabola`.
+Envelope ids:
+
+- `modern:…+ukho-lod+smh2016-eq4.1` when `deltaTForecast: 'published'` (default)
+- `modern:…+oracle-compat-forecast` when `deltaTForecast: 'oracle-compat'`
+
+All pyswisseph / SE 2.10 oracle comparisons in tests and `tools/` must pass
+`deltaTForecast: 'oracle-compat'` (or `deltaT(jd, 'modern', 'oracle-compat')`).
 
 ## Validation vs pyswisseph 2.10 (measured)
 
-Run `node tools/measure-deltat-modern-residuals.mjs` after `pnpm --filter @node-jhora/core build`.
-Latest sweep (yearly −10000…+10000 on mean-Gregorian JD, plus dense almanac-year samples at
-joins):
-
-| Band                      | Max \|ΔT\| (s) | Notes                                                   |
-| ------------------------- | -------------: | ------------------------------------------------------- |
-| Y < 1955 (excl. knot day) |           ≈0.6 | Deep past / spline                                      |
-| −720 CE oracle JD         |           ≈450 | SMH2016 only; `known-gap` ceiling test                  |
-| Kit bound −719.688…       |          <0.06 | Near knot                                               |
-| 1955–2025                 |          ≤0.05 | USNO record + monthly                                   |
-| 2026 (USNO vs oracle)     |          ≈0.21 | Oracle uses non-USNO extrapolation; test ceiling 0.25 s |
-| 2027–2028 bridge          |          ≤0.55 | USNO preds vs pyswisseph 2.10 (test ceiling)            |
-| 2029–10000                |         <1e−10 | Forecast + hand-off at almanac-year JDs                 |
+Run `node tools/measure-deltat-modern-residuals.mjs` with **`oracle-compat`** after
+`pnpm --filter @node-jhora/core build`. Residuals match the prior ADR sweep (< 1e−10 s on
+forecast-era almanac-year samples). The **`published`** forecast is checked against HMNAO
+table anchors in `deltat-modern-published-forecast.test.ts` (±20 s at listed years, bridge
+anchor).
 
 Chart goldens (`modern-se210.golden.test.ts`) assert mode **M** within **1″** and ΔT within
-**0.06 s** for UTC ≤ 2026; later UTC cases use the bridge + forecast path.
+**0.06 s** for UTC ≤ 2026; later UTC cases use the bridge + **`deltaTOverrideSeconds`** from
+the fixture (not the native forecast).
 
 ## Consequences
 
 - Regenerate USNO tables with `tools/generate-deltat-monthly.mjs` when `deltat.data` updates.
 - Regenerate bridge with `tools/generate-deltat-modern-bridge.mjs` when USNO `deltat.preds` updates.
 - `jhora` ΔT is unchanged.
+- Default chart/API behaviour uses the **published** forecast; opt in to **`oracle-compat`**
+  only when matching legacy Swiss Ephemeris 2.10 extrapolation in tests or compatibility tools.

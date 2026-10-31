@@ -37,6 +37,7 @@ import {
 } from '../engine/ephemeris.js';
 import {
     type CalculationSettings,
+    type DeltaTForecastId,
     getPreset,
     type PrecisionProfileId,
     type SunriseLimb,
@@ -80,6 +81,8 @@ export interface RiseSetDefinition {
      * Absent means the precision profile's own ΔT model.
      */
     deltaTOverrideSeconds?: number;
+    /** Post-bridge forecast when `precisionProfile` is `'modern'`. Default `'published'`. */
+    deltaTForecast?: DeltaTForecastId;
 }
 
 export type RiseSetOutcome =
@@ -124,6 +127,9 @@ export function riseSetDefinitionFromSettings(
         positionMode: settings.positionMode,
         ...(settings.deltaTOverrideSeconds !== undefined
             ? { deltaTOverrideSeconds: settings.deltaTOverrideSeconds }
+            : {}),
+        ...(settings.deltaTForecast === 'oracle-compat'
+            ? { deltaTForecast: settings.deltaTForecast }
             : {}),
         ...overrides,
     };
@@ -426,6 +432,7 @@ export function findRiseSetEvent(
             ...(def.deltaTOverrideSeconds !== undefined
                 ? { overrideSeconds: def.deltaTOverrideSeconds }
                 : {}),
+            ...(def.deltaTForecast !== undefined ? { forecast: def.deltaTForecast } : {}),
         },
         () => findRiseSetEventInner(engine, bodyId, event, jdStartUt, location, def),
     );

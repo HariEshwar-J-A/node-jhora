@@ -20,13 +20,13 @@ const fixture = JSON.parse(
 /** SMH2016 Table S15 knot day: pyswisseph overshoot not in the paper (oracle only). */
 const ORACLE_KNOT_DAY_Y = -720;
 
-describe('modern ΔT vs pyswisseph 2.10 (published model)', () => {
+describe('modern ΔT vs pyswisseph 2.10 (oracle-compat forecast)', () => {
     test.each(
         fixture.samples
             .filter((s) => s.y !== ORACLE_KNOT_DAY_Y)
             .map((s) => [s.y, s.jdUT, s.deltaTSeconds] as const),
     )('year %s within %ss of SE 2.10', (y, jdUT, expected) => {
-        const err = Math.abs(deltaT(jdUT, 'modern') - expected);
+        const err = Math.abs(deltaT(jdUT, 'modern', 'oracle-compat') - expected);
         if (y < -700) {
             expect(err).toBeLessThan(0.6);
             return;
@@ -55,13 +55,13 @@ describe('known-gap: SMH2016 −720 knot vs pyswisseph oracle day', () => {
     const knot = fixture.samples.find((s) => s.y === ORACLE_KNOT_DAY_Y);
     test('oracle knot-day residual ceiling (published spline only)', () => {
         expect(knot).toBeDefined();
-        const err = Math.abs(deltaT(knot!.jdUT, 'modern') - knot!.deltaTSeconds);
+        const err = Math.abs(deltaT(knot!.jdUT, 'modern', 'oracle-compat') - knot!.deltaTSeconds);
         expect(err).toBeLessThan(500);
     });
     test('kit boundary near knot within 0.06 s', () => {
         const kit = fixture.samples.find((s) => s.tag === 'oracle-kit-bound-720');
         expect(kit).toBeDefined();
-        const err = Math.abs(deltaT(kit!.jdUT, 'modern') - kit!.deltaTSeconds);
+        const err = Math.abs(deltaT(kit!.jdUT, 'modern', 'oracle-compat') - kit!.deltaTSeconds);
         expect(err).toBeLessThan(0.06);
     });
 });

@@ -34,6 +34,7 @@ import {
     type PositionMode,
 } from './engine/ephemeris.js';
 import type { HouseAnchorId, HouseSystemLegacy } from './engine/house-registry.js';
+import type { DeltaTForecastId } from './settings/schema.js';
 import type { CalendarMode } from './time/historical.js';
 import {
     type DasamsaScheme,
@@ -129,6 +130,12 @@ export interface JyotishConfig {
 
     /** Fixed ΔT in seconds replacing the profile's model. See CalculationSettings. */
     deltaTOverrideSeconds?: number;
+
+    /**
+     * Post-bridge ΔT forecast when `precisionProfile` is `'modern'`. Omitted means
+     * `'published'`. `'oracle-compat'` selects the in-house pyswisseph extrapolation.
+     */
+    deltaTForecast?: DeltaTForecastId;
 
     /**
      * Civil calendar for date inputs. Omitted means `'auto'` (Julian before

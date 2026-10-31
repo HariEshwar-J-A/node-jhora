@@ -47,6 +47,7 @@ describe('apparent positionMode speeds (case 48)', () => {
                 ayanamsaOrder: 27,
                 nodeType: 'true',
                 precisionProfile: 'modern',
+                deltaTForecast: 'oracle-compat',
                 positionMode: 'geometric',
             },
         );
@@ -57,6 +58,7 @@ describe('apparent positionMode speeds (case 48)', () => {
                 ayanamsaOrder: 27,
                 nodeType: 'true',
                 precisionProfile: 'modern',
+                deltaTForecast: 'oracle-compat',
                 positionMode: 'apparent',
             },
         );
