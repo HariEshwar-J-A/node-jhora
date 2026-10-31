@@ -520,6 +520,18 @@ function apcHourAngleDeg(house: number, dsaDeg: number, nsaDeg: number): number 
  * APC / Sunshine Treindl: parallel at `declDeg` trisected by hour angle; position
  * circles through the horizon north point (Knegt; SE §6.2.14–6.2.15).
  */
+/** Treindl Sunshine (`I`): APC on the solar declination parallel. */
+export function treindlSunshineCusps(
+    ramc: number,
+    lat: number,
+    eps: number,
+    asc: number,
+    mc: number,
+    sunDeclDeg: number,
+): number[] {
+    return apcCuspsFromDeclination(ramc, lat, eps, asc, mc, sunDeclDeg);
+}
+
 function apcCuspsFromDeclination(
     ramc: number,
     lat: number,
@@ -565,29 +577,11 @@ function apcCusps(ramc: number, lat: number, eps: number, asc: number, mc: numbe
     return apcCuspsFromDeclination(ramc, lat, eps, asc, mc, decAsc);
 }
 
-/** Equator equinox branch for Makransky (`i`): (RAMC°, house) pairs from black-box parity. */
-const MAKRANSKY_EQUATOR_EQUINOX: ReadonlyArray<readonly [number, number]> = [
-    [30, 3],
-    [60, 2],
-    [120, 12],
-    [150, 11],
-    [210, 9],
-    [240, 8],
-    [300, 6],
-    [330, 5],
-];
-
-function makranskyEquinoxCuspOverride(ramc: number, lat: number, house: number): boolean {
-    if (Math.abs(lat) > 1e-9) return false;
-    return MAKRANSKY_EQUATOR_EQUINOX.some(
-        ([r, h]) => h === house && Math.abs(wrap180(ramc - r)) < 0.05,
-    );
-}
+import { makranskySunCircumpolar, makranskySunshineCusps } from './makransky-sunshine.js';
 
 /**
- * Sunshine (SE §6.2.15): Treindl (`I`) and Makransky (`i`) share the APC geometry with
- * solar declination; `i` adds the equator equinox branch and matches Treindl in the
- * long-semi-arc wedge until that branch is closed (ADR 0017).
+ * Sunshine: Treindl (`I`) uses APC on the solar parallel; Makransky (`i`) uses
+ * Makransky (1988) pp. 36–39, 147–148 (ADR 0022). Letters `I`/`i`: swephprg.htm.
  */
 function sunshineCusps(
     ramc: number,
@@ -599,12 +593,13 @@ function sunshineCusps(
     variant: 'makransky' | 'treindl',
 ): number[] {
     const [, sunDecl] = raDeclFromEcliptic(sunLon, 0, eps);
-    const cusps = apcCuspsFromDeclination(ramc, lat, eps, asc, mc, sunDecl);
-    if (variant !== 'makransky') return cusps;
-    for (let h = 1; h <= 12; h++) {
-        if (makranskyEquinoxCuspOverride(ramc, lat, h)) cusps[h - 1] = 0;
+    if (variant === 'treindl') {
+        return apcCuspsFromDeclination(ramc, lat, eps, asc, mc, sunDecl);
     }
-    return cusps;
+    if (makranskySunCircumpolar(lat, sunDecl)) {
+        return apcCuspsFromDeclination(ramc, lat, eps, asc, mc, sunDecl);
+    }
+    return makranskySunshineCusps(ramc, lat, eps, asc, mc, sunDecl);
 }
 
 function gauquelinSigma(ramc: number, lat: number, eps: number, lon: number): number {

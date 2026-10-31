@@ -34,3 +34,4 @@ log. The clean-room rule those records must respect is
 | [0016](0016-mean-lunar-node-elp-de441.md)                     | ELP/MPP02 + DE441 mean node (hybrid retains Meeus) | accepted |
 | [0017](0017-house-systems-clean-room.md)                      | Clean-room house systems (SE letters)              | accepted |
 | [0018](0018-extended-vargas-dashas-outer-planets.md)          | Extended vargas, dashas, outer planets             | accepted |
+| [0022](0022-makransky-sunshine-wedge.md)                      | Makransky Sunshine wedge (SE letter `i`)           | accepted |
