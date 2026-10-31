@@ -3,6 +3,10 @@
  * Max |error| (arcsec) for TrueNd, MeanNd, Ketu by era × J/M from lunar-node-oracle.json.
  *
  * Usage: node tools/lunar-node-era-report.mjs
+ *
+ * Loads DE441/DE431 NJCE chunks when NODE_JHORA_EPHE_LONG_DIR or NJCE_DIR is set
+ * (see packages/core/node/ephemeris.mjs). Without chunks, only fixture cases inside
+ * the DE440s UT window are evaluated; other eras show "—".
  */
 import fs from 'node:fs';
 import path from 'path';
@@ -12,10 +16,17 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const imp = (p) => import(pathToFileURL(path.join(ROOT, p)).href);
 const { registerNodeBspLoaderFromCore } = await imp('packages/core/node/register.mjs');
 registerNodeBspLoaderFromCore();
+const { registerNodeDe441ChunkStore, registerNodeChunkStore } = await imp(
+    'packages/core/node/ephemeris.mjs',
+);
 const { DateTime } = await imp(
     'node_modules/.pnpm/luxon@3.7.2/node_modules/luxon/build/node/luxon.js',
 );
 const { EphemerisEngine } = await imp('packages/core/dist/engine/ephemeris.js');
+
+/** Same UT margins as packages/core/tests/engine/lunar-node-oracle-support.ts */
+const DE440S_UT_FIRST = 2396758.5 + 1;
+const DE440S_UT_LAST = 2506331.5 - 1;
 
 const fixture = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'packages/core/tests/fixtures/lunar-node-oracle.json'), 'utf8'),
@@ -55,7 +66,31 @@ function mod360(x) {
 }
 
 const eng = EphemerisEngine.getInstance();
+let haveLongRangeChunks = false;
+const longDir =
+    process.env.NODE_JHORA_EPHE_LONG_DIR ??
+    process.env.NJCE_DIR ??
+    path.join(ROOT, 'packages/ephe-long/dist');
+if (fs.existsSync(longDir)) {
+    try {
+        await registerNodeDe441ChunkStore(eng, { dirs: [longDir] });
+        haveLongRangeChunks = true;
+    } catch {
+        try {
+            await registerNodeChunkStore(eng, { dirs: [longDir] });
+            haveLongRangeChunks = true;
+        } catch {
+            /* no chunks in dir */
+        }
+    }
+}
+
 await eng.initialize();
+
+function canComputeCase(jdUt) {
+    if (jdUt > DE440S_UT_FIRST && jdUt < DE440S_UT_LAST) return true;
+    return haveLongRangeChunks;
+}
 
 const bodies = ['TrueNd', 'MeanNd', 'Ketu'];
 const modes = [
@@ -70,9 +105,14 @@ for (const b of bodies) {
     }
 }
 
+let skippedOutsideKernel = 0;
 for (const c of fixture.cases) {
     const era = eraOfYear(c.y);
     if (!era) continue;
+    if (!canComputeCase(c.jd)) {
+        skippedOutsideKernel += 1;
+        continue;
+    }
     const utc = DateTime.fromObject(
         { year: c.y, month: c.m, day: c.d, hour: c.H, minute: c.M, second: c.S },
         { zone: 'utc' },
@@ -118,13 +158,22 @@ for (const c of fixture.cases) {
     }
 }
 
+if (skippedOutsideKernel > 0) {
+    console.warn(
+        `lunar-node-era-report: skipped ${skippedOutsideKernel} fixture cases outside ` +
+            `DE440s (attach NJCE via NODE_JHORA_EPHE_LONG_DIR for −10000..10000).\n`,
+    );
+}
+
 console.log('Max |error| (arcsec) — TrueNd / MeanNd / Ketu × J / M\n');
 for (const b of bodies) {
     console.log(`\n${b}`);
     console.log('era                  J        M');
     for (const [label] of ERAS) {
-        const j = (max[`${b}|J|${label}`] || 0).toFixed(3).padStart(8);
-        const m = (max[`${b}|M|${label}`] || 0).toFixed(3).padStart(8);
+        const jKey = `${b}|J|${label}`;
+        const mKey = `${b}|M|${label}`;
+        const j = max[jKey] > 0 ? max[jKey].toFixed(3).padStart(8) : '       —'.padStart(8);
+        const m = max[mKey] > 0 ? max[mKey].toFixed(3).padStart(8) : '       —'.padStart(8);
         console.log(`${label.padEnd(20)}${j}${m}`);
     }
 }

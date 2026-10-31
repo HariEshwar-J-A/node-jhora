@@ -15,12 +15,22 @@ import type { BarycentricSource } from '../../src/engine/apparent.js';
 import type { PrecisionProfile } from '../../src/engine/deltat.js';
 import { withDeltaTContext } from '../../src/engine/deltat.js';
 
+import {
+    NODE_CASES,
+    inDe440s,
+    inWindow,
+    oracleOf,
+    type NodeMode,
+} from './lunar-node-oracle-support.js';
+
 const modern = JSON.parse(
     readFileSync(new URL('../fixtures/modern_se210_golden.json', import.meta.url), 'utf8'),
 ) as { cases: { utc: string; jdUT: number; bodies: { TrueNode: number } }[] };
 
 const DE440S_FIRST = 2396758.5 + 1;
 const DE440S_LAST = 2506331.5 - 1;
+
+const oracleDe440s = NODE_CASES.filter((c) => inWindow(c) && inDe440s(c.jd));
 
 function gapArcsec(a: number, b: number): number {
     let d = (a - b) % 360;
@@ -99,5 +109,45 @@ describe('true-node frame probe (informational)', () => {
             console.log(`  ${v.toFixed(4)}″  ${k}`);
         }
         expect(ranked.length).toBeGreaterThan(0);
+    });
+
+    test('rank frame/velocity variants vs lunar-node-oracle True (DE440s, 0..2150)', () => {
+        const frames: TrueNodeEclipticFrame[] = [
+            'mean_ecliptic_of_date',
+            'true_obliquity_ecliptic',
+            'j2000_mean_ecliptic',
+        ];
+        const velocities: TrueNodeVelocityMode[] = ['spk_analytic', 'fd_1s', 'fd_60s'];
+        const spins = [true, false];
+        const max: Record<string, number> = {};
+
+        for (const frame of frames) {
+            for (const velocityMode of velocities) {
+                for (const precessionSpin of spins) {
+                    const key = `${frame}|${velocityMode}|spin=${precessionSpin}`;
+                    max[key] = 0;
+                    for (const c of oracleDe440s) {
+                        const jd = c.jd;
+                        const sid = siderealNode(jd, lunarSource, 'modern', {
+                            eclipticFrame: frame,
+                            velocityMode,
+                            precessionSpin,
+                        });
+                        const exp = oracleOf(c, 'M' satisfies NodeMode).true.lon;
+                        max[key] = Math.max(max[key], gapArcsec(sid, exp));
+                    }
+                }
+            }
+        }
+
+        const ranked = Object.entries(max).sort((a, b) => a[1] - b[1]);
+        // eslint-disable-next-line no-console
+        console.log('true-node probe (lunar-node-oracle modern, DE440s), best 5:');
+        for (const [k, v] of ranked.slice(0, 5)) {
+            // eslint-disable-next-line no-console
+            console.log(`  ${v.toFixed(4)}″  ${k}`);
+        }
+        expect(ranked[0][0]).toContain('mean_ecliptic_of_date');
+        expect(ranked[0][0]).toContain('spin=false');
     });
 });
