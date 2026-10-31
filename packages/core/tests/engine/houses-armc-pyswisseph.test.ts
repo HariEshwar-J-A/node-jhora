@@ -1,11 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import {
-    computeTropicalHouses,
-    sunshineMakranskyLongArcWedge,
-    type HouseLetter,
-} from '../../src/engine/house-systems.js';
+import { computeTropicalHouses, type HouseLetter } from '../../src/engine/house-systems.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturePath = join(here, '../fixtures/houses_armc_pyswisseph.json');
@@ -28,16 +24,10 @@ type Fixture = {
 };
 
 /**
- * Makransky (`i`) long-semi-arc wedge: min(DSA, NSA) &lt; 45° (Treindl fallback; see ADR 0017).
- * All other letters assert ≤0.001″ vs pyswisseph.
+ * Makransky (`i`) uses the closed-form construction in makransky-sunshine.ts (ADR 0022).
+ * All letters assert ≤0.001″ vs pyswisseph on non-wedge fixture cases.
  */
-const I_WEDGE_GAP =
-    'Sunshine Makransky (i): long semi-arc wedge (min(DSA,NSA)<45°) — no closed form yet';
-
-function knownGapReason(c: FixtureCase): string | undefined {
-    if (c.letter !== 'i') return undefined;
-    if (c.sunDeclination == null) return I_WEDGE_GAP;
-    if (sunshineMakranskyLongArcWedge(c.lat, c.sunDeclination)) return I_WEDGE_GAP;
+function knownGapReason(_c: FixtureCase): string | undefined {
     return undefined;
 }
 
