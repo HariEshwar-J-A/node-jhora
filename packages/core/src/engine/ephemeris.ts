@@ -139,6 +139,7 @@ import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
 import {
     CompositeEphemerisProvider,
     type De431ChunkStore,
+    type De441ChunkStore,
     type EphemerisPolicy,
     type EphemerisProvenance,
 } from './provider/index.js';
@@ -324,7 +325,8 @@ export class EphemerisEngine {
     private spk!: SpkFile;
     private source!: BarycentricSource;
     private composite!: CompositeEphemerisProvider;
-    private chunkStore?: De431ChunkStore;
+    private chunkStoreDe431?: De431ChunkStore;
+    private chunkStoreDe441?: De441ChunkStore;
     private ayanamsaMode: number = DEFAULT_AYANAMSA;
 
     public constructor() {}
@@ -383,17 +385,27 @@ export class EphemerisEngine {
     private ephemerisPolicy: EphemerisPolicy = 'auto';
 
     /**
-     * Attach a DE431 chunk store (browser loader or Node filesystem cache).
-     * Call before {@link initialize} when long-range dates are needed.
+     * Attach DE431 NJCE chunks (legacy long-range kernel).
+     * Call before {@link initialize} when ancient dates need DE431 specifically.
      */
     public setChunkStore(store: De431ChunkStore): void {
-        this.chunkStore = store;
+        this.chunkStoreDe431 = store;
         if (this.initialized) {
             this.attachCompositeProvider();
         }
     }
 
-    /** Force DE440s, DE431 long-range, or auto (default). */
+    /**
+     * Attach DE441 NJCE chunks (preferred long-range kernel outside DE440s in `auto`).
+     */
+    public setDe441ChunkStore(store: De441ChunkStore): void {
+        this.chunkStoreDe441 = store;
+        if (this.initialized) {
+            this.attachCompositeProvider();
+        }
+    }
+
+    /** Force DE440s, DE431/DE441 long-range, or auto (default). */
     public setEphemerisPolicy(policy: EphemerisPolicy): void {
         this.ephemerisPolicy = policy;
         if (this.composite) this.composite.setPolicy(policy);
@@ -1041,51 +1053,57 @@ export class EphemerisEngine {
     // -----------------------------------------------------------------------
 
     private prefetchEphemerisChunks(jdUT: number): void {
-        if (!this.chunkStore) return;
         const margin = CHUNK_PREFETCH_MARGIN_DAYS + PLANET_SPEED_STEP_DAYS;
         const jdTdb = jdUT + deltaT(jdUT) / 86_400;
-        this.chunkStore.prefetchSyncForJdTdb(jdTdb);
-        this.chunkStore.prefetchSyncForJdTdb(jdTdb - margin);
-        this.chunkStore.prefetchSyncForJdTdb(jdTdb + margin);
+        for (const store of [this.chunkStoreDe441, this.chunkStoreDe431]) {
+            if (!store) continue;
+            store.prefetchSyncForJdTdb(jdTdb);
+            store.prefetchSyncForJdTdb(jdTdb - margin);
+            store.prefetchSyncForJdTdb(jdTdb + margin);
+        }
     }
 
     private attachCompositeProvider(): void {
         this.composite = new CompositeEphemerisProvider(this.spk, {
             policy: this.ephemerisPolicy,
-            longRange: this.chunkStore ? { getChunk: this.chunkStore.asGetter() } : undefined,
+            longRangeDe431: this.chunkStoreDe431
+                ? { getChunk: this.chunkStoreDe431.asGetter() }
+                : undefined,
+            longRangeDe441: this.chunkStoreDe441
+                ? { getChunk: this.chunkStoreDe441.asGetter() }
+                : undefined,
         });
         this.source = this.composite;
     }
 
-    /**
-     * Fail fast when a date needs DE431 NJCE data that is not resident (instead
-     * of letting the SPK reader throw RangeError or returning wrong positions).
-     */
+    /** Fail fast when a date needs long-range NJCE data that is not resident. */
     private assertLongRangeChunksForJd(jdUT: number): void {
         const jdTdb = jdUT + deltaT(jdUT) / 86_400;
         if (jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END) {
             return;
         }
-        if (!this.chunkStore) {
+        const store = this.chunkStoreDe441 ?? this.chunkStoreDe431;
+        if (!store) {
             throw new NodeJHoraError(
                 NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
                 `Julian Day (UT) ${jdUT} is outside DE440s coverage (JD(TDB) ${DE440S_JD_TDB_START}–${DE440S_JD_TDB_END}). ` +
-                    'Attach DE431 NJCE chunks with setChunkStore() before calculating ancient or far-future dates.',
+                    'Attach DE441 or DE431 NJCE chunks with setDe441ChunkStore() / setChunkStore() before calculating ancient or far-future dates.',
                 { jd: jdUT, jdTdb },
             );
         }
         const cent = centuryIndex(jdTdbToAstronomicalYear(jdTdb));
         const hasChunk = (groupId: number): boolean => {
             for (const c of [cent - 1, cent, cent + 1]) {
-                if (this.chunkStore!.get(c, groupId)) return true;
+                if (store.get(c, groupId)) return true;
             }
             return false;
         };
+        const kernel = this.chunkStoreDe441 ? 'DE441' : 'DE431';
         if (!hasChunk(0) || !hasChunk(1)) {
             throw new NodeJHoraError(
                 NodeJHoraErrorCode.EPHEMERIS_UNAVAILABLE,
-                `DE431 NJCE chunks for century ${cent} (and neighbours) are not loaded. ` +
-                    'Prefetch or install the matching @node-jhora/ephe-de431-* data package.',
+                `${kernel} NJCE chunks for century ${cent} (and neighbours) are not loaded. ` +
+                    `Prefetch or install the matching @node-jhora/ephe-de441-* or ephe-de431-* data package.`,
                 { jd: jdUT, jdTdb, century: cent },
             );
         }

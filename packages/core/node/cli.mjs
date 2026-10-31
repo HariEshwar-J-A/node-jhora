@@ -5,6 +5,7 @@
  *   node-jhora-ephe where
  *   node-jhora-ephe prefetch de440s [--cache-dir DIR]
  *   node-jhora-ephe prefetch de431 --from YEAR --to YEAR (--base-url URL | --cdn) [--cache-dir DIR]
+ *   node-jhora-ephe prefetch de441 --from YEAR --to YEAR (--base-url URL | --cdn) [--cache-dir DIR]
  *   node-jhora-ephe verify [--dir DIR] [--cache-dir DIR]
  *
  * Years are astronomical (0 = 1 BCE, -2999 = 3000 BCE). Every file is checked
@@ -74,7 +75,7 @@ async function main() {
         return 0;
     }
 
-    if (command === 'prefetch' && target === 'de431') {
+    if (command === 'prefetch' && (target === 'de431' || target === 'de441')) {
         const fromYear = Number(values.from);
         const toYear = Number(values.to);
         if (!Number.isInteger(fromYear) || !Number.isInteger(toYear))
@@ -84,6 +85,7 @@ async function main() {
         const results = await prefetchChunks({
             fromYear,
             toYear,
+            kernel: target,
             cacheDir,
             baseUrl: values['base-url'],
             cdn: values.cdn,

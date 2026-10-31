@@ -49,8 +49,8 @@ export interface EphemerisProvider {
     state(jdTdb: number, body: EphemerisBodyId, frame: EphemerisFrame): EphemerisState;
 }
 
-/** How the engine chooses between DE440s and the long-range DE431 chunk kernel. */
-export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long'] as const;
+/** How the engine chooses between DE440s and long-range NJCE chunk kernels. */
+export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long', 'de441_long'] as const;
 export type EphemerisPolicy = (typeof EPHEMERIS_POLICIES)[number];
 
 export const DEFAULT_EPHEMERIS_POLICY: EphemerisPolicy = 'auto';
