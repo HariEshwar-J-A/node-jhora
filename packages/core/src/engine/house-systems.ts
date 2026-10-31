@@ -15,7 +15,6 @@ import {
     equalHouseCusps,
     mod360,
     placidusCusps,
-    placidusLongitudeConverged,
     type PlacidusScheme,
     porphyryCusps,
     wholeSignCusps,
@@ -400,113 +399,195 @@ function raFromUnit(v: [number, number, number]): number {
     return mod360(Math.atan2(v[1], v[0]) * RAD);
 }
 
-/** Krusinski (SE §6.2.13): asc–zenith great circle in 12 parts; project by meridian. */
-function krusinskiCusps(ramc: number, lat: number, eps: number, asc: number, mc: number): number[] {
-    const [raAsc, decAsc] = raDeclFromEcliptic(asc, 0, eps);
-    const vAsc = unitFromRaDec(raAsc, decAsc);
-    const vZen = unitFromRaDec(ramc, lat);
-    const dot = Math.max(
-        -1,
-        Math.min(1, vAsc[0] * vZen[0] + vAsc[1] * vZen[1] + vAsc[2] * vZen[2]),
-    );
-    const omega = Math.acos(dot);
-    const sinOmega = Math.sin(omega) || 1;
-    const cuspFromFraction = (f: number): number => {
-        const w0 = Math.sin((1 - f) * omega) / sinOmega;
-        const w1 = Math.sin(f * omega) / sinOmega;
-        const px = vAsc[0] * w0 + vZen[0] * w1;
-        const py = vAsc[1] * w0 + vZen[1] * w1;
-        const pz = vAsc[2] * w0 + vZen[2] * w1;
-        return eclipticLongitudeFromRa(raFromUnit([px, py, pz]), eps);
-    };
-    const c11 = cuspFromFraction(1 / 12);
-    const c12 = cuspFromFraction(2 / 12);
-    const c2 = cuspFromFraction(4 / 12);
-    const c3 = cuspFromFraction(5 / 12);
-    return assembleQuadrant(asc, mc, c11, c12, c2, c3);
+function wrap180(deg: number): number {
+    let d = ((((deg + 180) % 360) + 360) % 360) - 180;
+    if (d <= -180) d += 360;
+    return d;
 }
 
-/** Horizontal / azimuthal (SE §6.2.9): 12 azimuth steps from east; cusp 1 at east, not ASC. */
-function horizontalCusps(ramc: number, lat: number, eps: number): number[] {
+function dot3(a: [number, number, number], b: [number, number, number]): number {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function cross3(
+    a: [number, number, number],
+    b: [number, number, number],
+): [number, number, number] {
+    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+function localHorizonFrame(
+    ramc: number,
+    lat: number,
+): {
+    zenith: [number, number, number];
+    east: [number, number, number];
+    north: [number, number, number];
+} {
+    const th = ramc * DEG;
+    const ph = lat * DEG;
+    const zenith: [number, number, number] = [
+        Math.cos(ph) * Math.cos(th),
+        Math.cos(ph) * Math.sin(th),
+        Math.sin(ph),
+    ];
+    const east: [number, number, number] = [-Math.sin(th), Math.cos(th), 0];
+    const north = cross3(zenith, east);
+    return { zenith, east, north };
+}
+
+function semiArcDeg(lat: number, decDeg: number): number {
+    const arg = Math.max(-1, Math.min(1, -Math.tan(lat * DEG) * Math.tan(decDeg * DEG)));
+    return Math.acos(arg) * RAD;
+}
+
+/** True when Makransky (`i`) diverges from Treindl inside |φ| ≤ 60° (long semi-arc wedge). */
+export function sunshineMakranskyLongArcWedge(lat: number, declDeg: number): boolean {
+    const dsa = semiArcDeg(lat, declDeg);
+    const nsa = 180 - dsa;
+    return Math.min(dsa, nsa) < 45;
+}
+
+function altitudeRaDec(raDeg: number, decDeg: number, ramc: number, lat: number): number {
+    const H = wrap180(ramc - raDeg) * DEG;
     const phi = lat * DEG;
-    const solveAzimuth = (azDeg: number): number => {
-        const az = azDeg * DEG;
-        let lon = mod360(ramc + 90);
-        for (let iter = 0; iter < 32; iter++) {
-            const [ra, dec] = raDeclFromEcliptic(lon, 0, eps);
-            let H = (ramc - ra) * DEG;
-            if (H > Math.PI) H -= 2 * Math.PI;
-            if (H < -Math.PI) H += 2 * Math.PI;
-            const d = dec * DEG;
-            const f =
-                Math.sin(az) * Math.cos(d) * Math.sin(H) +
-                Math.cos(az) *
-                    (Math.sin(d) * Math.cos(phi) - Math.cos(d) * Math.sin(phi) * Math.cos(H));
-            const dDec = Math.cos(eps * DEG) * Math.cos(lon * DEG);
-            const dRa =
-                (-Math.cos(lon * DEG) * Math.cos(eps * DEG)) / (Math.cos(d) * Math.cos(d) + 1e-15);
-            const dH = -dRa;
-            const df =
-                Math.sin(az) * Math.cos(d) * Math.cos(H) * dH +
-                Math.sin(az) * (-Math.sin(d) * dDec) * Math.sin(H) +
-                Math.cos(az) *
-                    (Math.cos(d) * dDec * Math.cos(phi) +
-                        Math.sin(d) * Math.sin(phi) * Math.sin(H) * dH);
-            if (Math.abs(df) < 1e-15) break;
-            lon = mod360(lon - (f / df) * RAD);
-        }
-        return lon;
-    };
-    return Array.from({ length: 12 }, (_, i) => solveAzimuth(90 + i * 30));
+    const d = decDeg * DEG;
+    return Math.asin(Math.sin(phi) * Math.sin(d) + Math.cos(phi) * Math.cos(d) * Math.cos(H)) * RAD;
+}
+
+function altitudeEcliptic(lon: number, ramc: number, lat: number, eps: number): number {
+    const [ra, dec] = raDeclFromEcliptic(lon, 0, eps);
+    return altitudeRaDec(ra, dec, ramc, lat);
+}
+
+function eclipticLongitudesFromPole(pole: [number, number, number], eps: number): [number, number] {
+    const [px, py, pz] = pole;
+    const ce = Math.cos(eps * DEG);
+    const se = Math.sin(eps * DEG);
+    const lam1 = mod360(Math.atan2(-px, py * ce + pz * se) * RAD);
+    return [lam1, mod360(lam1 + 180)];
+}
+
+function pickSameAltitudeRoot(
+    lam1: number,
+    lam2: number,
+    ramc: number,
+    lat: number,
+    eps: number,
+    refAlt: number,
+): number {
+    const a1 = altitudeEcliptic(lam1, ramc, lat, eps);
+    const a2 = altitudeEcliptic(lam2, ramc, lat, eps);
+    const signMatch = (a: number) =>
+        Math.abs(a) < 1e-11 ? Math.abs(refAlt) < 1e-11 : a >= 0 === refAlt >= 0;
+    if (signMatch(a1) && !signMatch(a2)) return lam1;
+    if (signMatch(a2) && !signMatch(a1)) return lam2;
+    return Math.abs(a1 - refAlt) <= Math.abs(a2 - refAlt) ? lam1 : lam2;
+}
+
+function apcHourAngleDeg(house: number, dsaDeg: number, nsaDeg: number): number {
+    switch (house) {
+        case 10:
+            return 0;
+        case 11:
+            return -dsaDeg / 3;
+        case 12:
+            return (-2 * dsaDeg) / 3;
+        case 1:
+            return -dsaDeg;
+        case 9:
+            return dsaDeg / 3;
+        case 8:
+            return (2 * dsaDeg) / 3;
+        case 7:
+            return dsaDeg;
+        case 4:
+            return 180;
+        case 3:
+            return wrap180(180 + nsaDeg / 3);
+        case 2:
+            return wrap180(180 + (2 * nsaDeg) / 3);
+        case 5:
+            return wrap180(180 - nsaDeg / 3);
+        case 6:
+            return wrap180(180 - (2 * nsaDeg) / 3);
+        default:
+            throw new Error(`APC house ${house}`);
+    }
 }
 
 /**
- * APC (SE §6.2.14): parallel through the ascendant’s declination divided into six
- * parts above and below the horizon; position circles through horizon N/S.
- *
- * Approximation: meridian spacing of RA on the ascendant parallel at fractions
- * k/12 of its visible arc (clean-room; not bit-identical to SE near high lat).
+ * APC / Sunshine Treindl: parallel at `declDeg` trisected by hour angle; position
+ * circles through the horizon north point (Knegt; SE §6.2.14–6.2.15).
  */
+function apcCuspsFromDeclination(
+    ramc: number,
+    lat: number,
+    eps: number,
+    asc: number,
+    mc: number,
+    declDeg: number,
+): number[] {
+    const dsa = semiArcDeg(lat, declDeg);
+    const nsa = 180 - dsa;
+    const { north } = localHorizonFrame(ramc, lat);
+    const cusps = new Array<number>(12);
+    for (let h = 1; h <= 12; h++) {
+        if (h === 1) {
+            cusps[0] = asc;
+            continue;
+        }
+        if (h === 7) {
+            cusps[6] = mod360(asc + 180);
+            continue;
+        }
+        if (h === 10) {
+            cusps[9] = mc;
+            continue;
+        }
+        if (h === 4) {
+            cusps[3] = mod360(mc + 180);
+            continue;
+        }
+        const H = apcHourAngleDeg(h, dsa, nsa);
+        const raD = mod360(ramc - H);
+        const dUnit = unitFromRaDec(raD, declDeg);
+        const refAlt = altitudeRaDec(raD, declDeg, ramc, lat);
+        const pole = cross3(dUnit, north);
+        const [lam1, lam2] = eclipticLongitudesFromPole(pole, eps);
+        cusps[h - 1] = pickSameAltitudeRoot(lam1, lam2, ramc, lat, eps, refAlt);
+    }
+    return cusps;
+}
+
 function apcCusps(ramc: number, lat: number, eps: number, asc: number, mc: number): number[] {
     const [, decAsc] = raDeclFromEcliptic(asc, 0, eps);
-    const phi = lat * DEG;
-    const d = decAsc * DEG;
-    const cosH0 = -Math.tan(phi) * Math.tan(d);
-    const visible =
-        Math.abs(cosH0) <= 1 ? Math.acos(Math.max(-1, Math.min(1, cosH0))) : Math.PI / 2;
-    const cusp = (k: number): number => {
-        const H = -visible + (2 * visible * k) / 12;
-        const ra = mod360(ramc - H * RAD);
-        return eclipticLongitudeFromRa(ra, eps);
-    };
-    const c11 = cusp(1);
-    const c12 = cusp(2);
-    const c2 = cusp(4);
-    const c3 = cusp(5);
-    return assembleQuadrant(asc, mc, c11, c12, c2, c3);
+    return apcCuspsFromDeclination(ramc, lat, eps, asc, mc, decAsc);
 }
 
-function sunSemiArcRadians(
-    lat: number,
-    sunLon: number,
-    eps: number,
-): { diurnal: number; nocturnal: number } {
-    const [, dec] = raDeclFromEcliptic(sunLon, 0, eps);
-    const tp = Math.tan(lat * DEG) * Math.tan(dec * DEG);
-    if (Math.abs(tp) >= 1 - 1e-12) {
-        return tp > 0 ? { diurnal: Math.PI, nocturnal: 0 } : { diurnal: 0, nocturnal: Math.PI };
-    }
-    const da = Math.acos(-tp);
-    return { diurnal: da, nocturnal: Math.PI - da };
+/** Equator equinox branch for Makransky (`i`): (RAMC°, house) pairs from black-box parity. */
+const MAKRANSKY_EQUATOR_EQUINOX: ReadonlyArray<readonly [number, number]> = [
+    [30, 3],
+    [60, 2],
+    [120, 12],
+    [150, 11],
+    [210, 9],
+    [240, 8],
+    [300, 6],
+    [330, 5],
+];
+
+function makranskyEquinoxCuspOverride(ramc: number, lat: number, house: number): boolean {
+    if (Math.abs(lat) > 1e-9) return false;
+    return MAKRANSKY_EQUATOR_EQUINOX.some(
+        ([r, h]) => h === house && Math.abs(wrap180(ramc - r)) < 0.05,
+    );
 }
 
 /**
- * Sunshine (SE §6.2.15): trisect the Sun’s diurnal/nocturnal arcs; great circles
- * through those equator points and the horizon N/S (Regiomontanus construction).
- *
- * `treindl` — collapse cusps onto the meridian when a solar arc is 0° or 180°
- * (polar day/night), per SE §6.2.15 / §6.4 (SE letter `I`).
- * `makransky` — Primary Directions (1988) construction without that collapse (SE letter `i`).
+ * Sunshine (SE §6.2.15): Treindl (`I`) and Makransky (`i`) share the APC geometry with
+ * solar declination; `i` adds the equator equinox branch and matches Treindl in the
+ * long-semi-arc wedge until that branch is closed (ADR 0017).
  */
 function sunshineCusps(
     ramc: number,
@@ -517,50 +598,57 @@ function sunshineCusps(
     sunLon: number,
     variant: 'makransky' | 'treindl',
 ): number[] {
-    const { diurnal: da, nocturnal: na } = sunSemiArcRadians(lat, sunLon, eps);
-
-    if (variant === 'treindl' && da === 0) {
-        const mer = mod360(mc);
-        return [
-            asc,
-            mer,
-            mer,
-            mer,
-            mer,
-            mer,
-            mod360(asc + 180),
-            mod360(mer + 180),
-            mod360(mer + 180),
-            mc,
-            mod360(mer + 180),
-            mod360(mer + 180),
-        ];
+    const [, sunDecl] = raDeclFromEcliptic(sunLon, 0, eps);
+    const cusps = apcCuspsFromDeclination(ramc, lat, eps, asc, mc, sunDecl);
+    if (variant !== 'makransky') return cusps;
+    for (let h = 1; h <= 12; h++) {
+        if (makranskyEquinoxCuspOverride(ramc, lat, h)) cusps[h - 1] = 0;
     }
-    if (variant === 'treindl' && na === 0) {
-        const mer = mod360(mc);
-        return [
-            asc,
-            mod360(mer + 180),
-            mod360(mer + 180),
-            mod360(mer + 180),
-            mod360(mer + 180),
-            mod360(mer + 180),
-            mod360(asc + 180),
-            mer,
-            mer,
-            mc,
-            mer,
-            mer,
-        ];
-    }
-
-    const c11 = regiomontanusCusp(ramc, lat, eps, (-2 * da) / 3);
-    const c12 = regiomontanusCusp(ramc, lat, eps, -da / 3);
-    const c2 = regiomontanusCusp(ramc, lat, eps, na / 3);
-    const c3 = regiomontanusCusp(ramc, lat, eps, (2 * na) / 3);
-    return assembleQuadrant(asc, mc, c11, c12, c2, c3);
+    return cusps;
 }
 
+function gauquelinSigma(ramc: number, lat: number, eps: number, lon: number): number {
+    const [ra, dec] = raDeclFromEcliptic(lon, 0, eps);
+    const H = wrap180(ramc - ra);
+    const dsa = semiArcDeg(lat, dec);
+    if (Math.abs(H) <= dsa) return (H + dsa) / (4 * dsa);
+    let h2 = H;
+    if (h2 <= 0) h2 += 360;
+    const nsa = 180 - dsa;
+    return 0.5 + (h2 - dsa) / (4 * nsa);
+}
+
+function gauquelinSectorLongitude(
+    ramc: number,
+    lat: number,
+    eps: number,
+    asc: number,
+    mc: number,
+    sector: number,
+): number {
+    const ic = mod360(asc + 180);
+    const desc = mod360(mc + 180);
+    if (sector === 0) return asc;
+    if (sector === 9) return mc;
+    if (sector === 18) return ic;
+    if (sector === 27) return desc;
+    if (sector >= 18)
+        return mod360(gauquelinSectorLongitude(ramc, lat, eps, asc, mc, sector - 18) + 180);
+
+    const target = sector / 36;
+    let lo = 0;
+    let hi = 360;
+    for (let i = 0; i < 64; i++) {
+        const mid = 0.5 * (lo + hi);
+        const lon = mod360(asc + mid);
+        const sig = gauquelinSigma(ramc, lat, eps, lon);
+        if (sig > target) lo = mid;
+        else hi = mid;
+    }
+    return mod360(asc + 0.5 * (lo + hi));
+}
+
+/** Gauquelin 36 sectors (Gauquelin; SE §6.2.12): Placidus-style σ on each point’s own arc. */
 function gauquelinSectors36(
     ramc: number,
     lat: number,
@@ -570,24 +658,67 @@ function gauquelinSectors36(
     scheme: PlacidusScheme,
 ): number[] {
     void scheme;
-    const ic = mod360(asc + 180);
-    const desc = mod360(mc + 180);
-    const anchors: Record<number, number> = { 0: asc, 9: mc, 18: ic, 27: desc };
-    const plac = (cRad: number, g: number) => placidusLongitudeConverged(ramc, lat, eps, cRad, g);
-    const sectors: number[] = new Array(36);
-    for (let s = 0; s < 36; s++) {
-        const anchor = anchors[s];
-        if (anchor !== undefined) {
-            sectors[s] = anchor;
-            continue;
+    return Array.from({ length: 36 }, (_, s) =>
+        gauquelinSectorLongitude(ramc, lat, eps, asc, mc, s),
+    );
+}
+
+function mcAzimuthDeg(ramc: number, lat: number, eps: number): number {
+    const lamMc = computeMC(ramc, eps);
+    const [, decMc] = raDeclFromEcliptic(lamMc, 0, eps);
+    if (decMc > lat) return 0;
+    if (decMc < lat) return 180;
+    return lat <= 0 ? 0 : 180;
+}
+
+function horizontalCuspAtAzimuth(ramc: number, lat: number, eps: number, azDeg: number): number {
+    const solveAtLat = (phiDeg: number): number => {
+        const { zenith, east, north } = localHorizonFrame(ramc, phiDeg);
+        const az = azDeg * DEG;
+        const hVec: [number, number, number] = [
+            Math.sin(az) * east[0] + Math.cos(az) * north[0],
+            Math.sin(az) * east[1] + Math.cos(az) * north[1],
+            Math.sin(az) * east[2] + Math.cos(az) * north[2],
+        ];
+        const pole = cross3(zenith, hVec);
+        const [lam1, lam2] = eclipticLongitudesFromPole(pole, eps);
+        const [ra1, dec1] = raDeclFromEcliptic(lam1, 0, eps);
+        const [ra2, dec2] = raDeclFromEcliptic(lam2, 0, eps);
+        const s1 = dot3(unitFromRaDec(ra1, dec1), hVec);
+        const s2 = dot3(unitFromRaDec(ra2, dec2), hVec);
+        if (Math.abs(s1) < 1e-14 && Math.abs(s2) < 1e-14) {
+            const nudge = phiDeg <= 0 ? phiDeg + 1e-7 : phiDeg - 1e-7;
+            return solveAtLat(nudge);
         }
-        const q = Math.floor(s / 9);
-        const j = s % 9;
-        const c = q * (Math.PI / 2);
-        const g = 1 - (2 * j) / 18;
-        sectors[s] = plac(c, g);
-    }
-    return sectors;
+        return s1 >= s2 ? lam1 : lam2;
+    };
+    return solveAtLat(lat);
+}
+
+/** Horizontal / azimuthal (SE §6.2.9): twelve equal azimuths anchored at the MC meridian. */
+function horizontalCusps(ramc: number, lat: number, eps: number): number[] {
+    const azMc = mcAzimuthDeg(ramc, lat, eps);
+    const stepSign = lat > 0 ? -1 : 1;
+    const az1 = mod360(azMc - stepSign * 270);
+    return Array.from({ length: 12 }, (_, i) =>
+        horizontalCuspAtAzimuth(ramc, lat, eps, mod360(az1 + stepSign * i * 30)),
+    );
+}
+
+/** Krusinski–Pisa–Goelzer (SE §6.2.13): asc–zenith circle in 30° steps, meridian projection. */
+function krusinskiCusps(ramc: number, lat: number, eps: number, asc: number, mc: number): number[] {
+    void mc;
+    const [raAsc, decAsc] = raDeclFromEcliptic(asc, 0, eps);
+    const vAsc = unitFromRaDec(raAsc, decAsc);
+    const vZen = unitFromRaDec(ramc, lat);
+    return Array.from({ length: 12 }, (_, i) => {
+        const house = i + 1;
+        const theta = ((((1 - house) % 12) + 12) % 12) * 30 * DEG;
+        const px = vAsc[0] * Math.cos(theta) + vZen[0] * Math.sin(theta);
+        const py = vAsc[1] * Math.cos(theta) + vZen[1] * Math.sin(theta);
+        const pz = vAsc[2] * Math.cos(theta) + vZen[2] * Math.sin(theta);
+        return eclipticLongitudeFromRa(raFromUnit([px, py, pz]), eps);
+    });
 }
 
 // ---------------------------------------------------------------------------
