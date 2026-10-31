@@ -5,7 +5,9 @@
  * (Q_A periodic term C7 = 198.296701″). Coefficients match ERFA `eraLtp*`
  * (SOFA, BSD) and the published tables; the precession matrix follows
  * Appendix A.3 (`ltp_PMAT`, Fabri parameterization from the ecliptic and
- * equator poles).
+ * equator poles) for reference, and §5.5 eq. (24)–(28) (`P_Σ`) for the
+ * equator-only matrix used in chart transforms (O4: mean ecliptic = equator of
+ * date tilted by ε_A, not the Table 1 ecliptic pole).
  *
  * Both precision profiles use this model at all epochs (see
  * docs/precision-profiles.md). Near J2000 it agrees with IAU 2006 P03 to
@@ -156,6 +158,23 @@ export function vondrakPrecessionMatrix(T: number): Mat {
     return [eqx, mid, peqr];
 }
 
+/**
+ * Equator-only precession matrix P_Σ (Vondrák et al. 2011 §5.5, eq. 24–28).
+ * Rows are the Σ unit vector, n̄ × Σ, and the mean equator pole n̄ from Table 2.
+ */
+export function vondrakEquatorPrecessionMatrixSigma(T: number): Mat {
+    const [xAs, yAs] = vondrakPeriodic(T, XY_PER, XY_POL);
+    const x = xAs * AS2R;
+    const y = yAs * AS2R;
+    const w = x * x + y * y;
+    const z = w < 1 ? Math.sqrt(1 - w) : 0;
+    const a = 1 / (1 + z);
+    const n: Vec = [x, y, z];
+    const vSigma = normalize([1 - a * x * x, -a * x * y, -x]);
+    const yAxis = normalize(cross(n, vSigma));
+    return [vSigma, yAxis, n];
+}
+
 /** Mean obliquity ε_A (degrees), Vondrák eq. (10). */
 export function vondrakMeanObliquityDegrees(T: number): number {
     const [, epsAs] = vondrakPeriodic(T, PE_PER, PE_POL);
@@ -279,6 +298,12 @@ export function toSpherical(v: Vec): { lon: number; lat: number; r: number } {
 /**
  * Transform an ICRF equatorial vector to the **mean** ecliptic and equinox of
  * date — the frame in which sidereal longitudes and ayanamsa are defined.
+ *
+ * Oracle O4 (precession brief): mean ecliptic of date = mean equator of date
+ * (Table 2 / {@link vondrakPrecessionMatrix}) inclined by ε_A (eq. 10), i.e.
+ * R₁(ε_A)·P_fabri·v. This is not the Table 1 ecliptic-pole series. §5.5 P_Σ
+ * ({@link vondrakEquatorPrecessionMatrixSigma}) is the CIO equator matrix only;
+ * its Σ axis is not the sidereal equinox used for chart longitudes.
  */
 export function icrfToMeanEclipticOfDate(v: Vec, T: number, jdTT?: number): Vec {
     const jd = jdTT ?? 2451545.0 + T * 36525.0;
