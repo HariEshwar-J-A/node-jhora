@@ -561,20 +561,12 @@ export function trueAyanamsaFromModel(model: TrueEpochModel, jd: number): number
     );
 }
 
-/**
- * Mean longitude of the Moon's ascending node (Rahu), tropical degrees,
- * referred to the mean ecliptic of date.
- *
- * Meeus, *Astronomical Algorithms* eq. 47.7 — four terms rather than the
- * previous three, which drifted at the 0.001° level over the DE440s span.
- *
- * @param T  Julian centuries (TT) from J2000.0
- */
-export function meanLunarNode(T: number): number {
-    return mod360(
-        125.0445479 - 1934.1362891 * T + 0.0020754 * T ** 2 + T ** 3 / 467441 - T ** 4 / 60616000,
-    );
-}
+export {
+    meanLunarNode,
+    meanLunarNodeFromJdTT,
+    meanLunarNodeMeeus,
+    meanLunarNodeSpeedDegPerDay,
+} from './mean-lunar-node.js';
 
 /** Convert a tropical longitude to sidereal by subtracting the ayanamsa. */
 export function toSidereal(tropical: number, ayanamsa: number): number {
