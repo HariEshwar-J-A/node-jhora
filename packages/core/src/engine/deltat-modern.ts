@@ -1,7 +1,7 @@
 /**
  * ΔT for precision profile 'modern' — layout described in Swiss Ephemeris
  * programmer manual ch. 7 (ΔT), built from peer-reviewed SMH2016, USNO/IERS
- * observations, and pyswisseph-measured bridge samples (see DATA-SOURCES.md).
+ * observations, and USNO deltat.preds bridge samples (see DATA-SOURCES.md).
  *
  * @see deltat.ts module header, ADR 0007
  */
@@ -157,6 +157,6 @@ export function deltaTModern(jdUT: number): number {
     return tabulatedDeltaT(yTab);
 }
 
-/** Identifier recorded in result envelopes for precision profile `modern` (SE 2.10-style ΔT). */
+/** Identifier recorded in result envelopes for precision profile `modern`. */
 export const DELTA_T_MODEL_MODERN =
-    'modern:smh2016-s15+aa-usno-monthly+oracle-bridge+ukho-cubic+smh2016-parabola';
+    'modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-cubic+smh2016-parabola';

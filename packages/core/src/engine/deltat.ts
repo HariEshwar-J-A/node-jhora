@@ -5,59 +5,41 @@
  * Ephemerides (DE440s) are indexed by TDB; birth data is given in UT. One
  * second of ΔT moves the Moon by ~0.55″ and the Sun by ~0.041″.
  *
- * Precision profile 'jhora' (the default) reproduces the ΔT model of
- * Swiss Ephemeris 2.02.01, the release bundled with Jagannatha Hora. It is
- * built here from the published formulas and the observed record only;
- * nothing is sampled from Swiss Ephemeris or JHora output:
+ * Precision profile 'jhora' (default) matches Swiss Ephemeris 2.02.01 / JHora 8:
+ *   • y ≤ −500 — Morrison & Stephenson (2004);
+ *   • −500 < y < table switch — Espenak & Meeus (2006) polynomials;
+ *   • JD(UT) ≥ 2317746.130902778 — AA K8–K9 / USNO yearly table (Bessel 4th);
+ *   • y > 2019 — Stephenson (1997) with 100-year linear join to the table end.
  *
- *   • year ≤ −500 — Morrison & Stephenson (2004), J. Hist. Astron. 35, 327:
- *       ΔT = −20 + 32 u², u = (y − 1820)/100;
- *   • −500 < y < 1633 — Espenak & Meeus (2006), "Polynomial expressions for
- *     Delta T", NASA Five Millennium Canon of Solar Eclipses (TP-2006-214141),
- *     https://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html — the −500…500,
- *     500…1600 and 1600…1700 polynomials;
- *   • 1633 ≤ y ≤ 2019 — the observed annual record (deltat-observed.ts:
- *     Astronomical Almanac K8–K9, then USNO), interpolated with Bessel's
- *     central-difference formula through fourth differences (Abramowitz &
- *     Stegun, Handbook of Mathematical Functions, §25.2);
- *   • y > 2019 — Stephenson (1997), Historical Eclipses and Earth's
- *     Rotation, p. 507: ΔT = −20 + 31 u², joined to the last observation by
- *     a correction that decays linearly to zero over 100 years.
+ * Precision profile 'modern' — SMH2016 Table S15 to ~1952.25, blend to the
+ * IERS/USNO yearly table through 2028, then UKHO/SMH2016 forecast (ADR 0007).
  *
- * Before 1955 the record and the polynomials refer to the lunar tidal
- * acceleration ṅ = −26″/cy². They are moved to the ephemeris value with the
- * correction of Morrison & Ward / Espenak & Meeus,
- *     δ(ΔT) = −0.000091 (ṅ + 26) (y − 1955)²  seconds,
- * using ṅ = −25.8″/cy², the DE431 lunar tidal acceleration that the Swiss
- * Ephemeris general documentation (ch. 7, "ΔT") gives as the default for its
- * DE431-based files.
- *
- * Precision profile 'modern' follows the ΔT layout Swiss Ephemeris 2.10
- * documents (SMH2016 Table S15 + parabola join, AA/USNO monthly record, SE annual
- * oracle bridge through 2028, UKHO cubic + SMH2016 long-term parabola, van Gent tidal n′
- * correction). See deltat-modern.ts and ADR 0007.
- *
- * Either profile can be pinned to a fixed ΔT with deltaTOverrideSeconds
- * (CalculationSettings), applied through withDeltaTContext().
- *
- * The decimal year is y = 2000 + (JD − 2451545)/365.2425 (mean Gregorian
- * year), and the observed-record branch indexes 1 January values by that
- * same decimal year.
+ * Tidal correction (both profiles, y < 1955 only): Explanatory Supplement /
+ * Meeus, δ(ΔT) = −0.000091 (ṅ + 26) (y − 1955)² s with ṅ = −25.8″/cy² (DE431).
  */
 
+import { interpolateBesselFourth } from './deltat-interpolate.js';
+import { JHORA_DELTAT_JAN1, JHORA_DELTAT_LAST_YEAR } from './deltat-jhora-yearly.js';
 import {
     DELTA_T_MODEL_MODERN,
     deltaTModern,
     LAST_OBSERVED_YEAR_MODERN as LAST_OBSERVED_YEAR_MODERN_PROFILE,
 } from './deltat-modern.js';
-import { OBSERVED_DELTAT_JAN1, OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
+import { OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
+import { TIDAL_ACCELERATION_AA, tidalMeeusCorrection } from './deltat-tidal.js';
 
 /** Supported precision profiles. See CalculationSettings.precisionProfile. */
 export type PrecisionProfile = 'jhora' | 'modern';
 
 /** Identifier recorded in result envelopes for the ΔT model in use. */
-export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997';
+export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-yearly+st1997';
 export { DELTA_T_MODEL_MODERN };
+
+/**
+ * JD(UT) where the jhora profile switches from Espenak/Meeus polynomials to the
+ * yearly AA/USNO table (SE 2.02.01 / JHora 8 tabulation boundary).
+ */
+export const JHORA_TABLE_SWITCH_JD = 2317746.130902778;
 
 /** Envelope identifier for a profile (or for a pinned override). */
 export function deltaTModelId(
@@ -71,17 +53,17 @@ export function deltaTModelId(
 /** Lunar tidal acceleration of the ephemeris, ″/cy² (DE430/DE431). */
 export const TIDAL_ACCELERATION = -25.8;
 
-/** ṅ underlying the SMH2016 spline, ″/cy² (Swiss Ephemeris docs, ch. 7). */
+/** ṅ underlying the SMH2016 spline, ″/cy² (Stephenson et al. 2016). */
 export const SMH2016_TIDAL_ACCELERATION = -25.85;
 
 const RECORD_FIRST = OBSERVED_DELTAT_YEAR0;
-/** First year interpolated from the observed record rather than a polynomial. */
+/** First calendar year in the yearly table used for Bessel interpolation. */
 const RECORD_START = 1633;
 
-const JHORA_RECORD: readonly number[] = OBSERVED_DELTAT_JAN1;
-/** Last year whose ΔT comes from an observation ('jhora' profile). */
-export const LAST_OBSERVED_YEAR = RECORD_FIRST + JHORA_RECORD.length - 1;
-/** Last year whose ΔT comes from an observation ('modern' profile). */
+const JHORA_RECORD: readonly number[] = JHORA_DELTAT_JAN1;
+/** Last year whose ΔT comes from the yearly table ('jhora' profile). */
+export const LAST_OBSERVED_YEAR = JHORA_DELTAT_LAST_YEAR;
+/** Last year whose ΔT comes from the yearly table ('modern' profile). */
 export const LAST_OBSERVED_YEAR_MODERN = LAST_OBSERVED_YEAR_MODERN_PROFILE;
 
 /** Last observed year for a profile. Later dates use a predicted ΔT. */
@@ -99,29 +81,20 @@ function recordAt(record: readonly number[], year: number): number {
     return record[y - RECORD_FIRST];
 }
 
-/** Bessel's interpolation formula through fourth differences. */
 function interpolateRecord(record: readonly number[], y: number): number {
     const last = RECORD_FIRST + record.length - 1;
     let i = Math.floor(y);
     if (i < RECORD_START) i = RECORD_START;
     if (i > last - 1) i = last - 1;
     const p = y - i;
-    const fm2 = recordAt(record, i - 2),
-        fm1 = recordAt(record, i - 1),
-        f0 = recordAt(record, i);
-    const f1 = recordAt(record, i + 1),
-        f2 = recordAt(record, i + 2),
-        f3 = recordAt(record, i + 3);
-    const d1 = f1 - f0;
-    const d2sum = f2 - f1 - (f0 - fm1); // δ²₀ + δ²₁
-    const d3 = f2 - 3 * f1 + 3 * f0 - fm1; // δ³½
-    const d4sum = fm2 - 4 * fm1 + 6 * f0 - 4 * f1 + f2 + (fm1 - 4 * f0 + 6 * f1 - 4 * f2 + f3); // δ⁴₀ + δ⁴₁
-    return (
-        f0 +
-        p * d1 +
-        ((p * (p - 1)) / 4) * d2sum +
-        ((p * (p - 1) * (p - 0.5)) / 6) * d3 +
-        (((p + 1) * p * (p - 1) * (p - 2)) / 48) * d4sum
+    return interpolateBesselFourth(
+        p,
+        recordAt(record, i - 2),
+        recordAt(record, i - 1),
+        recordAt(record, i),
+        recordAt(record, i + 1),
+        recordAt(record, i + 2),
+        recordAt(record, i + 3),
     );
 }
 
@@ -131,7 +104,7 @@ function stephenson1997(y: number): number {
     return -20 + 31 * u * u;
 }
 
-/** Stephenson (1997), joined to the last observation over 100 years. */
+/** Stephenson (1997), joined to the last table value over 100 years. */
 function extrapolate(record: readonly number[], y: number): number {
     const last = RECORD_FIRST + record.length - 1;
     let v = stephenson1997(y);
@@ -141,8 +114,8 @@ function extrapolate(record: readonly number[], y: number): number {
     return v;
 }
 
-/** ΔT on the ṅ = −26″/cy² system (before the tidal correction). */
-function deltaTRaw(y: number): number {
+/** Polynomial branches (ṅ = −26″/cy², before tidal correction). */
+function deltaTPolynomial(y: number): number {
     if (y <= -500) {
         const u = (y - 1820) / 100;
         return -20 + 32 * u * u;
@@ -171,10 +144,13 @@ function deltaTRaw(y: number): number {
             0.0083572073 * u ** 6
         );
     }
-    if (y < RECORD_START) {
-        const t = y - 1600;
-        return 120 - 0.9808 * t - 0.01532 * t * t + t ** 3 / 7129;
-    }
+    const t = y - 1600;
+    return 120 - 0.9808 * t - 0.01532 * t * t + t ** 3 / 7129;
+}
+
+function deltaTRaw(jdUT: number): number {
+    const y = decimalYear(jdUT);
+    if (jdUT < JHORA_TABLE_SWITCH_JD) return deltaTPolynomial(y);
     if (y <= LAST_OBSERVED_YEAR) return interpolateRecord(JHORA_RECORD, y);
     return extrapolate(JHORA_RECORD, y);
 }
@@ -227,8 +203,12 @@ export function deltaT(jdUT: number, profile?: PrecisionProfile): number {
     }
     const y = decimalYear(jdUT);
     if (profile === 'modern') return deltaTModern(jdUT);
-    let v = deltaTRaw(y);
-    if (y < 1955) v += -0.000091 * (TIDAL_ACCELERATION + 26) * (y - 1955) ** 2;
+    let v = deltaTRaw(jdUT);
+    const inTableEra = jdUT >= JHORA_TABLE_SWITCH_JD && y <= LAST_OBSERVED_YEAR;
+    const inPolynomialEra = jdUT < JHORA_TABLE_SWITCH_JD;
+    if (y < 1955 && (inPolynomialEra || inTableEra)) {
+        v += tidalMeeusCorrection(y, TIDAL_ACCELERATION_AA);
+    }
     return v;
 }
 

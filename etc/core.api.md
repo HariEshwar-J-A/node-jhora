@@ -462,10 +462,10 @@ export const DEFAULT_POSITION_MODE: PositionMode;
 export const DEFAULT_PRECISION_PROFILE: PrecisionProfile;
 
 // @public
-export const DELTA_T_MODEL = "jhora-se2.02:ms2004+em2006+aa-usno-obs+st1997";
+export const DELTA_T_MODEL = "jhora-se2.02:ms2004+em2006+aa-usno-yearly+st1997";
 
 // @public
-export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+oracle-bridge+ukho-cubic+smh2016-parabola";
+export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-cubic+smh2016-parabola";
 
 // @public
 export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864000;
