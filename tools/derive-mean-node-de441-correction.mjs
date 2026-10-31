@@ -90,7 +90,9 @@ function linearMeanNode(jdCenter, source) {
             trueAscendingNodeLongitude(jdCenter + d, source, {
                 eclipticFrame: 'mean_ecliptic_of_date',
                 velocityMode: 'spk_analytic',
-                precessionSpin: true,
+                precessionSpin: false,
+                precisionProfile: 'modern',
+                truePosition: true,
             }),
         );
     }

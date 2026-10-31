@@ -79,9 +79,9 @@ describe('fixture calendar', () => {
     });
 });
 
-/** Published osculating-node floor on DE440s (see true-node-accuracy.golden.test.ts). */
-const LIMIT_TRUE_ARCSEC = 0.65;
-const LIMIT_TRUE_SPEED_ARCSEC = 0.2;
+/** Q1 clean model ceiling on DE440s oracle (1850–2150); max measured modern ≈0.054″. */
+const LIMIT_TRUE_ARCSEC = 0.055;
+const LIMIT_TRUE_SPEED_ARCSEC = 0.05;
 
 describe('mean node, years 0..2150', () => {
     test('every jhora and modern comparison is under 1″', () => {

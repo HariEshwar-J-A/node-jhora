@@ -136,7 +136,7 @@ export const CalculationSettingsSchema = z
         houseSystem: z.enum(HOUSE_SYSTEM_IDS),
         /** Recorded for equal houses whose cusp sits in the middle of the house. Not applied yet. */
         cuspsInMiddle: z.boolean(),
-        positionMode: z.enum(['geometric', 'apparent']),
+        positionMode: z.enum(['apparent', 'geometric']),
         topocentric: z.boolean(),
         altitudeMetres: finite,
         sunrise: SunriseSchema,

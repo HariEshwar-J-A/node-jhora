@@ -51,8 +51,13 @@ function siderealNode(
     profile: PrecisionProfile,
     opts: Parameters<typeof trueAscendingNodeLongitude>[2],
 ): number {
-    const trop = withDeltaTContext({ profile }, () => trueAscendingNodeLongitude(jd, source, opts));
-    return toSidereal(trop, getAyanamsa(27, jd, 'geometric'));
+    const trop = withDeltaTContext({ profile }, () =>
+        trueAscendingNodeLongitude(jd, source, { ...opts, precisionProfile: profile }),
+    );
+    return toSidereal(
+        trop,
+        withDeltaTContext({ profile }, () => getAyanamsa(27, jd, 'geometric')),
+    );
 }
 
 describe('true-node frame probe (informational)', () => {
@@ -132,6 +137,7 @@ describe('true-node frame probe (informational)', () => {
                             eclipticFrame: frame,
                             velocityMode,
                             precessionSpin,
+                            precisionProfile: 'modern',
                         });
                         const exp = oracleOf(c, 'M' satisfies NodeMode).true.lon;
                         max[key] = Math.max(max[key], gapArcsec(sid, exp));
@@ -148,6 +154,6 @@ describe('true-node frame probe (informational)', () => {
             console.log(`  ${v.toFixed(4)}″  ${k}`);
         }
         expect(ranked[0][0]).toContain('mean_ecliptic_of_date');
-        expect(ranked[0][0]).toContain('spin=false');
+        expect(ranked[0][1]).toBeLessThan(0.07);
     });
 });

@@ -1,9 +1,7 @@
 /**
  * True-node longitude vs fixture oracles (DE440s published-era cases).
  *
- * Target contract: ≤0.01″ (owner); current black-box floor with Vondrák mean
- * ecliptic of date + geocentric r×v is ~0.30″ (modern) / ~0.60″ (JHora DLL) on
- * golden fixtures — see true-node-frame-probe.test.ts and tools/true-node-era-report.mjs.
+ * Target contract: ≤0.04″ (Q1 clean osculating model); see lunar-node-oracle.test.ts.
  */
 import { readFileSync } from 'node:fs';
 import { DateTime } from 'luxon';
@@ -31,9 +29,9 @@ const DE440S_FIRST = 2396758.5 + 1;
 const DE440S_LAST = 2506331.5 - 1;
 const PUBLISHED_LAST_YEAR = 2026;
 
-/** Honest achieved ceiling on golden fixtures (arcsec). */
-const LIMIT_MODERN_ARCSEC = 0.35;
-const LIMIT_JHORA_ARCSEC = 0.65;
+/** Honest achieved ceiling on golden fixtures (arcsec), Q1 clean model. */
+const LIMIT_MODERN_ARCSEC = 0.065;
+const LIMIT_JHORA_ARCSEC = 0.04;
 
 function gapArcsec(a: number, b: number): number {
     let d = (a - b) % 360;

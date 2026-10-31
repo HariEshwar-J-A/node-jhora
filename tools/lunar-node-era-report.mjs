@@ -101,7 +101,10 @@ const modes = [
 const max = {};
 for (const b of bodies) {
     for (const [m] of modes) {
-        for (const [label] of ERAS) max[`${b}|${m}|${label}`] = 0;
+        for (const [label] of ERAS) {
+            max[`${b}|${m}|${label}`] = 0;
+            if (b === 'TrueNd') max[`TrueNdSpd|${m}|${label}`] = 0;
+        }
     }
 }
 
@@ -149,10 +152,15 @@ for (const c of fixture.cases) {
         if (!meanRahu) continue;
 
         const trueErr = gapArcsec(rahu.longitude, oracle.true.lon);
+        const trueSpdErr = gapArcsec(rahu.speed, oracle.true.speed);
         const meanErr = gapArcsec(meanRahu.longitude, oracle.mean.lon);
         const ketuErr = gapArcsec(ketu.longitude, mod360(oracle.true.lon + 180));
 
         max[`TrueNd|${mode}|${era}`] = Math.max(max[`TrueNd|${mode}|${era}`], trueErr);
+        max[`TrueNdSpd|${mode}|${era}`] = Math.max(
+            max[`TrueNdSpd|${mode}|${era}`] ?? 0,
+            trueSpdErr,
+        );
         max[`MeanNd|${mode}|${era}`] = Math.max(max[`MeanNd|${mode}|${era}`], meanErr);
         max[`Ketu|${mode}|${era}`] = Math.max(max[`Ketu|${mode}|${era}`], ketuErr);
     }
@@ -165,8 +173,33 @@ if (skippedOutsideKernel > 0) {
     );
 }
 
-console.log('Max |error| (arcsec) — TrueNd / MeanNd / Ketu × J / M\n');
+console.log('Max |error| (arcsec) — TrueNd position / speed (″/day) × J / M\n');
+console.log('TrueNd position (arcsec)');
 for (const b of bodies) {
+    if (b !== 'TrueNd') continue;
+    console.log(`\n${b}`);
+    console.log('era                  J        M');
+    for (const [label] of ERAS) {
+        const jKey = `${b}|J|${label}`;
+        const mKey = `${b}|M|${label}`;
+        const j = max[jKey] > 0 ? max[jKey].toFixed(3).padStart(8) : '       —'.padStart(8);
+        const m = max[mKey] > 0 ? max[mKey].toFixed(3).padStart(8) : '       —'.padStart(8);
+        console.log(`${label.padEnd(20)}${j}${m}`);
+    }
+}
+console.log('\nTrueNd speed (arcsec/day)');
+console.log('era                  J        M');
+for (const [label] of ERAS) {
+    const jKey = `TrueNdSpd|J|${label}`;
+    const mKey = `TrueNdSpd|M|${label}`;
+    const j = max[jKey] > 0 ? max[jKey].toFixed(3).padStart(8) : '       —'.padStart(8);
+    const m = max[mKey] > 0 ? max[mKey].toFixed(3).padStart(8) : '       —'.padStart(8);
+    console.log(`${label.padEnd(20)}${j}${m}`);
+}
+
+console.log('\nMeanNd / Ketu position (arcsec)');
+for (const b of bodies) {
+    if (b === 'TrueNd') continue;
     console.log(`\n${b}`);
     console.log('era                  J        M');
     for (const [label] of ERAS) {
