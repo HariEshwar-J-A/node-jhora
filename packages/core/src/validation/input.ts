@@ -3,6 +3,13 @@ import { DateTime } from 'luxon';
 import { AYANAMSA_MODELS } from '../engine/ayanamsa.js';
 import type { PrecisionProfile } from '../engine/deltat.js';
 import type { PositionMode } from '../engine/ephemeris.js';
+import {
+    HOUSE_LETTERS,
+    houseLetterForId,
+    type HouseSystemId,
+    houseSystemIdFromLegacy,
+    isHouseLetter,
+} from '../engine/house-registry.js';
 import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
 import { PRECISION_PROFILES } from '../settings/schema.js';
 import {
@@ -12,8 +19,6 @@ import {
     EPHEMERIS_JD_UT_MAX,
     EPHEMERIS_JD_UT_MIN,
 } from './bounds.js';
-
-const HOUSE_METHODS = new Set(['W', 'E', 'P', 'O']);
 const SIDEREAL_FRAMES = new Set(['jhora', 'se-apparent']);
 const AYANAMSA_FRAMES = new Set(['geometric', 'apparent']);
 const NODE_TYPES = new Set(['mean', 'true']);
@@ -168,14 +173,25 @@ export function assertAyanamsaMode(mode: number): number {
 }
 
 export function assertHouseMethod(method: string): string {
-    if (typeof method !== 'string' || !HOUSE_METHODS.has(method)) {
+    if (typeof method !== 'string' || !isHouseLetter(method)) {
         throw new NodeJHoraError(
             NodeJHoraErrorCode.INVALID_INPUT,
-            `house method must be one of W, E, P, O`,
+            `house method must be one of ${[...HOUSE_LETTERS].join(', ')}`,
             { method },
         );
     }
     return method;
+}
+
+/** Map legacy {@link HouseSystem} name or settings id to a single-letter house code. */
+export function houseMethodFromSettings(
+    legacyOrLetter: string,
+    houseSystemId?: HouseSystemId,
+): string {
+    if (isHouseLetter(legacyOrLetter)) return legacyOrLetter;
+    if (houseSystemId !== undefined) return houseLetterForId(houseSystemId);
+    const id = houseSystemIdFromLegacy(legacyOrLetter as never);
+    return houseLetterForId(id);
 }
 
 export function assertAyanamsaFrame(frame: string): 'geometric' | 'apparent' {

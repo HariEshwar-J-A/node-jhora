@@ -10,6 +10,11 @@ import {
     resolveConfig,
     TROPICAL_YEAR_DAYS,
 } from '../config.js';
+import {
+    houseSystemIdFromLegacy,
+    houseSystemLegacyFromId,
+    isHouseSystemId,
+} from '../engine/house-registry.js';
 import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
 import { assertAyanamsaMode } from '../validation/input.js';
 import { hashSettings } from './hash.js';
@@ -22,24 +27,11 @@ import {
     type CalculationSettings,
     CalculationSettingsSchema,
     type DasaYearKind,
+    type HouseAnchorId,
     type HouseSystemId,
     inferDasaYearKind,
     type SunriseLimb,
 } from './schema.js';
-
-const HOUSE_TO_LEGACY: Record<HouseSystemId, HouseSystem> = {
-    whole_sign: 'WholeSign',
-    equal: 'Equal',
-    placidus: 'Placidus',
-    porphyry: 'Porphyry',
-};
-
-const LEGACY_TO_HOUSE: Record<HouseSystem, HouseSystemId> = {
-    WholeSign: 'whole_sign',
-    Equal: 'equal',
-    Placidus: 'placidus',
-    Porphyry: 'porphyry',
-};
 
 /** Fields accepted before this schema existed. `ayanamsaOrder` is the old alias. */
 export interface LegacyCalculationInput {
@@ -70,6 +62,7 @@ const SETTINGS_MARKS = [
     'dasaYear',
     'vargaVariants',
     'cuspsInMiddle',
+    'houseAnchor',
     'customAyanamsaMode',
 ] as const;
 
@@ -78,9 +71,7 @@ export function isSettingsShape(value: object): value is Partial<CalculationSett
     if (SETTINGS_MARKS.some((key) => record[key] !== undefined)) return true;
     if (record.sunrise !== undefined && typeof record.sunrise === 'object') return true;
     const house = record.houseSystem;
-    return (
-        house === 'whole_sign' || house === 'equal' || house === 'placidus' || house === 'porphyry'
-    );
+    return typeof house === 'string' && isHouseSystemId(house);
 }
 
 export interface ResolvedCalculation {
@@ -97,7 +88,9 @@ export function settingsToJyotishConfig(settings: CalculationSettings): JyotishC
         ayanamsaMode: settings.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[settings.ayanamsa],
         ayanamsaOffset: settings.ayanamsaOffsetDeg,
         nodeType: settings.nodeType,
-        houseSystem: HOUSE_TO_LEGACY[settings.houseSystem],
+        houseSystem: houseSystemLegacyFromId(settings.houseSystem),
+        houseAnchor: settings.houseAnchor ?? 'ascendant',
+        cuspsInMiddle: settings.cuspsInMiddle,
         dasamsaScheme: settings.dasamsaScheme,
         horaScheme: settings.horaScheme,
         sunriseHour: settings.sunrise.nominalHour,
@@ -132,8 +125,9 @@ export function jyotishConfigToSettings(
         ayanamsaOffsetDeg: config.ayanamsaOffset,
         ...(known ? {} : { customAyanamsaMode: config.ayanamsaMode }),
         nodeType: config.nodeType,
-        houseSystem: LEGACY_TO_HOUSE[config.houseSystem],
-        cuspsInMiddle: base.cuspsInMiddle,
+        houseSystem: houseSystemIdFromLegacy(config.houseSystem),
+        houseAnchor: config.houseAnchor ?? base.houseAnchor ?? 'ascendant',
+        cuspsInMiddle: config.cuspsInMiddle ?? base.cuspsInMiddle,
         positionMode: config.positionMode,
         topocentric: config.topocentric,
         altitudeMetres: config.altitudeMetres,
@@ -241,6 +235,7 @@ export interface FlatBirthSettings {
     ayanamsaOffsetDeg: number;
     nodeType: CalculationSettings['nodeType'];
     houseSystem: HouseSystemId;
+    houseAnchor?: HouseAnchorId;
     cuspsInMiddle?: boolean;
     positionMode: CalculationSettings['positionMode'];
     topocentric: boolean;
@@ -271,6 +266,7 @@ export function settingsFromFlat(fields: FlatBirthSettings): CalculationSettings
             : {}),
         nodeType: fields.nodeType,
         houseSystem: fields.houseSystem,
+        houseAnchor: fields.houseAnchor ?? 'ascendant',
         cuspsInMiddle: fields.cuspsInMiddle ?? false,
         positionMode: fields.positionMode,
         topocentric: fields.topocentric,
@@ -299,6 +295,7 @@ export function flatFromSettings(settings: CalculationSettings): Record<string, 
             : {}),
         nodeType: settings.nodeType,
         houseSystem: settings.houseSystem,
+        houseAnchor: settings.houseAnchor,
         cuspsInMiddle: settings.cuspsInMiddle,
         positionMode: settings.positionMode,
         topocentric: settings.topocentric,

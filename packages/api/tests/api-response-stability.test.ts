@@ -26,7 +26,7 @@ const CHART_B_BODY = {
  * chart hash includes analytic body speeds (#281) and frame-biased ecliptic latitude.
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': '19f8907008cde5aa72211797f19ef9a7fa9ef7756bfea34eea97d91e8efb4011',
+    '/v1/chart': 'a6d2a8b32af8b13e3f47b03807d01d4cb9f05562422c85b4abb7594ca57d5806',
     '/v1/shadbala': 'ae8a741916374ed5df82a810288a0a6abf035d5a0dee844cee2845810d1de61b',
     '/v1/kp/significators': 'df3e36794292ed38d6f43555862f1227a39650b3bf924b1961e707ce3c09eebe',
 };

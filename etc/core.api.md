@@ -144,10 +144,11 @@ export function calculateGhatiLagna(birthTime: DateTime, sunrise: DateTime, sunL
 // @public
 export function calculateHoraLagna(birthTime: DateTime, sunrise: DateTime, ascendantLong: number): number;
 
+// Warning: (ae-forgotten-export) The symbol "HouseCalculationContext" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "HouseResult" needs to be exported by the entry point index.d.ts
 //
-// @public
-export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method?: HouseSystemMethod, engineInstance?: EphemerisEngine, ayanamsaMode?: number, ayanamsaOffset?: number, precision?: PrecisionOptions): HouseResult;
+// @public (undocumented)
+export function calculateHouseCusps(date: DateTime, lat: number, lon: number, method?: HouseSystemMethod, engineInstance?: EphemerisEngine, ayanamsaMode?: number, ayanamsaOffset?: number, precision?: PrecisionOptions & HouseCalculationContext): HouseResult;
 
 // @public
 export function calculateInduLagna(ascendantSign: number, // 1-12
@@ -217,11 +218,39 @@ export const CalculationSettingsSchema: z.ZodObject<{
         true: "true";
     }>;
     houseSystem: z.ZodEnum<{
+        porphyry: "porphyry";
         whole_sign: "whole_sign";
         equal: "equal";
         placidus: "placidus";
-        porphyry: "porphyry";
+        koch: "koch";
+        regiomontanus: "regiomontanus";
+        campanus: "campanus";
+        alcabitius: "alcabitius";
+        topocentric: "topocentric";
+        morinus: "morinus";
+        meridian: "meridian";
+        krusinski: "krusinski";
+        horizontal: "horizontal";
+        vehlow: "vehlow";
+        equal_mc: "equal_mc";
+        equal_aries: "equal_aries";
+        sripati: "sripati";
+        carter: "carter";
+        pullen_sd: "pullen_sd";
+        pullen_sr: "pullen_sr";
+        apc: "apc";
+        gauquelin: "gauquelin";
+        sunshine: "sunshine";
+        sunshine_treindl: "sunshine_treindl";
+        nine_pada_equal: "nine_pada_equal";
+        surya_siddhanta_houses: "surya_siddhanta_houses";
     }>;
+    houseAnchor: z.ZodOptional<z.ZodEnum<{
+        ascendant: "ascendant";
+        moon: "moon";
+        sun: "sun";
+        aries: "aries";
+    }>>;
     cuspsInMiddle: z.ZodBoolean;
     positionMode: z.ZodEnum<{
         apparent: "apparent";
@@ -771,7 +800,13 @@ export interface HistoricalDateTime {
 export type HoraScheme = 'parashara' | 'parivritti';
 
 // @public (undocumented)
-export const HOUSE_SYSTEM_IDS: readonly ["whole_sign", "equal", "placidus", "porphyry"];
+export const HOUSE_ANCHOR_IDS: readonly ["ascendant", "moon", "sun", "aries"];
+
+// @public
+export const HOUSE_SYSTEM_IDS: readonly ["whole_sign", "equal", "placidus", "porphyry", "koch", "regiomontanus", "campanus", "alcabitius", "topocentric", "morinus", "meridian", "krusinski", "horizontal", "vehlow", "equal_mc", "equal_aries", "sripati", "carter", "pullen_sd", "pullen_sr", "apc", "gauquelin", "sunshine", "sunshine_treindl", "nine_pada_equal", "surya_siddhanta_houses"];
+
+// @public (undocumented)
+export type HouseAnchorId = (typeof HOUSE_ANCHOR_IDS)[number];
 
 // @public (undocumented)
 export interface HouseData {
@@ -780,21 +815,39 @@ export interface HouseData {
     // (undocumented)
     ascendant: number;
     // (undocumented)
+    coAscKoch?: number;
+    // (undocumented)
+    coAscMunkasey?: number;
+    // (undocumented)
     cusps: number[];
     // (undocumented)
+    equAsc?: number;
+    // (undocumented)
+    gauquelinSectors?: number[];
+    // (undocumented)
+    houseFallback?: {
+        code: string;
+        message: string;
+        usedLetter?: string;
+    };
+    // (undocumented)
     mc: number;
+    // (undocumented)
+    polAsc?: number;
     // (undocumented)
     vertex: number;
 }
 
+// Warning: (ae-forgotten-export) The symbol "HouseSystemLegacy" needs to be exported by the entry point index.d.ts
+//
 // @public
-export type HouseSystem = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
+export type HouseSystem = HouseSystemLegacy;
 
 // @public (undocumented)
 export type HouseSystemId = (typeof HOUSE_SYSTEM_IDS)[number];
 
 // @public (undocumented)
-export type HouseSystemMethod = 'WholeSign' | 'Equal' | 'Placidus' | 'Porphyry';
+export type HouseSystemMethod = HouseSystemLegacy;
 
 // @public (undocumented)
 export function inferDasaYearKind(days: number): DasaYearKind;
@@ -838,10 +891,13 @@ export interface JyotishConfig {
     ayanamsaMode: number;
     ayanamsaOffset: number;
     calendar?: CalendarMode;
+    cuspsInMiddle: boolean;
     dasamsaScheme: DasamsaScheme;
     dashaYearDays: number;
     deltaTOverrideSeconds?: number;
     horaScheme: HoraScheme;
+    // Warning: (ae-forgotten-export) The symbol "HouseAnchorId_2" needs to be exported by the entry point index.d.ts
+    houseAnchor: HouseAnchorId_2;
     houseSystem: HouseSystem;
     nodeType: NodeType;
     positionMode: PositionMode;
@@ -1144,7 +1200,13 @@ export const PRECISION_PROFILES: readonly ["jhora", "modern"];
 // @public
 export interface PrecisionOptions {
     calendar?: CalendarMode;
+    // (undocumented)
+    cuspsInMiddle?: boolean;
     deltaTOverrideSeconds?: number;
+    // (undocumented)
+    houseAnchor?: HouseAnchorId_2;
+    // Warning: (ae-forgotten-export) The symbol "HouseSystemId_2" needs to be exported by the entry point index.d.ts
+    houseSystemId?: HouseSystemId_2;
     julianDayUt?: number;
     precisionProfile?: PrecisionProfile;
 }

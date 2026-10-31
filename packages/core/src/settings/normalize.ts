@@ -6,9 +6,14 @@ import { type CalculationSettings, CalculationSettingsSchema } from './schema.js
  */
 export function normalizeCalculationSettings(settings: CalculationSettings): CalculationSettings {
     const parsed = CalculationSettingsSchema.parse(settings);
+    let out: CalculationSettings = parsed;
     if (parsed.calendar === 'auto') {
         const { calendar: _calendar, ...rest } = parsed;
-        return rest;
+        out = rest;
     }
-    return parsed;
+    if (out.houseAnchor === 'ascendant') {
+        const { houseAnchor: _houseAnchor, ...rest } = out;
+        out = rest;
+    }
+    return out;
 }

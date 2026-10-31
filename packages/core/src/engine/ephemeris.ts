@@ -98,14 +98,11 @@ import {
     computeAscendant,
     computeMC,
     computeVertex,
-    equalHouseCusps,
     getGAST,
     julianCenturies,
     meanObliquity,
     mod360,
     observerGeocentricVector,
-    placidusCusps,
-    porphyryCusps,
     trueObliquity,
     wholeSignCusps,
 } from './coordinates.js';
@@ -117,6 +114,20 @@ import {
     type PrecisionProfile,
     withDeltaTContext,
 } from './deltat.js';
+import {
+    type HouseAnchorId,
+    houseLetterForId,
+    type HouseSystemId,
+    isHouseLetter,
+} from './house-registry.js';
+import {
+    applyCuspsInMiddle,
+    computeTropicalHouses,
+    cuspsFromAnchor,
+    type HouseLetter,
+    ninePadaEqualCusps,
+    sssHouseCusps,
+} from './house-systems.js';
 import {
     APPARENT_SPEED_STEP_DAYS,
     geocentricRelativeState,
@@ -199,6 +210,10 @@ export interface PrecisionOptions {
     calendar?: CalendarMode;
     /** When set, skips {@link EphemerisEngine.julday} (e.g. civil time from {@link resolveCivilTime}). */
     julianDayUt?: number;
+    /** Settings id for house system when `method` is omitted or is a legacy alias. */
+    houseSystemId?: HouseSystemId;
+    houseAnchor?: HouseAnchorId;
+    cuspsInMiddle?: boolean;
 }
 
 function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefined {
@@ -229,6 +244,12 @@ export interface HouseData {
     mc: number; // Sidereal MC (degrees)
     armc: number; // RAMC = Right Ascension of Midheaven (degrees)
     vertex: number; // Sidereal vertex (degrees)
+    equAsc?: number;
+    coAscKoch?: number;
+    coAscMunkasey?: number;
+    polAsc?: number;
+    gauquelinSectors?: number[];
+    houseFallback?: { code: string; message: string; usedLetter?: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -872,7 +893,7 @@ export class EphemerisEngine {
                     ayanamsaMode,
                     ayanamsaOffset,
                     siderealFrame,
-                    precision?.precisionProfile,
+                    precision,
                 ),
             );
         }
@@ -885,8 +906,20 @@ export class EphemerisEngine {
             ayanamsaMode,
             ayanamsaOffset,
             siderealFrame,
-            precision?.precisionProfile,
+            precision,
         );
+    }
+
+    private tropicalBodyLongitude(
+        jd: number,
+        bodyId: number,
+        lat: number,
+        lon: number,
+    ): number | undefined {
+        const naifId = ID_TO_NAIF[bodyId];
+        if (naifId === undefined) return undefined;
+        const loc = { latitude: lat, longitude: lon, altitude: 0 };
+        return this.meanEclipticOfDate(jd, naifId, GEOMETRIC, loc).lon;
     }
 
     private housesIn(
@@ -898,14 +931,12 @@ export class EphemerisEngine {
         ayanamsaMode: number | undefined,
         ayanamsaOffset: number,
         frameArg: 'jhora' | 'se-apparent' | undefined,
-        profile: PrecisionProfile | undefined,
+        precision?: PrecisionOptions,
     ): HouseData {
+        const profile = precision?.precisionProfile;
         const modern = profile === 'modern';
         const siderealFrame = frameArg ?? (modern ? 'se-apparent' : 'jhora');
 
-        // Angles are built on apparent sidereal time and the true obliquity,
-        // as swe_houses does. Whole Sign cusps are the sign boundaries of the
-        // sidereal ascendant, not the tropical cusps shifted by ayanamsa.
         const eps = trueObliquity(jd);
         const ramc = mod360(getGAST(jd) + lon);
 
@@ -913,56 +944,113 @@ export class EphemerisEngine {
         const tropMC = computeMC(ramc, eps);
         const tropVertex = computeVertex(ramc, lat, eps);
 
-        const tropicalCusps = (): number[] => {
-            if (method === 'E') return equalHouseCusps(tropAsc);
-            // Placidus is undefined beyond the polar circle; like swe_houses
-            // (SE general documentation §6.4) fall back to Porphyry there.
-            if (method === 'P') {
-                return Math.abs(lat) >= 90 - eps
-                    ? porphyryCusps(tropAsc, tropMC)
-                    : placidusCusps(
-                          ramc,
-                          lat,
-                          eps,
-                          tropAsc,
-                          tropMC,
-                          modern ? 'converged' : 'jhora',
-                      );
+        const letter = method as HouseLetter;
+        const houseSystemId = precision?.houseSystemId;
+        const anchor = precision?.houseAnchor ?? 'ascendant';
+        const cuspsInMiddle = precision?.cuspsInMiddle ?? false;
+
+        let sunLon: number | undefined;
+        if (letter === 'I' || letter === 'i') {
+            sunLon = this.tropicalBodyLongitude(jd, Body.Sun, lat, lon);
+        }
+        let moonLon: number | undefined;
+        if (anchor === 'moon') {
+            moonLon = this.tropicalBodyLongitude(jd, Body.Moon, lat, lon);
+        }
+        if (anchor === 'sun') {
+            sunLon = this.tropicalBodyLongitude(jd, Body.Sun, lat, lon);
+        }
+
+        let anchorLon = tropAsc;
+        if (anchor === 'aries') anchorLon = 0;
+        else if (anchor === 'moon' && moonLon !== undefined) anchorLon = moonLon;
+        else if (anchor === 'sun' && sunLon !== undefined) anchorLon = sunLon;
+
+        const tropical = computeTropicalHouses(
+            letter,
+            ramc,
+            lat,
+            eps,
+            tropAsc,
+            tropMC,
+            tropVertex,
+            {
+                placidusScheme: modern ? 'converged' : 'jhora',
+                polarFallback: 'porphyry',
+                sunEclipticLongitude: sunLon,
+            },
+        );
+
+        let cusps = tropical.cusps;
+        let ascOut = tropical.ascendant;
+        const mcOut = tropical.mc;
+
+        if (houseSystemId === 'surya_siddhanta_houses') {
+            const sss = sssHouseCusps(ramc, lat, jd, eps);
+            cusps = sss.cusps;
+            ascOut = sss.ascendant;
+        } else if (
+            anchor !== 'ascendant' &&
+            (letter === 'E' ||
+                letter === 'W' ||
+                letter === 'D' ||
+                letter === 'N' ||
+                letter === 'V' ||
+                letter === 'A')
+        ) {
+            cusps = cuspsFromAnchor(anchorLon, letter);
+        }
+
+        if (
+            cuspsInMiddle &&
+            (letter === 'E' ||
+                letter === 'A' ||
+                letter === 'V' ||
+                houseSystemId === 'equal' ||
+                houseSystemId === 'vehlow' ||
+                houseSystemId === 'nine_pada_equal')
+        ) {
+            cusps = applyCuspsInMiddle(cusps, tropAsc);
+        }
+
+        const build = (sub?: (d: number) => number): HouseData => {
+            const map = sub ? (d: number) => sub(d) : (d: number) => d;
+            const sidAsc = sub ? sub(tropAsc) : tropAsc;
+            let outCusps =
+                letter === 'W' && sub ? wholeSignCusps(sidAsc) : sub ? cusps.map(sub) : cusps;
+            if (houseSystemId === 'nine_pada_equal') {
+                outCusps = ninePadaEqualCusps(sub ? sidAsc : tropAsc);
             }
-            if (method === 'O') return porphyryCusps(tropAsc, tropMC);
-            return wholeSignCusps(tropAsc);
+            return {
+                cusps: outCusps,
+                ascendant: map(ascOut),
+                mc: map(mcOut),
+                armc: ramc,
+                vertex: map(tropVertex),
+                equAsc: tropical.equAsc !== undefined ? map(tropical.equAsc) : undefined,
+                coAscKoch: tropical.coAscKoch !== undefined ? map(tropical.coAscKoch) : undefined,
+                coAscMunkasey:
+                    tropical.coAscMunkasey !== undefined ? map(tropical.coAscMunkasey) : undefined,
+                polAsc: tropical.polAsc !== undefined ? map(tropical.polAsc) : undefined,
+                gauquelinSectors: tropical.gauquelinSectors?.map(map),
+                houseFallback: tropical.fallback,
+            };
         };
 
         if (!sidereal) {
-            return {
-                cusps: tropicalCusps(),
-                ascendant: tropAsc,
-                mc: tropMC,
-                armc: ramc,
-                vertex: tropVertex,
-            };
+            return build();
         }
 
         const mode = ayanamsaMode ?? this.ayanamsaMode;
         let ayaEx: number;
         if (siderealFrame === 'se-apparent') {
-            // aya_ex = apparent ayanamsa (no nutation) + Δψ, the value
-            // swe_get_ayanamsa_ex_ut reports for a star-defined mode.
             const T = julianCenturies(jd + deltaT(jd) / 86400.0);
             ayaEx = computeAyanamsa(mode, jd, 'apparent') + ayanamsaOffset + nutation(T).dpsi;
         } else {
             ayaEx = computeAyanamsa(mode, jd, 'geometric') + ayanamsaOffset;
         }
         const sub = (d: number) => mod360(d - ayaEx);
-        const sidAsc = sub(tropAsc);
-
-        return {
-            cusps: method === 'W' ? wholeSignCusps(sidAsc) : tropicalCusps().map(sub),
-            ascendant: sidAsc,
-            mc: sub(tropMC),
-            armc: ramc,
-            vertex: sub(tropVertex),
-        };
+        return build(sub);
     }
 
     // -----------------------------------------------------------------------
