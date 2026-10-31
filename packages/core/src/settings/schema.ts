@@ -101,6 +101,10 @@ export const DasaYearSchema = z
 export const PRECISION_PROFILES = ['jhora', 'modern'] as const;
 export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 
+/** Post-bridge ΔT forecast when `precisionProfile` is `'modern'`. Default: `'published'`. */
+export const DELTA_T_FORECASTS = ['published', 'oracle-compat'] as const;
+export type DeltaTForecastId = (typeof DELTA_T_FORECASTS)[number];
+
 export const EPHEMERIS_POLICIES = ['auto', 'de440s', 'de431_long', 'de441_long'] as const;
 export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 
@@ -112,6 +116,12 @@ export const CalculationSettingsSchema = z
     .object({
         schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
         precisionProfile: z.enum(PRECISION_PROFILES).default('jhora'),
+        /**
+         * Post-bridge ΔT forecast for `precisionProfile: 'modern'`. `'published'` (default)
+         * uses UKHO lod integration + SMH2016 eq. 4.1; `'oracle-compat'` keeps the legacy
+         * in-house curve that matches pyswisseph 2.10 test extrapolation.
+         */
+        deltaTForecast: z.enum(DELTA_T_FORECASTS).optional(),
         /**
          * Fixed ΔT = TT − UT1 in seconds, replacing the profile's ΔT model for
          * the whole calculation. For dates whose ΔT is known from elsewhere

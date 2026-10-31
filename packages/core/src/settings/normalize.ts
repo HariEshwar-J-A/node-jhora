@@ -15,5 +15,9 @@ export function normalizeCalculationSettings(settings: CalculationSettings): Cal
         const { houseAnchor: _houseAnchor, ...rest } = out;
         out = rest;
     }
+    if (out.deltaTForecast === 'published' || out.deltaTForecast === undefined) {
+        const { deltaTForecast: _deltaTForecast, ...rest } = out;
+        out = rest;
+    }
     return out;
 }

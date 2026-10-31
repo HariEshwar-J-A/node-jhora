@@ -188,6 +188,10 @@ export const CalculationSettingsSchema: z.ZodObject<{
         jhora: "jhora";
         modern: "modern";
     }>>;
+    deltaTForecast: z.ZodOptional<z.ZodEnum<{
+        published: "published";
+        "oracle-compat": "oracle-compat";
+    }>>;
     deltaTOverrideSeconds: z.ZodOptional<z.ZodNumber>;
     ephemerisPolicy: z.ZodDefault<z.ZodEnum<{
         auto: "auto";
@@ -587,13 +591,24 @@ export const DEFAULT_PRECISION_PROFILE: PrecisionProfile;
 export const DELTA_T_MODEL = "jhora-se2.02:ms2004+em2006+aa-usno-yearly+st1997";
 
 // @public
-export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-cubic+smh2016-parabola";
+export const DELTA_T_MODEL_MODERN = "modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-lod+smh2016-eq4.1";
+
+// @public
+export const DELTA_T_MODEL_MODERN_ORACLE_COMPAT = "modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+oracle-compat-forecast";
+
+// @public
+export const DELTA_T_MODEL_MODERN_PUBLISHED = "modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-lod+smh2016-eq4.1";
 
 // @public
 export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864000;
 
+// Warning: (ae-forgotten-export) The symbol "DELTA_T_FORECASTS" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export type DeltaTForecastId = (typeof DELTA_T_FORECASTS)[number];
+
 // @public
-export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number): string;
+export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number, forecast?: DeltaTForecastId): string;
 
 // @public (undocumented)
 export function describeCalculation(input?: SettingsInput, base?: CalculationSettings): ResolvedCalculation;
@@ -894,6 +909,7 @@ export interface JyotishConfig {
     cuspsInMiddle: boolean;
     dasamsaScheme: DasamsaScheme;
     dashaYearDays: number;
+    deltaTForecast?: DeltaTForecastId;
     deltaTOverrideSeconds?: number;
     horaScheme: HoraScheme;
     // Warning: (ae-forgotten-export) The symbol "HouseAnchorId_2" needs to be exported by the entry point index.d.ts
@@ -978,6 +994,9 @@ export interface ManualOffsetOverride {
     label?: string;
     offsetMinutes: number;
 }
+
+// @public (undocumented)
+export function modernDeltaTModelId(forecast?: DeltaTForecastId): string;
 
 // @public
 export const NAKSHATRA_SPAN_D: Decimal;
@@ -1202,6 +1221,7 @@ export interface PrecisionOptions {
     calendar?: CalendarMode;
     // (undocumented)
     cuspsInMiddle?: boolean;
+    deltaTForecast?: DeltaTForecastId;
     deltaTOverrideSeconds?: number;
     // (undocumented)
     houseAnchor?: HouseAnchorId_2;
@@ -1283,6 +1303,8 @@ export interface ResultEnvelope {
 export interface ResultEnvelopeOptions {
     computedAt?: string;
     // (undocumented)
+    deltaTForecast?: DeltaTForecastId;
+    // (undocumented)
     deltaTOverrideSeconds?: number;
     // (undocumented)
     precisionProfile?: PrecisionProfile;
@@ -1300,6 +1322,7 @@ export type RiseSetBodyId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 // @public (undocumented)
 export interface RiseSetDefinition {
+    deltaTForecast?: DeltaTForecastId;
     deltaTOverrideSeconds?: number;
     horizonAltitudeDeg: number;
     // (undocumented)
@@ -1570,6 +1593,8 @@ export function withResultEnvelope<T extends Record<string, unknown>>(payload: T
 export interface WithResultEnvelopeOptions {
     // (undocumented)
     computedAt?: string;
+    // (undocumented)
+    deltaTForecast?: DeltaTForecastId;
     // (undocumented)
     deltaTOverrideSeconds?: number;
     // (undocumented)

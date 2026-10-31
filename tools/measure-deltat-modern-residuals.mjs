@@ -44,7 +44,7 @@ let maxAt = null;
 const buckets = { ancient: 0, observed: 0, bridge: 0, forecast: 0 };
 
 for (const [y, jd, expected] of oracle) {
-    const got = deltaT(jd, 'modern');
+    const got = deltaT(jd, 'modern', 'oracle-compat');
     const err = Math.abs(got - expected);
     if (err > max) {
         max = err;

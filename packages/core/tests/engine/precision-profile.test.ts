@@ -9,6 +9,8 @@ import {
     createResultEnvelope,
     DELTA_T_MODEL,
     DELTA_T_MODEL_MODERN,
+    DELTA_T_MODEL_MODERN_ORACLE_COMPAT,
+    DELTA_T_MODEL_MODERN_PUBLISHED,
     getPreset,
     hashSettings,
     LAST_OBSERVED_YEAR_MODERN,
@@ -102,7 +104,12 @@ describe('settings', () => {
             precisionProfile: 'modern',
             deltaTOverrideSeconds: 75.26,
         });
-        expect(new Set([h0, hm, ho, ho2]).size).toBe(4);
+        const hoc = hashSettings({
+            ...base,
+            precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
+        });
+        expect(new Set([h0, hm, ho, ho2, hoc]).size).toBe(5);
         expect(hashSettings({ ...base, deltaTOverrideSeconds: undefined })).toBe(h0);
     });
 
@@ -115,7 +122,14 @@ describe('settings', () => {
         expect(createResultEnvelope({ settingsHash: 'x' }).deltaTModel).toBe(DELTA_T_MODEL);
         expect(
             createResultEnvelope({ settingsHash: 'x', precisionProfile: 'modern' }).deltaTModel,
-        ).toBe(DELTA_T_MODEL_MODERN);
+        ).toBe(DELTA_T_MODEL_MODERN_PUBLISHED);
+        expect(
+            createResultEnvelope({
+                settingsHash: 'x',
+                precisionProfile: 'modern',
+                deltaTForecast: 'oracle-compat',
+            }).deltaTModel,
+        ).toBe(DELTA_T_MODEL_MODERN_ORACLE_COMPAT);
         expect(
             createResultEnvelope({
                 settingsHash: 'x',

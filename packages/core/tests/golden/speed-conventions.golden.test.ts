@@ -86,13 +86,14 @@ describe('speed conventions (ADR 0008, case 48)', () => {
                     .find((p) => p.name === 'Sun')!.speed,
         );
         const modernSpeed = withDeltaTContext(
-            { profile: 'modern' },
+            { profile: 'modern', forecast: 'oracle-compat' },
             () =>
                 eph
                     .getPlanets(dt(), loc, {
                         ayanamsaOrder: 27,
                         nodeType: 'true',
                         precisionProfile: 'modern',
+                        deltaTForecast: 'oracle-compat',
                         positionMode: 'geometric',
                     })
                     .find((p) => p.name === 'Sun')!.speed,

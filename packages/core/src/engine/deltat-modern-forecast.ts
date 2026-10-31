@@ -1,61 +1,40 @@
 /**
- * Post-tabulation ΔT forecast from published SMH2016 / UKHO forms, with a gradual
- * hand-off from the last bridge sample (programmer-manual ch. 7, ΔT section:
- * long-term polynomial plus a correction that fades linearly over one century
- * so the tabulated end and the model meet without a step).
+ * Post-tabulation ΔT forecast dispatch for precision profile `modern`.
  *
- * @provenance Stephenson, Morrison & Hohenkerk (2016), UKHO supplement
- * (https://astro.ukho.gov.uk/nao/lvm/); millennial branch coefficients as in
- * the same manual's 2016-model description.
+ * @see deltat-modern-forecast-published.ts (default `deltaTForecast: 'published'`)
+ * @see deltat-modern-forecast-oracle-compat.ts (`deltaTForecast: 'oracle-compat'`)
  */
 
-/** Years after the bridge end before the hand-off correction reaches zero. */
-export const FORECAST_HANDOFF_SPAN_YEARS = 100;
+import type { DeltaTForecastId } from '../settings/schema.js';
+import { deltaTModernForecastOracleCompat } from './deltat-modern-forecast-oracle-compat.js';
+import { deltaTModernForecastPublished } from './deltat-modern-forecast-published.js';
+import { FORECAST_HANDOFF_SPAN_YEARS } from './deltat-modern-forecast-shared.js';
 
-/** Year where the near-term cubic yields to the millennial parabola. */
-export const FORECAST_MILLENNIAL_ONSET_YEAR = 2500;
+export type { DeltaTForecastId };
 
-/**
- * Near-term cubic in ΔT (seconds), UKHO / SMH2016 supplement near 2000 CE.
- * Independent variable: Gregorian year Y.
- */
-export function nearTermForecastCubic(y: number): number {
-    const offsetFrom2000 = y - 2000;
-    return (
-        (offsetFrom2000 ** 3 * 121) / 30_000_000 +
-        offsetFrom2000 ** 2 / 1250 +
-        (offsetFrom2000 * 521) / 3000 +
-        64
-    );
-}
+export { FORECAST_HANDOFF_SPAN_YEARS };
+export {
+    deltaTModernForecastOracleCompat,
+    oracleCompatMillennialForecastParabola,
+    oracleCompatNearTermForecastCubic,
+} from './deltat-modern-forecast-oracle-compat.js';
+export {
+    FORECAST_SMH2016_BLEND_YEARS,
+    FORECAST_UKHO_LAST_YEAR,
+    smh2016MillennialParabola,
+    UKHO_DELTAT_TABLE,
+    ukhoIntegratedForecast,
+    ukhoLodMilliseconds,
+} from './deltat-modern-forecast-published.js';
 
-/** Millennial parabola (seconds), manual 2016-model long branch. */
-export function millennialForecastParabola(y: number): number {
-    const centuriesFrom2000 = 0.01 * (y - 2000);
-    return centuriesFrom2000 * centuriesFrom2000 * 32.5 + 42.5;
-}
-
-function baselineForecast(y: number): number {
-    if (y < FORECAST_MILLENNIAL_ONSET_YEAR) return nearTermForecastCubic(y);
-    return millennialForecastParabola(y);
-}
-
-/**
- * Forecast ΔT after the oracle bridge, fading a constant offset so the cubic
- * matches the last bridge second at {@link bridgeEndYear} and the offset is
- * gone {@link FORECAST_HANDOFF_SPAN_YEARS} years later.
- */
 export function deltaTModernForecast(
     y: number,
     bridgeEndYear: number,
     bridgeEndSeconds: number,
+    forecast: DeltaTForecastId = 'published',
 ): number {
-    const natural = baselineForecast(y);
-    const handoffCompleteYear = bridgeEndYear + FORECAST_HANDOFF_SPAN_YEARS;
-    if (y > handoffCompleteYear) return natural;
-    const naturalAtBridgeEnd = nearTermForecastCubic(bridgeEndYear);
-    const offsetAtBridgeEnd = naturalAtBridgeEnd - bridgeEndSeconds;
-    const yearsBeforeHandoffEnds = handoffCompleteYear - y;
-    const handoffFraction = yearsBeforeHandoffEnds / FORECAST_HANDOFF_SPAN_YEARS;
-    return natural - offsetAtBridgeEnd * handoffFraction;
+    if (forecast === 'oracle-compat') {
+        return deltaTModernForecastOracleCompat(y, bridgeEndYear, bridgeEndSeconds);
+    }
+    return deltaTModernForecastPublished(y, bridgeEndYear, bridgeEndSeconds);
 }

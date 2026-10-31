@@ -14,7 +14,9 @@
  *   • y > 2019 — Stephenson (1997) with 100-year linear join to the table end.
  *
  * Precision profile 'modern' — SMH2016 Table S15 to ~1952.25, blend to the
- * IERS/USNO yearly table through 2028, then UKHO/SMH2016 forecast (ADR 0007).
+ * IERS/USNO yearly table through 2028, then a post-bridge forecast selected by
+ * {@link CalculationSettings.deltaTForecast}: `'published'` (UKHO lod + SMH2016 eq. 4.1,
+ * default) or `'oracle-compat'` (in-house pyswisseph 2.10 extrapolation; test oracles only).
  *
  * Tidal correction (both profiles, y < 1955 only): van Gent / NASA polynomial
  * form δ(ΔT) = −0.91072 (ṅ_to − ṅ_from) u² s, u = (y − 1955.5)/100 (modern);
@@ -28,18 +30,29 @@ import { interpolateBesselFourth } from './deltat-interpolate.js';
 import { JHORA_DELTAT_JAN1, JHORA_DELTAT_LAST_YEAR } from './deltat-jhora-yearly.js';
 import {
     DELTA_T_MODEL_MODERN,
+    DELTA_T_MODEL_MODERN_ORACLE_COMPAT,
+    DELTA_T_MODEL_MODERN_PUBLISHED,
     deltaTModern,
     LAST_OBSERVED_YEAR_MODERN as LAST_OBSERVED_YEAR_MODERN_PROFILE,
+    modernDeltaTModelId,
 } from './deltat-modern.js';
+import type { DeltaTForecastId } from './deltat-modern-forecast.js';
 import { OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
 import { TIDAL_ACCELERATION_AA, tidalMeeusCorrection } from './deltat-tidal.js';
 
 /** Supported precision profiles. See CalculationSettings.precisionProfile. */
 export type PrecisionProfile = 'jhora' | 'modern';
 
+export type { DeltaTForecastId } from './deltat-modern-forecast.js';
+
 /** Identifier recorded in result envelopes for the ΔT model in use. */
 export const DELTA_T_MODEL_JHORA = 'jhora-se2.02:ms2004+em2006+aa-usno-yearly+st1997';
-export { DELTA_T_MODEL_MODERN };
+export {
+    DELTA_T_MODEL_MODERN,
+    DELTA_T_MODEL_MODERN_ORACLE_COMPAT,
+    DELTA_T_MODEL_MODERN_PUBLISHED,
+    modernDeltaTModelId,
+};
 
 /**
  * JD(UT) where the jhora profile switches from Espenak/Meeus polynomials to the
@@ -52,9 +65,11 @@ export const JHORA_TABLE_SWITCH_JD = 2317746.130902778;
 export function deltaTModelId(
     profile: PrecisionProfile = 'jhora',
     overrideSeconds?: number,
+    forecast: DeltaTForecastId = 'published',
 ): string {
     if (overrideSeconds !== undefined) return `override:${overrideSeconds}s`;
-    return profile === 'modern' ? DELTA_T_MODEL_MODERN : DELTA_T_MODEL_JHORA;
+    if (profile === 'modern') return modernDeltaTModelId(forecast);
+    return DELTA_T_MODEL_JHORA;
 }
 
 /** Lunar tidal acceleration of the ephemeris, ″/cy² (DE430/DE431). */
@@ -167,6 +182,8 @@ export interface DeltaTContext {
     profile: PrecisionProfile;
     /** Fixed ΔT in seconds, replacing the model (CalculationSettings.deltaTOverrideSeconds). */
     overrideSeconds?: number;
+    /** Post-bridge forecast when `profile === 'modern'` (default `'published'`). */
+    forecast?: DeltaTForecastId;
 }
 
 let active: DeltaTContext = { profile: 'jhora' };
@@ -182,11 +199,19 @@ export function getDeltaTContext(): DeltaTContext {
  * cannot leak into unrelated work.
  */
 export function withDeltaTContext<T>(ctx: Partial<DeltaTContext> | undefined, fn: () => T): T {
-    if (!ctx || (ctx.profile === undefined && ctx.overrideSeconds === undefined)) return fn();
+    if (
+        !ctx ||
+        (ctx.profile === undefined &&
+            ctx.overrideSeconds === undefined &&
+            ctx.forecast === undefined)
+    ) {
+        return fn();
+    }
     const previous = active;
     active = {
         profile: ctx.profile ?? previous.profile,
         overrideSeconds: ctx.overrideSeconds ?? previous.overrideSeconds,
+        forecast: ctx.forecast ?? previous.forecast,
     };
     try {
         return fn();
@@ -203,13 +228,25 @@ export function withDeltaTContext<T>(ctx: Partial<DeltaTContext> | undefined, fn
  *                 unless set by withDeltaTContext). Passing a profile
  *                 explicitly ignores any override in the context.
  */
-export function deltaT(jdUT: number, profile?: PrecisionProfile): number {
+export function deltaT(
+    jdUT: number,
+    profile?: PrecisionProfile,
+    forecast?: DeltaTForecastId,
+): number {
+    let effectiveProfile: PrecisionProfile;
+    let effectiveForecast: DeltaTForecastId;
+
     if (profile === undefined) {
         if (active.overrideSeconds !== undefined) return active.overrideSeconds;
-        profile = active.profile;
+        effectiveProfile = active.profile;
+        effectiveForecast = forecast ?? active.forecast ?? 'published';
+    } else {
+        effectiveProfile = profile;
+        effectiveForecast = forecast ?? 'published';
     }
+
+    if (effectiveProfile === 'modern') return deltaTModern(jdUT, effectiveForecast);
     const y = decimalYear(jdUT);
-    if (profile === 'modern') return deltaTModern(jdUT);
     let v = deltaTRaw(jdUT);
     const inTableEra = jdUT >= JHORA_TABLE_SWITCH_JD && y <= LAST_OBSERVED_YEAR;
     const inPolynomialEra = jdUT < JHORA_TABLE_SWITCH_JD;

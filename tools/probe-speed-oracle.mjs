@@ -73,11 +73,13 @@ const jd0 = eph.julday(dt);
 const loc = { latitude: CASE.lat, longitude: CASE.lon };
 
 function siderealLon(profile, jdUT, bodyName) {
-    return withDeltaTContext({ profile }, () => {
+    const ctx = profile === 'modern' ? { profile, forecast: 'oracle-compat' } : { profile };
+    return withDeltaTContext(ctx, () => {
         const ps = eph.getPlanets(dt, loc, {
             ayanamsaOrder: 27,
             nodeType: 'true',
             precisionProfile: profile,
+            ...(profile === 'modern' ? { deltaTForecast: 'oracle-compat' } : {}),
             positionMode: 'geometric',
             julianDayUt: jdUT,
         });
@@ -115,9 +117,11 @@ for (const profile of ['jhora', 'modern']) {
             ayanamsaOrder: 27,
             nodeType: 'true',
             precisionProfile: profile,
+            ...(profile === 'modern' ? { deltaTForecast: 'oracle-compat' } : {}),
             positionMode: 'geometric',
         };
-        const reported = withDeltaTContext({ profile }, () => {
+        const ctx = profile === 'modern' ? { profile, forecast: 'oracle-compat' } : { profile };
+        const reported = withDeltaTContext(ctx, () => {
             const ps = eph.getPlanets(dt, loc, opts);
             return ps.find((x) => x.name === name).speed;
         });

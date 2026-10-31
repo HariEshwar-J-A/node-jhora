@@ -169,6 +169,7 @@ function smoothedCorrectionDeg(jdCenter, source) {
         const jdTT = jd + deltaT(jd) / 86400;
         const trueLon = trueAscendingNodeLongitude(jd, source, {
             precisionProfile: 'modern',
+            deltaTForecast: 'oracle-compat',
             truePosition: true,
         });
         const base = meanLunarNodeMeeus(julianCenturies(jdTT));

@@ -130,6 +130,20 @@ export class ChartSession {
         this.deps = { ...defaultDeps, ...input.deps };
     }
 
+    private precisionOpts() {
+        return {
+            ...(this.config.precisionProfile !== undefined
+                ? { precisionProfile: this.config.precisionProfile }
+                : {}),
+            ...(this.config.deltaTOverrideSeconds !== undefined
+                ? { deltaTOverrideSeconds: this.config.deltaTOverrideSeconds }
+                : {}),
+            ...(this.config.deltaTForecast === 'oracle-compat'
+                ? { deltaTForecast: this.config.deltaTForecast }
+                : {}),
+        };
+    }
+
     private ephemerisOpts() {
         return {
             ayanamsaOrder: this.config.ayanamsaMode,
@@ -138,6 +152,7 @@ export class ChartSession {
             topocentric: this.config.topocentric,
             ayanamsaOffset: this.config.ayanamsaOffset,
             calendar: this.config.calendar,
+            ...this.precisionOpts(),
             ...(this.julianDayUt !== undefined ? { julianDayUt: this.julianDayUt } : {}),
         };
     }
@@ -175,6 +190,7 @@ export class ChartSession {
                 {
                     calendar: this.config.calendar,
                     julianDayUt: this.julianDayUt,
+                    ...this.precisionOpts(),
                 },
             );
             this.housesOut = {
@@ -358,6 +374,9 @@ export class ChartSession {
     collect(include: readonly ChartSectionId[]): ChartSectionsSnapshot {
         const { settingsHash: _hash, ...envelope } = createResultEnvelope({
             settingsHash: this.settingsHash,
+            precisionProfile: this.settings.precisionProfile,
+            deltaTOverrideSeconds: this.settings.deltaTOverrideSeconds,
+            deltaTForecast: this.settings.deltaTForecast,
         });
         const snapshot: ChartSectionsSnapshot = {
             settingsHash: this.settingsHash,

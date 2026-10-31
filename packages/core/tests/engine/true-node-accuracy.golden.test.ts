@@ -60,6 +60,7 @@ describe('true-node fixture accuracy (DE440s, UTC ≤ 2026)', () => {
                     { latitude: c.lat, longitude: c.lon },
                     {
                         precisionProfile: 'modern',
+                        deltaTForecast: 'oracle-compat',
                         ayanamsaOrder: 27,
                         nodeType: 'true',
                         julianDayUt: c.jdUT,

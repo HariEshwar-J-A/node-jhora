@@ -11,7 +11,7 @@ import {
     MODERN_BRIDGE_LAST_YEAR,
     MODERN_BRIDGE_SAMPLES,
 } from './deltat-modern-bridge.js';
-import { deltaTModernForecast } from './deltat-modern-forecast.js';
+import { type DeltaTForecastId, deltaTModernForecast } from './deltat-modern-forecast.js';
 import { DELTAT_MONTHLY, DELTAT_MONTHLY_FIRST, DELTAT_MONTHLY_LAST } from './deltat-monthly.js';
 import {
     OBSERVED_DELTAT_JAN1,
@@ -125,9 +125,9 @@ function interpolateMonthly(y: number): number {
     return v0 + w * (v1 - v0);
 }
 
-function tabulatedDeltaT(y: number): number {
+function tabulatedDeltaT(y: number, forecast: DeltaTForecastId): number {
     if (y > MODERN_BRIDGE_LAST_YEAR) {
-        return deltaTModernForecast(y, MODERN_BRIDGE_LAST_YEAR, BRIDGE_END_SECONDS);
+        return deltaTModernForecast(y, MODERN_BRIDGE_LAST_YEAR, BRIDGE_END_SECONDS, forecast);
     }
     if (y >= MODERN_BRIDGE_FIRST_YEAR) {
         return interpolateAnnualRecord(y, bridgeAt, MODERN_BRIDGE_LAST_YEAR);
@@ -142,21 +142,34 @@ function smh2016WithTidal(y: number): number {
     return v;
 }
 
-export function deltaTModern(jdUT: number): number {
+export function deltaTModern(jdUT: number, forecast: DeltaTForecastId = 'published'): number {
     const yTab = decimalYearAlmanac(jdUT);
     const ySmh = decimalYearSmh2016(jdUT);
-    if (yTab > MODERN_BRIDGE_LAST_YEAR) return tabulatedDeltaT(yTab);
+    if (yTab > MODERN_BRIDGE_LAST_YEAR) return tabulatedDeltaT(yTab, forecast);
     if (ySmh < SPLINE_TO_OBS_BLEND_START) return smh2016WithTidal(ySmh);
     if (ySmh < MODERN_OBSERVED_RECORD_START) {
-        const obs = tabulatedDeltaT(yTab);
+        const obs = tabulatedDeltaT(yTab, forecast);
         const w =
             (ySmh - SPLINE_TO_OBS_BLEND_START) /
             (MODERN_OBSERVED_RECORD_START - SPLINE_TO_OBS_BLEND_START);
         return (1 - w) * smh2016WithTidal(ySmh) + w * obs;
     }
-    return tabulatedDeltaT(yTab);
+    return tabulatedDeltaT(yTab, forecast);
 }
 
-/** Identifier recorded in result envelopes for precision profile `modern`. */
-export const DELTA_T_MODEL_MODERN =
-    'modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-cubic+smh2016-parabola';
+/** Envelope suffix for `deltaTForecast: 'published'` (default). */
+export const DELTA_T_MODEL_MODERN_PUBLISHED =
+    'modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+ukho-lod+smh2016-eq4.1';
+
+/** Envelope suffix when `deltaTForecast: 'oracle-compat'`. */
+export const DELTA_T_MODEL_MODERN_ORACLE_COMPAT =
+    'modern:smh2016-s15+aa-usno-monthly+usno-preds-bridge+oracle-compat-forecast';
+
+/** Default modern envelope id (`deltaTForecast: 'published'`). */
+export const DELTA_T_MODEL_MODERN = DELTA_T_MODEL_MODERN_PUBLISHED;
+
+export function modernDeltaTModelId(forecast: DeltaTForecastId = 'published'): string {
+    return forecast === 'oracle-compat'
+        ? DELTA_T_MODEL_MODERN_ORACLE_COMPAT
+        : DELTA_T_MODEL_MODERN_PUBLISHED;
+}

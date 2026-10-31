@@ -51,6 +51,7 @@ import { DateTime } from 'luxon';
 
 import { Body } from '../core/body.js';
 import { NodeJHoraError, NodeJHoraErrorCode } from '../errors.js';
+import type { DeltaTForecastId } from '../settings/schema.js';
 import { dateTimeToJulianDayUt } from '../time/civil.js';
 import {
     assertCalendarMode,
@@ -201,6 +202,8 @@ export interface PrecisionOptions {
     precisionProfile?: PrecisionProfile;
     /** Fixed ΔT, seconds, replacing the profile's ΔT model. */
     deltaTOverrideSeconds?: number;
+    /** Post-bridge forecast when `precisionProfile` is `'modern'`. Default `'published'`. */
+    deltaTForecast?: DeltaTForecastId;
     /** Civil calendar for Luxon inputs; default `'auto'` (JHora / SE). */
     calendar?: CalendarMode;
     /** When set, skips {@link EphemerisEngine.julday} (e.g. civil time from {@link resolveCivilTime}). */
@@ -212,9 +215,19 @@ export interface PrecisionOptions {
 }
 
 function deltaTContextOf(p?: PrecisionOptions): Partial<DeltaTContext> | undefined {
-    if (!p || (p.precisionProfile === undefined && p.deltaTOverrideSeconds === undefined))
+    if (
+        !p ||
+        (p.precisionProfile === undefined &&
+            p.deltaTOverrideSeconds === undefined &&
+            p.deltaTForecast === undefined)
+    ) {
         return undefined;
-    return { profile: p.precisionProfile, overrideSeconds: p.deltaTOverrideSeconds };
+    }
+    return {
+        profile: p.precisionProfile,
+        overrideSeconds: p.deltaTOverrideSeconds,
+        forecast: p.deltaTForecast,
+    };
 }
 
 export interface GeoLocation {
@@ -573,6 +586,7 @@ export class EphemerisEngine {
                 ...options,
                 precisionProfile: undefined,
                 deltaTOverrideSeconds: undefined,
+                deltaTForecast: undefined,
             };
             return withDeltaTContext(ctx, () => this.getPlanets(date, location, rest));
         }

@@ -17,7 +17,7 @@ const dll = JSON.parse(
 describe('modern 1952–1955 blend residuals', () => {
     test('1954.0 within 0.45 s of pyswisseph 2.10 (main SE layout)', () => {
         const s = se210.samples.find((x) => x.y === 1954)!;
-        const err = Math.abs(deltaT(s.jdUT, 'modern') - s.deltaTSeconds);
+        const err = Math.abs(deltaT(s.jdUT, 'modern', 'oracle-compat') - s.deltaTSeconds);
         expect(err).toBeLessThan(0.45);
     });
 });
@@ -39,7 +39,10 @@ describe('modern bridge vs pyswisseph 2.10 (USNO preds, not oracle)', () => {
         let max = 0;
         for (const s of se210.samples) {
             if (s.y !== 2027 && s.y !== 2028) continue;
-            max = Math.max(max, Math.abs(deltaT(s.jdUT, 'modern') - s.deltaTSeconds));
+            max = Math.max(
+                max,
+                Math.abs(deltaT(s.jdUT, 'modern', 'oracle-compat') - s.deltaTSeconds),
+            );
         }
         expect(max).toBeLessThanOrEqual(0.55);
     });

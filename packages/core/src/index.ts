@@ -103,11 +103,15 @@ export {
     UNSUPPORTED_AYANAMSA_MODES,
     UnsupportedAyanamsaModeError,
 } from './engine/ayanamsa.js';
+export type { DeltaTForecastId } from './engine/deltat.js';
 export {
     DELTA_T_MODEL_MODERN,
+    DELTA_T_MODEL_MODERN_ORACLE_COMPAT,
+    DELTA_T_MODEL_MODERN_PUBLISHED,
     deltaTModelId,
     LAST_OBSERVED_YEAR_MODERN,
     lastObservedDeltaTYear,
+    modernDeltaTModelId,
 } from './engine/deltat.js';
 export type { AyanamsaMode, PositionMode } from './engine/ephemeris.js';
 export type { PrecisionOptions } from './engine/ephemeris.js';
@@ -448,6 +452,7 @@ export class NodeJHora {
                 positionMode: c.positionMode,
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                deltaTForecast: c.deltaTForecast,
                 calendar: c.calendar,
             },
         );
@@ -462,6 +467,7 @@ export class NodeJHora {
             {
                 precisionProfile: c.precisionProfile,
                 deltaTOverrideSeconds: c.deltaTOverrideSeconds,
+                deltaTForecast: c.deltaTForecast,
                 calendar: c.calendar,
                 houseSystemId: houseSystemIdFromLegacy(c.houseSystem),
                 houseAnchor: c.houseAnchor,

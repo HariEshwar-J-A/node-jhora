@@ -8,6 +8,7 @@
 
 import { DELTA_T_MODEL_JHORA, deltaTModelId, type PrecisionProfile } from './engine/deltat.js';
 import { ENGINE_VERSION, TZDB_VERSION } from './generated/build-constants.js';
+import type { DeltaTForecastId } from './settings/schema.js';
 
 export type { PrecisionProfile };
 
@@ -49,6 +50,7 @@ export interface ResultEnvelopeOptions {
     settingsHash: SettingsHashValue;
     precisionProfile?: PrecisionProfile;
     deltaTOverrideSeconds?: number;
+    deltaTForecast?: DeltaTForecastId;
     warnings?: readonly string[];
     /** ISO-8601 timestamp; omit for deterministic output. */
     computedAt?: string;
@@ -65,6 +67,7 @@ export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnve
         deltaTModel: deltaTModelId(
             options.precisionProfile ?? DEFAULT_PRECISION_PROFILE,
             options.deltaTOverrideSeconds,
+            options.deltaTForecast ?? 'published',
         ),
         precisionProfile: options.precisionProfile ?? DEFAULT_PRECISION_PROFILE,
         warnings,
@@ -84,6 +87,7 @@ export interface WithResultEnvelopeOptions {
     settingsHash?: SettingsHashValue;
     precisionProfile?: PrecisionProfile;
     deltaTOverrideSeconds?: number;
+    deltaTForecast?: DeltaTForecastId;
     warnings?: readonly string[];
     computedAt?: string;
 }
@@ -108,6 +112,7 @@ export function withResultEnvelope<T extends Record<string, unknown>>(
             settingsHash,
             precisionProfile: options.precisionProfile,
             deltaTOverrideSeconds: options.deltaTOverrideSeconds,
+            deltaTForecast: options.deltaTForecast,
             warnings: options.warnings,
             computedAt: options.computedAt,
         }),

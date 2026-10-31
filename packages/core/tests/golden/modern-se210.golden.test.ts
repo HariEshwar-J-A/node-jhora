@@ -65,7 +65,7 @@ const DE440S_LAST = 2506331.5 - 1;
 
 const GRAHAS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
 const SYSTEMS = ['W', 'E', 'P', 'O'] as const;
-const MODERN: PrecisionOptions = { precisionProfile: 'modern' };
+const MODERN: PrecisionOptions = { precisionProfile: 'modern', deltaTForecast: 'oracle-compat' };
 
 function gapArcsec(a: number, b: number): number {
     let d = (a - b) % 360;
@@ -146,9 +146,9 @@ describe.each(fixture.cases.filter(publishedEra))(
     'modern parity (mode M, published ΔT era) — #$id $tag $utc',
     (c) => {
         test('ΔT and every output are within limits vs SE 2.10', () => {
-            expect(Math.abs(deltaT(c.jdUT, 'modern') - c.deltaTSeconds)).toBeLessThan(
-                DELTA_T_LIMIT_S,
-            );
+            expect(
+                Math.abs(deltaT(c.jdUT, 'modern', 'oracle-compat') - c.deltaTSeconds),
+            ).toBeLessThan(DELTA_T_LIMIT_S);
             expect(parity(engine, c, MODERN).failures).toEqual([]);
         });
     },
@@ -182,7 +182,9 @@ describe.each(outOfRange)('outside DE440s — #$id $utc', (c) => {
     }, 120_000);
 
     test.each(outOfRange)('(mode M) #$id $utc', (c) => {
-        expect(Math.abs(deltaT(c.jdUT, 'modern') - c.deltaTSeconds)).toBeLessThan(DELTA_T_LIMIT_S);
+        expect(Math.abs(deltaT(c.jdUT, 'modern', 'oracle-compat') - c.deltaTSeconds)).toBeLessThan(
+            DELTA_T_LIMIT_S,
+        );
         expect(parity(longEngine, c, MODERN).failures).toEqual([]);
     });
 });

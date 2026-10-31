@@ -59,6 +59,7 @@ function settingsFor(golden: { settings: Record<string, unknown> }, profile: Pre
     return CalculationSettingsSchema.parse({
         ...base,
         precisionProfile: profile,
+        ...(profile === 'modern' ? { deltaTForecast: 'oracle-compat' as const } : {}),
         positionMode: (s.positionMode as 'geometric' | 'apparent') ?? base.positionMode,
         ...(typeof s.deltaTOverrideSeconds === 'number'
             ? { deltaTOverrideSeconds: s.deltaTOverrideSeconds }
@@ -90,6 +91,7 @@ function actualFor(
         horizonAltitudeDeg: Number(golden.settings.horizonAltitudeDeg ?? 0),
         positionMode: (golden.settings.positionMode as 'geometric' | 'apparent') ?? 'geometric',
         precisionProfile: profile,
+        ...(profile === 'modern' ? { deltaTForecast: 'oracle-compat' as const } : {}),
     });
 
     const actual: Record<string, string | number> = {};

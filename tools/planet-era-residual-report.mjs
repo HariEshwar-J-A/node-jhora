@@ -71,7 +71,12 @@ for (const c of fixture.cases) {
         ps = e.getPlanets(
             dt,
             { latitude: c.lat, longitude: c.lon },
-            { ayanamsaOrder: 27, precisionProfile: 'modern', nodeType: 'true' },
+            {
+                ayanamsaOrder: 27,
+                precisionProfile: 'modern',
+                deltaTForecast: 'oracle-compat',
+                nodeType: 'true',
+            },
         );
     } catch {
         continue;
@@ -87,6 +92,7 @@ for (const c of fixture.cases) {
     }
     const houses = e.getHouses(jdUt, c.lat, c.lon, 'W', true, 27, 0, 'se-apparent', {
         precisionProfile: 'modern',
+        deltaTForecast: 'oracle-compat',
     });
     for (const key of ANGLES) {
         const exp = c.houses.W[key];
