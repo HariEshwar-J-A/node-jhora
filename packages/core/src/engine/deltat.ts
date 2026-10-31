@@ -7,15 +7,21 @@
  *
  * Precision profile 'jhora' (default) matches Swiss Ephemeris 2.02.01 / JHora 8:
  *   • y ≤ −500 — Morrison & Stephenson (2004);
- *   • −500 < y < table switch — Espenak & Meeus (2006) polynomials;
+ *   • −500 < y < table switch — Espenak & Meeus (2006) polynomials (NASA GSFC,
+ *     https://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html, public domain);
  *   • JD(UT) ≥ 2317746.130902778 — AA K8–K9 / USNO yearly table (Bessel 4th);
+ *     switch JD is an oracle-measured boundary (ADR 0007), not a published date;
  *   • y > 2019 — Stephenson (1997) with 100-year linear join to the table end.
  *
  * Precision profile 'modern' — SMH2016 Table S15 to ~1952.25, blend to the
  * IERS/USNO yearly table through 2028, then UKHO/SMH2016 forecast (ADR 0007).
  *
- * Tidal correction (both profiles, y < 1955 only): Explanatory Supplement /
- * Meeus, δ(ΔT) = −0.000091 (ṅ + 26) (y − 1955)² s with ṅ = −25.8″/cy² (DE431).
+ * Tidal correction (both profiles, y < 1955 only): van Gent / NASA polynomial
+ * form δ(ΔT) = −0.91072 (ṅ_to − ṅ_from) u² s, u = (y − 1955.5)/100 (modern);
+ * Meeus/AA equivalent −0.000091 (ṅ_to − ṅ_from)(y − 1955)² (jhora). See
+ * deltat-tidal.ts. SMH2016 Table S15 uses the mean-Gregorian year scale from
+ * JD 2451545 (365.2425 d) by convention in this codebase — an assumption unless
+ * sourced from the S15 supplementary readme (ADR 0007).
  */
 
 import { interpolateBesselFourth } from './deltat-interpolate.js';
@@ -37,7 +43,8 @@ export { DELTA_T_MODEL_MODERN };
 
 /**
  * JD(UT) where the jhora profile switches from Espenak/Meeus polynomials to the
- * yearly AA/USNO table (SE 2.02.01 / JHora 8 tabulation boundary).
+ * yearly AA/USNO table. Value = 1633-09-02 15:08:24 UT (y ≈ 1633.671); measured
+ * from JHora / SE 2.02 tabulation, not from an open publication (ADR 0007).
  */
 export const JHORA_TABLE_SWITCH_JD = 2317746.130902778;
 
@@ -114,7 +121,7 @@ function extrapolate(record: readonly number[], y: number): number {
     return v;
 }
 
-/** Polynomial branches (ṅ = −26″/cy², before tidal correction). */
+/** Polynomial branches (Espenak & Meeus, NASA deltatpoly.html, PD). */
 function deltaTPolynomial(y: number): number {
     if (y <= -500) {
         const u = (y - 1820) / 100;

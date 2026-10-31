@@ -4,8 +4,9 @@
  * The instant is the root of the horizon residual in {@link altitudeMinusTarget}
  * or of the hour-angle residual in {@link transitHourAngleResidual}.
  *
- * The search follows Meeus, Astronomical Algorithms, ch. 15. The hour angle
- * at contact is
+ * The hour angle at contact follows the US Naval Observatory Nautical Almanac
+ * Office, *Almanac for Computers* (1990) (reproduced e.g. edwilliams.org
+ * sunrise/sunset algorithm):
  *
  *   cos H₀ = (sin h₀ − sin φ sin δ) / (cos φ cos δ)
  *
@@ -13,7 +14,8 @@
  * centre on the unrefracted horizon). Upper transit is local apparent
  * sidereal time equal to right ascension; lower transit is twelve sidereal
  * hours from that. A few iterations absorb the body's motion, using the mean
- * sidereal rate 360.985647° per mean solar day (Meeus, ch. 12). The estimate
+ * sidereal rate 360.985647° per mean solar day (Aoki et al. 1982; ERFA
+ * `gmst82`, BSD-3). The estimate
  * is then polished by a local Brent root so a short polar arc is not replaced
  * by a crossing hours away.
  *

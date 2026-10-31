@@ -27,13 +27,12 @@ GPL/AGPL code, and no constants fitted to oracle outputs in `src/` (fixtures onl
    (Astrolog / SE Yahoo group, 2016), Carter (1947), Makransky (_Primary Directions_,
    1988), Treindl (Sunshine solution, SE §6.2.15), Gauquelin (36 sectors), Knegt (APC,
    SE §6.2.14), and Krusinski–Pisa–Goelzer (§6.2.13). Regiomontanus and Campanus use the
-   closed-form plane intersections documented in oxiephemeris-astro (MIT, docs.rs) — that
-   crate was not copied, only the same published geometry.
-
-    The Gauquelin, Horizontal, Krusinski, APC, and Sunshine constructions for letters
-    `G`, `H`, `U`, `Y`, `I`, and `i` were **derived by black-box testing** against
-    pyswisseph 2.10 `houses_armc` / `houses_armc_ex2` (2026-10-31 geometry brief); no
-    Swiss Ephemeris C source was read.
+   closed-form plane intersections from classical spherical trigonometry
+   (docs/derivations/houses.md). Pullen (Astrolog) is cited as prose only.
+   Gauquelin, Horizontal, Krusinski, APC, and Sunshine constructions for letters
+   `G`, `H`, `U`, `Y`, `I`, and `i` were **derived by black-box testing** against
+   pyswisseph 2.10 `houses_armc` / `houses_armc_ex2` (2026-10-31 geometry brief); no
+   Swiss Ephemeris C source was read.
 
 2. **Polar behaviour** — Placidus and Koch at `|tan φ tan ε| ≥ 1` follow SE §6.4: under
    the default `jhora` profile, cusps fall back to Porphyry and `houseFallback.code`
@@ -101,4 +100,4 @@ GPL/AGPL code, and no constants fitted to oracle outputs in `src/` (fixtures onl
 - Krusinski–Pisa–Goelzer house circle (SE §6.2.13 prose)
 - Knegt, APC / declination-parallel trisection (SE §6.2.14)
 - George Makransky, _Primary Directions_ (1988); Treindl Sunshine solution (SE §6.2.15)
-- oxiephemeris-astro `houses` module docs (Regiomontanus/Campanus/Koch closed forms)
+- Classical Regiomontanus / Campanus / Koch derivations: [docs/derivations/houses.md](../derivations/houses.md)

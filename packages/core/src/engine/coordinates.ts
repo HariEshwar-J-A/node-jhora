@@ -80,7 +80,11 @@ export function julday(
 const IAU2006_SIDEREAL_FIRST_JD = 2396758.5;
 const IAU2006_SIDEREAL_LAST_JD = 2469807.5;
 
-/** IAU 2006 GMST (ERA + IERS 2010 eq. 5.32 + Table 5.2e EO complement), degrees. */
+/**
+ * IAU 2006 GMST (degrees): Earth Rotation Angle (IERS Conventions 2010 eq. 5.14;
+ * ERFA `era00`, BSD-3) plus the accumulated precession in right ascension
+ * (IERS 2010 eq. 5.32; ERFA `gmst06`) and Table 5.2e complementary terms.
+ */
 function gmstIAU2006(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
     const jdTT = jdUT + dtSeconds / 86400.0;
     const T = (jdTT - 2451545.0) / 36525.0;
@@ -104,11 +108,11 @@ const LIGHT_TIME_DAYS = 149597870700 / 299792458 / 86400;
 /**
  * Long-term mean sidereal time (degrees) outside the IAU 2006 polynomial window.
  *
- * Mean geocentric longitude of Earth (Simon et al. 1994, A&A 282, 663, Table 3.5)
- * on the J2000 mean ecliptic, corrected for light-time, precessed to the mean
- * equinox of date with Vondrák et al. (2011), then converted to right ascension;
- * the UT day fraction is added (Capitaine et al. 2003c; Vondrák et al. 2011).
- * Nutation enters in {@link getGAST}.
+ * Mean geocentric longitude of the Earth–Moon barycentre (Simon et al. 1994,
+ * A&A 282, 663, §5.8.3, p. 675) on the J2000 mean ecliptic, reduced by an
+ * in-house light-time correction (~20.5″; see ADR 0019), precessed to the mean
+ * equinox of date, then converted to right ascension; the UT day fraction is
+ * added. Nutation enters in {@link getGAST}.
  */
 function gmstLongTerm(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
     const jdTT = jdUT + dtSeconds / 86400.0;
@@ -153,14 +157,14 @@ function angleDiff(a: number, b: number): number {
 /**
  * Greenwich Mean Sidereal Time in degrees.
  *
- * 1850–2050: IAU 2006 / IERS Conventions (2010) eq. 5.32 — ERA(UT1) plus the
- * accumulated precession in right ascension (Capitaine et al. 2003c). UTC is
- * used in place of UT1; |UT1−UTC| ≤ 0.9 s is a separate uncertainty (~14″).
+ * 1850–2050: IERS Conventions (2010) eq. 5.14 (ERA) and eq. 5.32 (GMST);
+ * ERFA `era00` / `gmst06` (BSD-3). UTC is used in place of UT1; |UT1−UTC|
+ * ≤ 0.9 s is a separate uncertainty (~14″).
  *
- * Outside 1850–2050 the IAU polynomial is not valid, and the long-term
- * expression above is used, shifted by the constant that makes the two agree
- * at the nearer boundary. That constant is computed here from both formulas
- * at the boundary instant — it is not a fitted value.
+ * Outside 1850–2050 the IAU polynomial is not valid; the Simon et al. (1994)
+ * long-term expression above is used, joined with a constant offset at the nearer
+ * boundary (ADR 0019). That offset is computed from both formulas at the
+ * boundary instant — it is not fitted to an oracle.
  */
 export function getGMST(jdUT: number): number {
     if (jdUT > IAU2006_SIDEREAL_LAST_JD || jdUT < IAU2006_SIDEREAL_FIRST_JD) {
@@ -434,8 +438,8 @@ function eclipticLongitudeFromRa(alphaRad: number, eps: number): number {
 /**
  * Placidus cusp right ascension α (radians) by fixed-point iteration.
  *
- * Unified form (Holden 1977; morinus-astrology.com Placidus note, cited in
- * oxiephemeris-astro clean-room spec): with `t = tan φ · tan ε`, `|t| &lt; 1`,
+ * Unified form (Holden 1977; classical spherical trigonometry; see
+ * docs/derivations/houses.md): with `t = tan φ · tan ε`, `|t| &lt; 1`,
  *
  *   α = θ + c + g · SDA(α),   SDA(α) = acos(−t · sin α).
  *

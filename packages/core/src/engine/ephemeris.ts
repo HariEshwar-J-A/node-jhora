@@ -136,12 +136,7 @@ import {
     sphericalRatesDegPerDay,
 } from './kinematics.js';
 import { computeTrueOsculatingNode } from './lunar-node.js';
-import {
-    meanLunarNodeFromJdTT,
-    meanLunarNodeMeeus,
-    meanLunarNodeSpeedDegPerDay,
-    meanLunarNodeUsesMeeusHybrid,
-} from './mean-lunar-node.js';
+import { meanLunarNodeMeeus } from './mean-lunar-node.js';
 import { nutation } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
@@ -758,13 +753,8 @@ export class EphemerisEngine {
         if (nodeType === 'mean') {
             const jdTT = jdUT + deltaT(jdUT) / 86400.0;
             const T = julianCenturies(jdTT);
-            const year = 2000 + T * 100;
-            if (meanLunarNodeUsesMeeusHybrid(year)) {
-                const speed = -1934.1362891 / 36525.0;
-                return { lon: meanLunarNodeMeeus(T), dist: 0.002569, speed };
-            }
-            const speed = meanLunarNodeSpeedDegPerDay(jdTT);
-            return { lon: meanLunarNodeFromJdTT(jdTT), dist: 0.002569, speed };
+            const speed = -1934.1362891 / 36525.0;
+            return { lon: meanLunarNodeMeeus(T), dist: 0.002569, speed };
         }
 
         const source = {
