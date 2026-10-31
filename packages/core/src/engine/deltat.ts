@@ -13,7 +13,7 @@
  *     switch JD is an oracle-measured boundary (ADR 0007), not a published date;
  *   • y > 2019 — Stephenson (1997) with 100-year linear join to the table end.
  *
- * Precision profile 'modern' — SMH2016 Table S15 to ~1952.25, blend to the
+ * Precision profile 'modern' — SMH2016 Table S15 through the 1953 CE knot, blend to the
  * IERS/USNO yearly table through 2028, then a post-bridge forecast selected by
  * {@link CalculationSettings.deltaTForecast}: `'published'` (UKHO lod + SMH2016 eq. 4.1,
  * default) or `'oracle-compat'` (in-house pyswisseph 2.10 extrapolation; test oracles only).

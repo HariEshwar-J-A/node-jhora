@@ -11,6 +11,7 @@ import {
     type HouseSystemMethod,
     type PanchangaResult,
     type PlanetPosition,
+    type PrecisionOptions,
     type SettingsInput,
 } from '@node-jhora/core';
 import {
@@ -130,18 +131,21 @@ export class ChartSession {
         this.deps = { ...defaultDeps, ...input.deps };
     }
 
-    private precisionOpts() {
-        return {
-            ...(this.config.precisionProfile !== undefined
-                ? { precisionProfile: this.config.precisionProfile }
-                : {}),
-            ...(this.config.deltaTOverrideSeconds !== undefined
-                ? { deltaTOverrideSeconds: this.config.deltaTOverrideSeconds }
-                : {}),
-            ...(this.config.deltaTForecast === 'oracle-compat'
-                ? { deltaTForecast: this.config.deltaTForecast }
-                : {}),
+    private precisionOpts(): PrecisionOptions {
+        const o: PrecisionOptions = {
+            calendar: this.config.calendar,
+            ...(this.julianDayUt !== undefined ? { julianDayUt: this.julianDayUt } : {}),
         };
+        if (this.config.precisionProfile !== undefined) {
+            o.precisionProfile = this.config.precisionProfile;
+        }
+        if (this.config.deltaTOverrideSeconds !== undefined) {
+            o.deltaTOverrideSeconds = this.config.deltaTOverrideSeconds;
+        }
+        if (this.config.deltaTForecast === 'oracle-compat') {
+            o.deltaTForecast = this.config.deltaTForecast;
+        }
+        return o;
     }
 
     private ephemerisOpts() {
@@ -151,9 +155,7 @@ export class ChartSession {
             positionMode: this.config.positionMode,
             topocentric: this.config.topocentric,
             ayanamsaOffset: this.config.ayanamsaOffset,
-            calendar: this.config.calendar,
             ...this.precisionOpts(),
-            ...(this.julianDayUt !== undefined ? { julianDayUt: this.julianDayUt } : {}),
         };
     }
 
@@ -187,11 +189,7 @@ export class ChartSession {
                 this.ephemeris,
                 this.config.ayanamsaMode,
                 this.config.ayanamsaOffset,
-                {
-                    calendar: this.config.calendar,
-                    julianDayUt: this.julianDayUt,
-                    ...this.precisionOpts(),
-                },
+                this.precisionOpts(),
             );
             this.housesOut = {
                 system: result.system,

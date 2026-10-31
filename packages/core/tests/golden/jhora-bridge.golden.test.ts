@@ -16,6 +16,7 @@ import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import {
     getAyanamsa,
     AYANAMSA_MODELS,
+    LAHIRI_ANCHOR_JD,
     accumulatedPrecession,
     trueAyanamsaFromModel,
 } from '../../src/engine/ayanamsa.js';
@@ -122,8 +123,8 @@ describe('JHora Bridge: Ayanamsa', () => {
         expect(model).toMatchObject({ kind: 'star', star: 'Spica', atLongitude: 180 });
     });
 
-    test('Lahiri (mode 1) matches the ICRC 1900-01-0.5 ET anchor at 1956-03-21 (~23°14′44″)', () => {
-        expect(getAyanamsa(1, 2435553.5)).toBeCloseTo(23.245538364160836, 8);
+    test('Lahiri (mode 1) mean at 1956-03-21 anchor matches IAE demeaning (jhora profile)', () => {
+        expect(getAyanamsa(1, LAHIRI_ANCHOR_JD, 'geometric', 'jhora')).toBeCloseTo(23.245522527, 8);
     });
 
     test('Lahiri ICRC (mode 46) true ayanamsa = 23°15′00″ at 1956-03-21 (CRC declaration)', () => {

@@ -50,6 +50,12 @@ export function birthEphemerisOptions(parsed: ParsedBirth) {
         ayanamsaOffset: parsed.ayanamsaOffset,
         julianDayUt: parsed.julianDayUt,
         calendar: parsed.settings.calendar,
+        ...(parsed.settings.precisionProfile !== undefined
+            ? { precisionProfile: parsed.settings.precisionProfile }
+            : {}),
+        ...(parsed.settings.deltaTOverrideSeconds !== undefined
+            ? { deltaTOverrideSeconds: parsed.settings.deltaTOverrideSeconds }
+            : {}),
     };
 }
 

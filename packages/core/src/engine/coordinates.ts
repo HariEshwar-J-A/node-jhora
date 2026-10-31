@@ -10,9 +10,9 @@
  */
 
 import { assertCalendarMode, type CalendarMode, julianDayUt } from '../time/historical.js';
-import { deltaT } from './deltat.js';
+import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
 import { equationOfOriginsComplementaryDegrees } from './iers-eo-complementary.js';
-import { nutation } from './nutation.js';
+import { nutation, nutationForProfile } from './nutation.js';
 import {
     julianCenturies,
     matTransposeVec,
@@ -188,19 +188,25 @@ export function getGMST(jdUT: number): number {
  * Wallace & Capitaine 2006). Complementary terms in Ω and 2Ω are already in
  * Table 5.2e via {@link equationOfOriginsComplementaryDegrees} inside {@link getGMST}.
  */
-export function getGAST(jdUT: number): number {
+export function getGAST(
+    jdUT: number,
+    profile: PrecisionProfile = getDeltaTContext().profile,
+): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
-    const { dpsi, deps } = nutation(T);
+    const { dpsi, deps } = nutationForProfile(T, profile);
     const epsTrue = meanObliquity(T, jdTT) + deps;
     return mod360(getGMST(jdUT) + dpsi * Math.cos(epsTrue * DEG));
 }
 
 /** True obliquity of the ecliptic (mean + nutation in obliquity), degrees. */
-export function trueObliquity(jdUT: number): number {
+export function trueObliquity(
+    jdUT: number,
+    profile: PrecisionProfile = getDeltaTContext().profile,
+): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
-    return meanObliquity(T, jdTT) + nutation(T).deps;
+    return meanObliquity(T, jdTT) + nutationForProfile(T, profile).deps;
 }
 
 // ---------------------------------------------------------------------------

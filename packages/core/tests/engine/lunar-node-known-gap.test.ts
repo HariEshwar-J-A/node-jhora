@@ -28,9 +28,9 @@ import {
 
 /** Measured mean-node |Δ| per era, arcseconds, rounded up ≤ 0.01″. */
 const MEAN_GAP_ARCSEC: Record<MeanGapEra, Record<NodeMode, number>> = {
-    'before-3000': { J: 953.14, Jo: 953.14, M: 949.73, Mo: 949.73 },
+    'before-3000': { J: 953.14, Jo: 953.14, M: 953.2, Mo: 953.2 },
     'neg3000-to-0': { J: 14.35, Jo: 14.35, M: 14.26, Mo: 14.26 },
-    '2151-to-3000': { J: 2.29, Jo: 2.29, M: 2.08, Mo: 2.08 },
+    '2151-to-3000': { J: 2.29, Jo: 2.29, M: 2.29, Mo: 2.29 },
     'after-3000': { J: 81.8, Jo: 81.8, M: 83.74, Mo: 83.74 },
 };
 

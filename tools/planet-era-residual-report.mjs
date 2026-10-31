@@ -64,15 +64,15 @@ const max = {};
 for (const c of fixture.cases) {
     const y = DateTime.fromISO(c.utc, { zone: 'utc' }).year;
     const er = eraLabel(y);
-    const dt = DateTime.fromISO(c.utc, { zone: 'utc' });
-    const jdUt = e.julday(dt);
+    const jdUt = c.jdUT;
     let ps;
     try {
         ps = e.getPlanets(
-            dt,
+            DateTime.fromISO(c.utc, { zone: 'utc' }),
             { latitude: c.lat, longitude: c.lon },
             {
                 ayanamsaOrder: 27,
+                julianDayUt: jdUt,
                 precisionProfile: 'modern',
                 deltaTForecast: 'oracle-compat',
                 nodeType: 'true',

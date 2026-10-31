@@ -138,7 +138,7 @@ import {
 } from './kinematics.js';
 import { computeTrueOsculatingNode } from './lunar-node.js';
 import { meanLunarNodeMeeus } from './mean-lunar-node.js';
-import { nutation } from './nutation.js';
+import { nutation, nutationForProfile } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
     iau2000FrameBias,
@@ -544,9 +544,10 @@ export class EphemerisEngine {
         if (frame !== undefined) assertAyanamsaFrame(frame);
         // 'modern' reports what swe_get_ayanamsa_ut reports: the apparent value.
         const f: AyanamsaFrame = frame ?? (profile === 'modern' ? 'apparent' : 'geometric');
+        const effectiveProfile = profile ?? getDeltaTContext().profile;
         return withDeltaTContext(
             deltaTContextOf(precision),
-            () => computeAyanamsa(effectiveMode, jd, f) + offsetDeg,
+            () => computeAyanamsa(effectiveMode, jd, f, effectiveProfile) + offsetDeg,
         );
     }
 
@@ -619,21 +620,44 @@ export class EphemerisEngine {
             });
         this.prefetchEphemerisChunks(jd);
         this.assertLongRangeChunksForJd(jd);
+        const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
         // Geometric (TRUEPOS) sidereal positions subtract the geometric star
         // place. Apparent positions subtract the same apparent ayanamsa
         // getAyanamsa() reports, so adding it back recovers the tropical place.
         const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
         const ayan =
-            zodiac === 'sidereal' ? computeAyanamsa(effectiveMode, jd, frame) + ayanamsaOffset : 0;
-        const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
+            zodiac === 'sidereal'
+                ? computeAyanamsa(effectiveMode, jd, frame, precisionProfile) + ayanamsaOffset
+                : 0;
         // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
         // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
         // lower by d(ayan)/dt (~0.138″/day). `modern` reports sidereal rate =
         // tropical − d(ayan)/dt (geometric True Citra, same 1 s step on ayanamsa).
         const ayanRateForSiderealSpeed =
             zodiac === 'sidereal' && precisionProfile === 'modern'
-                ? this.ayanamsaRateDegPerDay(jd, effectiveMode, 'geometric', ayanamsaOffset)
+                ? this.ayanamsaRateDegPerDay(
+                      jd,
+                      effectiveMode,
+                      'geometric',
+                      ayanamsaOffset,
+                      precisionProfile,
+                  )
                 : 0;
+        /** Meeus eq. 47.7 mean node: keep jhora geometric ayanamsa in the modern profile (ADR 0016). */
+        const ayanForMeanNode =
+            zodiac === 'sidereal' && precisionProfile === 'modern'
+                ? computeAyanamsa(effectiveMode, jd, 'geometric', 'jhora') + ayanamsaOffset
+                : ayan;
+        const ayanRateForMeanNode =
+            zodiac === 'sidereal' && precisionProfile === 'modern'
+                ? this.ayanamsaRateDegPerDay(
+                      jd,
+                      effectiveMode,
+                      'geometric',
+                      ayanamsaOffset,
+                      'jhora',
+                  )
+                : ayanRateForSiderealSpeed;
 
         const planets: PlanetPosition[] = [];
 
@@ -661,13 +685,15 @@ export class EphemerisEngine {
 
         // ── Lunar nodes ─────────────────────────────────────────────────────
         const node = this.lunarNode(jd, nodeType, precisionProfile, positionMode);
+        const nodeAyan = nodeType === 'mean' ? ayanForMeanNode : ayan;
+        const nodeAyanRate = nodeType === 'mean' ? ayanRateForMeanNode : ayanRateForSiderealSpeed;
         planets.push({
             id: Body.Rahu,
             name: 'Rahu',
-            longitude: toSidereal(node.lon, ayan),
+            longitude: toSidereal(node.lon, nodeAyan),
             latitude: 0,
             distance: node.dist,
-            speed: node.speed - ayanRateForSiderealSpeed,
+            speed: node.speed - nodeAyanRate,
             declination: this.declinationOf(jd, node.lon, 0),
         });
 
@@ -678,7 +704,7 @@ export class EphemerisEngine {
             longitude: mod360(rahu.longitude + 180),
             latitude: 0,
             distance: rahu.distance,
-            speed: rahu.speed - ayanRateForSiderealSpeed,
+            speed: rahu.speed - nodeAyanRate,
             declination: -rahu.declination,
         });
 
@@ -691,10 +717,11 @@ export class EphemerisEngine {
         mode: number,
         ayanFrame: AyanamsaFrame,
         offsetDeg = 0,
+        profile: PrecisionProfile = getDeltaTContext().profile,
     ): number {
         const h = APPARENT_SPEED_STEP_DAYS;
-        const a0 = computeAyanamsa(mode, jdUT - h, ayanFrame) + offsetDeg;
-        const a1 = computeAyanamsa(mode, jdUT + h, ayanFrame) + offsetDeg;
+        const a0 = computeAyanamsa(mode, jdUT - h, ayanFrame, profile) + offsetDeg;
+        const a1 = computeAyanamsa(mode, jdUT + h, ayanFrame, profile) + offsetDeg;
         return (a1 - a0) / (2 * h);
     }
 
@@ -858,8 +885,9 @@ export class EphemerisEngine {
      *   • `'jhora'` (default) — subtract the geometric star-defined ayanamsa,
      *     the same zero point the planets use. This is what JHora does: it
      *     takes `swe_houses` tropical angles and subtracts its ayanamsa.
-     *   • `'se-apparent'` — opt-in Swiss Ephemeris `swe_houses_ex(SEFLG_SIDEREAL)`
-     *     frame: apparent star place (aberration, deflection) plus Δψ.
+     *   • `'se-apparent'` — opt-in Swiss Ephemeris sidereal house frame:
+     *     apparent star place (aberration, deflection) plus Δψ in the
+     *     ayanamsa used to subtract tropical angles.
      *   Defaults to 'jhora', or to 'se-apparent' under the 'modern' profile.
      * @param precision  precision profile and ΔT override. 'modern' also
      *   solves Placidus cusps fully (scheme 'converged').
@@ -940,9 +968,18 @@ export class EphemerisEngine {
         const profile = precision?.precisionProfile;
         const modern = profile === 'modern';
         const siderealFrame = frameArg ?? (modern ? 'se-apparent' : 'jhora');
+        const effectiveProfile = profile ?? getDeltaTContext().profile;
+        // Modern sidereal houses: tropical angles use IAU 1980 nutation (jhora profile)
+        // and Hipparcos ayanamsa subtraction — same chain as main before profile Spica;
+        // grahas still use van Leeuwen + nut06a via getPlanets.
+        const houseFrameProfile: PrecisionProfile =
+            sidereal && effectiveProfile === 'modern' ? 'jhora' : effectiveProfile;
 
-        const eps = trueObliquity(jd);
-        const ramc = mod360(getGAST(jd) + lon);
+        // Angles are built on apparent sidereal time and the true obliquity,
+        // matching the reference oracle's convention. Whole Sign cusps are the sign boundaries of the
+        // sidereal ascendant, not the tropical cusps shifted by ayanamsa.
+        const eps = trueObliquity(jd, houseFrameProfile);
+        const ramc = mod360(getGAST(jd, houseFrameProfile) + lon);
 
         const tropAsc = computeAscendant(ramc, lat, eps);
         const tropMC = computeMC(ramc, eps);
@@ -1049,9 +1086,20 @@ export class EphemerisEngine {
         let ayaEx: number;
         if (siderealFrame === 'se-apparent') {
             const T = julianCenturies(jd + deltaT(jd) / 86400.0);
-            ayaEx = computeAyanamsa(mode, jd, 'apparent') + ayanamsaOffset + nutation(T).dpsi;
+            if (effectiveProfile === 'modern') {
+                ayaEx =
+                    computeAyanamsa(mode, jd, 'apparent', 'jhora') +
+                    ayanamsaOffset +
+                    nutation(T).dpsi;
+            } else {
+                ayaEx =
+                    computeAyanamsa(mode, jd, 'apparent', effectiveProfile) +
+                    ayanamsaOffset +
+                    nutationForProfile(T, effectiveProfile).dpsi;
+            }
         } else {
-            ayaEx = computeAyanamsa(mode, jd, 'geometric') + ayanamsaOffset;
+            const ayanProfile = effectiveProfile === 'modern' ? 'jhora' : effectiveProfile;
+            ayaEx = computeAyanamsa(mode, jd, 'geometric', ayanProfile) + ayanamsaOffset;
         }
         const sub = (d: number) => mod360(d - ayaEx);
         return build(sub);

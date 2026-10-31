@@ -15,10 +15,10 @@ const dll = JSON.parse(
 ) as { cases: { jdUT: number; deltaTSeconds: number }[] };
 
 describe('modern 1952–1955 blend residuals', () => {
-    test('1954.0 within 0.45 s of pyswisseph 2.10 (main SE layout)', () => {
+    test('1954.0 within 0.08 s of pyswisseph 2.10 (SMH2016→AA blend from 1953 knot)', () => {
         const s = se210.samples.find((x) => x.y === 1954)!;
         const err = Math.abs(deltaT(s.jdUT, 'modern', 'oracle-compat') - s.deltaTSeconds);
-        expect(err).toBeLessThan(0.45);
+        expect(err).toBeLessThan(0.08);
     });
 });
 

@@ -205,11 +205,11 @@ export const CalculationSettingsSchema: z.ZodObject<{
         julian: "julian";
     }>>;
     ayanamsa: z.ZodEnum<{
+        lahiri: "lahiri";
         true_citra: "true_citra";
         true_pushya: "true_pushya";
         true_mula: "true_mula";
         fagan_bradley: "fagan_bradley";
-        lahiri: "lahiri";
         lahiri_icrc: "lahiri_icrc";
         raman: "raman";
         kp: "kp";

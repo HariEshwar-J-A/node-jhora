@@ -130,7 +130,7 @@ function mod360(x: number): number {
     return ((x % 360) + 360) % 360;
 }
 
-/** Sidereal mean node: Meeus tropical minus geometric True Chitra (engine default). */
+/** Sidereal mean node: Meeus tropical minus True Chitra (geometric; no DE440 at deep dates). */
 export function meanSidereal(engine: EphemerisEngine, c: NodeCase, mode: NodeMode): number {
     const options = modeOptions(c, mode);
     return withDeltaTContext(
@@ -142,7 +142,7 @@ export function meanSidereal(engine: EphemerisEngine, c: NodeCase, mode: NodeMod
         () => {
             const jd = fixtureJd(engine, c);
             const trop = meanLunarNode(julianCenturies(jd + deltaT(jd) / 86400));
-            const ayan = engine.getAyanamsa(jd, 27, 0, 'geometric');
+            const ayan = engine.getAyanamsa(jd, 27, 0, 'geometric', options);
             return mod360(trop - ayan);
         },
     );

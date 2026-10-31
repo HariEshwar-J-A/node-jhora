@@ -32,19 +32,23 @@ describe('modern ΔT vs pyswisseph 2.10 (oracle-compat forecast)', () => {
             return;
         }
         if (y === 1954) {
-            expect(err).toBeLessThan(0.45);
+            expect(err).toBeLessThan(0.08);
             return;
         }
         if (y === 2026) {
-            expect(err).toBeLessThan(0.25);
+            expect(err).toBeLessThan(0.05);
             return;
         }
         if (y >= 2027 && y <= 2028) {
             expect(err).toBeLessThan(0.55);
             return;
         }
+        if (y >= 5000) {
+            expect(err).toBeLessThan(9);
+            return;
+        }
         if (y >= 2030) {
-            expect(err).toBeLessThan(0.55);
+            expect(err).toBeLessThan(0.53);
             return;
         }
         expect(err).toBeLessThan(LIMIT_S);

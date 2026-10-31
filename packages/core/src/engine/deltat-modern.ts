@@ -41,8 +41,23 @@ function decimalYearSmh2016(jdUT: number): number {
 /** First calendar year taken from the AA/USNO observed record (not the spline). */
 export const MODERN_OBSERVED_RECORD_START = 1955;
 
-/** Linear blend from SMH2016 spline to the observed record (manual ch. 7). */
-const SPLINE_TO_OBS_BLEND_START = 1954;
+/**
+ * Start of the linear SMH2016→AA/USNO blend on the Table S15 year scale.
+ * Swiss Ephemeris 2.06 switches from SMH2016 to Almanac/IERS values around 1955
+ * (swephprg.htm §29.14); blend spans the last SMH2016 knot band [1950, 1953] through
+ * the first AA calendar year (1955) in this engine.
+ */
+const SPLINE_TO_OBS_BLEND_START = 1952.0;
+
+/**
+ * Almanac decimal year when oracle-compat uses the in-house forecast for calendar
+ * year 2026 only. yTab > 2028 uses the same almanac-year forecast as main; 2027–2028
+ * keep the USNO deltat.preds bridge. Observed tables use mean-Gregorian year (ySmh).
+ */
+export const ORACLE_COMPAT_FORECAST_ONSET_YEAR = 2026.0;
+
+/** Exclusive end of the oracle-compat forecast-only window (preds bridge from here). */
+const ORACLE_COMPAT_FORECAST_END_YEAR = MODERN_BRIDGE_FIRST_YEAR;
 
 const RECORD_FIRST = OBSERVED_DELTAT_YEAR0;
 const RECORD_START = 1633;
@@ -125,15 +140,40 @@ function interpolateMonthly(y: number): number {
     return v0 + w * (v1 - v0);
 }
 
-function tabulatedDeltaT(y: number, forecast: DeltaTForecastId): number {
-    if (y > MODERN_BRIDGE_LAST_YEAR) {
-        return deltaTModernForecast(y, MODERN_BRIDGE_LAST_YEAR, BRIDGE_END_SECONDS, forecast);
+function tabulatedDeltaT(
+    yAlmanac: number,
+    forecast: DeltaTForecastId,
+    yObsGregorian: number,
+): number {
+    if (
+        forecast === 'oracle-compat' &&
+        yAlmanac >= ORACLE_COMPAT_FORECAST_ONSET_YEAR &&
+        yAlmanac < ORACLE_COMPAT_FORECAST_END_YEAR
+    ) {
+        return deltaTModernForecast(
+            yAlmanac,
+            MODERN_BRIDGE_LAST_YEAR,
+            BRIDGE_END_SECONDS,
+            forecast,
+        );
     }
-    if (y >= MODERN_BRIDGE_FIRST_YEAR) {
-        return interpolateAnnualRecord(y, bridgeAt, MODERN_BRIDGE_LAST_YEAR);
+    if (yAlmanac > MODERN_BRIDGE_LAST_YEAR) {
+        return deltaTModernForecast(
+            yAlmanac,
+            MODERN_BRIDGE_LAST_YEAR,
+            BRIDGE_END_SECONDS,
+            forecast,
+        );
     }
-    if (y >= DELTAT_MONTHLY_FIRST) return interpolateMonthly(y);
-    return interpolateAnnualRecord(y, recordAt, RECORD_LAST);
+    if (yAlmanac >= MODERN_BRIDGE_FIRST_YEAR) {
+        return interpolateAnnualRecord(yAlmanac, bridgeAt, MODERN_BRIDGE_LAST_YEAR);
+    }
+    const yInterp =
+        forecast === 'oracle-compat' && yAlmanac < ORACLE_COMPAT_FORECAST_END_YEAR
+            ? yObsGregorian
+            : yAlmanac;
+    if (yAlmanac >= DELTAT_MONTHLY_FIRST) return interpolateMonthly(yInterp);
+    return interpolateAnnualRecord(yInterp, recordAt, RECORD_LAST);
 }
 
 function smh2016WithTidal(y: number): number {
@@ -145,16 +185,17 @@ function smh2016WithTidal(y: number): number {
 export function deltaTModern(jdUT: number, forecast: DeltaTForecastId = 'published'): number {
     const yTab = decimalYearAlmanac(jdUT);
     const ySmh = decimalYearSmh2016(jdUT);
-    if (yTab > MODERN_BRIDGE_LAST_YEAR) return tabulatedDeltaT(yTab, forecast);
+    const yObs = ySmh;
+    if (yTab > MODERN_BRIDGE_LAST_YEAR) return tabulatedDeltaT(yTab, forecast, yObs);
     if (ySmh < SPLINE_TO_OBS_BLEND_START) return smh2016WithTidal(ySmh);
     if (ySmh < MODERN_OBSERVED_RECORD_START) {
-        const obs = tabulatedDeltaT(yTab, forecast);
+        const obs = tabulatedDeltaT(yTab, forecast, yObs);
         const w =
             (ySmh - SPLINE_TO_OBS_BLEND_START) /
             (MODERN_OBSERVED_RECORD_START - SPLINE_TO_OBS_BLEND_START);
         return (1 - w) * smh2016WithTidal(ySmh) + w * obs;
     }
-    return tabulatedDeltaT(yTab, forecast);
+    return tabulatedDeltaT(yTab, forecast, yObs);
 }
 
 /** Envelope suffix for `deltaTForecast: 'published'` (default). */

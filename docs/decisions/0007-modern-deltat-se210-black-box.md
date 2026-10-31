@@ -36,21 +36,26 @@ Implement `deltaTModern(jdUT, forecast)` in `packages/core/src/engine/deltat-mod
 3. **1955 ≤ Y ≤ last USNO month** — AA K8–K9 (Bessel) and USNO `deltat.data` monthly rows.
 
 4. **2027–2028** — USNO `deltat.preds` TT−UT at Year 2027.00 and 2028.00
-   (`deltat-modern-bridge.ts`, `tools/generate-deltat-modern-bridge.mjs`).
+   (`deltat-modern-bridge.ts`, `tools/generate-deltat-modern-bridge.mjs`) for both
+   **`published`** and **`oracle-compat`**.
 
-5. **Y > 2028** — post-bridge forecast selected by **`deltaTForecast`** on
-   `CalculationSettings` / `PrecisionOptions` (default **`'published'`**):
+5. **Y > 2028** — post-bridge forecast on the **almanac** year scale (`yTab`), selected by
+   **`deltaTForecast`** (default **`'published'`**):
     - **`published`** — UKHO HMNAO lod integration (LVM page) through 2500 CE, SMH2016 eq. 4.1
       beyond with a 100-year linear blend at 2500, plus the existing 100-year hand-off from
       the last bridge second (`deltat-modern-forecast-published.ts`).
-    - **`oracle-compat`** — the previous in-house cubic + `42.5 + 32.5c²` curve kept
-      byte-for-byte for pyswisseph 2.10 test fixtures only (`deltat-modern-forecast-oracle-compat.ts`).
-      It is **not** a published model and must not be cited as UKHO/SMH2016.
+    - **`oracle-compat`** — for **2026 ≤ yTab < 2027** only, the in-house cubic + millennial
+      parabola with hand-off anchored at the USNO 2028.00 preds second
+      (`deltat-modern-forecast-oracle-compat.ts`); **yTab > 2028** uses the same almanac-year
+      forecast path as main (bit-identical to pre–dual-forecast behaviour). Tabulated
+      observations before **2027** use mean-Gregorian year (JD 2451545, 365.2425 d) for
+      oracle-compat monthly/annual interpolation. SMH2016→AA blend runs **1952–1955** on the
+      Table S15 year scale (swephprg.htm §29.14).
 
 Envelope ids:
 
 - `modern:…+ukho-lod+smh2016-eq4.1` when `deltaTForecast: 'published'` (default)
-- `modern:…+oracle-compat-forecast` when `deltaTForecast: 'oracle-compat'`
+- `modern:…+usno-preds-bridge+oracle-compat-forecast` when `deltaTForecast: 'oracle-compat'`
 
 All pyswisseph / SE 2.10 oracle comparisons in tests and `tools/` must pass
 `deltaTForecast: 'oracle-compat'` (or `deltaT(jd, 'modern', 'oracle-compat')`).

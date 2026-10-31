@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { AYANAMSA_MODELS, getAyanamsa } from '../../src/engine/ayanamsa.js';
+import {
+    AYANAMSA_MODELS,
+    LAHIRI_ANCHOR_JD,
+    LAHIRI_TRUE_AT_ANCHOR_DEG,
+    getAyanamsa,
+    meanEquinoxLongitudeOnEclipticOf,
+} from '../../src/engine/ayanamsa.js';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 
 const kernel = new Uint8Array(
@@ -29,23 +35,22 @@ describe('Epoch-defined ayanamsa modes', () => {
     });
 
     test('Lahiri mode 1 matches JHora DLL sample (ayanLahiriRaw, 1956)', () => {
-        // Full-range sweep case id 163 (oracle_jhora.json); error was ~16.8″ before anchor fix.
         const jd = 2435805.5852083336;
         const jhoraLahiri = 23.255161653736;
-        expect(gapArcsec(getAyanamsa(1, jd, 'geometric'), jhoraLahiri)).toBeLessThanOrEqual(0.1);
+        expect(
+            gapArcsec(getAyanamsa(1, jd, 'geometric', 'jhora'), jhoraLahiri),
+        ).toBeLessThanOrEqual(0.1);
     });
 
     test('Lahiri mode 1 matches pyswisseph 2.10 sample (modern profile)', () => {
-        // Full-range sweep case id 674 (oracle_modern.json, ayanLahiri).
         const jd = 2451758.1227777777;
         const modernLahiri = 23.86524318251344;
-        expect(gapArcsec(getAyanamsa(1, jd, 'apparent'), modernLahiri)).toBeLessThanOrEqual(0.1);
+        expect(
+            gapArcsec(getAyanamsa(1, jd, 'apparent', 'modern'), modernLahiri),
+        ).toBeLessThanOrEqual(0.1);
     });
 
     describe('Lahiri mode 1 vs profile oracles (geometric jhora / apparent modern)', () => {
-        const OLD_LAHIRI_JD = 2435553.5;
-        const OLD_LAHIRI_VALUE = 23.250182;
-
         const epochs: { label: string; jd: number; jhoraOracle?: number; modernOracle?: number }[] =
             [
                 { label: '1900-01-01', jd: 2415020.5 },
@@ -68,20 +73,23 @@ describe('Epoch-defined ayanamsa modes', () => {
                 { label: 'J2000 + 5000 yr', jd: 2451545.0 + 5000 * 365.25 },
             ];
 
-        test('mode 1 anchor matches published ICRC value at JD 2415020', () => {
+        test('mode 1 uses IAE 1956 anchor and traditional ecliptic-of-t0 propagation', () => {
             const model = AYANAMSA_MODELS[1];
-            expect(model.kind).toBe('epoch');
-            if (model.kind === 'epoch') {
-                expect(model.jd).toBe(2415020.0);
-                expect(model.value).toBeCloseTo(22 + 27 / 60 + 37.76 / 3600, 12);
+            expect(model.kind).toBe('lahiri');
+            if (model.kind === 'lahiri') {
+                expect(model.jd).toBe(LAHIRI_ANCHOR_JD);
+                expect(model.trueValue).toBeCloseTo(LAHIRI_TRUE_AT_ANCHOR_DEG, 12);
             }
+            expect(
+                meanEquinoxLongitudeOnEclipticOf(LAHIRI_ANCHOR_JD, LAHIRI_ANCHOR_JD),
+            ).toBeCloseTo(0, 10);
         });
 
         test.each(epochs.filter((e) => e.jhoraOracle !== undefined))(
             'jhora geometric Lahiri at $label within 0.1″ of DLL oracle',
             ({ jd, jhoraOracle }) => {
                 expect(
-                    gapArcsec(getAyanamsa(1, jd, 'geometric'), jhoraOracle!),
+                    gapArcsec(getAyanamsa(1, jd, 'geometric', 'jhora'), jhoraOracle!),
                 ).toBeLessThanOrEqual(0.1);
             },
         );
@@ -90,22 +98,9 @@ describe('Epoch-defined ayanamsa modes', () => {
             'modern apparent Lahiri at $label within 0.1″ of pyswisseph oracle',
             ({ jd, modernOracle }) => {
                 expect(
-                    gapArcsec(getAyanamsa(1, jd, 'apparent'), modernOracle!),
+                    gapArcsec(getAyanamsa(1, jd, 'apparent', 'modern'), modernOracle!),
                 ).toBeLessThanOrEqual(0.1);
             },
         );
-
-        test('post-fix Lahiri is closer to jhora oracle than the old 1956-anchor mode 1', () => {
-            const jd = 2435805.5852083336;
-            const oracle = 23.255161653736;
-            const errNew = gapArcsec(getAyanamsa(1, jd, 'geometric'), oracle);
-            const propagatedOld =
-                OLD_LAHIRI_VALUE +
-                (getAyanamsa(1, jd, 'geometric') - getAyanamsa(1, OLD_LAHIRI_JD, 'geometric'));
-            const errOld = gapArcsec(propagatedOld, oracle);
-            expect(errNew).toBeLessThan(0.1);
-            expect(errNew).toBeLessThan(errOld);
-            expect(errOld).toBeGreaterThan(15);
-        });
     });
 });
