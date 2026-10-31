@@ -469,7 +469,7 @@ function placidusAlphaRad(thetaRad: number, cRad: number, g: number, tanProduct:
 }
 
 /** Fully converged Placidus ecliptic longitude; undefined at |tan φ tan ε| ≥ 1. */
-function placidusLongitudeConverged(
+export function placidusLongitudeConverged(
     ramc: number,
     lat: number,
     eps: number,

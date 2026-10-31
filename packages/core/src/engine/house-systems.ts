@@ -15,6 +15,7 @@ import {
     equalHouseCusps,
     mod360,
     placidusCusps,
+    placidusLongitudeConverged,
     type PlacidusScheme,
     porphyryCusps,
     wholeSignCusps,
@@ -163,6 +164,19 @@ function porphyryFromAngles(asc: number, mc: number): number[] {
 // Quadrant systems (oxiephemeris closed forms + existing porphyry/placidus)
 // ---------------------------------------------------------------------------
 
+/** Regiomontanus cusp: great circle through equator point at RA offset `kRad` and horizon N/S. */
+function regiomontanusCusp(ramc: number, lat: number, eps: number, kRad: number): number {
+    const phi = lat * DEG;
+    const rho = ramc * DEG + kRad;
+    const y = Math.cos(phi) * Math.sin(rho);
+    const x =
+        Math.cos(phi) * Math.cos(rho) * Math.cos(eps * DEG) -
+        Math.sin(phi) * Math.sin(kRad) * Math.sin(eps * DEG);
+    const lam = branchLongitude(y, x);
+    if (lam === undefined) throw new Error('Regiomontanus degenerate');
+    return lam;
+}
+
 function regiomontanusCusps(
     ramc: number,
     lat: number,
@@ -170,21 +184,10 @@ function regiomontanusCusps(
     asc: number,
     mc: number,
 ): number[] {
-    const phi = lat * DEG;
-    const cusp = (kAngle: number): number => {
-        const rho = ramc * DEG + kAngle;
-        const y = Math.cos(phi) * Math.sin(rho);
-        const x =
-            Math.cos(phi) * Math.cos(rho) * Math.cos(eps * DEG) -
-            Math.sin(phi) * Math.sin(kAngle) * Math.sin(eps * DEG);
-        const lam = branchLongitude(y, x);
-        if (lam === undefined) throw new Error('Regiomontanus degenerate');
-        return lam;
-    };
-    const c11 = cusp(Math.PI / 6);
-    const c12 = cusp(Math.PI / 3);
-    const c2 = cusp((2 * Math.PI) / 3);
-    const c3 = cusp((5 * Math.PI) / 6);
+    const c11 = regiomontanusCusp(ramc, lat, eps, Math.PI / 6);
+    const c12 = regiomontanusCusp(ramc, lat, eps, Math.PI / 3);
+    const c2 = regiomontanusCusp(ramc, lat, eps, (2 * Math.PI) / 3);
+    const c3 = regiomontanusCusp(ramc, lat, eps, (5 * Math.PI) / 6);
     return assembleQuadrant(asc, mc, c11, c12, c2, c3);
 }
 
@@ -241,9 +244,15 @@ function alcabitiusCusps(
     return assembleQuadrant(asc, mc, c11, c12, c2, c3);
 }
 
+/**
+ * Morinus (§6.2.8): equator divided into 12 equal parts from the ARMC, converted to
+ * ecliptic longitudes. SE applies the same RA→λ map as the meridian (axial) system
+ * with a +90° ecliptic offset (Morinus cusp 10 is the MC ecliptic point, cusp 1
+ * the equatorial ascendant longitude).
+ */
 function morinusCusps(ramc: number, eps: number): number[] {
     return Array.from({ length: 12 }, (_, i) =>
-        eclipticLongitudeFromRa(mod360(ramc + i * 30), eps),
+        mod360(eclipticLongitudeFromRa(mod360(ramc + i * 30), eps) + 90),
     );
 }
 
@@ -288,54 +297,57 @@ function pullenSdCusps(asc: number, mc: number): number[] {
     const c12 = mod360(c11 + w1b);
     const c2 = mod360(asc + w2a);
     const c3 = mod360(c2 + w2b);
-    const c5 = mod360(mod360(c11 + 180) + w3a);
-    const c6 = mod360(c5 + w3b);
-    const c8 = mod360(mod360(c2 + 180) + w4a);
-    const c9 = mod360(c8 + w4b);
+    const c5 = mod360(c11 + 180);
+    const c6 = mod360(c12 + 180);
+    const c8 = mod360(c2 + 180);
+    const c9 = mod360(c3 + 180);
+    void w3a;
+    void w3b;
+    void w4a;
+    void w4b;
     return [asc, c2, c3, ic, c5, c6, mod360(asc + 180), c8, c9, mc, c11, c12];
 }
 
-function solvePullenRatio(q: number): number {
-    if (Math.abs(q - 90) < 1e-9) return 1;
+/** Pullen SR: solve r from rx + x + rx = qc and r³x + r⁴x + r³x = 180 − qc (§6.2.6). */
+function solvePullenRatio(qc: number): number {
+    if (Math.abs(qc - 90) < 1e-12) return 1;
     let r = 1;
-    for (let i = 0; i < 40; i++) {
-        const x = q / (1 + 2 * r);
-        const rhs = ((180 - q) / q) * (1 + 2 * r) * (1 + 2 * r);
-        const lhs = 2 * r * r * r + r * r * r * r;
-        const f = lhs - rhs;
-        const df = 6 * r * r + 4 * r * r * r;
+    for (let i = 0; i < 50; i++) {
+        const num = (qc * r * r * r * (2 + r)) / (1 + 2 * r);
+        const f = num - (180 - qc);
+        const dr = 1e-8;
+        const r2 = r + dr;
+        const f2 = (qc * r2 * r2 * r2 * (2 + r2)) / (1 + 2 * r2) - (180 - qc);
+        const df = (f2 - f) / dr;
         if (Math.abs(df) < 1e-15) break;
         r -= f / df;
-        if (r < 0.01) r = 0.01;
+        if (r < 0.001) r = 0.001;
     }
     return r;
 }
 
-function pullenSrQuadrant(q: number): [number, number, number] {
-    const r = solvePullenRatio(q);
-    const x = q / (1 + 2 * r);
-    return [r * x, x, r * x];
+function pullenSrFirstTwo(q: number): [number, number] {
+    const qc = q <= 90 ? q : 180 - q;
+    const r = solvePullenRatio(qc);
+    const x = qc / (1 + 2 * r);
+    if (q >= 90) return [r * r * r * x, r * r * r * r * x];
+    return [r * x, x];
 }
 
 function pullenSrCusps(asc: number, mc: number): number[] {
     const ic = mod360(mc + 180);
     const qMcAsc = forwardArc(mc, asc);
     const qAscIc = forwardArc(asc, ic);
-    const qIcDesc = forwardArc(ic, mod360(asc + 180));
-    const qDescMc = forwardArc(mod360(asc + 180), mc);
-    const [a1, b1] = pullenSrQuadrant(qMcAsc);
-    const [a2, b2] = pullenSrQuadrant(qAscIc);
-    const [a3, b3] = pullenSrQuadrant(qIcDesc);
-    const [a4, b4] = pullenSrQuadrant(qDescMc);
+    const [a1, b1] = pullenSrFirstTwo(qMcAsc);
+    const [a2, b2] = pullenSrFirstTwo(qAscIc);
     const c11 = mod360(mc + a1);
     const c12 = mod360(c11 + b1);
     const c2 = mod360(asc + a2);
     const c3 = mod360(c2 + b2);
-    const c5 = mod360(mod360(c11 + 180) + a3);
-    const c6 = mod360(c5 + b3);
-    const c8 = mod360(mod360(c2 + 180) + a4);
-    const c9 = mod360(c8 + b4);
-    void b4;
+    const c5 = mod360(c11 + 180);
+    const c6 = mod360(c12 + 180);
+    const c8 = mod360(c2 + 180);
+    const c9 = mod360(c3 + 180);
     return [asc, c2, c3, ic, c5, c6, mod360(asc + 180), c8, c9, mc, c11, c12];
 }
 
@@ -367,9 +379,9 @@ function polichPageCusps(
         return mod360(Math.atan2(Math.sin(H), Math.cos(H) * cosE - poleTan * sinE) * RAD);
     };
     const tanP11 = tanPhi / 3;
-    const tanP12 = (2 * tanPhi) / 9;
-    const tanP2 = (4 * tanPhi) / 9;
-    const tanP3 = (5 * tanPhi) / 9;
+    const tanP12 = (2 * tanPhi) / 3;
+    const tanP2 = (2 * tanPhi) / 3;
+    const tanP3 = tanPhi / 3;
     const c11 = poleCusp(30, tanP11);
     const c12 = poleCusp(60, tanP12);
     const c2 = poleCusp(120, tanP2);
@@ -474,7 +486,7 @@ function apcCusps(ramc: number, lat: number, eps: number, asc: number, mc: numbe
     return assembleQuadrant(asc, mc, c11, c12, c2, c3);
 }
 
-function sunSemiArcDegrees(
+function sunSemiArcRadians(
     lat: number,
     sunLon: number,
     eps: number,
@@ -482,21 +494,19 @@ function sunSemiArcDegrees(
     const [, dec] = raDeclFromEcliptic(sunLon, 0, eps);
     const tp = Math.tan(lat * DEG) * Math.tan(dec * DEG);
     if (Math.abs(tp) >= 1 - 1e-12) {
-        return tp > 0 ? { diurnal: 180, nocturnal: 0 } : { diurnal: 0, nocturnal: 180 };
+        return tp > 0 ? { diurnal: Math.PI, nocturnal: 0 } : { diurnal: 0, nocturnal: Math.PI };
     }
-    const da = Math.acos(-tp) * RAD;
-    return { diurnal: da, nocturnal: 180 - da };
+    const da = Math.acos(-tp);
+    return { diurnal: da, nocturnal: Math.PI - da };
 }
 
 /**
- * Sunshine (SE §6.2.15): trisect the Sun’s diurnal/nocturnal arcs; house circles
- * through horizon N/S. Uses RAMC shifts by thirds of the Sun’s semi-arc (same
- * angular measure as Koch, but keyed to solar declination).
+ * Sunshine (SE §6.2.15): trisect the Sun’s diurnal/nocturnal arcs; great circles
+ * through those equator points and the horizon N/S (Regiomontanus construction).
  *
- * `I` — Makransky (Primary Directions, 1988) as documented in SE.
- * `i` — Treindl variant: identical formulas with stricter polar-circle handling
- * (always collapse cusps 2–6 or 8–12 onto the meridian when a solar arc is 0°
- * or 180°, per SE §6.2.15 / §6.4 MC swap notes).
+ * `treindl` — collapse cusps onto the meridian when a solar arc is 0° or 180°
+ * (polar day/night), per SE §6.2.15 / §6.4 (SE letter `I`).
+ * `makransky` — Primary Directions (1988) construction without that collapse (SE letter `i`).
  */
 function sunshineCusps(
     ramc: number,
@@ -507,12 +517,9 @@ function sunshineCusps(
     sunLon: number,
     variant: 'makransky' | 'treindl',
 ): number[] {
-    const { diurnal, nocturnal } = sunSemiArcDegrees(lat, sunLon, eps);
-    const thirdDay = diurnal / 3;
-    const thirdNight = nocturnal / 3;
-    const shiftAsc = (deg: number) => computeAscendant(ramc + deg, lat, eps);
+    const { diurnal: da, nocturnal: na } = sunSemiArcRadians(lat, sunLon, eps);
 
-    if (variant === 'treindl' && diurnal === 0) {
+    if (variant === 'treindl' && da === 0) {
         const mer = mod360(mc);
         return [
             asc,
@@ -529,7 +536,7 @@ function sunshineCusps(
             mod360(mer + 180),
         ];
     }
-    if (variant === 'treindl' && nocturnal === 0) {
+    if (variant === 'treindl' && na === 0) {
         const mer = mod360(mc);
         return [
             asc,
@@ -547,10 +554,10 @@ function sunshineCusps(
         ];
     }
 
-    const c11 = shiftAsc(-2 * thirdDay);
-    const c12 = shiftAsc(-thirdDay);
-    const c2 = shiftAsc(thirdNight);
-    const c3 = shiftAsc(2 * thirdNight);
+    const c11 = regiomontanusCusp(ramc, lat, eps, (-2 * da) / 3);
+    const c12 = regiomontanusCusp(ramc, lat, eps, -da / 3);
+    const c2 = regiomontanusCusp(ramc, lat, eps, na / 3);
+    const c3 = regiomontanusCusp(ramc, lat, eps, (2 * na) / 3);
     return assembleQuadrant(asc, mc, c11, c12, c2, c3);
 }
 
@@ -562,14 +569,23 @@ function gauquelinSectors36(
     mc: number,
     scheme: PlacidusScheme,
 ): number[] {
-    const plac = placidusCusps(ramc, lat, eps, asc, mc, scheme);
+    void scheme;
+    const ic = mod360(asc + 180);
+    const desc = mod360(mc + 180);
+    const anchors: Record<number, number> = { 0: asc, 9: mc, 18: ic, 27: desc };
+    const plac = (cRad: number, g: number) => placidusLongitudeConverged(ramc, lat, eps, cRad, g);
     const sectors: number[] = new Array(36);
     for (let s = 0; s < 36; s++) {
-        const house = Math.floor(s / 3);
-        const sub = s % 3;
-        const a = plac[house];
-        const b = plac[(house + 1) % 12];
-        sectors[s] = mod360(a + (forwardArc(a, b) * (sub + 1)) / 4);
+        const anchor = anchors[s];
+        if (anchor !== undefined) {
+            sectors[s] = anchor;
+            continue;
+        }
+        const q = Math.floor(s / 9);
+        const j = s % 9;
+        const c = q * (Math.PI / 2);
+        const g = 1 - (2 * j) / 18;
+        sectors[s] = plac(c, g);
     }
     return sectors;
 }
@@ -987,19 +1003,31 @@ export function computeTropicalHouses(
                 lat,
                 eps,
             );
-        case 'T':
+        case 'T': {
+            const { mc: mcUse, swapped } = polarOrientedMcIc(ramc, lat, eps, tropMC);
+            const cusps = polichPageCusps(ramc, lat, eps, tropAsc, mcUse);
             return withExtraAngles(
                 {
-                    cusps: polichPageCusps(ramc, lat, eps, tropAsc, tropMC),
+                    cusps,
                     ascendant: tropAsc,
                     mc: tropMC,
                     armc: ramc,
                     vertex: tropVertex,
+                    ...(swapped
+                        ? {
+                              fallback: {
+                                  code: 'MC_IC_SWAP',
+                                  message: 'MC below horizon; MC/IC swapped (SE §6.4)',
+                                  usedLetter: 'T',
+                              },
+                          }
+                        : {}),
                 },
                 ramc,
                 lat,
                 eps,
             );
+        }
         case 'U':
             return withExtraAngles(
                 {
@@ -1079,8 +1107,9 @@ export function computeTropicalHouses(
                 );
             }
             const { mc: mcUse, swapped } = polarOrientedMcIc(ramc, lat, eps, tropMC);
-            const variant = effective === 'I' ? 'makransky' : 'treindl';
-            const cusps = sunshineCusps(ramc, lat, eps, tropAsc, tropMC, sunLon, variant);
+            // SE swephprg.htm: `I` = Treindl solution, `i` = Makransky solution (same geometry, polar handling differs).
+            const variant = effective === 'I' ? 'treindl' : 'makransky';
+            const cusps = sunshineCusps(ramc, lat, eps, tropAsc, mcUse, sunLon, variant);
             return withExtraAngles(
                 {
                     cusps,
