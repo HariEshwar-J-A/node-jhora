@@ -49,9 +49,8 @@ Add cyclic mahā/antar generators in `packages/prediction/src/dashas/` for:
 Sub-period length uses the standard proportional rule:
 `subYears = parentStdYears × childStdYears / cycleYears` (same structure as Vimshottari).
 
-**Kalachakra** is documented but throws until the full pada wheel (BPHS 46.46+) is
-implemented. **Moola** and **Sudasa** ship as simplified Jaimini-family helpers (kendra
-occupancy and Śrī Lagna kendradi) with tests; they are not claimed to match JHora exports.
+**Kalachakra**, **Moola**, **Sudasa**, **Drig**, **Tithi Ashtottari**, and **Patyayini** are
+implemented in ADR 0020 (`@node-jhora/prediction`).
 
 Existing systems (**Vimshottari, Yogini, Narayana, Chara**) are unchanged.
 
@@ -66,7 +65,6 @@ bit-identical.
 
 - API surface grows; run `pnpm --filter @node-jhora/api api:report` when merging.
 - Golden tests for new vargas use published structural examples, not JHora DLL output.
-- Kalachakra, full Moola, and full Sudasa remain follow-up work.
 
 ## References
 

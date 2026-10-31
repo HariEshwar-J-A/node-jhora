@@ -10,9 +10,18 @@ export {
     generateShashtiHayani,
     generateShatabdika,
     generateShodashottari,
+    generateSubPeriods,
 } from './cyclic.js';
-export { KalachakraDasha } from './kalachakra.js';
-export { MoolaDasha, SudasaDasha } from './special.js';
+export { KalachakraDasha, type KalachakraDashaResult } from './kalachakra.js';
+export {
+    DrigDasha,
+    generateTithiAshtottari,
+    MoolaDasha,
+    PatyayiniDasha,
+    sriLagnaLongitude,
+    SudasaDasha,
+    tithiLordForElongation,
+} from './special.js';
 export {
     CYCLIC_DASHA_SPECS,
     type CyclicDashaId,
