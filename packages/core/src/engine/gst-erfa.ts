@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * ERFA gst06a — Greenwich apparent sidereal time (IAU 2006 / IAU 2000A).
  *

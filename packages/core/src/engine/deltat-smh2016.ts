@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * @provenance Stephenson, F. R., Morrison, L. V. & Hohenkerk, C. Y. (2016),
  * "Measurement of the Earth's rotation: 720 BC to AD 2015",

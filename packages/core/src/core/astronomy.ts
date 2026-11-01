@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { normalize360 } from './math.js';
 
 const DEGS_TO_RAD = Math.PI / 180;

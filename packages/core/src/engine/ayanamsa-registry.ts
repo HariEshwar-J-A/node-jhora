@@ -1,7 +1,9 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Ayanamsa mode registry — anchors transcribed from published definitions only.
  * Mode numbers are compatible with publicly documented numbering (0–46, USER 255).
- * See docs/DATA-SOURCES.md and ADR 0025.
+ * See docs/guides/data-sources.md and ADR 0025.
  */
 
 import type { PrecisionProfile } from './deltat.js';
@@ -88,6 +90,7 @@ function pm(j: number, m: number): ProfileMean {
     return { jhora: j, modern: m };
 }
 
+/** @provenance Ayanamsa anchor JDs and mean/true values transcribed from primary literature; see docs/guides/data-sources.md and ADR 0025 (not sampled from another program). */
 export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     0: {
         kind: 'epoch',

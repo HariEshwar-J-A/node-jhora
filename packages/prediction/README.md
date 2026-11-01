@@ -2,7 +2,7 @@
 
 Time-based predictive logic for the Node-Jhora Vedic astrology engine. Provides multiple Dasha systems (Vimshottari, Yogini, Narayana), transit scanning with Newton-Raphson precision, and Jaimini predictive tools (Chara Karakas, Arudha Padas, Chara Dasha).
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/PREDICTION.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/prediction.md)
 
 ## Installation
 
@@ -96,7 +96,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

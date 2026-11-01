@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { PlanetPosition } from '../engine/ephemeris.js';
 import { KPSignificator, KPSubLord } from './sublord.js';
 

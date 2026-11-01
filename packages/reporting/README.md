@@ -2,7 +2,7 @@
 
 Professional PDF birth chart report generation for the Node-Jhora Vedic astrology engine. Produces comprehensive reports with planetary positions, house cusps, Shadbala strengths, Yoga analysis, and chart diagrams.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/REPORTING.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/reporting.md)
 
 ## Installation
 
@@ -77,7 +77,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

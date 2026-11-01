@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Clean-room asset guard. See docs/CLEAN_ROOM.md.
+ * Clean-room asset guard. See docs/guides/clean-room.md.
  *
  * Fails when the tree contains:
  *   - .chm / .hlp help files, .ico / .bmp images, .exe / .dll binaries
@@ -32,7 +32,7 @@ export const MARKERS = ['decompiled by', 'ghidra', 'undefined4'];
 export const CONTENT_EXEMPT = new Set([
     'tools/check-forbidden-assets.mjs',
     'tools/check-forbidden-assets.test.mjs',
-    'docs/CLEAN_ROOM.md',
+    'docs/guides/clean-room.md',
     'docs/decisions/0002-clean-room-policy.md',
     // Gitignored copies synced from the two policy docs above by
     // apps/docs/scripts/prepare-content.mjs during `pnpm run docs:build`.

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { PlanetPosition } from '@node-jhora/core';
 import PDFDocument from 'pdfkit';
 

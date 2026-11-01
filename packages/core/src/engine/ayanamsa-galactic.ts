@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Galactic-equator node on the mean ecliptic of date (IAU 1958 / Liu et al. 2010 poles).
  * Pole ICRS coordinates from the IAU 1958 system (B1950) as given in Malkin 2012

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 export * from './chunk-coverage.js';
 export * from './chunk-loader.js';
 export * from './composite.js';

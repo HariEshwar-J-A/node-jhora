@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "IERS Earth orientation parameters (UT1−UTC, polar motion) and IANA leap-second metadata for the truth precision profile",
     "type": "module",
-    "license": "LicenseRef-IERS-Public-Data",
+    "license": "SEE LICENSE IN LICENSE",
     "main": "index.mjs",
     "types": "index.d.ts",
     "exports": {

@@ -77,7 +77,7 @@ test('decompiler markers fail in source and are ignored in exempt policy files',
         {
             'packages/core/src/leaked.ts': '/* Decompiled by JD-GUI */\nlet undefined4 = 1;\n',
             'notes/ghidra.md': 'Opened in Ghidra.\n',
-            'docs/CLEAN_ROOM.md': 'markers: Decompiled by, Ghidra, undefined4\n',
+            'docs/guides/clean-room.md': 'markers: Decompiled by, Ghidra, undefined4\n',
             'docs/decisions/0002-clean-room-policy.md': 'Ghidra\n',
             'tools/check-forbidden-assets.mjs': 'Ghidra\n',
         },

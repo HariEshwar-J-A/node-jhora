@@ -2,7 +2,7 @@
 
 Precision astronomical event detection for the Node-Jhora Vedic astrology engine. Finds exact moments of sign ingresses, retrograde/direct stations, and arbitrary custom conditions using binary search.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/EVENTS.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/events.md)
 
 ## Installation
 
@@ -80,7 +80,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

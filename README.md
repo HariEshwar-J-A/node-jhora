@@ -1,6 +1,6 @@
 # Node-Jhora: Professional Vedic Astrology SDK
 
-Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It is a pnpm-workspaces monorepo (`pnpm-workspace.yaml` covers `packages/*` and `apps/*`). Libraries live in `packages/`. Applications belong in `apps/` (none are checked in; a React UI is planned there).
+Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It is a pnpm-workspaces monorepo (`pnpm-workspace.yaml` covers `packages/*` and `apps/*`). Libraries live in `packages/`. Applications live in `apps/` ([Starlight docs site](./apps/docs), browser test harness).
 
 ## Features
 
@@ -21,22 +21,22 @@ Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It 
 - **PDF reports**: `generateFullReport` (PDFKit) in `@node-jhora/reporting`.
 - **Decimal.js**: Vargas, panchanga, KP sub-lords, and `packages/core/src/core/precise.ts` use `decimal.js`. SPK state and the coordinate chain in `ephemeris.ts` use ordinary floating-point numbers.
 
-Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md](./docs/ACCURACY.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 1998, and 2024 sample epochs.
+Astrometric comparisons against JPL Horizons are written up in [docs/accuracy.md](./docs/accuracy.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 1998, and 2024 sample epochs.
 
 ## Packages
 
-| Package                                           | Description                                                                             |
-| :------------------------------------------------ | :-------------------------------------------------------------------------------------- |
-| [`@node-jhora/core`](./packages/core)             | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/CORE.md))     |
-| [`@node-jhora/ephe`](./packages/ephe)             | JPL `de440s.bsp` kernel (31 MB, in the tarball). Data only; calculation stays in core.  |
-| [`@node-jhora/analytics`](./packages/analytics)   | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/ANALYTICS.md))           |
-| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/PREDICTION.md))        |
-| [`@node-jhora/match`](./packages/match)           | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/MATCHMAKING.md))        |
-| [`@node-jhora/events`](./packages/events)         | `TransitScanner`. ([Docs](./docs/EVENTS.md))                                            |
-| [`@node-jhora/reporting`](./packages/reporting)   | PDF reports. ([Docs](./docs/REPORTING.md))                                              |
-| [`@node-jhora/api`](./packages/api)               | Fastify + Zod HTTP API. ([Docs](./docs/API.md))                                         |
-| [`@node-jhora/atlas`](./packages/atlas)           | Offline GeoNames city gazetteer (data © GeoNames, CC-BY 4.0). ([Docs](./docs/ATLAS.md)) |
-| [`@node-jhora/testkit`](./packages/testkit)       | Private. Golden-case schema and fixture converters. ([Docs](./docs/GOLDENS.md))         |
+| Package                                           | Description                                                                                    |
+| :------------------------------------------------ | :--------------------------------------------------------------------------------------------- |
+| [`@node-jhora/core`](./packages/core)             | DE440s ephemeris, ayanamsa, panchanga, vargas, KP, houses. ([Docs](./docs/guides/core.md))     |
+| [`@node-jhora/ephe`](./packages/ephe)             | JPL `de440s.bsp` kernel (31 MB, in the tarball). Data only; calculation stays in core.         |
+| [`@node-jhora/analytics`](./packages/analytics)   | Shadbala, Ashtakavarga, yoga engine, KP engine. ([Docs](./docs/guides/analytics.md))           |
+| [`@node-jhora/prediction`](./packages/prediction) | Vimshottari, Yogini, Narayana, transits, Jaimini. ([Docs](./docs/guides/prediction.md))        |
+| [`@node-jhora/match`](./packages/match)           | Ashta Kuta, Dasha Kuta (Porutham), Mangal Dosha. ([Docs](./docs/guides/matchmaking.md))        |
+| [`@node-jhora/events`](./packages/events)         | `TransitScanner`. ([Docs](./docs/guides/events.md))                                            |
+| [`@node-jhora/reporting`](./packages/reporting)   | PDF reports. ([Docs](./docs/guides/reporting.md))                                              |
+| [`@node-jhora/api`](./packages/api)               | Fastify + Zod HTTP API. ([Docs](./docs/guides/api.md))                                         |
+| [`@node-jhora/atlas`](./packages/atlas)           | Offline GeoNames city gazetteer (data © GeoNames, CC-BY 4.0). ([Docs](./docs/guides/atlas.md)) |
+| [`@node-jhora/testkit`](./packages/testkit)       | Private. Golden-case schema and fixture converters. ([Docs](./docs/guides/goldens.md))         |
 
 `pnpm build` (`tsc -b`) compiles every TypeScript workspace through the root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `api`, `events`, `reporting`, `testkit`, `format`, `engine`, `atlas`, and `bench`. `ephe` is a data package with no `tsconfig.json`.
 
@@ -44,19 +44,21 @@ Astrometric comparisons against JPL Horizons are written up in [docs/ACCURACY.md
 
 The [documentation site](./apps/docs) (Astro Starlight) is built with `pnpm run docs:build` from the repository root. Guides are synced from this README and `docs/` at build time; the API reference is generated with TypeDoc.
 
-- **[Architecture](./docs/ARCHITECTURE.md)** — workspaces, package boundaries, build.
-- **[Accuracy](./docs/ACCURACY.md)** — Horizons and JHora-export comparisons recorded in-repo.
-- **[Mathematical notes](./docs/MATH.md)**
-- **[Core](./docs/CORE.md)** — `EphemerisEngine`, `NodeJHora`, panchanga, lagnas, upagrahas.
-- **[Analytics](./docs/ANALYTICS.md)** — Shadbala, Ashtakavarga, yogas, KP engine.
-- **[Prediction](./docs/PREDICTION.md)** — dashas, transits, Jaimini.
-- **[Matchmaking](./docs/MATCHMAKING.md)** — Ashta Kuta, Dasha Kuta, Mangal Dosha.
-- **[REST API](./docs/API.md)** — Fastify routes and Zod schemas.
-- **[Events](./docs/EVENTS.md)** — `TransitScanner`.
-- **[PDF reporting](./docs/REPORTING.md)**
-- **[Atlas](./docs/ATLAS.md)** — offline GeoNames gazetteer and attribution.
-- **[Golden cases](./docs/GOLDENS.md)** — schema for accuracy fixtures.
-- **[Market notes](./docs/MARKET_POSITION.md)**
+- **[Architecture](./docs/architecture.md)** — workspaces, package boundaries, build.
+- **[Accuracy](./docs/accuracy.md)** — Horizons and JHora-export comparisons recorded in-repo.
+- **[Mathematical notes](./docs/guides/math.md)**
+- **[Core](./docs/guides/core.md)** — `EphemerisEngine`, `NodeJHora`, panchanga, lagnas, upagrahas.
+- **[Analytics](./docs/guides/analytics.md)** — Shadbala, Ashtakavarga, yogas, KP engine.
+- **[Prediction](./docs/guides/prediction.md)** — dashas, transits, Jaimini.
+- **[Matchmaking](./docs/guides/matchmaking.md)** — Ashta Kuta, Dasha Kuta, Mangal Dosha.
+- **[REST API](./docs/guides/api.md)** — Fastify routes and Zod schemas.
+- **[Events](./docs/guides/events.md)** — `TransitScanner`.
+- **[PDF reporting](./docs/guides/reporting.md)**
+- **[Atlas](./docs/guides/atlas.md)** — offline GeoNames gazetteer and attribution.
+- **[Golden cases](./docs/guides/goldens.md)** — schema for accuracy fixtures.
+- **[Market notes](./docs/guides/market-position.md)**
+- **[Performance](./docs/performance.md)** — bench harness and baselines.
+- **[Documentation index](./docs/README.md)** — full tree (getting-started, guides, ADRs).
 
 ## Installation
 
@@ -221,11 +223,11 @@ Routes registered in `packages/api/src/server.ts`:
 | POST   | `/v1/kp/significators` |
 | POST   | `/v1/match`            |
 
-The chart body schema is `BirthInputSchema` in `packages/api/src/schemas/birth-input.ts` (date, time, and either a city or latitude/longitude/timezone). Omitted `ayanamsa` defaults to `true_chitra`. See [docs/API.md](./docs/API.md) for the field list. That page still shows an older request shape in places; the schema file is the source of truth.
+The chart body schema is `BirthInputSchema` in `packages/api/src/schemas/birth-input.ts` (date, time, and either a city or latitude/longitude/timezone). Omitted `ayanamsa` defaults to `true_chitra`. See [docs/guides/api.md](./docs/guides/api.md) for the field list. That page still shows an older request shape in places; the schema file is the source of truth.
 
 ## Contributing
 
-Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CONTRIBUTING.md). The clean-room policy is in [docs/CLEAN_ROOM.md](./docs/CLEAN_ROOM.md).
+Branch names, pull request titles, and merge rules are in [CONTRIBUTING.md](./CONTRIBUTING.md). The clean-room policy is in [docs/guides/clean-room.md](./docs/guides/clean-room.md).
 
 Commands are from the monorepo root.
 
@@ -247,13 +249,13 @@ pnpm exec jest --config packages/core/jest.config.js
 # Relative links in tracked and untracked Markdown (no network).
 pnpm run check:links
 
-# Forbidden help/image/binary files, stray .jhd charts, decompiler markers (docs/CLEAN_ROOM.md).
+# Forbidden help/image/binary files, stray .jhd charts, decompiler markers (docs/guides/clean-room.md).
 pnpm run check:clean-room
 
 pnpm run validate-github-templates
 ```
 
-`pnpm run lint` is `eslint packages/**/src --ext .ts`. ESLint is not listed in the root `devDependencies`, so that script cannot run until ESLint is installed.
+`pnpm run lint` runs ESLint via Turbo across `packages/*` (see [docs/guides/lint.md](./docs/guides/lint.md)).
 
 ## License
 

@@ -41,7 +41,7 @@
     "bin": {
         "node-jhora-ephe": "./node/cli.mjs"
     },
-    "license": "LicenseRef-NodeJHora-Source-Available",
+    "license": "SEE LICENSE IN LICENSE",
     "engines": {
         "node": ">=22"
     },

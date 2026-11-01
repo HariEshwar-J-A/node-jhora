@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { setBspBytesLoader } from '../engine/bsp-bytes-provider.js';
 import { sha256Hex } from '../settings/sha256.js';
 import { DE440S_BYTES, DE440S_SHA256, DE440S_URLS } from './constants.js';

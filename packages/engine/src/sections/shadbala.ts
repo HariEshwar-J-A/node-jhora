@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { calculateShadbala, type VargaInfo } from '@node-jhora/analytics';
 import { Body, calculateVarga, type PlanetPosition } from '@node-jhora/core';
 

@@ -74,7 +74,7 @@ Replace the table with fresh `pnpm run bench:workers` output when sizing product
 
 ## Related documents
 
-- [Architecture](../ARCHITECTURE.md) — ephemeris provider and packages
+- [Architecture](../architecture.md) — ephemeris provider and packages
 - [ADR 0033](../decisions/0033-server-grade-pr7-server-contract.md) — server contract decision
 - [ADR 0032](../decisions/0032-server-grade-pr5-edge-long-range.md) — edge kernel and NJCE windows
 - [ADR 0005](../decisions/0005-chartsession-worker-host.md) — browser ChartSession worker host (Comlink)

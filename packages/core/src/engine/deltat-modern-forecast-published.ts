@@ -1,9 +1,13 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Published ΔT forecast after the USNO preds bridge (2028 CE).
  *
  * UKHO HMNAO lod integration (Wayback 2023-01-03 snapshot of
  * https://astro.ukho.gov.uk/nao/lvm/) through 2500 CE, then SMH2016 eq. 4.1
  * (Stephenson, Morrison & Hohenkerk 2016, CC-BY-4.0) with a linear blend at 2500.
+ *
+ * @provenance UKHO HMNAO LVM ΔT anchors (Wayback 2023-01-03); SMH2016 eq. 4.1 coefficients from Stephenson et al. (2016).
  */
 
 import { FORECAST_HANDOFF_SPAN_YEARS } from './deltat-modern-forecast-shared.js';

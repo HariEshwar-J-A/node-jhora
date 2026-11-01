@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Compact DE431 chunk reader (`.njce` — Node-Jhora Compact Ephemeris).
  *

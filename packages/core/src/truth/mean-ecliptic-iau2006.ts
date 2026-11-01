@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import type { PrecisionProfile } from '../engine/deltat.js';
 import type { Vec } from '../engine/precession.js';
 import {

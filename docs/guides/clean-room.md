@@ -5,7 +5,7 @@ node-jhora is an independent clean-room implementation of Vedic astrology
 by P.V.R. Narasimha Rao is a behavioural reference: we may study what the
 program _does_ and which numbers it prints. We do not copy how it is built.
 
-This policy is binding. [ADR 0002](decisions/0002-clean-room-policy.md) records
+This policy is binding. [ADR 0002](../decisions/0002-clean-room-policy.md) records
 the decision. `pnpm run check:clean-room` enforces the mechanical part.
 
 ## What must never enter the repository
@@ -114,7 +114,7 @@ description (precession model, house-cusp formula, ΔT series). Record the
 document title and section. Do **not** vendor Swiss Ephemeris source, data
 files, or WASM into this repository. Swiss Ephemeris is AGPL-3.0 and stays an
 external oracle in developer or CI scripts only. See
-[ADR 0003](decisions/0003-pure-typescript-de440s-ephemeris.md).
+[ADR 0003](../decisions/0003-pure-typescript-de440s-ephemeris.md).
 
 ### Engine snapshots
 
@@ -139,7 +139,7 @@ On every pull request:
    of a published package. An external oracle script must say that it shells
    out to a tool that is not shipped.
 6. The policy files that name the forbidden markers
-   (`docs/CLEAN_ROOM.md`, `docs/decisions/0002-clean-room-policy.md`,
+   (`docs/guides/clean-room.md`, `docs/decisions/0002-clean-room-policy.md`,
    `tools/check-forbidden-assets.mjs`, and its test) are not used to hide
    copied material. Reviewers read those diffs in full. The checker exempts
    them only so the policy can name the markers it searches for.

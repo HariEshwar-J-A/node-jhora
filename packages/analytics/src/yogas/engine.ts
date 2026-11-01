@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { normalize360, PlanetPosition } from '@node-jhora/core';
 
 import { Condition, YogaDef, YogaResult } from '../types/rules.js';

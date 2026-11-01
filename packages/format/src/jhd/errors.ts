@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /** Structured parse failure for a single `.jhd` line or file. */
 export type JhdErrorCode =
     'too_few_lines' | 'invalid_number' | 'invalid_legacy_tail' | 'invalid_flags';

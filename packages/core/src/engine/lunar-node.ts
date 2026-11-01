@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * True (osculating) lunar node on the mean ecliptic and equinox of date.
  *

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Calculation settings: one validated object for every choice that changes
  * a number (ayanamsa, nodes, houses, sunrise, dasa year, varga rules).

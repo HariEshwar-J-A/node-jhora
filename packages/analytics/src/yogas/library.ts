@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { YogaDef } from '../types/rules.js';
 
 export const YOGA_LIBRARY: YogaDef[] = [

@@ -3,7 +3,7 @@
     "version": "440.2.0",
     "description": "JPL DE440s ephemeris data for node-jhora (public domain, NASA/JPL)",
     "type": "module",
-    "license": "LicenseRef-NASA-Open-Government",
+    "license": "SEE LICENSE IN LICENSE",
     "main": "index.mjs",
     "types": "index.d.ts",
     "exports": {

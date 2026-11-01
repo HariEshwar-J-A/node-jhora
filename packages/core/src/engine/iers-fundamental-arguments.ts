@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Fundamental arguments F_1…F_14 for IAU 2006/2000A nutation and EO series.
  *

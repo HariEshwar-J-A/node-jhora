@@ -138,14 +138,14 @@ eph.getAyanamsa(julday); // Ayanamsa value in degrees
 eph.getSiderealTime(julday); // Local Sidereal Time
 eph.getEclipticObliquity(jd); // { eps, dpsi, deps }
 eph.setAyanamsa(mode); // Switch Ayanamsa at runtime
-eph.getHouses(jd, lat, lon, method, sidereal); // Raw SE house cusps
+eph.getHouses(jd, lat, lon, method, sidereal); // Equal (`E`) or whole-sign cusps from clean-room implementations
 ```
 
 ---
 
 ## 🏠 House Systems
 
-Calculates house cusps using Swiss Ephemeris with trigonometric Ascendant/MC computation:
+Calculates house cusps using clean-room implementations (see ADR 0017):
 
 ```typescript
 import { calculateHouseCusps } from '@node-jhora/core';
@@ -156,11 +156,11 @@ const houses = calculateHouseCusps(date, latitude, longitude, 'WholeSign', engin
 
 **Supported Methods:**
 
-| Method        | Description                                           |
-| :------------ | :---------------------------------------------------- |
-| `'WholeSign'` | Vedic standard — cusps snapped to 30° sign boundaries |
-| `'Placidus'`  | Quadrant-based — requires functioning WASM            |
-| `'Porphyry'`  | Trisection between angles                             |
+| Method        | Description                                                                         |
+| :------------ | :---------------------------------------------------------------------------------- |
+| `'WholeSign'` | Vedic standard — cusps snapped to 30° sign boundaries                               |
+| `'Placidus'`  | Quadrant-based (clean-room; not all methods exposed on `EphemerisEngine.getHouses`) |
+| `'Porphyry'`  | Trisection between angles                                                           |
 
 ### Bhava Sandhi
 

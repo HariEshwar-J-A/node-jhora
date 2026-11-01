@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * nutation.ts — IAU 1980 nutation in longitude and obliquity.
  *

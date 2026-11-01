@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { DateTime } from 'luxon';
 
 import { isValidIanaTimeZone } from '../iana.js';

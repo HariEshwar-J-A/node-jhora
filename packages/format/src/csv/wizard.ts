@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { suggestCsvColumnMappings } from './mapping.js';
 import { detectCsvDelimiter, parseCsvWithDelimiter } from './rfc4180.js';
 import { buildChartFromParsedRow, parseMappedRow } from './row-model.js';

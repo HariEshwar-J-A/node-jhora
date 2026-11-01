@@ -162,6 +162,7 @@ jobs:
             - run: pnpm run test:golden
             - run: pnpm run check:clean-room
             - run: pnpm run check:links
+            - run: pnpm run test:tools
             - run: pnpm run validate-github-templates
 
     build:

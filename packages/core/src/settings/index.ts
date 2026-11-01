@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 export { canonicalJson, hashSettings } from './hash.js';
 export type { PresetId } from './presets.js';
 export { getPreset, isPresetId, PRESET_IDS, PRESETS } from './presets.js';

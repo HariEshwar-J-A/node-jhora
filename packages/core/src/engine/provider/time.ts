@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /** J2000.0 epoch in TDB/TT Julian days (IAU). */
 export const J2000_JD = 2451545.0;
 

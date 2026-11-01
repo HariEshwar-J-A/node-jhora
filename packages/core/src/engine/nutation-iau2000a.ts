@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * IAU 2000A nutation (MHB2000, Mathews et al. 2002) with the IAU 2006
  * adjustment (IERS Conventions 2010 §5.6.3, ERFA nut06a).

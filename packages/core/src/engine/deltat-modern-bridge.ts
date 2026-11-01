@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Bridge ΔT between the last USNO/IERS observation and the published forecast
  * polynomials (Swiss Ephemeris manual ch. 7 layout).

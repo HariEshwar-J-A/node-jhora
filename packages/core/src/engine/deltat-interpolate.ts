@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Shared ΔT interpolation helpers (Bessel annual, USNO monthly linear).
  * @see Abramowitz & Stegun §25.2; Swiss Ephemeris programmer manual ch. 7 (ΔT).

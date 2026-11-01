@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * coordinates.ts — Julian day, sidereal time, angles and house cusps.
  *
@@ -466,7 +468,7 @@ function eclipticLongitudeFromRa(alphaRad: number, eps: number): number {
  * Placidus cusp right ascension α (radians) by fixed-point iteration.
  *
  * Unified form (Holden 1977; classical spherical trigonometry; see
- * docs/derivations/houses.md): with `t = tan φ · tan ε`, `|t| &lt; 1`,
+ * docs/guides/derivations/houses.md): with `t = tan φ · tan ε`, `|t| &lt; 1`,
  *
  *   α = θ + c + g · SDA(α),   SDA(α) = acos(−t · sin α).
  *
@@ -603,7 +605,8 @@ export function placidusCusps(
     };
     const [c11, c12, c2, c3] =
         scheme === 'jhora'
-            ? [11, 12, 2, 3].map(pole)
+            ? /* @provenance Placidus pole house indices (11,12,2,3); algorithm structure, not tabulated ephemeris data. */
+              [11, 12, 2, 3].map(pole)
             : [
                   placidusLongitudeConverged(ramc, lat, eps, 0, 1 / 3),
                   placidusLongitudeConverged(ramc, lat, eps, 0, 2 / 3),

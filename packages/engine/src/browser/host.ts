@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import * as Comlink from 'comlink';
 
 import type { ChartSectionsSnapshot } from '../types.js';

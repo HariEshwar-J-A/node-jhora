@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Bracketed root finder (Brent 1971 / 1973 `zero`, zeroin structure).
  *

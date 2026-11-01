@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Body } from '@node-jhora/core';
 import { PoruthamMatch } from '@node-jhora/match';
 import { FastifyInstance } from 'fastify';

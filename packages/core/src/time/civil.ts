@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Civil-time resolver — local wall clock + place + IANA zone → UTC.
  *

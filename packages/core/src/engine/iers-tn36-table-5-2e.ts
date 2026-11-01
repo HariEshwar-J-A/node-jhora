@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * IERS Conventions (2010), Technical Note 36, Table 5.2e.
  *
@@ -8,6 +10,8 @@
  *
  * Source: IERS TN36 Chapter 5, Table 5.2e (electronic table tab5.2e at
  * https://iers-conventions.obspm.fr/chapter5/chapter5.html).
+ *
+ * @provenance IERS Conventions (2010) TN36 Table 5.2e electronic table tab5.2e.
  */
 
 /** Fundamental-argument index: F1…F14 (l, l′, F, D, Ω, planetary means, p_A). */

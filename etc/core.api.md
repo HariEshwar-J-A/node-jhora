@@ -70,7 +70,7 @@ export const AYANAMSA_MODE_USER = 255;
 
 // Warning: (ae-forgotten-export) The symbol "AyanamsaModelDef" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef>;
 
 // @public @deprecated (undocumented)
@@ -1032,7 +1032,7 @@ export class KPRuling {
     static calculateRulingPlanets(ascendantLon: number, moonLon: number, dayLordId: number): RulingPlanetsResult;
 }
 
-// @public
+// @public (undocumented)
 export interface KPSignificator {
     // (undocumented)
     longitude: number;
@@ -1682,7 +1682,7 @@ export interface VargaOptions {
 // @public
 export function vargaOptionsFromVariants(variants: Record<string, string> | undefined, overrides?: VargaOptions): VargaOptions;
 
-// @public
+// @public (undocumented)
 export interface VargaPoint {
     // (undocumented)
     degree: number;

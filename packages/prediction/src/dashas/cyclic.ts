@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Decimal } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 

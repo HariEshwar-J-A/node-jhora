@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { detectJhdVariant } from './detect.js';
 import { JhdParseError } from './errors.js';
 import { sexagesimalToDecimal } from './sexagesimal.js';

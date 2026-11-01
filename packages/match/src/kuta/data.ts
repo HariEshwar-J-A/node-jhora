@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Gana, Nadi, Varna, Vashya, YoniAnimal } from '../types.js';
 
 // Table mapping Nakshatra 0-26 to Properties

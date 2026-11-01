@@ -10,7 +10,7 @@ The compiled gazetteer shards are a derivative work of the GeoNames dumps. Any a
 
 ## Data distribution
 
-The npm package ships compiled code only (`dist/`, `README.md`, `ATTRIBUTION.md`, `LICENSE`), in line with [ADR-0006](./decisions/0006-npm-packaging-and-ephemeris-data-distribution.md). The generated data (about 28 MB of sharded JSON) is not committed and not published. Build it with:
+The npm package ships compiled code only (`dist/`, `README.md`, `ATTRIBUTION.md`, `LICENSE`), in line with [ADR-0006](../decisions/0006-npm-packaging-and-ephemeris-data-distribution.md). The generated data (about 28 MB of sharded JSON) is not committed and not published. Build it with:
 
 ```bash
 pnpm --filter @node-jhora/atlas atlas:build

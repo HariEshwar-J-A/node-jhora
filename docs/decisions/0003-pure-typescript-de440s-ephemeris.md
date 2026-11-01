@@ -35,7 +35,7 @@ that range the engine fails explicitly rather than extrapolating.
 Swiss Ephemeris may be invoked only as an external oracle from a developer or
 CI script that does not ship with a published package. Its documentation may
 be cited with provenance, as described in
-[docs/CLEAN_ROOM.md](../CLEAN_ROOM.md). Its source and data files are not
+[docs/guides/clean-room.md](../guides/clean-room.md). Its source and data files are not
 vendored.
 
 ### Consequences
@@ -64,6 +64,6 @@ vendored.
 
 ## More Information
 
-Data notes: `packages/ephe/README.md`. Accuracy method: `docs/ACCURACY.md`.
+Data notes: `packages/ephe/README.md`. Accuracy method: `docs/accuracy.md`.
 A longer date range is backlog E3-S4, not a reason to link Swiss Ephemeris
 into core.

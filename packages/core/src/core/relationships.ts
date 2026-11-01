@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Body, SEVEN_GRAHAS_JHORA_ORDER } from './body.js';
 import { getShortestDistance, normalize360 } from './math.js';
 

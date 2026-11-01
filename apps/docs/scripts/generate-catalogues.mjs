@@ -47,7 +47,7 @@ function describeModel(mode, model) {
         detail: `${model.label}. Anchor at JD ${model.jd}.`,
         citation:
             provenance ??
-            'See [DATA-SOURCES.md](/docs/data-sources/) and ADR 0025 for primary references.',
+            'See [data-sources](/guides/data-sources) and ADR 0025 for primary references.',
     };
 }
 

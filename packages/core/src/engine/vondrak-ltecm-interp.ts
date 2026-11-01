@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Vondrák `eraLtecm` matrix on a uniform JD(TT) grid with per-element Lagrange
  * interpolation (4 nodes). Used for DE441 secular mean-node sampling outside the

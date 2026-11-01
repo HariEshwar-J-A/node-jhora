@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * DE440s provider — wraps the existing SPK reader for 1849–2150.
  */

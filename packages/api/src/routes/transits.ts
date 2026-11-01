@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Ashtakavarga } from '@node-jhora/analytics';
 import { calculateHouseCusps, EphemerisEngine } from '@node-jhora/core';
 import { TransitEngine } from '@node-jhora/prediction';

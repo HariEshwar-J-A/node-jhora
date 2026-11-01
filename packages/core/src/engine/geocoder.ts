@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Browser-safe stub for Geocoder
  * The real implementation uses Node.js modules (fs, readline).

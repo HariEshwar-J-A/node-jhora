@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Integrity manifest for DE441 long-range NJCE chunks (separate from DE431).
  */

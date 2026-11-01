@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { type CityData, findFromCityStateProvince, lookupViaCity } from 'city-timezones';
 
 export interface ResolvedLocation {

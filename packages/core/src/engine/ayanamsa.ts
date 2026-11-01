@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * ayanamsa.ts — Sidereal zero-point models (Drik Siddhanta).
  *
@@ -199,7 +201,7 @@ const SPICA_MODERN: StarData = {
     radVel: 1.0,
 };
 
-/** Gaia DR3 astrometry for `'truth'` Pushya / Revati (see ADR / precision profile plan). */
+/** Gaia DR3 astrometry for `'truth'` Pushya / Revati (see ADR / precision profile plan). @provenance Gaia DR3 catalog positions and proper motions (ESA, 2022). */
 const TRUTH_GAIA = {
     DeltaCancri: {
         ra: 131.1708296667,

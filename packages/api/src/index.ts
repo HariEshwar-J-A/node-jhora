@@ -4,7 +4,7 @@ const HOST = process.env.HOST ?? '0.0.0.0';
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
 async function main(): Promise<void> {
-    // Initialize WASM engine once before accepting requests
+    // Initialize EphemerisEngine once before accepting requests (DE440s TypeScript kernel).
     await initEngine();
 
     const app = await buildServer();

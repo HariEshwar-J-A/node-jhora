@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { DateTime } from 'luxon';
 
 import { Body, EPHEMERIS_BODIES } from '../core/body.js';

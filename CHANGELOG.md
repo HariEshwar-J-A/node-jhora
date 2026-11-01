@@ -1,5 +1,28 @@
 # Changelog
 
+All notable changes to this project are documented in this file ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)).
+
+## [Unreleased]
+
+### Added
+
+- Documentation tree under `docs/` (getting-started, guides, reference, performance, accuracy, architecture).
+- `SECURITY.md`, `CODE_OF_CONDUCT.md`, expanded `THIRD_PARTY_NOTICES.md`.
+- Source copyright header check (`pnpm run check:copyright`) and `tools/normalize-format-api-report.mjs` for stable `@node-jhora/format` API reports.
+
+### Changed
+
+- ADR index complete for **0001–0033**; stale WASM/Swiss-Ephemeris-runtime claims removed from user-facing guides.
+- Package `license` fields aligned to `SEE LICENSE IN LICENSE` (commercial use requires owner license).
+
+### Server-grade (merged on main before this docs pass)
+
+- PR4 #336 — astro-series cache, deep-era ΔTDB prefill (ADR 0030).
+- PR5 #339 — edge kernel + workerd gate (ADR 0032).
+- PR6 #338 — Decimal config / subpath bundles (ADR 0031).
+- PR7 — server contract + worker bench (ADR 0033).
+- Format CSV DST fold resolution (#340).
+
 ## 3.1.0
 
 ### Breaking
@@ -22,7 +45,7 @@ calculateVarga(lon, 2, { horaScheme: 'parivritti' }); // previous behaviour
 
 - **BPHS varga audit** — all sixteen divisional charts checked against
   Santhanam's translation, with sloka citations. Fourteen matched; D2 and D10
-  did not. See [docs/BPHS-VARGA-AUDIT.md](docs/BPHS-VARGA-AUDIT.md).
+  did not. See [docs/guides/bphs-varga-audit.md](docs/guides/bphs-varga-audit.md).
 - `horaScheme` configuration option, settable as a library default, an instance
   default, a per-call override, or a REST field.
 

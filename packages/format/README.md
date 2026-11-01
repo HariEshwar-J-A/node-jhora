@@ -17,7 +17,7 @@ This package uses no Node-only APIs in its runtime code so the same module loads
 ## `.jhd` import / export
 
 Browser-safe parser and writer: `@node-jhora/format/jhd`. Node-only batch folder import:
-`@node-jhora/format/node`. See [docs/JHD.md](./docs/JHD.md) for the line-8 altitude ambiguity.
+`@node-jhora/format/node`. See [JHD format notes](./docs/JHD.md) for the line-8 altitude ambiguity.
 
 ## CSV import wizard
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Mean lunar ascending node (Rahu), tropical degrees on the mean ecliptic of date.
  *
