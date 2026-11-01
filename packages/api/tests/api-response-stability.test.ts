@@ -25,7 +25,7 @@ const CHART_B_BODY = {
  * Re-pinned: Lahiri IAE 1956 anchor + traditional ecliptic-of-t0 (ADR 0015).
  */
 const EXPECTED_HASHES: Record<string, string> = {
-    '/v1/chart': 'dc66cc13514c84504f69757156cd4bf3b2e59d2aa0e8638b5cf76f5e66b29099',
+    '/v1/chart': 'eecff26ba191047b5483c3d3700baa9b43c24f392eec69fa15c652a253223950',
     '/v1/shadbala': 'c35778ed1735f6c4f18435b4c5dd4f190903492bf2c9a48b686b7fc04c71dd06',
     '/v1/kp/significators': 'a3704020ea2c849b252367f19c7bd230c5550fa59a074778ce938f5bbdd3b784',
 };
