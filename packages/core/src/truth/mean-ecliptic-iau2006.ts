@@ -1,10 +1,13 @@
 import type { PrecisionProfile } from '../engine/deltat.js';
 import type { Vec } from '../engine/precession.js';
-import { icrfToMeanEclipticOfDate } from '../engine/precession.js';
+import {
+    icrfToMeanEclipticOfDate,
+    icrfToVondrakTwoPoleMeanEcliptic,
+} from '../engine/precession.js';
 
 const R = Math.PI / 648000,
-    J0 = 2305448,
-    J1 = 2524594,
+    J0 = 2305448.0,
+    J1 = 2524594.0,
     K = [
         -0.052928, 10.556378, 0.4932044, -0.00031238, -0.000002788, 2.6e-8, 84381.412819,
         -46.811016, 0.0511268, 0.00053289, -4.4e-7, -1.76e-8, -0.041775, 5038.481484, 1.5584175,
@@ -46,5 +49,5 @@ export function icrfToMeanEclipticOfDateForProfile(
 ): Vec {
     if (profile !== 'truth') return icrfToMeanEclipticOfDate(v, T, jdTT);
     if (jdTT >= J0 && jdTT <= J1) return e6(v, T);
-    return icrfToMeanEclipticOfDate(v, T, jdTT);
+    return icrfToVondrakTwoPoleMeanEcliptic(v, T);
 }

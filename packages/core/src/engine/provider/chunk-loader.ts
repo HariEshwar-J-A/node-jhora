@@ -6,8 +6,18 @@
 import { NJCE441_MAX_CENTURY, NJCE441_MIN_CENTURY } from '../../ephemeris-data/manifest.de441.js';
 import { NJCE_MAX_CENTURY, NJCE_MIN_CENTURY } from '../../ephemeris-data/manifest.js';
 import { CHUNK_PREFETCH_MARGIN_DAYS, PLANET_SPEED_STEP_DAYS } from '../../validation/bounds.js';
-import { BODY_GROUP_EMB, BODY_GROUP_PLANETS, centuryIndex, De431ChunkFile } from './de431-chunk.js';
-import { jdTdbToAstronomicalYear } from './de431-chunk.js';
+import { eraDtdbGeocenterSeconds } from '../dtdb-erfa.js';
+import {
+    BODY_GROUP_EMB,
+    BODY_GROUP_PLANETS,
+    centuryIndex,
+    De431ChunkFile,
+    jdTdbToAstronomicalYear,
+} from './de431-chunk.js';
+
+/** Draconic half-width and ±250 yr window (truth mean-node secular definition). */
+const MEAN_NODE_HALF_WINDOW_JD = 250 * 365.25;
+const MEAN_NODE_DRACONIC_HALF_D = 6798.383 / 2;
 
 export interface ChunkKey {
     century: number;
@@ -41,10 +51,31 @@ export class CachingChunkLoader implements EphemerisChunkLoader {
     }
 }
 
+let syncFs: typeof import('fs') | undefined;
+let syncPath: typeof import('path') | undefined;
+const syncModulesReady = (async () => {
+    syncFs = await import('fs');
+    syncPath = await import('path');
+})();
+
+/** Await before synchronous NJCE prefetch in Node (dynamic `fs` import). */
+export async function preloadNodeFsChunkLoaderModules(): Promise<void> {
+    await syncModulesReady;
+}
+
 /** Node filesystem loader (injected path to `dist/` chunk directory). */
 export function nodeFsChunkLoader(baseDir: string): EphemerisChunkLoader {
+    const loadSyncFn = (key: ChunkKey): ArrayBuffer | undefined => {
+        if (!syncFs || !syncPath) return undefined;
+        const name = `g${key.groupId}-c${key.century}.njce`;
+        const path = syncPath.join(baseDir, name);
+        if (!syncFs.existsSync(path)) return undefined;
+        const buf = syncFs.readFileSync(path);
+        return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    };
     return {
         async load(key) {
+            await syncModulesReady;
             const { readFile } = await import('fs/promises');
             const { join } = await import('path');
             const name = `g${key.groupId}-c${key.century}.njce`;
@@ -55,6 +86,7 @@ export function nodeFsChunkLoader(baseDir: string): EphemerisChunkLoader {
                 return undefined;
             }
         },
+        loadSync: loadSyncFn,
     };
 }
 
@@ -69,6 +101,41 @@ export function fetchChunkLoader(baseUrl: string): EphemerisChunkLoader {
             return res.arrayBuffer();
         },
     };
+}
+
+interface ChunkStoreSync {
+    readonly loader: EphemerisChunkLoader;
+    readonly minCentury: number;
+    readonly maxCentury: number;
+    readonly files: Map<string, De431ChunkFile>;
+}
+
+function ensureOneSyncOnStore(store: ChunkStoreSync, century: number, groupId: number): void {
+    const id = `${groupId}:${century}`;
+    if (store.files.has(id)) return;
+    const buf = store.loader.loadSync?.({ century, groupId });
+    if (!buf) return;
+    store.files.set(id, new De431ChunkFile(buf));
+}
+
+/**
+ * Load every NJCE century bracketing the ±250 yr secular mean-node window at `jdTT`
+ * (not exported from `@node-jhora/core` package entry).
+ */
+export function prefetchNjceForSecularMeanNode(store: De431ChunkStore, jdTT: number): void {
+    const internal = store as unknown as ChunkStoreSync;
+    if (!internal.loader.loadSync) return;
+    const jdMin = jdTT - MEAN_NODE_HALF_WINDOW_JD - MEAN_NODE_DRACONIC_HALF_D;
+    const jdMax = jdTT + MEAN_NODE_HALF_WINDOW_JD + MEAN_NODE_DRACONIC_HALF_D;
+    const jdTdbLo = jdMin + eraDtdbGeocenterSeconds(jdMin) / 86400;
+    const jdTdbHi = jdMax + eraDtdbGeocenterSeconds(jdMax) / 86400;
+    const centLo = centuryIndex(jdTdbToAstronomicalYear(jdTdbLo));
+    const centHi = centuryIndex(jdTdbToAstronomicalYear(jdTdbHi));
+    for (let c = centLo - 1; c <= centHi + 1; c++) {
+        if (c < internal.minCentury || c > internal.maxCentury) continue;
+        ensureOneSyncOnStore(internal, c, BODY_GROUP_EMB);
+        ensureOneSyncOnStore(internal, c, BODY_GROUP_PLANETS);
+    }
 }
 
 export class De431ChunkStore {

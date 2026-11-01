@@ -105,14 +105,20 @@ function vondrakPeriodic(
     T: number,
     periodics: readonly (readonly [number, number, number, number, number])[],
     poly: readonly (readonly [number, number])[],
+    sinCos?: Map<number, [number, number]>,
 ): [number, number] {
     const w = 2 * Math.PI * T;
     let a = 0;
     let b = 0;
     for (const [p, c1, s1, c2, s2] of periodics) {
-        const ang = w / p;
-        const c = Math.cos(ang);
-        const s = Math.sin(ang);
+        let cs = sinCos?.get(p);
+        if (!cs) {
+            const ang = w / p;
+            cs = [Math.cos(ang), Math.sin(ang)];
+            sinCos?.set(p, cs);
+        }
+        const c = cs[0]!;
+        const s = cs[1]!;
         a += c * c1 + s * c2;
         b += c * s1 + s * s2;
     }
@@ -123,6 +129,24 @@ function vondrakPeriodic(
         wp *= T;
     }
     return [a, b];
+}
+
+function vondrakLtecmPoles(T: number): { p: Vec; z: Vec } {
+    const sinCos = new Map<number, [number, number]>();
+    const [pAs, qAs] = vondrakPeriodic(T, PQ_PER, PQ_POL, sinCos);
+    const [xAs, yAs] = vondrakPeriodic(T, XY_PER, XY_POL, sinCos);
+    const pArc = pAs * AS2R;
+    const qArc = qAs * AS2R;
+    const zLen = Math.sqrt(Math.max(0, 1 - pArc * pArc - qArc * qArc));
+    const sEps = Math.sin(EPS0_RAD);
+    const cEps = Math.cos(EPS0_RAD);
+    const z: Vec = [pArc, -qArc * cEps - zLen * sEps, -qArc * sEps + zLen * cEps];
+    const xArc = xAs * AS2R;
+    const yArc = yAs * AS2R;
+    const w = xArc * xArc + yArc * yArc;
+    const pz = w < 1 ? Math.sqrt(1 - w) : 0;
+    const p: Vec = [xArc, yArc, pz];
+    return { p, z };
 }
 
 /** Ecliptic pole unit vector, J2000 mean equator and equinox (Vondrák eq. 8). */
@@ -186,6 +210,102 @@ export function vondrakEquatorPrecessionMatrixSigma(T: number): Mat {
 export function vondrakMeanObliquityDegrees(T: number): number {
     const [, epsAs] = vondrakPeriodic(T, PE_PER, PE_POL);
     return epsAs / 3600;
+}
+
+/** TT Julian day bounds for IAU 2006 mean ecliptic (Capitaine et al. 2005). */
+export const TRUTH_IAU2006_JD_TT_MIN = 2305448.0;
+export const TRUTH_IAU2006_JD_TT_MAX = 2524594.0;
+
+export function truthUsesIau2006MeanEcliptic(jdTT: number): boolean {
+    return jdTT >= TRUTH_IAU2006_JD_TT_MIN && jdTT <= TRUTH_IAU2006_JD_TT_MAX;
+}
+
+/**
+ * Obliquity between the Vondrák mean equator and ecliptic poles (Tables 1–2),
+ * equivalent to the angle used with ERFA `eraLtecm` (Vondrák et al. 2011, BSD ERFA).
+ */
+export function vondrakPoleObliquityDegrees(T: number): number {
+    const pecl = vondrakEclipticPole(T);
+    const peqr = vondrakEquatorPole(T);
+    const dot = pecl[0] * peqr[0] + pecl[1] * peqr[1] + pecl[2] * peqr[2];
+    return Math.acos(Math.max(-1, Math.min(1, dot))) / DEG;
+}
+
+/** ICRS → mean ecliptic rotation (ERFA `eraLtecm`; BSD ERFA / SOFA). */
+export function vondrakLtecmMatrix(T: number): Mat {
+    const p = vondrakEquatorPole(T);
+    const z = vondrakEclipticPole(T);
+    const wRaw = cross(p, z);
+    const wLen = Math.hypot(wRaw[0], wRaw[1], wRaw[2]);
+    const x: Vec = wLen === 0 ? [1, 0, 0] : [wRaw[0] / wLen, wRaw[1] / wLen, wRaw[2] / wLen];
+    const y = cross(z, x);
+    const dr = -0.0146 * AS2R;
+    const dx = -0.016617 * AS2R;
+    const de = -0.0068192 * AS2R;
+    const row = (u: Vec): Vec => [
+        u[0] - u[1] * dr + u[2] * dx,
+        u[0] * dr + u[1] + u[2] * de,
+        -u[0] * dx - u[1] * de + u[2],
+    ];
+    return [row(x), row(y), row(z)];
+}
+
+/** Row-major 3×3 ICRS → mean ecliptic rotation (same as {@link vondrakLtecmMatrix}). */
+export function vondrakLtecmMatrixInto(T: number, out: Float64Array): void {
+    const { p, z } = vondrakLtecmPoles(T);
+    const wRaw = cross(p, z);
+    const wLen = Math.hypot(wRaw[0], wRaw[1], wRaw[2]);
+    const x0 = wLen === 0 ? 1 : wRaw[0] / wLen;
+    const x1 = wLen === 0 ? 0 : wRaw[1] / wLen;
+    const x2 = wLen === 0 ? 0 : wRaw[2] / wLen;
+    const y0 = z[1] * x2 - z[2] * x1;
+    const y1 = z[2] * x0 - z[0] * x2;
+    const y2 = z[0] * x1 - z[1] * x0;
+    const dr = -0.0146 * AS2R;
+    const dx = -0.016617 * AS2R;
+    const de = -0.0068192 * AS2R;
+    out[0] = x0 - x1 * dr + x2 * dx;
+    out[1] = x0 * dr + x1 + x2 * de;
+    out[2] = -x0 * dx - x1 * de + x2;
+    out[3] = y0 - y1 * dr + y2 * dx;
+    out[4] = y0 * dr + y1 + y2 * de;
+    out[5] = -y0 * dx - y1 * de + y2;
+    out[6] = z[0] - z[1] * dr + z[2] * dx;
+    out[7] = z[0] * dr + z[1] + z[2] * de;
+    out[8] = -z[0] * dx - z[1] * de + z[2];
+}
+
+/** Apply {@link vondrakLtecmMatrixInto} to `(x,y,z)` without allocating a matrix. */
+export function vondrakLtecmMatVec(T: number, x: number, y: number, z: number): Vec {
+    const m = vondrakScratch9;
+    vondrakLtecmMatrixInto(T, m);
+    return [
+        m[0]! * x + m[1]! * y + m[2]! * z,
+        m[3]! * x + m[4]! * y + m[5]! * z,
+        m[6]! * x + m[7]! * y + m[8]! * z,
+    ];
+}
+
+const vondrakScratch9 = new Float64Array(9);
+
+/**
+ * ICRF → mean ecliptic and equinox of date on the Vondrák two-pole frame
+ * (ERFA `eraLtecm`; not the O4 R₁(ε_A)·P chart frame).
+ */
+export function icrfToVondrakTwoPoleMeanEcliptic(v: Vec, T: number): Vec {
+    return matVec(vondrakLtecmMatrix(T), v);
+}
+
+/** Mean obliquity for house geometry and sidereal transforms. */
+export function meanObliquityForProfile(
+    T: number,
+    jdTT: number,
+    profile: PrecisionProfile,
+): number {
+    if (profile === 'truth' && !truthUsesIau2006MeanEcliptic(jdTT)) {
+        return vondrakPoleObliquityDegrees(T);
+    }
+    return meanObliquity(T, jdTT);
 }
 
 /**

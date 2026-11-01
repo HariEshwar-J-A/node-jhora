@@ -29,12 +29,27 @@ export function evalCheby(coeffs: readonly number[], tau: number): number {
     let b1 = 0.0;
 
     for (let i = n - 1; i >= 1; i--) {
-        const b0 = 2.0 * tau * b1 - b2 + coeffs[i];
+        const b0 = 2.0 * tau * b1 - b2 + coeffs[i]!;
         b2 = b1;
         b1 = b0;
     }
 
-    return tau * b1 - b2 + coeffs[0];
+    return tau * b1 - b2 + coeffs[0]!;
+}
+
+/** Clenshaw recurrence reading coefficients from a `Float64Array` slice (no copy). */
+export function evalChebyFloat64(data: Float64Array, off: number, n: number, tau: number): number {
+    if (n === 0) return 0;
+    if (n === 1) return data[off]!;
+
+    let b2 = 0.0;
+    let b1 = 0.0;
+    for (let i = n - 1; i >= 1; i--) {
+        const b0 = 2.0 * tau * b1 - b2 + data[off + i]!;
+        b2 = b1;
+        b1 = b0;
+    }
+    return tau * b1 - b2 + data[off]!;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,13 +83,13 @@ export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
     let dPrev = 0.0; // T′₀
     let dCurr = 1.0; // T′₁
 
-    let sum = coeffs[1] * dCurr; // k = 0 contributes nothing (T′₀ = 0)
+    let sum = coeffs[1]! * dCurr; // k = 0 contributes nothing (T′₀ = 0)
 
     for (let k = 2; k < n; k++) {
         const tNext = 2.0 * tau * tCurr - tPrev;
         const dNext = 2.0 * tCurr + 2.0 * tau * dCurr - dPrev;
 
-        sum += coeffs[k] * dNext;
+        sum += coeffs[k]! * dNext;
 
         tPrev = tCurr;
         tCurr = tNext;
@@ -82,6 +97,33 @@ export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
         dCurr = dNext;
     }
 
+    return sum;
+}
+
+/** Derivative recurrence on a `Float64Array` coefficient slice (no copy). */
+export function evalChebyDerivFloat64(
+    data: Float64Array,
+    off: number,
+    n: number,
+    tau: number,
+): number {
+    if (n <= 1) return 0;
+
+    let tPrev = 1.0;
+    let tCurr = tau;
+    let dPrev = 0.0;
+    let dCurr = 1.0;
+    let sum = data[off + 1]! * dCurr;
+
+    for (let k = 2; k < n; k++) {
+        const tNext = 2.0 * tau * tCurr - tPrev;
+        const dNext = 2.0 * tCurr + 2.0 * tau * dCurr - dPrev;
+        sum += data[off + k]! * dNext;
+        tPrev = tCurr;
+        tCurr = tNext;
+        dPrev = dCurr;
+        dCurr = dNext;
+    }
     return sum;
 }
 
@@ -123,20 +165,38 @@ export function evalRecord(record: Float64Array | number[], et: number): Vec3 {
  * Velocity uses dF/ds / RADIUS with RADIUS = record[1].
  */
 export function evalRecordAtS(record: Float64Array | number[], s: number): Vec3 {
-    const radius = record[1];
+    const out = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 };
+    evalRecordAtSInto(out, record, s);
+    return out;
+}
+
+/** In-place SPK Type 2 evaluation (no coefficient copies). */
+export function evalRecordAtSInto(out: Vec3, record: Float64Array | number[], s: number): void {
+    const radius = record[1]!;
     const nCoeff = (record.length - 2) / 3;
+    const x0 = 2;
+    const y0 = 2 + nCoeff;
+    const z0 = 2 + 2 * nCoeff;
 
-    const xC = Array.from({ length: nCoeff }, (_, i) => record[2 + i]);
-    const yC = Array.from({ length: nCoeff }, (_, i) => record[2 + nCoeff + i]);
-    const zC = Array.from({ length: nCoeff }, (_, i) => record[2 + 2 * nCoeff + i]);
+    if (ArrayBuffer.isView(record)) {
+        const f = record as Float64Array;
+        out.x = evalChebyFloat64(f, x0, nCoeff, s);
+        out.y = evalChebyFloat64(f, y0, nCoeff, s);
+        out.z = evalChebyFloat64(f, z0, nCoeff, s);
+        out.vx = evalChebyDerivFloat64(f, x0, nCoeff, s) / radius;
+        out.vy = evalChebyDerivFloat64(f, y0, nCoeff, s) / radius;
+        out.vz = evalChebyDerivFloat64(f, z0, nCoeff, s) / radius;
+        return;
+    }
 
-    const x = evalCheby(xC, s);
-    const y = evalCheby(yC, s);
-    const z = evalCheby(zC, s);
+    const xC = Array.from({ length: nCoeff }, (_, i) => record[2 + i]!);
+    const yC = Array.from({ length: nCoeff }, (_, i) => record[2 + nCoeff + i]!);
+    const zC = Array.from({ length: nCoeff }, (_, i) => record[2 + 2 * nCoeff + i]!);
 
-    const vx = evalChebyDeriv(xC, s) / radius;
-    const vy = evalChebyDeriv(yC, s) / radius;
-    const vz = evalChebyDeriv(zC, s) / radius;
-
-    return { x, y, z, vx, vy, vz };
+    out.x = evalCheby(xC, s);
+    out.y = evalCheby(yC, s);
+    out.z = evalCheby(zC, s);
+    out.vx = evalChebyDeriv(xC, s) / radius;
+    out.vy = evalChebyDeriv(yC, s) / radius;
+    out.vz = evalChebyDeriv(zC, s) / radius;
 }
