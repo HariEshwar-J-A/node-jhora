@@ -2,7 +2,7 @@
  * Merge truth + library samples, compute residuals, write results.json and REPORT.md
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,7 +12,13 @@ import { buildEraSpecs } from './lib/epochs.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BENCH_ROOT = __dirname;
 
-const COMPETITOR_LIBS = new Set(['node-jhora', 'pyswisseph', 'astronomy-engine', 'astronomia']);
+const COMPETITOR_LIBS = new Set([
+    'node-jhora',
+    'node-jhora-truth',
+    'pyswisseph',
+    'astronomy-engine',
+    'astronomia',
+]);
 
 /** @typedef {{ lon: number; lat: number }} Coord */
 
@@ -55,13 +61,16 @@ function buildNotBest(summary, frame) {
         const sorted = [...competitors].sort((a, b) => (a.max ?? Infinity) - (b.max ?? Infinity));
         const best = sorted[0];
         const nj = list.find((r) => r.library === 'node-jhora');
-        if (!nj || !best || best.library === 'node-jhora') continue;
+        const njTruth = list.find((r) => r.library === 'node-jhora-truth');
+        const candidate = njTruth ?? nj;
+        if (!candidate || !best || best.library === candidate.library) continue;
+        if (best.library === 'node-jhora-truth' && candidate.library === 'node-jhora') continue;
         notBest.push({
             case: key,
             bestLibrary: best.library,
             bestMaxArcsec: best.max,
-            nodeJhoraMaxArcsec: nj.max,
-            gapArcsec: (nj.max ?? 0) - (best.max ?? 0),
+            nodeJhoraMaxArcsec: candidate.max,
+            gapArcsec: (candidate.max ?? 0) - (best.max ?? 0),
         });
     }
     notBest.sort((a, b) => b.gapArcsec - a.gapArcsec);
@@ -165,6 +174,44 @@ function renderNotBest(title, notBest, frameLabel) {
     return lines;
 }
 
+function renderSanity() {
+    const path = join(BENCH_ROOT, 'artifacts/competitor_sanity.json');
+    if (!existsSync(path)) {
+        return [
+            '## J2000 TT competitor sanity',
+            '',
+            '_Not run (missing artifacts/competitor_sanity.json)._',
+            '',
+        ];
+    }
+    const sanity = JSON.parse(readFileSync(path, 'utf8'));
+    const lines = [
+        '## J2000 TT competitor sanity',
+        '',
+        'Post-run gate (`truth/validate_competitors.py`): DE440/ERFA truth Sun at J2000 TT noon vs adapter smoke tests (Espenak–Meeus ΔT).',
+        '',
+        '| Field | Value |',
+        '| --- | --- |',
+        `| jdUt | ${sanity.jdUt} |`,
+        `| deltaTSeconds | ${sanity.deltaTSeconds} |`,
+        `| truthSunLonDeg | ${sanity.truthSunLonDeg} |`,
+    ];
+    if (sanity.pyswissephSunLonDeg != null) {
+        lines.push(`| pyswissephSunLonDeg | ${sanity.pyswissephSunLonDeg} |`);
+        lines.push(
+            `| pyswissephSunResidualArcsec | ${sanity.pyswissephSunResidualArcsec?.toFixed(4)} |`,
+        );
+    }
+    if (sanity.astronomyEngineSunLonDeg != null) {
+        lines.push(`| astronomyEngineSunLonDeg | ${sanity.astronomyEngineSunLonDeg} |`);
+        lines.push(
+            `| astronomyEngineSunResidualArcsec | ${sanity.astronomyEngineSunResidualArcsec?.toFixed(4)} |`,
+        );
+    }
+    lines.push('');
+    return lines;
+}
+
 function renderReport(shared, native) {
     const lines = [
         '# Cross-library ephemeris accuracy',
@@ -173,6 +220,7 @@ function renderReport(shared, native) {
         '',
         'See [ADR 0024](../../docs/decisions/0024-cross-library-accuracy-benchmark.md) for every convention.',
         '',
+        ...renderSanity(),
         '## ΔT modes',
         '',
         '- **shared (headline accuracy)**: identical Espenak–Meeus ΔT table (`lib/deltat.json`) passed into every adapter that supports override. Truth uses this same table.',

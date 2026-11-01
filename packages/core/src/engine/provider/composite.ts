@@ -41,11 +41,13 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     readonly bodies;
 
     private readonly de440s: De440sEphemerisProvider;
+    private readonly spkFile: SpkFile;
     private readonly de431?: De431LongEphemerisProvider;
     private readonly de441?: De441LongEphemerisProvider;
     private policy: EphemerisPolicy;
 
     constructor(spk: SpkFile, options: CompositeEphemerisOptions = {}) {
+        this.spkFile = spk;
         this.de440s = new De440sEphemerisProvider(spk);
         this.policy = options.policy ?? DEFAULT_EPHEMERIS_POLICY;
         if (options.longRangeDe431) {
@@ -135,6 +137,15 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     /** ET seconds interface used by apparent-place and legacy engine paths. */
     getBarycentric(naifBody: number, et: number): Vec3 {
         return this.state(etToJdTdb(et), naifBody, 'barycentric');
+    }
+
+    getBarycentricAtTdb(naifBody: number, D: number, f: number): Vec3 {
+        const jdTdb = D + f;
+        if (jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END) {
+            return this.spkFile.getBarycentricAtTdb(naifBody, D, f);
+        }
+        const et = (D - 2451545.0) * 86400 + f * 86400;
+        return this.getBarycentric(naifBody, et);
     }
 
     /**

@@ -221,7 +221,7 @@ export function assertPrecisionProfile(profile: string | undefined): PrecisionPr
     if (!PRECISION_PROFILES.includes(profile as PrecisionProfile)) {
         throw new NodeJHoraError(
             NodeJHoraErrorCode.INVALID_INPUT,
-            `precisionProfile must be 'jhora' or 'modern'`,
+            `precisionProfile must be 'jhora', 'modern', or 'truth'`,
             { precisionProfile: profile },
         );
     }

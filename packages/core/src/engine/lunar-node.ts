@@ -14,16 +14,23 @@
 import type { BarycentricSource } from './apparent.js';
 import { AU_KM, observerState } from './apparent.js';
 import { mod360 } from './coordinates.js';
-import { deltaT, jdUTtoET, type PrecisionProfile } from './deltat.js';
+import {
+    deltaT,
+    jdTdbPartsFromUt,
+    jdUTtoET,
+    type PrecisionProfile,
+    subtractLightTimeFromTdbParts,
+} from './deltat.js';
 import {
     APPARENT_SPEED_STEP_DAYS,
     etSecondsPerUtDay,
     geocentricRelativeState,
 } from './kinematics.js';
-import { nutation } from './nutation.js';
+import { nutation, nutationForProfile } from './nutation.js';
 import {
     iau2000FrameBias,
     icrfToMeanEclipticOfDate,
+    icrfToMeanEclipticOfDateForProfile,
     julianCenturies,
     rotateX,
     type Vec,
@@ -113,9 +120,47 @@ function ascendingNodeLongitudeFromEclipticState(pos: Vec, vel: Vec): number {
     return mod360((Math.atan2(hx, -hy) * 180) / Math.PI);
 }
 
-/** ICRS km (or km/day) → mean ecliptic of date with full IAU 2000 frame bias on the vector. */
-function icrfBiasedToMeanEcliptic(v: Vec, T: number, jdTT: number): Vec {
-    return icrfToMeanEclipticOfDate(iau2000FrameBias(v), T, jdTT);
+/** ICRS km (or km/day) → mean ecliptic of date; truth uses ecm06 only (bias already inside). */
+function icrfBiasedToMeanEcliptic(
+    v: Vec,
+    T: number,
+    jdTT: number,
+    profile: PrecisionProfile | undefined,
+): Vec {
+    const src = profile === 'truth' ? v : iau2000FrameBias(v);
+    return icrfToMeanEclipticOfDateForProfile(src, T, jdTT, profile ?? 'jhora');
+}
+
+function geocentricMoonStateTruthLightTime(
+    jdUT: number,
+    source: BarycentricSource,
+    profile: PrecisionProfile | undefined,
+): { rel: Vec; vel: Vec } {
+    const parts = profile === 'truth' && source.getBarycentricAtTdb ? jdTdbPartsFromUt(jdUT) : null;
+    if (parts && source.getBarycentricAtTdb) {
+        const earth = source.getBarycentricAtTdb(NAIF.Earth, parts.D, parts.f);
+        const moon0 = source.getBarycentricAtTdb(NAIF.Moon, parts.D, parts.f);
+        const rel0: Vec = [moon0.x - earth.x, moon0.y - earth.y, moon0.z - earth.z];
+        const v0: Vec = [moon0.vx - earth.vx, moon0.vy - earth.vy, moon0.vz - earth.vz];
+        applyJhoraMoonTilt(profile, rel0, v0);
+        const tauSec = norm3(rel0) / C_KM_S;
+        const ret = subtractLightTimeFromTdbParts(parts.D, parts.f, tauSec);
+        const moon = source.getBarycentricAtTdb(NAIF.Moon, ret.D, ret.f);
+        const rel: Vec = [moon.x - earth.x, moon.y - earth.y, moon.z - earth.z];
+        const vel: Vec = [moon.vx - earth.vx, moon.vy - earth.vy, moon.vz - earth.vz];
+        applyJhoraMoonTilt(profile, rel, vel);
+        return { rel, vel };
+    }
+
+    const etRecv = jdUTtoET(jdUT);
+    const earthObs = observerState(source, NAIF.Earth, etRecv);
+    const { rel: rel0, vel: v0 } = geocentricRelativeState(source, NAIF.Moon, etRecv, earthObs);
+    applyJhoraMoonTilt(profile, rel0, v0);
+    const tauDays = norm3(rel0) / C_KM_S / 86400;
+    const etMoon = jdUTtoET(jdUT - tauDays);
+    const { rel, vel } = geocentricRelativeState(source, NAIF.Moon, etMoon, earthObs);
+    applyJhoraMoonTilt(profile, rel, vel);
+    return { rel, vel };
 }
 
 function applyJhoraMoonTilt(profile: PrecisionProfile | undefined, rel: Vec, vel: Vec): void {
@@ -147,6 +192,7 @@ function eclipticStateFromIcrfBiased(
     relKm: Vec,
     relVelKmS: Vec,
     jdUT: number,
+    profile: PrecisionProfile | undefined,
 ): { pos: Vec; vel: Vec } {
     const jdTT = jdUT + deltaT(jdUT) / 86400;
     const T = julianCenturies(jdTT);
@@ -157,8 +203,8 @@ function eclipticStateFromIcrfBiased(
         relVelKmS[2] * secPerDay,
     ];
     return {
-        pos: icrfBiasedToMeanEcliptic(relKm, T, jdTT),
-        vel: icrfBiasedToMeanEcliptic(velKmDay, T, jdTT),
+        pos: icrfBiasedToMeanEcliptic(relKm, T, jdTT, profile),
+        vel: icrfBiasedToMeanEcliptic(velKmDay, T, jdTT, profile),
     };
 }
 
@@ -200,14 +246,18 @@ function trueNodeLongitudeAtJd(
     source: BarycentricSource,
     profile: PrecisionProfile | undefined,
     applyNutation: boolean,
+    useTruthLightTime: boolean,
 ): { lon: number; distAu: number } {
-    const { rel, vel } = geocentricMoonStateAtEt(jdUT, source, profile);
+    const { rel, vel } = useTruthLightTime
+        ? geocentricMoonStateTruthLightTime(jdUT, source, profile)
+        : geocentricMoonStateAtEt(jdUT, source, profile);
     const secPerDay = etSecondsPerUtDay(jdUT);
-    const { pos, vel: vEcl } = eclipticStateFromIcrfBiased(rel, vel, jdUT);
+    const { pos, vel: vEcl } = eclipticStateFromIcrfBiased(rel, vel, jdUT, profile);
     let lon = ascendingNodeLongitudeFromEclipticState(pos, vEcl);
     if (applyNutation) {
         const T = julianCenturies(jdUT + deltaT(jdUT) / 86400);
-        lon = mod360(lon + nutation(T).dpsi);
+        const dpsi = profile === 'truth' ? nutationForProfile(T, 'truth').dpsi : nutation(T).dpsi;
+        lon = mod360(lon + dpsi);
     }
     const distKm = osculatingRadiusAtAscendingNodeKm(pos, vEcl, secPerDay);
     return { lon, distAu: distKm / AU_KM };
@@ -248,6 +298,7 @@ function evaluationJdForNode(
     truePosition: boolean,
 ): number {
     if (truePosition) return jdUT;
+    if (profile === 'truth') return jdUT;
     const { rel } = geocentricMoonStateAtEt(jdUT, source, profile);
     const tauDays = norm3(rel) / C_KM_S / 86400;
     return jdUT - tauDays;
@@ -263,8 +314,15 @@ export function computeTrueOsculatingNode(
 ): TrueOsculatingNode {
     const { precisionProfile, truePosition = true, applyNutation = false } = options;
 
+    const truthLt = precisionProfile === 'truth' && !truePosition && applyNutation;
     const evalJd = evaluationJdForNode(jdUT, source, precisionProfile, truePosition);
-    const { lon, distAu } = trueNodeLongitudeAtJd(evalJd, source, precisionProfile, applyNutation);
+    const { lon, distAu } = trueNodeLongitudeAtJd(
+        evalJd,
+        source,
+        precisionProfile,
+        applyNutation,
+        truthLt,
+    );
 
     let speedDegPerDay: number;
     if (truePosition) {
@@ -279,6 +337,7 @@ export function computeTrueOsculatingNode(
                 source,
                 precisionProfile,
                 false,
+                precisionProfile === 'truth',
             ).lon;
         speedDegPerDay = centralDifferenceLongitudeDegPerDay(lonAt, jdUT, h);
     }

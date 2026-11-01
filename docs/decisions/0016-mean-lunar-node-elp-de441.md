@@ -12,7 +12,7 @@ stack from the nodes2 Q2 brief:
 1. **Base** — ELP/MPP02 W3 nominal (LLR) on J2000 ecliptic + IAU 2006 `p_A`
    (`generalPrecessionLongitudeArcsec`) within ±10 centuries of J2000, else
    `accumulatedPrecession` (Vondrák 2011).
-2. **Long-term correction** — Reproducible DE441 table (`mean-lunar-node-lt-corr.generated.ts`)
+2. **Long-term correction** — Reproducible DE441 table (`tools/mean-lunar-node-lt-corr.generated.ts`)
    from `tools/derive-mean-node-de441-correction.mjs` (Hann-weighted local quadratic,
    100 yr half-window, ≤2 d grid, Q1 true node without precession spin).
 3. **Blend** — Correction fades to zero over 0–2900 CE (±100 yr ramps).

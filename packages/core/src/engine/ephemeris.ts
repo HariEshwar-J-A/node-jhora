@@ -83,6 +83,7 @@ import {
     type BarycentricSource,
     computePlace,
     GEOMETRIC,
+    type ObserverState,
     observerState,
     type PlaceCorrections,
 } from './apparent.js';
@@ -112,6 +113,7 @@ import {
     deltaT,
     type DeltaTContext,
     getDeltaTContext,
+    jdTdbPartsFromUt,
     jdUTtoET,
     type PrecisionProfile,
     withDeltaTContext,
@@ -139,7 +141,7 @@ import {
     sphericalRatesDegPerDay,
 } from './kinematics.js';
 import { computeTrueOsculatingNode } from './lunar-node.js';
-import { meanLunarNodeMeeus } from './mean-lunar-node.js';
+import { meanLunarNodeFromJdTTForProfile, meanLunarNodeSpeedDegPerDay } from './mean-lunar-node.js';
 import { nutation, nutationForProfile } from './nutation.js';
 import {
     chartEclipticFromIcrfDirection,
@@ -755,6 +757,7 @@ export class EphemerisEngine {
                 corrections,
                 topoLoc,
                 observationCenter,
+                precisionProfile,
             );
             const motion = this.meanEclipticDailyMotion(
                 jd,
@@ -762,6 +765,7 @@ export class EphemerisEngine {
                 corrections,
                 topoLoc,
                 observationCenter,
+                precisionProfile,
             );
 
             const eq = this.equatorialOf(jd, here.lon, here.lat);
@@ -835,6 +839,7 @@ export class EphemerisEngine {
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
         center: ObservationCenter = DEFAULT_OBSERVATION_CENTER,
+        precisionProfile: PrecisionProfile = getDeltaTContext().profile,
     ): { lon: number; lat: number; dist: number } {
         if (center === 'heliocentric') {
             if (naifId === NAIF.Sun) {
@@ -850,11 +855,16 @@ export class EphemerisEngine {
             const jdTT = jdUT + deltaT(jdUT) / 86400.0;
             const T = julianCenturies(jdTT);
             const direction: Vec = r > 0 ? [rx / r, ry / r, rz / r] : [1, 0, 0];
-            const ecl = chartEclipticFromIcrfDirection(direction, T, jdTT);
+            const ecl = chartEclipticFromIcrfDirection(direction, T, jdTT, precisionProfile);
             return { lon: ecl.lon, lat: ecl.lat, dist: r / AU_KM };
         }
-        const place = this.icrfPlace(jdUT, naifId, corrections, location);
-        const ecl = chartEclipticFromIcrfDirection(place.direction, place.T, place.jdTT);
+        const place = this.icrfPlace(jdUT, naifId, corrections, location, precisionProfile);
+        const ecl = chartEclipticFromIcrfDirection(
+            place.direction,
+            place.T,
+            place.jdTT,
+            precisionProfile,
+        );
         return { lon: ecl.lon, lat: ecl.lat, dist: place.dist };
     }
 
@@ -868,6 +878,7 @@ export class EphemerisEngine {
         naifId: number,
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
+        precisionProfile: PrecisionProfile = getDeltaTContext().profile,
     ): { direction: Vec; dist: number; jdTT: number; T: number } {
         const et = jdUTtoET(jdUT);
         const offset = location
@@ -878,8 +889,37 @@ export class EphemerisEngine {
                   location.altitude ?? 0,
               )
             : undefined;
-        const observer = observerState(this.source, NAIF.Earth, et, offset);
-        const place = computePlace(this.source, naifId, NAIF.Sun, et, observer, corrections);
+        const tdbParts =
+            precisionProfile === 'truth' && corrections.lightTime && this.source.getBarycentricAtTdb
+                ? jdTdbPartsFromUt(jdUT)
+                : null;
+
+        let observer: ObserverState;
+        if (tdbParts && this.source.getBarycentricAtTdb) {
+            const e = this.source.getBarycentricAtTdb(NAIF.Earth, tdbParts.D, tdbParts.f);
+            observer = {
+                position: [e.x, e.y, e.z],
+                velocity: [e.vx, e.vy, e.vz],
+            };
+            if (offset) {
+                for (let i = 0; i < 3; i++) {
+                    observer.position[i] += offset.position[i];
+                    observer.velocity[i] += offset.velocity[i];
+                }
+            }
+        } else {
+            observer = observerState(this.source, NAIF.Earth, et, offset);
+        }
+
+        const place = computePlace(
+            this.source,
+            naifId,
+            NAIF.Sun,
+            et,
+            observer,
+            corrections,
+            tdbParts ?? undefined,
+        );
         const jdTT = jdUT + deltaT(jdUT) / 86400.0;
         return {
             direction: place.direction as Vec,
@@ -908,14 +948,19 @@ export class EphemerisEngine {
     } {
         if (nodeType === 'mean') {
             const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-            const T = julianCenturies(jdTT);
-            const speed = -1934.1362891 / 36525.0;
-            return { lon: meanLunarNodeMeeus(T), dist: 0.002569, speed };
+            const speed = meanLunarNodeSpeedDegPerDay(jdTT, precisionProfile);
+            return {
+                lon: meanLunarNodeFromJdTTForProfile(jdTT, precisionProfile),
+                dist: 0.002569,
+                speed,
+            };
         }
 
-        const source = {
+        const source: BarycentricSource = {
             getBarycentric: (naifBody: number, et: number) =>
                 this.composite.getBarycentricForLunarNode(naifBody, et, precisionProfile),
+            getBarycentricAtTdb: (naifBody: number, D: number, f: number) =>
+                this.composite.getBarycentricAtTdb(naifBody, D, f),
         };
         const geometric = isGeometricPlace(correctionsFor(positionMode));
         const osc = computeTrueOsculatingNode(jdUT, source, {
@@ -938,11 +983,26 @@ export class EphemerisEngine {
         corrections: Required<PlaceCorrections>,
         location?: GeoLocation,
         center: ObservationCenter = DEFAULT_OBSERVATION_CENTER,
+        precisionProfile: PrecisionProfile = getDeltaTContext().profile,
     ): { lon: number; lat: number; dist: number } {
         if (!isGeometricPlace(corrections) || center === 'heliocentric') {
             const h = APPARENT_SPEED_STEP_DAYS;
-            const before = this.meanEclipticOfDate(jdUT - h, naifId, corrections, location, center);
-            const after = this.meanEclipticOfDate(jdUT + h, naifId, corrections, location, center);
+            const before = this.meanEclipticOfDate(
+                jdUT - h,
+                naifId,
+                corrections,
+                location,
+                center,
+                precisionProfile,
+            );
+            const after = this.meanEclipticOfDate(
+                jdUT + h,
+                naifId,
+                corrections,
+                location,
+                center,
+                precisionProfile,
+            );
             let dLon = after.lon - before.lon;
             if (dLon > 180) dLon -= 360;
             if (dLon < -180) dLon += 360;

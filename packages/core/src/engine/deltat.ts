@@ -39,9 +39,46 @@ import {
 } from './deltat-modern.js';
 import { OBSERVED_DELTAT_YEAR0 } from './deltat-observed.js';
 import { TIDAL_ACCELERATION_AA, tidalMeeusCorrection } from './deltat-tidal.js';
+import { eraDtdbGeocenterSeconds } from './dtdb-erfa.js';
+
+/** J2000.0 TT/TDB Julian day (IAU). Re-export for callers that already import deltat. */
+export { J2000_JD } from './provider/time.js';
+
+/** Split TDB Julian date into whole day and fraction (ERFA two-part form). */
+export function splitJdTdb(jdTdb: number): { D: number; f: number } {
+    const D = Math.floor(jdTdb);
+    return { D, f: jdTdb - D };
+}
+
+/** TDB (D, f) at reception for the active `'truth'` profile; null otherwise. */
+export function jdTdbPartsFromUt(jdUT: number): { D: number; f: number } | null {
+    if (getDeltaTContext().profile !== 'truth') return null;
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const jdTdb = jdTT + eraDtdbGeocenterSeconds(jdTT) / 86400.0;
+    return splitJdTdb(jdTdb);
+}
+
+/** Retarded emission epoch: subtract light-time τ (seconds) from (D, f). */
+export function subtractLightTimeFromTdbParts(
+    D: number,
+    f: number,
+    tauSec: number,
+): { D: number; f: number } {
+    let fPrime = f - tauSec / 86400;
+    let DPrime = D;
+    while (fPrime < 0) {
+        fPrime += 1;
+        DPrime -= 1;
+    }
+    while (fPrime >= 1) {
+        fPrime -= 1;
+        DPrime += 1;
+    }
+    return { D: DPrime, f: fPrime };
+}
 
 /** Supported precision profiles. See CalculationSettings.precisionProfile. */
-export type PrecisionProfile = 'jhora' | 'modern';
+export type PrecisionProfile = 'jhora' | 'modern' | 'truth';
 
 export type { DeltaTForecastId, StarParallaxId } from '../settings/schema.js';
 export { STAR_PARALLAX_MODES } from '../settings/schema.js';
@@ -69,7 +106,7 @@ export function deltaTModelId(
     forecast: DeltaTForecastId = 'published',
 ): string {
     if (overrideSeconds !== undefined) return `override:${overrideSeconds}s`;
-    if (profile === 'modern') return modernDeltaTModelId(forecast);
+    if (profile === 'modern' || profile === 'truth') return modernDeltaTModelId(forecast);
     return DELTA_T_MODEL_JHORA;
 }
 
@@ -253,7 +290,9 @@ export function deltaT(
         effectiveForecast = forecast ?? 'published';
     }
 
-    if (effectiveProfile === 'modern') return deltaTModern(jdUT, effectiveForecast);
+    if (effectiveProfile === 'modern' || effectiveProfile === 'truth') {
+        return deltaTModern(jdUT, effectiveForecast);
+    }
     const y = decimalYear(jdUT);
     let v = deltaTRaw(jdUT);
     const inTableEra = jdUT >= JHORA_TABLE_SWITCH_JD && y <= LAST_OBSERVED_YEAR;
@@ -268,10 +307,14 @@ export function deltaT(
  * Convert a Julian Day in UT to ephemeris seconds past J2000.0 TDB, as required
  * by the SPK reader.
  *
- * TDB − TT is periodic with amplitude < 1.7 ms (≈ 0.00002″ of lunar motion), so
- * TT is used directly.
+ * For `'jhora'` and `'modern'`, TT is used as TDB (sub‑milliarcsecond on the Moon).
+ * For `'truth'`, TDB = TT + eraDtdb at the geocentre (ERFA Fairhead–Bretagnon).
  */
 export function jdUTtoET(jdUT: number): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-    return (jdTT - 2451545.0) * 86400.0;
+    let jdTdb = jdTT;
+    if (getDeltaTContext().profile === 'truth') {
+        jdTdb += eraDtdbGeocenterSeconds(jdTT) / 86400.0;
+    }
+    return (jdTdb - 2451545.0) * 86400.0;
 }

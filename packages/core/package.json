@@ -18,6 +18,10 @@
             "types": "./node/ephemeris.d.ts",
             "import": "./node/ephemeris.mjs"
         },
+        "./truth/mean-ecliptic-iau2006": {
+            "types": "./dist/truth/mean-ecliptic-iau2006.d.ts",
+            "import": "./dist/truth/mean-ecliptic-iau2006.js"
+        },
         "./package.json": "./package.json"
     },
     "bin": {
@@ -41,7 +45,7 @@
     "scripts": {
         "api:report": "api-extractor run --local",
         "api:check": "api-extractor run",
-        "build": "node scripts/write-build-constants.mjs && tsc",
+        "build": "node scripts/write-build-constants.mjs && tsc -b --clean && tsc && node scripts/shrink-dist.mjs",
         "typecheck": "tsc --noEmit --pretty false",
         "lint": "eslint .",
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js"

@@ -4,6 +4,8 @@
  * See docs/DATA-SOURCES.md and ADR 0025.
  */
 
+import type { PrecisionProfile } from './deltat.js';
+
 const d = (deg: number, min: number, sec = 0): number => deg + min / 60 + sec / 3600;
 
 /** Mean ayanamsa at anchor, degrees; may differ by precision profile. */
@@ -372,6 +374,8 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     },
 };
 
-export function meanAtAnchorForProfile(value: ProfileMean, profile: 'jhora' | 'modern'): number {
-    return typeof value === 'number' ? value : profile === 'modern' ? value.modern : value.jhora;
+export function meanAtAnchorForProfile(value: ProfileMean, profile: PrecisionProfile): number {
+    if (typeof value === 'number') return value;
+    const effective: 'jhora' | 'modern' = profile === 'jhora' ? 'jhora' : 'modern';
+    return effective === 'modern' ? value.modern : value.jhora;
 }

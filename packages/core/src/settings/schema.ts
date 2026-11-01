@@ -106,7 +106,7 @@ export const DasaYearSchema = z
  * through 2026, apparent ayanamsa, fully converged Placidus). See
  * docs/precision-profiles.md.
  */
-export const PRECISION_PROFILES = ['jhora', 'modern'] as const;
+export const PRECISION_PROFILES = ['jhora', 'modern', 'truth'] as const;
 export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];
 
 /** Post-bridge ΔT forecast when `precisionProfile` is `'modern'`. Default: `'published'`. */

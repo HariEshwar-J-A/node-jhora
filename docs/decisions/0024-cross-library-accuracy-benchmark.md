@@ -30,19 +30,19 @@ Maintainers need a reproducible comparison of geocentric **apparent** ecliptic p
 
 ## node-jhora comparison frame
 
-Production prints **mean ecliptic of date** longitudes with apparent places for planets. Truth is **true ecliptic of date**. The bench adapter adds **Δψ** (IAU 2000A nutation in longitude) to planetary mean longitudes before compare — same recovery as `horizons.golden.test.ts`. Residuals against truth should be **milliarcsecond** when ΔT is shared.
+Production prints **mean ecliptic of date** longitudes with apparent places for planets when `precisionProfile` is `'jhora'` or `'modern'`. The optional **`'truth'`** profile (ADR 0027) emits **true equinox / mean ecliptic** longitudes (mean + IAU 2000A Δψ). Truth is **not** included in the ADR 0024 ranking columns below unless explicitly added in a future bench revision.
 
 **True node:** node-jhora uses Vondrák 2011 mean ecliptic + engine `nutation()` on the osculating node; truth uses ERFA IAU 2006 mean ecliptic + `nut06a`. Do **not** tune either side; report residuals per era under shared ΔT.
 
 ## Libraries
 
-| Library              | Notes                                                           |
-| -------------------- | --------------------------------------------------------------- |
-| `@node-jhora/core`   | DE440s/DE441 composite; apparent mode; modern ΔT                |
-| **pyswisseph**       | Black-box pip only (`--only-binary` preferred); no source reads |
-| **Skyfield**         | Second pass; should match truth at ~0″                          |
-| **astronomy-engine** | MIT npm                                                         |
-| **astronomia**       | MIT VSOP87 / lunar (short-span analytic)                        |
+| Library              | Notes                                                                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `@node-jhora/core`   | DE440s/DE441 composite; apparent mode; modern ΔT                                                                                          |
+| **pyswisseph**       | Black-box pip only (`--only-binary` preferred); no source reads. Adapter uses `FLG_JPLEPH` only (flag value 4 / Moshier must not be set). |
+| **Skyfield**         | Second pass; should match truth at ~0″                                                                                                    |
+| **astronomy-engine** | MIT npm; adapter constructs `AstroTime.fromTerrestrialTime(jdUt)` (TT Julian date, not days since J2000).                                 |
+| **astronomia**       | MIT VSOP87 / lunar (short-span analytic)                                                                                                  |
 
 Hosted chart APIs: not wired (no stable key-free endpoint).
 

@@ -97,6 +97,9 @@ function main() {
     console.log(`Computing truth for ${epochs.length} epochs…`);
     run(py, [join(BENCH_ROOT, 'truth/compute_truth.py'), epochsPath]);
 
+    console.log('Competitor J2000 TT sanity gate…');
+    run(py, [join(BENCH_ROOT, 'truth/validate_competitors.py')]);
+
     for (const mode of ['shared', 'native']) {
         console.log(`Python adapters (${mode} ΔT)…`);
         run(py, [

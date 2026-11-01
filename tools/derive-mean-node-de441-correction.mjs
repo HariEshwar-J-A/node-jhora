@@ -12,7 +12,7 @@
  *   pnpm build
  *   node tools/derive-mean-node-de441-correction.mjs [--quick] [--write]
  *
- * `--write` emits packages/core/src/engine/mean-lunar-node-lt-corr.generated.ts
+ * `--write` emits tools/mean-lunar-node-lt-corr.generated.ts
  *
  * @provenance Park et al. AJ 161, 105 (2021); DE441 NAIF kernels
  */
@@ -28,7 +28,7 @@ const PART1 =
     process.env.DE441_PART1_PATH ?? path.join(ROOT, 'packages/ephe441/.cache/de441_part-1.bsp');
 const PART2 =
     process.env.DE441_PART2_PATH ?? path.join(ROOT, 'packages/ephe441/.cache/de441_part-2.bsp');
-const OUT = path.join(ROOT, 'packages/core/src/engine/mean-lunar-node-lt-corr.generated.ts');
+const OUT = path.join(ROOT, 'tools/mean-lunar-node-lt-corr.generated.ts');
 
 const HALF_WINDOW_DAYS = 100 * 365.25;
 const STEP_DAYS = 2;
