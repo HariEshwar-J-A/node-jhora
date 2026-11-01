@@ -16,8 +16,8 @@ export const REGRESSION_TOLERANCE = 0.15;
 /** Independent samples per benchmark; median dampens timer noise. */
 export const SAMPLE_COUNT = 9;
 
-/** Warm-up iterations before sampling (full chart only). */
-export const WARMUP_ITERATIONS = 5;
+/** Warm-up iterations before sampling (stabilises JIT for short engine calls). */
+export const WARMUP_ITERATIONS = 25;
 
 /**
  * Hook for a future browser-worker bench (E2 worker host).

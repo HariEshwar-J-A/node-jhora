@@ -104,6 +104,23 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
+    const jhoraPlanets = results.cases.find((c) => c.id === 'planets-jhora' && !c.skipped);
+    const jhoraPlanetsBase = baseline.cases['planets-jhora'];
+    if (jhoraPlanets && jhoraPlanetsBase) {
+        const target = baselineP50(jhoraPlanetsBase) * 0.7;
+        if (jhoraPlanets.p50Ms > target) {
+            console.error(
+                `\nBench PR3 gate failed: planets-jhora p50 ${jhoraPlanets.p50Ms.toFixed(3)} ms ` +
+                    `must be ≤ 0.70× baseline (${target.toFixed(3)} ms)`,
+            );
+            process.exit(1);
+        }
+        console.log(
+            `\nPR3 planets-jhora speedup gate: p50 ${jhoraPlanets.p50Ms.toFixed(3)} ms ` +
+                `(≤ 0.70× ${baselineP50(jhoraPlanetsBase).toFixed(3)} ms)`,
+        );
+    }
+
     console.log('\nBench regression check passed.');
 }
 

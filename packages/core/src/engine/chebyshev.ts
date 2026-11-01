@@ -37,8 +37,13 @@ export function evalCheby(coeffs: readonly number[], tau: number): number {
     return tau * b1 - b2 + coeffs[0]!;
 }
 
-/** Clenshaw recurrence reading coefficients from a `Float64Array` slice (no copy). */
-export function evalChebyFloat64(data: Float64Array, off: number, n: number, tau: number): number {
+/** Clenshaw recurrence on a coefficient slice (no copy). */
+export function evalChebyFloat64(
+    data: ArrayLike<number>,
+    off: number,
+    n: number,
+    tau: number,
+): number {
     if (n === 0) return 0;
     if (n === 1) return data[off]!;
 
@@ -100,9 +105,9 @@ export function evalChebyDeriv(coeffs: readonly number[], tau: number): number {
     return sum;
 }
 
-/** Derivative recurrence on a `Float64Array` coefficient slice (no copy). */
+/** Derivative recurrence on a coefficient slice (no copy). */
 export function evalChebyDerivFloat64(
-    data: Float64Array,
+    data: ArrayLike<number>,
     off: number,
     n: number,
     tau: number,
@@ -178,25 +183,10 @@ export function evalRecordAtSInto(out: Vec3, record: Float64Array | number[], s:
     const y0 = 2 + nCoeff;
     const z0 = 2 + 2 * nCoeff;
 
-    if (ArrayBuffer.isView(record)) {
-        const f = record as Float64Array;
-        out.x = evalChebyFloat64(f, x0, nCoeff, s);
-        out.y = evalChebyFloat64(f, y0, nCoeff, s);
-        out.z = evalChebyFloat64(f, z0, nCoeff, s);
-        out.vx = evalChebyDerivFloat64(f, x0, nCoeff, s) / radius;
-        out.vy = evalChebyDerivFloat64(f, y0, nCoeff, s) / radius;
-        out.vz = evalChebyDerivFloat64(f, z0, nCoeff, s) / radius;
-        return;
-    }
-
-    const xC = Array.from({ length: nCoeff }, (_, i) => record[2 + i]!);
-    const yC = Array.from({ length: nCoeff }, (_, i) => record[2 + nCoeff + i]!);
-    const zC = Array.from({ length: nCoeff }, (_, i) => record[2 + 2 * nCoeff + i]!);
-
-    out.x = evalCheby(xC, s);
-    out.y = evalCheby(yC, s);
-    out.z = evalCheby(zC, s);
-    out.vx = evalChebyDeriv(xC, s) / radius;
-    out.vy = evalChebyDeriv(yC, s) / radius;
-    out.vz = evalChebyDeriv(zC, s) / radius;
+    out.x = evalChebyFloat64(record, x0, nCoeff, s);
+    out.y = evalChebyFloat64(record, y0, nCoeff, s);
+    out.z = evalChebyFloat64(record, z0, nCoeff, s);
+    out.vx = evalChebyDerivFloat64(record, x0, nCoeff, s) / radius;
+    out.vy = evalChebyDerivFloat64(record, y0, nCoeff, s) / radius;
+    out.vz = evalChebyDerivFloat64(record, z0, nCoeff, s) / radius;
 }
