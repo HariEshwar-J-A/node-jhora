@@ -126,11 +126,13 @@ export { Body_2 as Body }
 // @public
 export const BODY_ASHTAKAVARGA_LAGNA_DONOR = Body.Ketu;
 
-// @public
+// @public (undocumented)
 export class CachingChunkLoader implements EphemerisChunkLoader {
     constructor(inner: EphemerisChunkLoader);
     // (undocumented)
     load(key: ChunkKey): Promise<ArrayBuffer | undefined>;
+    // (undocumented)
+    loadSync(key: ChunkKey): ArrayBuffer | undefined;
 }
 
 // @public (undocumented)
@@ -359,6 +361,12 @@ export interface ChunkKey {
     groupId: number;
 }
 
+// @public
+export function chunkKeysForJdTdb(jdTdb: number, bounds: {
+    minCentury: number;
+    maxCentury: number;
+}, marginDays?: number): ChunkKey[];
+
 // @public (undocumented)
 export const CIVIL_YEAR_MAX = 10000;
 
@@ -459,6 +467,9 @@ export function computeRiseSetTable(engine: EphemerisEngine, bodyId: RiseSetBody
 export type CoordinateOutput = 'ecliptic' | 'equatorial';
 
 // @public
+export function createDe441ChunkStoreFromMemory(chunks: ReadonlyMap<string, ArrayBuffer> | Record<string, ArrayBuffer>): De441ChunkStore;
+
+// @public
 export function createResultEnvelope(options: ResultEnvelopeOptions): ResultEnvelope;
 
 // @public
@@ -522,6 +533,7 @@ export class De431ChunkStore {
     // (undocumented)
     get(century: number, groupId: number): De431ChunkFile | undefined;
     prefetchSyncForJdTdb(jdTdb: number): void;
+    seedChunk(century: number, groupId: number, bytes: ArrayBuffer): void;
 }
 
 // @public
@@ -576,6 +588,9 @@ export const DE441_SOURCE: Readonly<{
         url: "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp";
     }>;
 }>;
+
+// @public
+export function de441ChunkKeysForJdTdb(jdTdb: number): ChunkKey[];
 
 // @public
 export class De441ChunkStore extends De431ChunkStore {
@@ -954,6 +969,9 @@ export function inferDasaYearKind(days: number): DasaYearKind;
 export function init(): Promise<void>;
 
 // @public
+export function inMemoryChunkLoader(chunks: ReadonlyMap<string, ArrayBuffer> | Record<string, ArrayBuffer>): EphemerisChunkLoader;
+
+// @public
 export function isGregorianReformGap(parts: Pick<HistoricalDateTime, 'astronomicalYear' | 'month' | 'day'>): boolean;
 
 // @public (undocumented)
@@ -1150,6 +1168,9 @@ export function njceChunkEntry(key: ChunkKey): NjceChunkEntry | undefined;
 
 // @public (undocumented)
 export function njceFileName(key: ChunkKey): string;
+
+// @public
+export function njceMapKey(groupId: number, century: number): string;
 
 // @public
 export function njcePackageName(century: number): string;
@@ -1674,6 +1695,9 @@ export interface VargaPoint {
 
 // @public
 export function verifyEphemerisBytes(entry: EphemerisFileEntry, bytes: Uint8Array | ArrayBuffer, source?: string): Promise<void>;
+
+// @public
+export function verifyEphemerisBytesSync(entry: EphemerisFileEntry, bytes: Uint8Array | ArrayBuffer, source?: string): void;
 
 // @public
 export function verifyingChunkLoader(inner: EphemerisChunkLoader, options?: VerifyingChunkLoaderOptions): EphemerisChunkLoader;

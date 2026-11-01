@@ -19,6 +19,7 @@ allowBuilds:
     esbuild: true
     '@parcel/watcher': true
     unrs-resolver: true
+    workerd: true
 
 # light-my-request 6.8 depends on cookie 2, which is ESM-only. Jest 30 on
 # Node 22 loads node_modules through require() and refuses that file
@@ -31,5 +32,13 @@ allowBuilds:
 # and Jest loads CommonJS node_modules through its own require(), not Node's
 #   https://jestjs.io/docs/ecmascript-modules
 # Drop this override once Jest can load cookie 2 (or fastify pins cookie 1).
+minimumReleaseAgeExclude:
+    - '@cloudflare/workerd-darwin-64@1.20261101.1'
+    - '@cloudflare/workerd-darwin-arm64@1.20261101.1'
+    - '@cloudflare/workerd-linux-64@1.20261101.1'
+    - '@cloudflare/workerd-linux-arm64@1.20261101.1'
+    - '@cloudflare/workerd-windows-64@1.20261101.1'
+    - workerd@1.20261101.1
+
 overrides:
     light-my-request: 6.6.0
