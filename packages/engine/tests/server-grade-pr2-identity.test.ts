@@ -18,10 +18,10 @@ import {
 } from '@node-jhora/testkit';
 import { DateTime } from 'luxon';
 
-/** Chennai bench instant (matches packages/bench chart fixture). */
-const BENCH_INSTANT = DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' });
-const BENCH_LOCATION = { latitude: 13.0827, longitude: 80.2707 };
-const BENCH_JD_UT = 2_451_153.661_805_555_7;
+/** Varanasi bench instant (matches packages/bench chart fixture). */
+const BENCH_INSTANT = DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' });
+const BENCH_LOCATION = { latitude: 25.3176, longitude: 82.9739 };
+const BENCH_JD_UT = 2_459_205.034_722_222;
 
 type BenchProfileId = 'jhora' | 'modern' | 'truth';
 

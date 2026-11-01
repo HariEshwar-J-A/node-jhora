@@ -26,7 +26,7 @@ Warm full-chart time is dominated by **Vimshottari dasha** (Decimal.js + Luxon),
 | `deep-era-truth-mean-node-cold`   | 137.83  |
 | `deep-era-truth-mean-node-warm`   | ~0.0002 |
 
-Fixture: 2000-01-01 12:00 Asia/Kolkata, `node-jhora-default`, dasha depth 3. Nine samples per case; full-chart cases use five warm-up iterations before sampling.
+Fixture: 2020-12-21 18:20 Asia/Kolkata (Varanasi, jhora12), `node-jhora-default`, dasha depth 3. Nine samples per case; full-chart cases use five warm-up iterations before sampling.
 
 ## Worker throughput
 

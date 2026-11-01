@@ -21,10 +21,10 @@ export function f64Hex(value) {
  * @returns {Promise<EdgeHexReference>}
  */
 export async function computeEdgeHexReference(deps) {
-    const BENCH_INSTANT = deps.DateTime.fromISO('2000-01-01T12:00:00', {
+    const BENCH_INSTANT = deps.DateTime.fromISO('2020-12-21T18:20:00', {
         zone: 'Asia/Kolkata',
     });
-    const BENCH_LOCATION = { latitude: 13.0827, longitude: 80.2707 };
+    const BENCH_LOCATION = { latitude: 25.3176, longitude: 82.9739 };
     const DEEP_INSTANT = deps.DateTime.utc(-9999, 6, 15, 12, 0, 0);
 
     async function sunHexForInstant(instant, chunkDir, needLongRange) {

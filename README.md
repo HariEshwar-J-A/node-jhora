@@ -21,7 +21,7 @@ Node-Jhora is a Vedic astrology (Jyotish) engine for Node.js and TypeScript. It 
 - **PDF reports**: `generateFullReport` (PDFKit) in `@node-jhora/reporting`.
 - **Decimal.js**: Vargas, panchanga, KP sub-lords, and `packages/core/src/core/precise.ts` use `decimal.js`. SPK state and the coordinate chain in `ephemeris.ts` use ordinary floating-point numbers.
 
-Astrometric comparisons against JPL Horizons are written up in [docs/accuracy.md](./docs/accuracy.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 1998, and 2024 sample epochs.
+Astrometric comparisons against JPL Horizons are written up in [docs/accuracy.md](./docs/accuracy.md). The engine file header records ≤ 0.28″ on the 1900, 1970, 2000, and 2024 sample epochs.
 
 ## Packages
 

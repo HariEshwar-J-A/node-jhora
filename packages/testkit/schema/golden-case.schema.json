@@ -329,7 +329,7 @@
         "^(?:meta\\.contract\\.(?:tolerance|futureTolerance)\\.(?:longitude|latitude))$": {
           "$ref": "#/$defs/exactEntry"
         },
-        "^(?:meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate))$": {
+        "^(?:meta\\.horizons\\.(?:apiVersion|ephemeris|retrievedAtUtc|queryUrlTemplate))$": {
           "$ref": "#/$defs/exactEntry"
         },
         "^(?:meta\\.horizons\\.requestParameters)$": {

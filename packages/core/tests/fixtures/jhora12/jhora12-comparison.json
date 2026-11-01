@@ -1,0 +1,1767 @@
+{
+    "engine": {
+        "repo": "harieshwar-ai/node-jhora",
+        "commit": "21d73f3ba7ac0a96c8585daf73baf64b6a26f5ef",
+        "preset": "jhora-true-citra-geometric-true-node",
+        "ayanamsa_mode": 27,
+        "houses": "W",
+        "node": "true",
+        "positionMode": "geometric",
+        "precisionProfile": "jhora",
+        "de441_chunk_dir": "/workspace/ephe-data/njce"
+    },
+    "jhora": {
+        "version": "8.0",
+        "UserSelectedAyanamsa": 17,
+        "TrueNodes": 1,
+        "topocentric": false,
+        "altitude_m": 0,
+        "source": "screen transcription"
+    },
+    "corrections": [],
+    "png_rechecks": [
+        {
+            "chart": "2020-12-21_1820_Varanasi",
+            "body": "Moon",
+            "transcribed": "0 Pi 57' 24.53\"",
+            "image": "0 Pi 57' 24.53\"",
+            "result": "confirmed, no correction"
+        },
+        {
+            "chart": "2024-04-08_1318_Dallas",
+            "body": "Moon",
+            "transcribed": "25 Pi 11' 37.53\"",
+            "image": "25 Pi 11' 37.53\"",
+            "result": "confirmed, no correction"
+        }
+    ],
+    "charts": {
+        "1600-05-01_1200_Rome": {
+            "place": "Rome, Italy",
+            "local": "1600-05-01 12:00:00",
+            "tz": "UTC+00:49:59",
+            "tz_note": "Rome LMT (Gregorian calendar in force since 1582)",
+            "ut": "1600-05-01 11:10:01 UT",
+            "jd_ut": 2305568.965289352,
+            "lat": 41.9028,
+            "lon": 12.4964,
+            "ours_deltaT_s": 117.384,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de441_long",
+                "kernelVersion": "441"
+            },
+            "fit": {
+                "common_offset_arcsec": -0.0048,
+                "implied_jhora_minus_ours_deltaT_s": 0.002,
+                "post_fit_max_abs": 0.0051,
+                "post_fit_rms": 0.0032,
+                "ours_deltaT_s": 117.384
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "18-16-05.41",
+                "jhora_deg": 18.268169444444442,
+                "ours_deg": 18.268168285855154,
+                "ours_printed": "18-16-05.41",
+                "diff_arcsec": -0.0042,
+                "cause": "display rounding (±0.005″)"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "2 Le 26' 30.27\"",
+                    "jhora_deg": 122.44174166666667,
+                    "ours_deg": 122.44174116945368,
+                    "ours_printed": "2 Le 26' 30.27\"",
+                    "diff_arcsec": -0.0018,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "22 Ar 54' 12.06\"",
+                    "jhora_deg": 22.90335,
+                    "ours_deg": 22.903347202553107,
+                    "ours_printed": "22 Ar 54' 12.05\"",
+                    "diff_arcsec": -0.0101,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "26 Sc 50' 40.34\"",
+                    "jhora_deg": 236.8445388888889,
+                    "ours_deg": 236.84453727485914,
+                    "ours_printed": "26 Sc 50' 40.33\"",
+                    "diff_arcsec": -0.0058,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "23 Cn 41' 22.05\"",
+                    "jhora_deg": 113.68945833333333,
+                    "ours_deg": 113.68945610956712,
+                    "ours_printed": "23 Cn 41' 22.04\"",
+                    "diff_arcsec": -0.008,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "9 Ta 14' 29.30\"",
+                    "jhora_deg": 39.24147222222222,
+                    "ours_deg": 39.241470904540506,
+                    "ours_printed": "9 Ta 14' 29.30\"",
+                    "diff_arcsec": -0.0047,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "24 Cn 23' 12.83\"",
+                    "jhora_deg": 114.38689722222223,
+                    "ours_deg": 114.38689510265306,
+                    "ours_printed": "24 Cn 23' 12.82\"",
+                    "diff_arcsec": -0.0076,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "14 Pi 39' 15.42\"",
+                    "jhora_deg": 344.6542833333333,
+                    "ours_deg": 344.6542828996828,
+                    "ours_printed": "14 Pi 39' 15.42\"",
+                    "diff_arcsec": -0.0016,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "5 Li 43' 36.69\"",
+                    "jhora_deg": 185.72685833333333,
+                    "ours_deg": 185.72685676645165,
+                    "ours_printed": "5 Li 43' 36.68\"",
+                    "diff_arcsec": -0.0056,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "5 Cp 31' 24.56\"",
+                    "jhora_deg": 275.5234888888889,
+                    "ours_deg": 275.5234889086946,
+                    "ours_printed": "5 Cp 31' 24.56\"",
+                    "diff_arcsec": 0.0001,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "5 Cn 31' 24.56\"",
+                    "jhora_deg": 95.52348888888889,
+                    "ours_deg": 95.52348890869462,
+                    "ours_printed": "5 Cn 31' 24.56\"",
+                    "diff_arcsec": 0.0001,
+                    "cause": "display rounding (±0.005″)"
+                }
+            }
+        },
+        "1800-08-15_1500_Cape-Town": {
+            "place": "Cape Town, South Africa",
+            "local": "1800-08-15 15:00:00",
+            "tz": "UTC+01:13:42",
+            "tz_note": "Cape Town LMT (no standard zone until 1892)",
+            "ut": "1800-08-15 13:46:18 UT",
+            "jd_ut": 2378723.0738194445,
+            "lat": -33.9249,
+            "lon": 18.4241,
+            "ours_deltaT_s": 13.078,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de441_long",
+                "kernelVersion": "441"
+            },
+            "fit": {
+                "common_offset_arcsec": -0.0092,
+                "implied_jhora_minus_ours_deltaT_s": 0.005,
+                "post_fit_max_abs": 0.0058,
+                "post_fit_rms": 0.0028,
+                "ours_deltaT_s": 13.078
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "21-03-35.56",
+                "jhora_deg": 21.05987777777778,
+                "ours_deg": 21.05987853862166,
+                "ours_printed": "21-03-35.56",
+                "diff_arcsec": 0.0027,
+                "cause": "display rounding (±0.005″)"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "1 Cp 18' 58.47\"",
+                    "jhora_deg": 271.31624166666666,
+                    "ours_deg": 271.3162395472716,
+                    "ours_printed": "1 Cp 18' 58.46\"",
+                    "diff_arcsec": -0.0076,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "1 Le 20' 45.06\"",
+                    "jhora_deg": 121.34585,
+                    "ours_deg": 121.3458465045191,
+                    "ours_printed": "1 Le 20' 45.05\"",
+                    "diff_arcsec": -0.0126,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "5 Ge 24' 47.86\"",
+                    "jhora_deg": 65.41329444444445,
+                    "ours_deg": 65.41329119299564,
+                    "ours_printed": "5 Ge 24' 47.85\"",
+                    "diff_arcsec": -0.0117,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "20 Ar 00' 35.15\"",
+                    "jhora_deg": 20.009763888888887,
+                    "ours_deg": 20.009760854785384,
+                    "ours_printed": "20 Ar 00' 35.14\"",
+                    "diff_arcsec": -0.0109,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "16 Le 57' 22.94\"",
+                    "jhora_deg": 136.9563722222222,
+                    "ours_deg": 136.95637007966457,
+                    "ours_printed": "16 Le 57' 22.93\"",
+                    "diff_arcsec": -0.0077,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "1 Cn 06' 51.00\"",
+                    "jhora_deg": 91.11416666666666,
+                    "ours_deg": 91.11416248280113,
+                    "ours_printed": "1 Cn 06' 50.98\"",
+                    "diff_arcsec": -0.0151,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "4 Le 10' 08.75\"",
+                    "jhora_deg": 124.16909722222222,
+                    "ours_deg": 124.16909540532123,
+                    "ours_printed": "4 Le 10' 08.74\"",
+                    "diff_arcsec": -0.0065,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "23 Cn 54' 22.70\"",
+                    "jhora_deg": 113.90630555555556,
+                    "ours_deg": 113.90630398693168,
+                    "ours_printed": "23 Cn 54' 22.69\"",
+                    "diff_arcsec": -0.0056,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "29 Pi 17' 09.79\"",
+                    "jhora_deg": 359.2860527777778,
+                    "ours_deg": 359.2860504159835,
+                    "ours_printed": "29 Pi 17' 09.78\"",
+                    "diff_arcsec": -0.0085,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "29 Vi 17' 09.79\"",
+                    "jhora_deg": 179.28605277777777,
+                    "ours_deg": 179.28605041598348,
+                    "ours_printed": "29 Vi 17' 09.78\"",
+                    "diff_arcsec": -0.0085,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "1900-03-15_0630_Delhi": {
+            "place": "New Delhi, India",
+            "local": "1900-03-15 06:30:00",
+            "tz": "UTC+05:08:50",
+            "tz_note": "Delhi LMT (no national zone; IST began 1906). IANA Asia/Kolkata would give Madras Time +5:21:10",
+            "ut": "1900-03-15 01:21:10 UT",
+            "jd_ut": 2415093.556365741,
+            "lat": 28.6139,
+            "lon": 77.209,
+            "ours_deltaT_s": -2.563,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0088,
+                "implied_jhora_minus_ours_deltaT_s": 0.028,
+                "post_fit_max_abs": 0.0059,
+                "post_fit_rms": 0.0031,
+                "ours_deltaT_s": -2.563
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "22-26-55.57",
+                "jhora_deg": 22.448769444444444,
+                "ours_deg": 22.44876683559005,
+                "ours_printed": "22-26-55.56",
+                "diff_arcsec": -0.0094,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "7 Pi 07' 05.45\"",
+                    "jhora_deg": 337.11818055555557,
+                    "ours_deg": 337.1181833258056,
+                    "ours_printed": "7 Pi 07' 05.46\"",
+                    "diff_arcsec": 0.01,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "1 Pi 34' 36.70\"",
+                    "jhora_deg": 331.5768611111111,
+                    "ours_deg": 331.57686325837017,
+                    "ours_printed": "1 Pi 34' 36.71\"",
+                    "diff_arcsec": 0.0077,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "17 Le 34' 27.00\"",
+                    "jhora_deg": 137.57416666666666,
+                    "ours_deg": 137.5741652628608,
+                    "ours_printed": "17 Le 34' 26.99\"",
+                    "diff_arcsec": -0.0051,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "18 Aq 41' 16.24\"",
+                    "jhora_deg": 318.68784444444447,
+                    "ours_deg": 318.68784795327883,
+                    "ours_printed": "18 Aq 41' 16.25\"",
+                    "diff_arcsec": 0.0126,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "16 Pi 41' 43.06\"",
+                    "jhora_deg": 346.69529444444447,
+                    "ours_deg": 346.6952957192809,
+                    "ours_printed": "16 Pi 41' 43.06\"",
+                    "diff_arcsec": 0.0046,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "18 Sc 09' 35.11\"",
+                    "jhora_deg": 228.15975277777778,
+                    "ours_deg": 228.15975613768546,
+                    "ours_printed": "18 Sc 09' 35.12\"",
+                    "diff_arcsec": 0.0121,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "12 Ar 33' 47.78\"",
+                    "jhora_deg": 12.563272222222222,
+                    "ours_deg": 12.563274222627683,
+                    "ours_printed": "12 Ar 33' 47.79\"",
+                    "diff_arcsec": 0.0072,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "11 Sg 50' 33.38\"",
+                    "jhora_deg": 251.84260555555556,
+                    "ours_deg": 251.84260635660917,
+                    "ours_printed": "11 Sg 50' 33.38\"",
+                    "diff_arcsec": 0.0029,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "22 Sc 19' 17.20\"",
+                    "jhora_deg": 232.32144444444444,
+                    "ours_deg": 232.3214473402045,
+                    "ours_printed": "22 Sc 19' 17.21\"",
+                    "diff_arcsec": 0.0104,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "22 Ta 19' 17.20\"",
+                    "jhora_deg": 52.321444444444445,
+                    "ours_deg": 52.321447340204486,
+                    "ours_printed": "22 Ta 19' 17.21\"",
+                    "diff_arcsec": 0.0104,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "1950-07-04_1845_New-York": {
+            "place": "New York, USA",
+            "local": "1950-07-04 18:45:00",
+            "tz": "UTC-04:00:00",
+            "tz_note": "EDT (UTC-4): NYC observed DST Apr 30-Sep 24 1950",
+            "ut": "1950-07-04 22:45:00 UT",
+            "jd_ut": 2433467.4479166665,
+            "lat": 40.7128,
+            "lon": -74.006,
+            "ours_deltaT_s": 29.364,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": -0.0113,
+                "implied_jhora_minus_ours_deltaT_s": 0.004,
+                "post_fit_max_abs": 0.0075,
+                "post_fit_rms": 0.0035,
+                "ours_deltaT_s": 29.364
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-09-02.32",
+                "jhora_deg": 23.150644444444442,
+                "ours_deg": 23.1506466394153,
+                "ours_printed": "23-09-02.33",
+                "diff_arcsec": 0.0079,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "25 Sc 59' 09.16\"",
+                    "jhora_deg": 235.98587777777777,
+                    "ours_deg": 235.98587672068572,
+                    "ours_printed": "25 Sc 59' 09.16\"",
+                    "diff_arcsec": -0.0038,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "19 Ge 12' 52.95\"",
+                    "jhora_deg": 79.21470833333333,
+                    "ours_deg": 79.21470391634142,
+                    "ours_printed": "19 Ge 12' 52.93\"",
+                    "diff_arcsec": -0.0159,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "24 Aq 33' 26.50\"",
+                    "jhora_deg": 324.5573611111111,
+                    "ours_deg": 324.5573576003801,
+                    "ours_printed": "24 Aq 33' 26.49\"",
+                    "diff_arcsec": -0.0126,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "16 Vi 45' 14.14\"",
+                    "jhora_deg": 166.7539277777778,
+                    "ours_deg": 166.75392419095442,
+                    "ours_printed": "16 Vi 45' 14.13\"",
+                    "diff_arcsec": -0.0129,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "11 Ge 44' 19.59\"",
+                    "jhora_deg": 71.738775,
+                    "ours_deg": 71.73877080500415,
+                    "ours_printed": "11 Ge 44' 19.57\"",
+                    "diff_arcsec": -0.0151,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "14 Aq 11' 58.11\"",
+                    "jhora_deg": 314.199475,
+                    "ours_deg": 314.199471770065,
+                    "ours_printed": "14 Aq 11' 58.10\"",
+                    "diff_arcsec": -0.0116,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "15 Ta 41' 32.24\"",
+                    "jhora_deg": 45.69228888888888,
+                    "ours_deg": 45.69228574116789,
+                    "ours_printed": "15 Ta 41' 32.23\"",
+                    "diff_arcsec": -0.0113,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "21 Le 32' 01.88\"",
+                    "jhora_deg": 141.53385555555556,
+                    "ours_deg": 141.53385346763332,
+                    "ours_printed": "21 Le 32' 01.87\"",
+                    "diff_arcsec": -0.0075,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "8 Pi 37' 15.30\"",
+                    "jhora_deg": 338.6209166666667,
+                    "ours_deg": 338.6209127826309,
+                    "ours_printed": "8 Pi 37' 15.29\"",
+                    "diff_arcsec": -0.014,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "8 Vi 37' 15.30\"",
+                    "jhora_deg": 158.6209166666667,
+                    "ours_deg": 158.62091278263097,
+                    "ours_printed": "8 Vi 37' 15.29\"",
+                    "diff_arcsec": -0.014,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "1975-11-20_2310_Tokyo": {
+            "place": "Tokyo, Japan",
+            "local": "1975-11-20 23:10:00",
+            "tz": "UTC+09:00:00",
+            "tz_note": "JST (UTC+9), no DST",
+            "ut": "1975-11-20 14:10:00 UT",
+            "jd_ut": 2442737.090277778,
+            "lat": 35.6895,
+            "lon": 139.6917,
+            "ours_deltaT_s": 46.344,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0074,
+                "implied_jhora_minus_ours_deltaT_s": -0.006,
+                "post_fit_max_abs": 0.0077,
+                "post_fit_rms": 0.0041,
+                "ours_deltaT_s": 46.344
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-30-17.31",
+                "jhora_deg": 23.504808333333333,
+                "ours_deg": 23.50480455958416,
+                "ours_printed": "23-30-17.30",
+                "diff_arcsec": -0.0136,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "4 Le 24' 45.46\"",
+                    "jhora_deg": 124.41262777777779,
+                    "ours_deg": 124.41263197794376,
+                    "ours_printed": "4 Le 24' 45.48\"",
+                    "diff_arcsec": 0.0151,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "4 Sc 07' 37.14\"",
+                    "jhora_deg": 214.12698333333333,
+                    "ours_deg": 214.12698500908027,
+                    "ours_printed": "4 Sc 07' 37.15\"",
+                    "diff_arcsec": 0.006,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "23 Ta 20' 19.23\"",
+                    "jhora_deg": 53.338675,
+                    "ours_deg": 53.338677986286825,
+                    "ours_printed": "23 Ta 20' 19.24\"",
+                    "diff_arcsec": 0.0108,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "7 Ge 43' 19.15\"",
+                    "jhora_deg": 67.72198611111111,
+                    "ours_deg": 67.72198736392988,
+                    "ours_printed": "7 Ge 43' 19.15\"",
+                    "diff_arcsec": 0.0045,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "29 Li 23' 08.38\"",
+                    "jhora_deg": 209.3856611111111,
+                    "ours_deg": 209.38566317054574,
+                    "ours_printed": "29 Li 23' 08.39\"",
+                    "diff_arcsec": 0.0074,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "21 Pi 55' 17.52\"",
+                    "jhora_deg": 351.92153333333334,
+                    "ours_deg": 351.92153392775145,
+                    "ours_printed": "21 Pi 55' 17.52\"",
+                    "diff_arcsec": 0.0021,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "18 Vi 06' 38.43\"",
+                    "jhora_deg": 168.110675,
+                    "ours_deg": 168.110676656441,
+                    "ours_printed": "18 Vi 06' 38.44\"",
+                    "diff_arcsec": 0.006,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "9 Cn 26' 09.83\"",
+                    "jhora_deg": 99.4360638888889,
+                    "ours_deg": 99.43606524619747,
+                    "ours_printed": "9 Cn 26' 09.83\"",
+                    "diff_arcsec": 0.0049,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "28 Li 17' 29.21\"",
+                    "jhora_deg": 208.29144722222222,
+                    "ours_deg": 208.2914511000863,
+                    "ours_printed": "28 Li 17' 29.22\"",
+                    "diff_arcsec": 0.014,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "28 Ar 17' 29.21\"",
+                    "jhora_deg": 28.291447222222224,
+                    "ours_deg": 28.291451100086306,
+                    "ours_printed": "28 Ar 17' 29.22\"",
+                    "diff_arcsec": 0.014,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "1985-02-28_0405_Sydney": {
+            "place": "Sydney, Australia",
+            "local": "1985-02-28 04:05:00",
+            "tz": "UTC+11:00:00",
+            "tz_note": "AEDT (UTC+11): NSW DST 1984-10-28 to 1985-03-03",
+            "ut": "1985-02-27 17:05:00 UT",
+            "jd_ut": 2446124.2118055555,
+            "lat": -33.8688,
+            "lon": 151.2093,
+            "ours_deltaT_s": 54.426,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0117,
+                "implied_jhora_minus_ours_deltaT_s": 0.004,
+                "post_fit_max_abs": 0.0049,
+                "post_fit_rms": 0.003,
+                "ours_deltaT_s": 54.426
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-38-03.22",
+                "jhora_deg": 23.634227777777777,
+                "ours_deg": 23.634223518735325,
+                "ours_printed": "23-38-03.20",
+                "diff_arcsec": -0.0153,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "12 Cp 09' 17.56\"",
+                    "jhora_deg": 282.15487777777776,
+                    "ours_deg": 282.1548823992824,
+                    "ours_printed": "12 Cp 09' 17.58\"",
+                    "diff_arcsec": 0.0166,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "15 Aq 26' 03.23\"",
+                    "jhora_deg": 315.4342305555556,
+                    "ours_deg": 315.4342326297028,
+                    "ours_printed": "15 Aq 26' 03.24\"",
+                    "diff_arcsec": 0.0075,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "12 Ta 21' 31.94\"",
+                    "jhora_deg": 42.358872222222224,
+                    "ours_deg": 42.35887488981217,
+                    "ours_printed": "12 Ta 21' 31.95\"",
+                    "diff_arcsec": 0.0096,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "25 Pi 01' 20.08\"",
+                    "jhora_deg": 355.0222444444444,
+                    "ours_deg": 355.022248191544,
+                    "ours_printed": "25 Pi 01' 20.09\"",
+                    "diff_arcsec": 0.0135,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "22 Aq 43' 10.03\"",
+                    "jhora_deg": 322.71945277777775,
+                    "ours_deg": 322.7194565693479,
+                    "ours_printed": "22 Aq 43' 10.04\"",
+                    "diff_arcsec": 0.0136,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "11 Cp 03' 39.64\"",
+                    "jhora_deg": 281.0610111111111,
+                    "ours_deg": 281.0610141597201,
+                    "ours_printed": "11 Cp 03' 39.65\"",
+                    "diff_arcsec": 0.011,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "25 Pi 03' 21.04\"",
+                    "jhora_deg": 355.05584444444446,
+                    "ours_deg": 355.0558484436136,
+                    "ours_printed": "25 Pi 03' 21.05\"",
+                    "diff_arcsec": 0.0144,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "4 Sc 26' 37.97\"",
+                    "jhora_deg": 214.44388055555555,
+                    "ours_deg": 214.44388322699933,
+                    "ours_printed": "4 Sc 26' 37.98\"",
+                    "diff_arcsec": 0.0096,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "27 Ar 25' 14.94\"",
+                    "jhora_deg": 27.420816666666667,
+                    "ours_deg": 27.420818686116434,
+                    "ours_printed": "27 Ar 25' 14.95\"",
+                    "diff_arcsec": 0.0073,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "27 Li 25' 14.94\"",
+                    "jhora_deg": 207.42081666666667,
+                    "ours_deg": 207.4208186861165,
+                    "ours_printed": "27 Li 25' 14.95\"",
+                    "diff_arcsec": 0.0073,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "1990-06-21_1200_Reykjavik": {
+            "place": "Reykjavik, Iceland",
+            "local": "1990-06-21 12:00:00",
+            "tz": "UTC+00:00:00",
+            "tz_note": "GMT (UTC+0), Iceland no DST since 1968; high latitude",
+            "ut": "1990-06-21 12:00:00 UT",
+            "jd_ut": 2448064,
+            "lat": 64.1466,
+            "lon": -21.9426,
+            "ours_deltaT_s": 57.182,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": -0.0104,
+                "implied_jhora_minus_ours_deltaT_s": -0.003,
+                "post_fit_max_abs": 0.0113,
+                "post_fit_rms": 0.0058,
+                "ours_deltaT_s": 57.182
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-42-30.03",
+                "jhora_deg": 23.708341666666666,
+                "ours_deg": 23.70834351328938,
+                "ours_printed": "23-42-30.04",
+                "diff_arcsec": 0.0066,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "23 Le 21' 53.31\"",
+                    "jhora_deg": 143.36480833333331,
+                    "ours_deg": 143.36480745926042,
+                    "ours_printed": "23 Le 21' 53.31\"",
+                    "diff_arcsec": -0.0031,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "6 Ge 09' 09.28\"",
+                    "jhora_deg": 66.15257777777778,
+                    "ours_deg": 66.15257574834709,
+                    "ours_printed": "6 Ge 09' 09.27\"",
+                    "diff_arcsec": -0.0073,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "18 Ta 03' 14.18\"",
+                    "jhora_deg": 48.05393888888889,
+                    "ours_deg": 48.05393681841599,
+                    "ours_printed": "18 Ta 03' 14.17\"",
+                    "diff_arcsec": -0.0075,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "21 Pi 37' 35.41\"",
+                    "jhora_deg": 351.6265027777778,
+                    "ours_deg": 351.62649827568436,
+                    "ours_printed": "21 Pi 37' 35.39\"",
+                    "diff_arcsec": -0.0162,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "23 Ta 05' 02.34\"",
+                    "jhora_deg": 53.083983333333336,
+                    "ours_deg": 53.0839789397171,
+                    "ours_printed": "23 Ta 05' 02.32\"",
+                    "diff_arcsec": -0.0158,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "23 Ge 29' 41.23\"",
+                    "jhora_deg": 83.49478611111111,
+                    "ours_deg": 83.4947821211976,
+                    "ours_printed": "23 Ge 29' 41.22\"",
+                    "diff_arcsec": -0.0144,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "2 Ta 08' 47.05\"",
+                    "jhora_deg": 32.14640277777778,
+                    "ours_deg": 32.146398978719446,
+                    "ours_printed": "2 Ta 08' 47.04\"",
+                    "diff_arcsec": -0.0137,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "29 Sg 56' 51.68\"",
+                    "jhora_deg": 269.9476888888889,
+                    "ours_deg": 269.9476849409634,
+                    "ours_printed": "29 Sg 56' 51.67\"",
+                    "diff_arcsec": -0.0142,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "14 Cp 05' 20.37\"",
+                    "jhora_deg": 284.08899166666663,
+                    "ours_deg": 284.0889919214352,
+                    "ours_printed": "14 Cp 05' 20.37\"",
+                    "diff_arcsec": 0.0009,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "14 Cn 05' 20.37\"",
+                    "jhora_deg": 104.08899166666666,
+                    "ours_deg": 104.0889919214352,
+                    "ours_printed": "14 Cn 05' 20.37\"",
+                    "diff_arcsec": 0.0009,
+                    "cause": "display rounding (±0.005″)"
+                }
+            }
+        },
+        "2000-01-01_1200_Greenwich": {
+            "place": "Greenwich, United Kingdom",
+            "local": "2000-01-01 12:00:00",
+            "tz": "UTC+00:00:00",
+            "tz_note": "GMT (UTC+0); J2000.0 epoch",
+            "ut": "2000-01-01 12:00:00 UT",
+            "jd_ut": 2451545,
+            "lat": 51.476852,
+            "lon": -0.0005,
+            "ours_deltaT_s": 63.83,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0132,
+                "implied_jhora_minus_ours_deltaT_s": 0.003,
+                "post_fit_max_abs": 0.0057,
+                "post_fit_rms": 0.0026,
+                "ours_deltaT_s": 63.83
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-50-28.91",
+                "jhora_deg": 23.84136388888889,
+                "ours_deg": 23.8413581052464,
+                "ours_printed": "23-50-28.89",
+                "diff_arcsec": -0.0208,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "0 Ar 25' 21.84\"",
+                    "jhora_deg": 0.42273333333333335,
+                    "ours_deg": 0.42273857858043584,
+                    "ours_printed": "0 Ar 25' 21.86\"",
+                    "diff_arcsec": 0.0189,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "16 Sg 32' 13.97\"",
+                    "jhora_deg": 256.5372138888889,
+                    "ours_deg": 256.5372177918225,
+                    "ours_printed": "16 Sg 32' 13.98\"",
+                    "diff_arcsec": 0.0141,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "19 Li 29' 11.20\"",
+                    "jhora_deg": 199.48644444444443,
+                    "ours_deg": 199.4864477657669,
+                    "ours_printed": "19 Li 29' 11.21\"",
+                    "diff_arcsec": 0.012,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "4 Aq 08' 02.74\"",
+                    "jhora_deg": 304.13409444444443,
+                    "ours_deg": 304.1340976330778,
+                    "ours_printed": "4 Aq 08' 02.75\"",
+                    "diff_arcsec": 0.0115,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "8 Sg 03' 52.24\"",
+                    "jhora_deg": 248.06451111111113,
+                    "ours_deg": 248.06451439723014,
+                    "ours_printed": "8 Sg 03' 52.25\"",
+                    "diff_arcsec": 0.0118,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "1 Ar 25' 00.06\"",
+                    "jhora_deg": 1.4166833333333335,
+                    "ours_deg": 1.416685818208407,
+                    "ours_printed": "1 Ar 25' 00.07\"",
+                    "diff_arcsec": 0.0089,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "7 Sc 44' 10.46\"",
+                    "jhora_deg": 217.73623888888886,
+                    "ours_deg": 217.73624254405638,
+                    "ours_printed": "7 Sc 44' 10.47\"",
+                    "diff_arcsec": 0.0132,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "16 Ar 33' 25.83\"",
+                    "jhora_deg": 16.557175,
+                    "ours_deg": 16.557178234488106,
+                    "ours_printed": "16 Ar 33' 25.84\"",
+                    "diff_arcsec": 0.0116,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "10 Cn 06' 59.89\"",
+                    "jhora_deg": 100.1166361111111,
+                    "ours_deg": 100.11664028938822,
+                    "ours_printed": "10 Cn 06' 59.91\"",
+                    "diff_arcsec": 0.015,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "10 Cp 06' 59.89\"",
+                    "jhora_deg": 280.1166361111111,
+                    "ours_deg": 280.1166402893882,
+                    "ours_printed": "10 Cp 06' 59.91\"",
+                    "diff_arcsec": 0.015,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "2010-09-09_0909_Nairobi": {
+            "place": "Nairobi, Kenya",
+            "local": "2010-09-09 09:09:00",
+            "tz": "UTC+03:00:00",
+            "tz_note": "EAT (UTC+3)",
+            "ut": "2010-09-09 06:09:00 UT",
+            "jd_ut": 2455448.75625,
+            "lat": -1.2864,
+            "lon": 36.8172,
+            "ours_deltaT_s": 66.245,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": -0.0071,
+                "implied_jhora_minus_ours_deltaT_s": 0.009,
+                "post_fit_max_abs": 0.0124,
+                "post_fit_rms": 0.0061,
+                "ours_deltaT_s": 66.245
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "23-59-25.92",
+                "jhora_deg": 23.990533333333335,
+                "ours_deg": 23.990533530845596,
+                "ours_printed": "23-59-25.92",
+                "diff_arcsec": 0.0007,
+                "cause": "display rounding (±0.005″)"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "5 Li 35' 49.77\"",
+                    "jhora_deg": 185.59715833333334,
+                    "ours_deg": 185.59715900055141,
+                    "ours_printed": "5 Li 35' 49.77\"",
+                    "diff_arcsec": 0.0024,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "22 Le 29' 01.34\"",
+                    "jhora_deg": 142.48370555555553,
+                    "ours_deg": 142.48370256202804,
+                    "ours_printed": "22 Le 29' 01.33\"",
+                    "diff_arcsec": -0.0108,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "4 Vi 11' 28.22\"",
+                    "jhora_deg": 154.19117222222224,
+                    "ours_deg": 154.1911687401365,
+                    "ours_printed": "4 Vi 11' 28.21\"",
+                    "diff_arcsec": -0.0125,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "2 Li 14' 08.91\"",
+                    "jhora_deg": 182.23580833333332,
+                    "ours_deg": 182.23580541668082,
+                    "ours_printed": "2 Li 14' 08.90\"",
+                    "diff_arcsec": -0.0105,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "12 Le 22' 45.61\"",
+                    "jhora_deg": 132.37933611111112,
+                    "ours_deg": 132.37933296240215,
+                    "ours_printed": "12 Le 22' 45.60\"",
+                    "diff_arcsec": -0.0113,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "5 Pi 59' 41.04\"",
+                    "jhora_deg": 335.99473333333333,
+                    "ours_deg": 335.99472983031706,
+                    "ours_printed": "5 Pi 59' 41.03\"",
+                    "diff_arcsec": -0.0126,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "6 Li 27' 47.20\"",
+                    "jhora_deg": 186.4631111111111,
+                    "ours_deg": 186.46310849652173,
+                    "ours_printed": "6 Li 27' 47.19\"",
+                    "diff_arcsec": -0.0094,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "11 Vi 05' 59.44\"",
+                    "jhora_deg": 161.09984444444444,
+                    "ours_deg": 161.09984138203185,
+                    "ours_printed": "11 Vi 05' 59.43\"",
+                    "diff_arcsec": -0.011,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "15 Sg 33' 06.85\"",
+                    "jhora_deg": 255.5519027777778,
+                    "ours_deg": 255.55190427023376,
+                    "ours_printed": "15 Sg 33' 06.86\"",
+                    "diff_arcsec": 0.0054,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "15 Ge 33' 06.85\"",
+                    "jhora_deg": 75.55190277777777,
+                    "ours_deg": 75.55190427023376,
+                    "ours_printed": "15 Ge 33' 06.86\"",
+                    "diff_arcsec": 0.0054,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "2020-12-21_1820_Varanasi": {
+            "place": "Varanasi, India",
+            "local": "2020-12-21 18:20:00",
+            "tz": "UTC+05:30:00",
+            "tz_note": "IST (UTC+5:30)",
+            "ut": "2020-12-21 12:50:00 UT",
+            "jd_ut": 2459205.034722222,
+            "lat": 25.3176,
+            "lon": 82.9739,
+            "ours_deltaT_s": 72.328,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0122,
+                "implied_jhora_minus_ours_deltaT_s": 0.27,
+                "post_fit_max_abs": 0.0071,
+                "post_fit_rms": 0.0036,
+                "ours_deltaT_s": 72.328
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "24-08-02.71",
+                "jhora_deg": 24.13408611111111,
+                "ours_deg": 24.13407997408899,
+                "ours_printed": "24-08-02.69",
+                "diff_arcsec": -0.0221,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "21 Ge 49' 38.04\"",
+                    "jhora_deg": 81.82723333333333,
+                    "ours_deg": 81.8272387025873,
+                    "ours_printed": "21 Ge 49' 38.06\"",
+                    "diff_arcsec": 0.0193,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "5 Sg 59' 41.87\"",
+                    "jhora_deg": 245.99496388888886,
+                    "ours_deg": 245.99496278592937,
+                    "ours_printed": "5 Sg 59' 41.87\"",
+                    "diff_arcsec": -0.004,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "0 Pi 57' 24.53\"",
+                    "jhora_deg": 330.95681388888886,
+                    "ours_deg": 330.9567791810284,
+                    "ours_printed": "0 Pi 57' 24.41\"",
+                    "diff_arcsec": -0.1249,
+                    "cause": "ΔT model: fitted JHora−ours ΔT +0.270 s"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "28 Pi 59' 54.34\"",
+                    "jhora_deg": 358.9984277777778,
+                    "ours_deg": 358.9984297067753,
+                    "ours_printed": "28 Pi 59' 54.35\"",
+                    "diff_arcsec": 0.0069,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "6 Sg 47' 21.82\"",
+                    "jhora_deg": 246.78939444444444,
+                    "ours_deg": 246.78939318406424,
+                    "ours_printed": "6 Sg 47' 21.82\"",
+                    "diff_arcsec": -0.0045,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "6 Cp 18' 49.18\"",
+                    "jhora_deg": 276.3136611111111,
+                    "ours_deg": 276.31366272512037,
+                    "ours_printed": "6 Cp 18' 49.19\"",
+                    "diff_arcsec": 0.0058,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "13 Sc 11' 48.88\"",
+                    "jhora_deg": 223.19691111111112,
+                    "ours_deg": 223.1969114444912,
+                    "ours_printed": "13 Sc 11' 48.88\"",
+                    "diff_arcsec": 0.0012,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "6 Cp 20' 18.90\"",
+                    "jhora_deg": 276.3385833333333,
+                    "ours_deg": 276.3385870196129,
+                    "ours_printed": "6 Cp 20' 18.91\"",
+                    "diff_arcsec": 0.0133,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "25 Ta 44' 42.57\"",
+                    "jhora_deg": 55.745158333333336,
+                    "ours_deg": 55.7451607447822,
+                    "ours_printed": "25 Ta 44' 42.58\"",
+                    "diff_arcsec": 0.0087,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "25 Sc 44' 42.57\"",
+                    "jhora_deg": 235.7451583333333,
+                    "ours_deg": 235.7451607447822,
+                    "ours_printed": "25 Sc 44' 42.58\"",
+                    "diff_arcsec": 0.0087,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        },
+        "2024-04-08_1318_Dallas": {
+            "place": "Dallas, USA",
+            "local": "2024-04-08 13:18:00",
+            "tz": "UTC-05:00:00",
+            "tz_note": "CDT (UTC-5); 18:18 UT total solar eclipse day",
+            "ut": "2024-04-08 18:18:00 UT",
+            "jd_ut": 2460409.2625,
+            "lat": 32.7767,
+            "lon": -96.797,
+            "ours_deltaT_s": 77.575,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.0002,
+                "implied_jhora_minus_ours_deltaT_s": 0.265,
+                "post_fit_max_abs": 0.0045,
+                "post_fit_rms": 0.0031,
+                "ours_deltaT_s": 77.575
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "24-10-48.37",
+                "jhora_deg": 24.18010277777778,
+                "ours_deg": 24.18010100020001,
+                "ours_printed": "24-10-48.36",
+                "diff_arcsec": -0.0064,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "3 Cn 03' 10.90\"",
+                    "jhora_deg": 93.05302777777777,
+                    "ours_deg": 93.05302905248811,
+                    "ours_printed": "3 Cn 03' 10.90\"",
+                    "diff_arcsec": 0.0046,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "25 Pi 13' 32.35\"",
+                    "jhora_deg": 355.2256527777777,
+                    "ours_deg": 355.2256490006174,
+                    "ours_printed": "25 Pi 13' 32.34\"",
+                    "diff_arcsec": -0.0136,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "25 Pi 11' 37.53\"",
+                    "jhora_deg": 355.19375833333334,
+                    "ours_deg": 355.1937126645537,
+                    "ours_printed": "25 Pi 11' 37.37\"",
+                    "diff_arcsec": -0.1644,
+                    "cause": "ΔT model: fitted JHora−ours ΔT +0.265 s"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "18 Aq 52' 50.16\"",
+                    "jhora_deg": 318.8806,
+                    "ours_deg": 318.88059667868697,
+                    "ours_printed": "18 Aq 52' 50.15\"",
+                    "diff_arcsec": -0.012,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "0 Ar 37' 05.52\"",
+                    "jhora_deg": 0.6182000000000001,
+                    "ours_deg": 0.6182028749913115,
+                    "ours_printed": "0 Ar 37' 05.53\"",
+                    "diff_arcsec": 0.0103,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "24 Ar 52' 27.11\"",
+                    "jhora_deg": 24.87419722222222,
+                    "ours_deg": 24.874196249884733,
+                    "ours_printed": "24 Ar 52' 27.11\"",
+                    "diff_arcsec": -0.0035,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "10 Pi 16' 33.26\"",
+                    "jhora_deg": 340.27590555555554,
+                    "ours_deg": 340.27590134027434,
+                    "ours_printed": "10 Pi 16' 33.24\"",
+                    "diff_arcsec": -0.0152,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "20 Aq 16' 58.65\"",
+                    "jhora_deg": 320.28295833333334,
+                    "ours_deg": 320.2829571119437,
+                    "ours_printed": "20 Aq 16' 58.65\"",
+                    "diff_arcsec": -0.0044,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "21 Pi 26' 53.68\"",
+                    "jhora_deg": 351.44824444444447,
+                    "ours_deg": 351.44824573892157,
+                    "ours_printed": "21 Pi 26' 53.68\"",
+                    "diff_arcsec": 0.0047,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "21 Vi 26' 53.68\"",
+                    "jhora_deg": 171.44824444444444,
+                    "ours_deg": 171.4482457389215,
+                    "ours_printed": "21 Vi 26' 53.68\"",
+                    "diff_arcsec": 0.0047,
+                    "cause": "display rounding (±0.005″)"
+                }
+            }
+        },
+        "2100-01-01_0000_Honolulu": {
+            "place": "Honolulu, USA",
+            "local": "2100-01-01 00:00:00",
+            "tz": "UTC-10:00:00",
+            "tz_note": "HST (UTC-10), assumes current rules persist",
+            "ut": "2100-01-01 10:00:00 UT",
+            "jd_ut": 2488069.9166666665,
+            "lat": 21.3069,
+            "lon": -157.8583,
+            "ours_deltaT_s": 216.671,
+            "ephemeris": {
+                "policy": "auto",
+                "kernelId": "de440s",
+                "kernelVersion": "440"
+            },
+            "fit": {
+                "common_offset_arcsec": 0.014,
+                "implied_jhora_minus_ours_deltaT_s": 0.048,
+                "post_fit_max_abs": 0.0138,
+                "post_fit_rms": 0.0057,
+                "ours_deltaT_s": 216.671
+            },
+            "ayanamsa": {
+                "body": "Ayanamsa",
+                "cls": "Ayanamsa",
+                "jhora_printed": "25-14-14.55",
+                "jhora_deg": 25.237375,
+                "ours_deg": 25.237370449595346,
+                "ours_printed": "25-14-14.53",
+                "diff_arcsec": -0.0164,
+                "cause": "ayanamsa definition/realisation — unknown"
+            },
+            "bodies": {
+                "Lagna": {
+                    "body": "Lagna",
+                    "cls": "Ascendant",
+                    "jhora_printed": "7 Vi 49' 54.11\"",
+                    "jhora_deg": 157.83169722222223,
+                    "ours_deg": 157.83170274527504,
+                    "ours_printed": "7 Vi 49' 54.13\"",
+                    "diff_arcsec": 0.0199,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Sun": {
+                    "body": "Sun",
+                    "cls": "Luminaries",
+                    "jhora_printed": "15 Sg 47' 52.55\"",
+                    "jhora_deg": 255.79793055555555,
+                    "ours_deg": 255.79793405723137,
+                    "ours_printed": "15 Sg 47' 52.56\"",
+                    "diff_arcsec": 0.0126,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Moon": {
+                    "body": "Moon",
+                    "cls": "Luminaries",
+                    "jhora_printed": "18 Le 02' 24.30\"",
+                    "jhora_deg": 138.04008333333334,
+                    "ours_deg": 138.04007959561432,
+                    "ours_printed": "18 Le 02' 24.29\"",
+                    "diff_arcsec": -0.0135,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mars": {
+                    "body": "Mars",
+                    "cls": "Planets",
+                    "jhora_printed": "4 Ar 27' 34.84\"",
+                    "jhora_deg": 4.459677777777778,
+                    "ours_deg": 4.459682680007688,
+                    "ours_printed": "4 Ar 27' 34.86\"",
+                    "diff_arcsec": 0.0176,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Mercury": {
+                    "body": "Mercury",
+                    "cls": "Planets",
+                    "jhora_printed": "23 Sg 27' 34.81\"",
+                    "jhora_deg": 263.45966944444444,
+                    "ours_deg": 263.459671067037,
+                    "ours_printed": "23 Sg 27' 34.82\"",
+                    "diff_arcsec": 0.0058,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Jupiter": {
+                    "body": "Jupiter",
+                    "cls": "Planets",
+                    "jhora_printed": "26 Vi 00' 56.25\"",
+                    "jhora_deg": 176.015625,
+                    "ours_deg": 176.01562500454088,
+                    "ours_printed": "26 Vi 00' 56.25\"",
+                    "diff_arcsec": 0.0,
+                    "cause": "display rounding (±0.005″)"
+                },
+                "Venus": {
+                    "body": "Venus",
+                    "cls": "Planets",
+                    "jhora_printed": "25 Cp 20' 34.92\"",
+                    "jhora_deg": 295.3430333333333,
+                    "ours_deg": 295.3430369813774,
+                    "ours_printed": "25 Cp 20' 34.93\"",
+                    "diff_arcsec": 0.0131,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Saturn": {
+                    "body": "Saturn",
+                    "cls": "Planets",
+                    "jhora_printed": "0 Li 25' 14.61\"",
+                    "jhora_deg": 180.420725,
+                    "ours_deg": 180.42072905748876,
+                    "ours_printed": "0 Li 25' 14.62\"",
+                    "diff_arcsec": 0.0146,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Rahu": {
+                    "body": "Rahu",
+                    "cls": "Nodes",
+                    "jhora_printed": "24 Aq 35' 21.01\"",
+                    "jhora_deg": 324.58916944444445,
+                    "ours_deg": 324.5891747261967,
+                    "ours_printed": "24 Aq 35' 21.03\"",
+                    "diff_arcsec": 0.019,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                },
+                "Ketu": {
+                    "body": "Ketu",
+                    "cls": "Nodes",
+                    "jhora_printed": "24 Le 35' 21.01\"",
+                    "jhora_deg": 144.58916944444445,
+                    "ours_deg": 144.5891747261967,
+                    "ours_printed": "24 Le 35' 21.03\"",
+                    "diff_arcsec": 0.019,
+                    "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+                }
+            }
+        }
+    },
+    "summary": {
+        "Ascendant": {
+            "n": 12,
+            "max": 0.0199,
+            "median": 0.0088,
+            "within_0_005": 5,
+            "within_0_01": 7,
+            "within_0_02": 12,
+            "over_0_05": 0
+        },
+        "Luminaries": {
+            "n": 24,
+            "max": 0.1644,
+            "median": 0.0112,
+            "within_0_005": 1,
+            "within_0_01": 9,
+            "within_0_02": 22,
+            "over_0_05": 2
+        },
+        "Planets": {
+            "n": 60,
+            "max": 0.0176,
+            "median": 0.0107,
+            "within_0_005": 12,
+            "within_0_01": 28,
+            "within_0_02": 60,
+            "over_0_05": 0
+        },
+        "Nodes": {
+            "n": 24,
+            "max": 0.019,
+            "median": 0.0086,
+            "within_0_005": 6,
+            "within_0_01": 14,
+            "within_0_02": 24,
+            "over_0_05": 0
+        },
+        "Ayanamsa": {
+            "n": 12,
+            "max": 0.0221,
+            "median": 0.0087,
+            "within_0_005": 3,
+            "within_0_01": 7,
+            "within_0_02": 10,
+            "over_0_05": 0
+        },
+        "All": {
+            "n": 132,
+            "max": 0.1644,
+            "median": 0.0102,
+            "within_0_005": 27,
+            "within_0_01": 65,
+            "within_0_02": 128,
+            "over_0_05": 2
+        }
+    },
+    "common_offset_vs_ayanamsa_diff_pearson_r": -0.965,
+    "worst_cells": [
+        {
+            "chart": "2024-04-08_1318_Dallas",
+            "body": "Moon",
+            "diff_arcsec": -0.1644,
+            "cause": "ΔT model: fitted JHora−ours ΔT +0.265 s"
+        },
+        {
+            "chart": "2020-12-21_1820_Varanasi",
+            "body": "Moon",
+            "diff_arcsec": -0.1249,
+            "cause": "ΔT model: fitted JHora−ours ΔT +0.270 s"
+        },
+        {
+            "chart": "2020-12-21_1820_Varanasi",
+            "body": "Ayanamsa",
+            "diff_arcsec": -0.0221,
+            "cause": "ayanamsa definition/realisation — unknown"
+        },
+        {
+            "chart": "2000-01-01_1200_Greenwich",
+            "body": "Ayanamsa",
+            "diff_arcsec": -0.0208,
+            "cause": "ayanamsa definition/realisation — unknown"
+        },
+        {
+            "chart": "2100-01-01_0000_Honolulu",
+            "body": "Lagna",
+            "diff_arcsec": 0.0199,
+            "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+        },
+        {
+            "chart": "2020-12-21_1820_Varanasi",
+            "body": "Lagna",
+            "diff_arcsec": 0.0193,
+            "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+        },
+        {
+            "chart": "2100-01-01_0000_Honolulu",
+            "body": "Rahu",
+            "diff_arcsec": 0.019,
+            "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+        },
+        {
+            "chart": "2100-01-01_0000_Honolulu",
+            "body": "Ketu",
+            "diff_arcsec": 0.019,
+            "cause": "per-chart common offset (ayanamsa-like; mechanism unknown) + display rounding"
+        }
+    ]
+}

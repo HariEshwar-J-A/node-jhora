@@ -1,0 +1,1490 @@
+{
+    "1600-05-01_1200_Rome": {
+        "name": "1600-05-01_1200_Rome",
+        "bodies": {
+            "Lagna": {
+                "printed": "2 Le 26' 30.27\"",
+                "sign": "Le",
+                "lon": 122.44174166666667,
+                "nakshatra": "Magh",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Sun": {
+                "printed": "22 Ar 54' 12.06\"",
+                "sign": "Ar",
+                "lon": 22.90335,
+                "nakshatra": "Bhar",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Moon": {
+                "printed": "26 Sc 50' 40.34\"",
+                "sign": "Sc",
+                "lon": 236.8445388888889,
+                "nakshatra": "Jye",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Mars": {
+                "printed": "23 Cn 41' 22.05\"",
+                "sign": "Cn",
+                "lon": 113.68945833333333,
+                "nakshatra": "Asre",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Mercury": {
+                "printed": "9 Ta 14' 29.30\"",
+                "sign": "Ta",
+                "lon": 39.24147222222222,
+                "nakshatra": "Krit",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Jupiter": {
+                "printed": "24 Cn 23' 12.83\"",
+                "sign": "Cn",
+                "lon": 114.38689722222223,
+                "nakshatra": "Asre",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Venus": {
+                "printed": "14 Pi 39' 15.42\"",
+                "sign": "Pi",
+                "lon": 344.6542833333333,
+                "nakshatra": "UBha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Saturn": {
+                "printed": "5 Li 43' 36.69\"",
+                "sign": "Li",
+                "lon": 185.72685833333333,
+                "nakshatra": "Chit",
+                "pada": 4,
+                "retro": true,
+                "rasi_col": "Li"
+            },
+            "Rahu": {
+                "printed": "5 Cp 31' 24.56\"",
+                "sign": "Cp",
+                "lon": 275.5234888888889,
+                "nakshatra": "USha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Ketu": {
+                "printed": "5 Cn 31' 24.56\"",
+                "sign": "Cn",
+                "lon": 95.52348888888889,
+                "nakshatra": "Push",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Cn"
+            }
+        },
+        "checks": [],
+        "panel_date": "May 1, 1600",
+        "panel_time": "12:00:00",
+        "panel_time_zone": "0:49:59 (East of GMT)",
+        "panel_place": "12 E 29' 47\", 41 N 54' 10\" Rome, Italy",
+        "panel_ayanamsa": "18-16-05.41",
+        "ayanamsa": {
+            "printed": "18-16-05.41",
+            "deg": 18.268169444444442
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Rome, Italy",
+            "local_datetime": "1600-05-01 12:00:00",
+            "tz_offset": "UTC+00:49:59",
+            "ut_datetime": "1600-05-01 11:10:01 UT",
+            "lat": 41.9028,
+            "lon": 12.4964,
+            "tz_note": "Rome LMT (Gregorian calendar in force since 1582)",
+            "jhd": {
+                "month": 5,
+                "day": 1,
+                "year": 1600,
+                "time_h": 12.0,
+                "tz_h": 0.83305555,
+                "lon": 12.496400000000001,
+                "lat": 41.9028
+            }
+        }
+    },
+    "1800-08-15_1500_Cape-Town": {
+        "name": "1800-08-15_1500_Cape-Town",
+        "bodies": {
+            "Lagna": {
+                "printed": "1 Cp 18' 58.47\"",
+                "sign": "Cp",
+                "lon": 271.31624166666666,
+                "nakshatra": "USha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Sun": {
+                "printed": "1 Le 20' 45.06\"",
+                "sign": "Le",
+                "lon": 121.34585,
+                "nakshatra": "Magh",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Moon": {
+                "printed": "5 Ge 24' 47.86\"",
+                "sign": "Ge",
+                "lon": 65.41329444444445,
+                "nakshatra": "Mrig",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Mars": {
+                "printed": "20 Ar 00' 35.15\"",
+                "sign": "Ar",
+                "lon": 20.009763888888887,
+                "nakshatra": "Bhar",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Mercury": {
+                "printed": "16 Le 57' 22.94\"",
+                "sign": "Le",
+                "lon": 136.9563722222222,
+                "nakshatra": "PPha",
+                "pada": 2,
+                "retro": true,
+                "rasi_col": "Le"
+            },
+            "Jupiter": {
+                "printed": "1 Cn 06' 51.00\"",
+                "sign": "Cn",
+                "lon": 91.11416666666666,
+                "nakshatra": "Puna",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Venus": {
+                "printed": "4 Le 10' 08.75\"",
+                "sign": "Le",
+                "lon": 124.16909722222222,
+                "nakshatra": "Magh",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Saturn": {
+                "printed": "23 Cn 54' 22.70\"",
+                "sign": "Cn",
+                "lon": 113.90630555555556,
+                "nakshatra": "Asre",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Rahu": {
+                "printed": "29 Pi 17' 09.79\"",
+                "sign": "Pi",
+                "lon": 359.2860527777778,
+                "nakshatra": "Reva",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Ketu": {
+                "printed": "29 Vi 17' 09.79\"",
+                "sign": "Vi",
+                "lon": 179.28605277777777,
+                "nakshatra": "Chit",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Vi"
+            }
+        },
+        "checks": [],
+        "panel_date": "August 15, 1800",
+        "panel_time": "15:00:00",
+        "panel_time_zone": "1:13:42 (East of GMT)",
+        "panel_place": "18 E 25' 27\", 33 S 55' 30\" Cape Town, South Africa",
+        "panel_ayanamsa": "21-03-35.56",
+        "ayanamsa": {
+            "printed": "21-03-35.56",
+            "deg": 21.05987777777778
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Cape Town, South Africa",
+            "local_datetime": "1800-08-15 15:00:00",
+            "tz_offset": "UTC+01:13:42",
+            "ut_datetime": "1800-08-15 13:46:18 UT",
+            "lat": -33.9249,
+            "lon": 18.4241,
+            "tz_note": "Cape Town LMT (no standard zone until 1892)",
+            "jhd": {
+                "month": 8,
+                "day": 15,
+                "year": 1800,
+                "time_h": 15.0,
+                "tz_h": 1.2283333333333333,
+                "lon": 18.424100000000003,
+                "lat": -33.9249
+            }
+        }
+    },
+    "1900-03-15_0630_Delhi": {
+        "name": "1900-03-15_0630_Delhi",
+        "bodies": {
+            "Lagna": {
+                "printed": "7 Pi 07' 05.45\"",
+                "sign": "Pi",
+                "lon": 337.11818055555557,
+                "nakshatra": "UBha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Sun": {
+                "printed": "1 Pi 34' 36.70\"",
+                "sign": "Pi",
+                "lon": 331.5768611111111,
+                "nakshatra": "PBha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Moon": {
+                "printed": "17 Le 34' 27.00\"",
+                "sign": "Le",
+                "lon": 137.57416666666666,
+                "nakshatra": "PPha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Mars": {
+                "printed": "18 Aq 41' 16.24\"",
+                "sign": "Aq",
+                "lon": 318.68784444444447,
+                "nakshatra": "Sata",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Mercury": {
+                "printed": "16 Pi 41' 43.06\"",
+                "sign": "Pi",
+                "lon": 346.69529444444447,
+                "nakshatra": "Reva",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Jupiter": {
+                "printed": "18 Sc 09' 35.11\"",
+                "sign": "Sc",
+                "lon": 228.15975277777778,
+                "nakshatra": "Jye",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Venus": {
+                "printed": "12 Ar 33' 47.78\"",
+                "sign": "Ar",
+                "lon": 12.563272222222222,
+                "nakshatra": "Aswi",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Saturn": {
+                "printed": "11 Sg 50' 33.38\"",
+                "sign": "Sg",
+                "lon": 251.84260555555556,
+                "nakshatra": "Mool",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Rahu": {
+                "printed": "22 Sc 19' 17.20\"",
+                "sign": "Sc",
+                "lon": 232.32144444444444,
+                "nakshatra": "Jye",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Ketu": {
+                "printed": "22 Ta 19' 17.20\"",
+                "sign": "Ta",
+                "lon": 52.321444444444445,
+                "nakshatra": "Rohi",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ta"
+            }
+        },
+        "checks": [],
+        "panel_date": "March 15, 1900",
+        "panel_time": "6:30:00",
+        "panel_time_zone": "5:08:50 (East of GMT)",
+        "panel_place": "77 E 12' 32\", 28 N 36' 50\" New Delhi, India",
+        "panel_ayanamsa": "22-26-55.57",
+        "ayanamsa": {
+            "printed": "22-26-55.57",
+            "deg": 22.448769444444444
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "New Delhi, India",
+            "local_datetime": "1900-03-15 06:30:00",
+            "tz_offset": "UTC+05:08:50",
+            "ut_datetime": "1900-03-15 01:21:10 UT",
+            "lat": 28.6139,
+            "lon": 77.209,
+            "tz_note": "Delhi LMT (no national zone; IST began 1906). IANA Asia/Kolkata would give Madras Time +5:21:10",
+            "jhd": {
+                "month": 3,
+                "day": 15,
+                "year": 1900,
+                "time_h": 6.5,
+                "tz_h": 5.147222216666667,
+                "lon": 77.209,
+                "lat": 28.6139
+            }
+        }
+    },
+    "1950-07-04_1845_New-York": {
+        "name": "1950-07-04_1845_New-York",
+        "bodies": {
+            "Lagna": {
+                "printed": "25 Sc 59' 09.16\"",
+                "sign": "Sc",
+                "lon": 235.98587777777777,
+                "nakshatra": "Jye",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Sun": {
+                "printed": "19 Ge 12' 52.95\"",
+                "sign": "Ge",
+                "lon": 79.21470833333333,
+                "nakshatra": "Ardr",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Moon": {
+                "printed": "24 Aq 33' 26.50\"",
+                "sign": "Aq",
+                "lon": 324.5573611111111,
+                "nakshatra": "PBha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Mars": {
+                "printed": "16 Vi 45' 14.14\"",
+                "sign": "Vi",
+                "lon": 166.7539277777778,
+                "nakshatra": "Hast",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Mercury": {
+                "printed": "11 Ge 44' 19.59\"",
+                "sign": "Ge",
+                "lon": 71.738775,
+                "nakshatra": "Ardr",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Jupiter": {
+                "printed": "14 Aq 11' 58.11\"",
+                "sign": "Aq",
+                "lon": 314.199475,
+                "nakshatra": "Sata",
+                "pada": 3,
+                "retro": true,
+                "rasi_col": "Aq"
+            },
+            "Venus": {
+                "printed": "15 Ta 41' 32.24\"",
+                "sign": "Ta",
+                "lon": 45.69228888888888,
+                "nakshatra": "Rohi",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Saturn": {
+                "printed": "21 Le 32' 01.88\"",
+                "sign": "Le",
+                "lon": 141.53385555555556,
+                "nakshatra": "PPha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Rahu": {
+                "printed": "8 Pi 37' 15.30\"",
+                "sign": "Pi",
+                "lon": 338.6209166666667,
+                "nakshatra": "UBha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Ketu": {
+                "printed": "8 Vi 37' 15.30\"",
+                "sign": "Vi",
+                "lon": 158.6209166666667,
+                "nakshatra": "UPha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Vi"
+            }
+        },
+        "checks": [],
+        "panel_date": "July 4, 1950",
+        "panel_time": "18:45:00",
+        "panel_time_zone": "4:00:00 (West of GMT)",
+        "panel_place": "74 W 00' 22\", 40 N 42' 46\" New York, USA",
+        "panel_ayanamsa": "23-09-02.32",
+        "ayanamsa": {
+            "printed": "23-09-02.32",
+            "deg": 23.150644444444442
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "New York, USA",
+            "local_datetime": "1950-07-04 18:45:00",
+            "tz_offset": "UTC-04:00:00",
+            "ut_datetime": "1950-07-04 22:45:00 UT",
+            "lat": 40.7128,
+            "lon": -74.006,
+            "tz_note": "EDT (UTC-4): NYC observed DST Apr 30-Sep 24 1950",
+            "jhd": {
+                "month": 7,
+                "day": 4,
+                "year": 1950,
+                "time_h": 18.75,
+                "tz_h": -4.0,
+                "lon": -74.00600000000001,
+                "lat": 40.7128
+            }
+        }
+    },
+    "1975-11-20_2310_Tokyo": {
+        "name": "1975-11-20_2310_Tokyo",
+        "bodies": {
+            "Lagna": {
+                "printed": "4 Le 24' 45.46\"",
+                "sign": "Le",
+                "lon": 124.41262777777779,
+                "nakshatra": "Magh",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Sun": {
+                "printed": "4 Sc 07' 37.14\"",
+                "sign": "Sc",
+                "lon": 214.12698333333333,
+                "nakshatra": "Anu",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Moon": {
+                "printed": "23 Ta 20' 19.23\"",
+                "sign": "Ta",
+                "lon": 53.338675,
+                "nakshatra": "Mrig",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Mars": {
+                "printed": "7 Ge 43' 19.15\"",
+                "sign": "Ge",
+                "lon": 67.72198611111111,
+                "nakshatra": "Ardr",
+                "pada": 1,
+                "retro": true,
+                "rasi_col": "Ge"
+            },
+            "Mercury": {
+                "printed": "29 Li 23' 08.38\"",
+                "sign": "Li",
+                "lon": 209.3856611111111,
+                "nakshatra": "Visa",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Jupiter": {
+                "printed": "21 Pi 55' 17.52\"",
+                "sign": "Pi",
+                "lon": 351.92153333333334,
+                "nakshatra": "Reva",
+                "pada": 2,
+                "retro": true,
+                "rasi_col": "Pi"
+            },
+            "Venus": {
+                "printed": "18 Vi 06' 38.43\"",
+                "sign": "Vi",
+                "lon": 168.110675,
+                "nakshatra": "Hast",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Saturn": {
+                "printed": "9 Cn 26' 09.83\"",
+                "sign": "Cn",
+                "lon": 99.4360638888889,
+                "nakshatra": "Push",
+                "pada": 2,
+                "retro": true,
+                "rasi_col": "Cn"
+            },
+            "Rahu": {
+                "printed": "28 Li 17' 29.21\"",
+                "sign": "Li",
+                "lon": 208.29144722222222,
+                "nakshatra": "Visa",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Ketu": {
+                "printed": "28 Ar 17' 29.21\"",
+                "sign": "Ar",
+                "lon": 28.291447222222224,
+                "nakshatra": "Krit",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ar"
+            }
+        },
+        "checks": [],
+        "panel_date": "November 20, 1975",
+        "panel_time": "23:10:00",
+        "panel_time_zone": "9:00:00 (East of GMT)",
+        "panel_place": "139 E 41' 30\", 35 N 41' 22\" Tokyo, Japan",
+        "panel_ayanamsa": "23-30-17.31",
+        "ayanamsa": {
+            "printed": "23-30-17.31",
+            "deg": 23.504808333333333
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Tokyo, Japan",
+            "local_datetime": "1975-11-20 23:10:00",
+            "tz_offset": "UTC+09:00:00",
+            "ut_datetime": "1975-11-20 14:10:00 UT",
+            "lat": 35.6895,
+            "lon": 139.6917,
+            "tz_note": "JST (UTC+9), no DST",
+            "jhd": {
+                "month": 11,
+                "day": 20,
+                "year": 1975,
+                "time_h": 23.166666666666668,
+                "tz_h": 9.0,
+                "lon": 139.6917,
+                "lat": 35.689499999999995
+            }
+        }
+    },
+    "1985-02-28_0405_Sydney": {
+        "name": "1985-02-28_0405_Sydney",
+        "bodies": {
+            "Lagna": {
+                "printed": "12 Cp 09' 17.56\"",
+                "sign": "Cp",
+                "lon": 282.15487777777776,
+                "nakshatra": "Srav",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Sun": {
+                "printed": "15 Aq 26' 03.23\"",
+                "sign": "Aq",
+                "lon": 315.4342305555556,
+                "nakshatra": "Sata",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Moon": {
+                "printed": "12 Ta 21' 31.94\"",
+                "sign": "Ta",
+                "lon": 42.358872222222224,
+                "nakshatra": "Rohi",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Mars": {
+                "printed": "25 Pi 01' 20.08\"",
+                "sign": "Pi",
+                "lon": 355.0222444444444,
+                "nakshatra": "Reva",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Mercury": {
+                "printed": "22 Aq 43' 10.03\"",
+                "sign": "Aq",
+                "lon": 322.71945277777775,
+                "nakshatra": "PBha",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Jupiter": {
+                "printed": "11 Cp 03' 39.64\"",
+                "sign": "Cp",
+                "lon": 281.0610111111111,
+                "nakshatra": "Srav",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Venus": {
+                "printed": "25 Pi 03' 21.04\"",
+                "sign": "Pi",
+                "lon": 355.05584444444446,
+                "nakshatra": "Reva",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Saturn": {
+                "printed": "4 Sc 26' 37.97\"",
+                "sign": "Sc",
+                "lon": 214.44388055555555,
+                "nakshatra": "Anu",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Rahu": {
+                "printed": "27 Ar 25' 14.94\"",
+                "sign": "Ar",
+                "lon": 27.420816666666667,
+                "nakshatra": "Krit",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Ketu": {
+                "printed": "27 Li 25' 14.94\"",
+                "sign": "Li",
+                "lon": 207.42081666666667,
+                "nakshatra": "Visa",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Li"
+            }
+        },
+        "checks": [],
+        "panel_date": "February 28, 1985",
+        "panel_time": "4:05:00",
+        "panel_time_zone": "11:00:00 (East of GMT)",
+        "panel_place": "151 E 12' 33\", 33 S 52' 08\" Sydney, Australia",
+        "panel_ayanamsa": "23-38-03.22",
+        "ayanamsa": {
+            "printed": "23-38-03.22",
+            "deg": 23.634227777777777
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Sydney, Australia",
+            "local_datetime": "1985-02-28 04:05:00",
+            "tz_offset": "UTC+11:00:00",
+            "ut_datetime": "1985-02-27 17:05:00 UT",
+            "lat": -33.8688,
+            "lon": 151.2093,
+            "tz_note": "AEDT (UTC+11): NSW DST 1984-10-28 to 1985-03-03",
+            "jhd": {
+                "month": 2,
+                "day": 28,
+                "year": 1985,
+                "time_h": 4.083333333333333,
+                "tz_h": 11.0,
+                "lon": 151.2093,
+                "lat": -33.86879999999999
+            }
+        }
+    },
+    "1990-06-21_1200_Reykjavik": {
+        "name": "1990-06-21_1200_Reykjavik",
+        "bodies": {
+            "Lagna": {
+                "printed": "23 Le 21' 53.31\"",
+                "sign": "Le",
+                "lon": 143.36480833333331,
+                "nakshatra": "PPha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Sun": {
+                "printed": "6 Ge 09' 09.28\"",
+                "sign": "Ge",
+                "lon": 66.15257777777778,
+                "nakshatra": "Mrig",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Moon": {
+                "printed": "18 Ta 03' 14.18\"",
+                "sign": "Ta",
+                "lon": 48.05393888888889,
+                "nakshatra": "Rohi",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Mars": {
+                "printed": "21 Pi 37' 35.41\"",
+                "sign": "Pi",
+                "lon": 351.6265027777778,
+                "nakshatra": "Reva",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Mercury": {
+                "printed": "23 Ta 05' 02.34\"",
+                "sign": "Ta",
+                "lon": 53.083983333333336,
+                "nakshatra": "Rohi",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Jupiter": {
+                "printed": "23 Ge 29' 41.23\"",
+                "sign": "Ge",
+                "lon": 83.49478611111111,
+                "nakshatra": "Puna",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Venus": {
+                "printed": "2 Ta 08' 47.05\"",
+                "sign": "Ta",
+                "lon": 32.14640277777778,
+                "nakshatra": "Krit",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Saturn": {
+                "printed": "29 Sg 56' 51.68\"",
+                "sign": "Sg",
+                "lon": 269.9476888888889,
+                "nakshatra": "USha",
+                "pada": 1,
+                "retro": true,
+                "rasi_col": "Sg"
+            },
+            "Rahu": {
+                "printed": "14 Cp 05' 20.37\"",
+                "sign": "Cp",
+                "lon": 284.08899166666663,
+                "nakshatra": "Srav",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Ketu": {
+                "printed": "14 Cn 05' 20.37\"",
+                "sign": "Cn",
+                "lon": 104.08899166666666,
+                "nakshatra": "Push",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Cn"
+            }
+        },
+        "checks": [],
+        "panel_date": "June 21, 1990",
+        "panel_time": "12:00:00",
+        "panel_time_zone": "0:00:00 (West of GMT)",
+        "panel_place": "21 W 56' 33\", 64 N 08' 48\" Reykjavik, Iceland",
+        "panel_ayanamsa": "23-42-30.03",
+        "ayanamsa": {
+            "printed": "23-42-30.03",
+            "deg": 23.708341666666666
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Reykjavik, Iceland",
+            "local_datetime": "1990-06-21 12:00:00",
+            "tz_offset": "UTC+00:00:00",
+            "ut_datetime": "1990-06-21 12:00:00 UT",
+            "lat": 64.1466,
+            "lon": -21.9426,
+            "tz_note": "GMT (UTC+0), Iceland no DST since 1968; high latitude",
+            "jhd": {
+                "month": 6,
+                "day": 21,
+                "year": 1990,
+                "time_h": 12.0,
+                "tz_h": -0.0,
+                "lon": -21.942600000000002,
+                "lat": 64.14659999999999
+            }
+        }
+    },
+    "2000-01-01_1200_Greenwich": {
+        "name": "2000-01-01_1200_Greenwich",
+        "bodies": {
+            "Lagna": {
+                "printed": "0 Ar 25' 21.84\"",
+                "sign": "Ar",
+                "lon": 0.42273333333333335,
+                "nakshatra": "Aswi",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Sun": {
+                "printed": "16 Sg 32' 13.97\"",
+                "sign": "Sg",
+                "lon": 256.5372138888889,
+                "nakshatra": "PSha",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Moon": {
+                "printed": "19 Li 29' 11.20\"",
+                "sign": "Li",
+                "lon": 199.48644444444443,
+                "nakshatra": "Swat",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Mars": {
+                "printed": "4 Aq 08' 02.74\"",
+                "sign": "Aq",
+                "lon": 304.13409444444443,
+                "nakshatra": "Dhan",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Mercury": {
+                "printed": "8 Sg 03' 52.24\"",
+                "sign": "Sg",
+                "lon": 248.06451111111113,
+                "nakshatra": "Mool",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Jupiter": {
+                "printed": "1 Ar 25' 00.06\"",
+                "sign": "Ar",
+                "lon": 1.4166833333333335,
+                "nakshatra": "Aswi",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Venus": {
+                "printed": "7 Sc 44' 10.46\"",
+                "sign": "Sc",
+                "lon": 217.73623888888886,
+                "nakshatra": "Anu",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Saturn": {
+                "printed": "16 Ar 33' 25.83\"",
+                "sign": "Ar",
+                "lon": 16.557175,
+                "nakshatra": "Bhar",
+                "pada": 1,
+                "retro": true,
+                "rasi_col": "Ar"
+            },
+            "Rahu": {
+                "printed": "10 Cn 06' 59.89\"",
+                "sign": "Cn",
+                "lon": 100.1166361111111,
+                "nakshatra": "Push",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Ketu": {
+                "printed": "10 Cp 06' 59.89\"",
+                "sign": "Cp",
+                "lon": 280.1166361111111,
+                "nakshatra": "Srav",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Cp"
+            }
+        },
+        "checks": [],
+        "panel_date": "January 1, 2000",
+        "panel_time": "12:00:00",
+        "panel_time_zone": "0:00:00 (West of GMT)",
+        "panel_place": "0 W 00' 02\", 51 N 28' 37\" Greenwich, United Kingdom",
+        "panel_ayanamsa": "23-50-28.91",
+        "ayanamsa": {
+            "printed": "23-50-28.91",
+            "deg": 23.84136388888889
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Greenwich, United Kingdom",
+            "local_datetime": "2000-01-01 12:00:00",
+            "tz_offset": "UTC+00:00:00",
+            "ut_datetime": "2000-01-01 12:00:00 UT",
+            "lat": 51.476852,
+            "lon": -0.0005,
+            "tz_note": "GMT (UTC+0); J2000.0 epoch",
+            "jhd": {
+                "month": 1,
+                "day": 1,
+                "year": 2000,
+                "time_h": 12.0,
+                "tz_h": -0.0,
+                "lon": -0.0005,
+                "lat": 51.476852
+            }
+        }
+    },
+    "2010-09-09_0909_Nairobi": {
+        "name": "2010-09-09_0909_Nairobi",
+        "bodies": {
+            "Lagna": {
+                "printed": "5 Li 35' 49.77\"",
+                "sign": "Li",
+                "lon": 185.59715833333334,
+                "nakshatra": "Chit",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Sun": {
+                "printed": "22 Le 29' 01.34\"",
+                "sign": "Le",
+                "lon": 142.48370555555553,
+                "nakshatra": "PPha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Moon": {
+                "printed": "4 Vi 11' 28.22\"",
+                "sign": "Vi",
+                "lon": 154.19117222222224,
+                "nakshatra": "UPha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Mars": {
+                "printed": "2 Li 14' 08.91\"",
+                "sign": "Li",
+                "lon": 182.23580833333332,
+                "nakshatra": "Chit",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Mercury": {
+                "printed": "12 Le 22' 45.61\"",
+                "sign": "Le",
+                "lon": 132.37933611111112,
+                "nakshatra": "Magh",
+                "pada": 4,
+                "retro": true,
+                "rasi_col": "Le"
+            },
+            "Jupiter": {
+                "printed": "5 Pi 59' 41.04\"",
+                "sign": "Pi",
+                "lon": 335.99473333333333,
+                "nakshatra": "UBha",
+                "pada": 1,
+                "retro": true,
+                "rasi_col": "Pi"
+            },
+            "Venus": {
+                "printed": "6 Li 27' 47.20\"",
+                "sign": "Li",
+                "lon": 186.4631111111111,
+                "nakshatra": "Chit",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Saturn": {
+                "printed": "11 Vi 05' 59.44\"",
+                "sign": "Vi",
+                "lon": 161.09984444444444,
+                "nakshatra": "Hast",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Rahu": {
+                "printed": "15 Sg 33' 06.85\"",
+                "sign": "Sg",
+                "lon": 255.5519027777778,
+                "nakshatra": "PSha",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Ketu": {
+                "printed": "15 Ge 33' 06.85\"",
+                "sign": "Ge",
+                "lon": 75.55190277777777,
+                "nakshatra": "Ardr",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Ge"
+            }
+        },
+        "checks": [],
+        "panel_date": "September 9, 2010",
+        "panel_time": "9:09:00",
+        "panel_time_zone": "3:00:00 (East of GMT)",
+        "panel_place": "36 E 49' 02\", 1 S 17' 11\" Nairobi, Kenya",
+        "panel_ayanamsa": "23-59-25.92",
+        "ayanamsa": {
+            "printed": "23-59-25.92",
+            "deg": 23.990533333333335
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Nairobi, Kenya",
+            "local_datetime": "2010-09-09 09:09:00",
+            "tz_offset": "UTC+03:00:00",
+            "ut_datetime": "2010-09-09 06:09:00 UT",
+            "lat": -1.2864,
+            "lon": 36.8172,
+            "tz_note": "EAT (UTC+3)",
+            "jhd": {
+                "month": 9,
+                "day": 9,
+                "year": 2010,
+                "time_h": 9.15,
+                "tz_h": 3.0,
+                "lon": 36.81719999999999,
+                "lat": -1.2864
+            }
+        }
+    },
+    "2020-12-21_1820_Varanasi": {
+        "name": "2020-12-21_1820_Varanasi",
+        "bodies": {
+            "Lagna": {
+                "printed": "21 Ge 49' 38.04\"",
+                "sign": "Ge",
+                "lon": 81.82723333333333,
+                "nakshatra": "Puna",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ge"
+            },
+            "Sun": {
+                "printed": "5 Sg 59' 41.87\"",
+                "sign": "Sg",
+                "lon": 245.99496388888886,
+                "nakshatra": "Mool",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Moon": {
+                "printed": "0 Pi 57' 24.53\"",
+                "sign": "Pi",
+                "lon": 330.95681388888886,
+                "nakshatra": "PBha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Mars": {
+                "printed": "28 Pi 59' 54.34\"",
+                "sign": "Pi",
+                "lon": 358.9984277777778,
+                "nakshatra": "Reva",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Mercury": {
+                "printed": "6 Sg 47' 21.82\"",
+                "sign": "Sg",
+                "lon": 246.78939444444444,
+                "nakshatra": "Mool",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Jupiter": {
+                "printed": "6 Cp 18' 49.18\"",
+                "sign": "Cp",
+                "lon": 276.3136611111111,
+                "nakshatra": "USha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Venus": {
+                "printed": "13 Sc 11' 48.88\"",
+                "sign": "Sc",
+                "lon": 223.19691111111112,
+                "nakshatra": "Anu",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Sc"
+            },
+            "Saturn": {
+                "printed": "6 Cp 20' 18.90\"",
+                "sign": "Cp",
+                "lon": 276.3385833333333,
+                "nakshatra": "USha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Rahu": {
+                "printed": "25 Ta 44' 42.57\"",
+                "sign": "Ta",
+                "lon": 55.745158333333336,
+                "nakshatra": "Mrig",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Ta"
+            },
+            "Ketu": {
+                "printed": "25 Sc 44' 42.57\"",
+                "sign": "Sc",
+                "lon": 235.7451583333333,
+                "nakshatra": "Jye",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Sc"
+            }
+        },
+        "checks": [],
+        "panel_date": "December 21, 2020",
+        "panel_time": "18:20:00",
+        "panel_time_zone": "5:30:00 (East of GMT)",
+        "panel_place": "82 E 58' 26\", 25 N 19' 03\" Varanasi, India",
+        "panel_ayanamsa": "24-08-02.71",
+        "ayanamsa": {
+            "printed": "24-08-02.71",
+            "deg": 24.13408611111111
+        },
+        "ketu_minus_rahu_minus_180_arcsec": -0.0,
+        "input": {
+            "place": "Varanasi, India",
+            "local_datetime": "2020-12-21 18:20:00",
+            "tz_offset": "UTC+05:30:00",
+            "ut_datetime": "2020-12-21 12:50:00 UT",
+            "lat": 25.3176,
+            "lon": 82.9739,
+            "tz_note": "IST (UTC+5:30)",
+            "jhd": {
+                "month": 12,
+                "day": 21,
+                "year": 2020,
+                "time_h": 18.333333333333332,
+                "tz_h": 5.5,
+                "lon": 82.9739,
+                "lat": 25.317600000000002
+            }
+        }
+    },
+    "2024-04-08_1318_Dallas": {
+        "name": "2024-04-08_1318_Dallas",
+        "bodies": {
+            "Lagna": {
+                "printed": "3 Cn 03' 10.90\"",
+                "sign": "Cn",
+                "lon": 93.05302777777777,
+                "nakshatra": "Puna",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Cn"
+            },
+            "Sun": {
+                "printed": "25 Pi 13' 32.35\"",
+                "sign": "Pi",
+                "lon": 355.2256527777777,
+                "nakshatra": "Reva",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Moon": {
+                "printed": "25 Pi 11' 37.53\"",
+                "sign": "Pi",
+                "lon": 355.19375833333334,
+                "nakshatra": "Reva",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Mars": {
+                "printed": "18 Aq 52' 50.16\"",
+                "sign": "Aq",
+                "lon": 318.8806,
+                "nakshatra": "Sata",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Mercury": {
+                "printed": "0 Ar 37' 05.52\"",
+                "sign": "Ar",
+                "lon": 0.6182000000000001,
+                "nakshatra": "Aswi",
+                "pada": 1,
+                "retro": true,
+                "rasi_col": "Ar"
+            },
+            "Jupiter": {
+                "printed": "24 Ar 52' 27.11\"",
+                "sign": "Ar",
+                "lon": 24.87419722222222,
+                "nakshatra": "Bhar",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Venus": {
+                "printed": "10 Pi 16' 33.26\"",
+                "sign": "Pi",
+                "lon": 340.27590555555554,
+                "nakshatra": "UBha",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Saturn": {
+                "printed": "20 Aq 16' 58.65\"",
+                "sign": "Aq",
+                "lon": 320.28295833333334,
+                "nakshatra": "PBha",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Rahu": {
+                "printed": "21 Pi 26' 53.68\"",
+                "sign": "Pi",
+                "lon": 351.44824444444447,
+                "nakshatra": "Reva",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Pi"
+            },
+            "Ketu": {
+                "printed": "21 Vi 26' 53.68\"",
+                "sign": "Vi",
+                "lon": 171.44824444444444,
+                "nakshatra": "Hast",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Vi"
+            }
+        },
+        "checks": [],
+        "panel_date": "April 8, 2024",
+        "panel_time": "13:18:00",
+        "panel_time_zone": "5:00:00 (West of GMT)   [chart file: zone 6 + DST 1]",
+        "panel_place": "96 W 47' 49\", 32 N 46' 36\" Dallas, USA",
+        "panel_ayanamsa": "24-10-48.37",
+        "ayanamsa": {
+            "printed": "24-10-48.37",
+            "deg": 24.18010277777778
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Dallas, USA",
+            "local_datetime": "2024-04-08 13:18:00",
+            "tz_offset": "UTC-05:00:00",
+            "ut_datetime": "2024-04-08 18:18:00 UT",
+            "lat": 32.7767,
+            "lon": -96.797,
+            "tz_note": "CDT (UTC-5); 18:18 UT total solar eclipse day",
+            "jhd": {
+                "month": 4,
+                "day": 8,
+                "year": 2024,
+                "time_h": 13.299999999999999,
+                "tz_h": -5.0,
+                "lon": -96.797,
+                "lat": 32.7767
+            }
+        }
+    },
+    "2100-01-01_0000_Honolulu": {
+        "name": "2100-01-01_0000_Honolulu",
+        "bodies": {
+            "Lagna": {
+                "printed": "7 Vi 49' 54.11\"",
+                "sign": "Vi",
+                "lon": 157.83169722222223,
+                "nakshatra": "UPha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Sun": {
+                "printed": "15 Sg 47' 52.55\"",
+                "sign": "Sg",
+                "lon": 255.79793055555555,
+                "nakshatra": "PSha",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Moon": {
+                "printed": "18 Le 02' 24.30\"",
+                "sign": "Le",
+                "lon": 138.04008333333334,
+                "nakshatra": "PPha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Le"
+            },
+            "Mars": {
+                "printed": "4 Ar 27' 34.84\"",
+                "sign": "Ar",
+                "lon": 4.459677777777778,
+                "nakshatra": "Aswi",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Ar"
+            },
+            "Mercury": {
+                "printed": "23 Sg 27' 34.81\"",
+                "sign": "Sg",
+                "lon": 263.45966944444444,
+                "nakshatra": "PSha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Sg"
+            },
+            "Jupiter": {
+                "printed": "26 Vi 00' 56.25\"",
+                "sign": "Vi",
+                "lon": 176.015625,
+                "nakshatra": "Chit",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Vi"
+            },
+            "Venus": {
+                "printed": "25 Cp 20' 34.92\"",
+                "sign": "Cp",
+                "lon": 295.3430333333333,
+                "nakshatra": "Dhan",
+                "pada": 1,
+                "retro": false,
+                "rasi_col": "Cp"
+            },
+            "Saturn": {
+                "printed": "0 Li 25' 14.61\"",
+                "sign": "Li",
+                "lon": 180.420725,
+                "nakshatra": "Chit",
+                "pada": 3,
+                "retro": false,
+                "rasi_col": "Li"
+            },
+            "Rahu": {
+                "printed": "24 Aq 35' 21.01\"",
+                "sign": "Aq",
+                "lon": 324.58916944444445,
+                "nakshatra": "PBha",
+                "pada": 2,
+                "retro": false,
+                "rasi_col": "Aq"
+            },
+            "Ketu": {
+                "printed": "24 Le 35' 21.01\"",
+                "sign": "Le",
+                "lon": 144.58916944444445,
+                "nakshatra": "PPha",
+                "pada": 4,
+                "retro": false,
+                "rasi_col": "Le"
+            }
+        },
+        "checks": [],
+        "panel_date": "January 1, 2100",
+        "panel_time": "0:00:00",
+        "panel_time_zone": "10:00:00 (West of GMT)",
+        "panel_place": "157 W 51' 30\", 21 N 18' 25\" Honolulu, USA",
+        "panel_ayanamsa": "25-14-14.55",
+        "ayanamsa": {
+            "printed": "25-14-14.55",
+            "deg": 25.237375
+        },
+        "ketu_minus_rahu_minus_180_arcsec": 0.0,
+        "input": {
+            "place": "Honolulu, USA",
+            "local_datetime": "2100-01-01 00:00:00",
+            "tz_offset": "UTC-10:00:00",
+            "ut_datetime": "2100-01-01 10:00:00 UT",
+            "lat": 21.3069,
+            "lon": -157.8583,
+            "tz_note": "HST (UTC-10), assumes current rules persist",
+            "jhd": {
+                "month": 1,
+                "day": 1,
+                "year": 2100,
+                "time_h": 0.0,
+                "tz_h": -10.0,
+                "lon": -157.8583,
+                "lat": 21.3069
+            }
+        }
+    }
+}

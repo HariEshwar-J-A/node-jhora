@@ -48,11 +48,11 @@ export const OBSERVER_SITES: readonly ObserverSite[] = [
         epochLabels: 'ALL',
     },
     {
-        id: 'chennai',
-        label: 'Chennai, India',
+        id: 'varanasi',
+        label: 'Varanasi, India',
         center: 'coord@399',
-        siteCoord: '80.2707,13.0827,0.016',
-        geo: { latitude: 13.0827, longitude: 80.2707, altitude: 0.016 },
+        siteCoord: '82.9739,25.3176,0.080',
+        geo: { latitude: 25.3176, longitude: 82.9739, altitude: 0.08 },
         epochLabels: TOPOCENTRIC_EPOCH_LABELS,
     },
     {

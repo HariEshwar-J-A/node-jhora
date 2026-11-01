@@ -1,6 +1,6 @@
 [
   {
-    "id": "jhora-chennai-2000-01-01",
+    "id": "greenwich-2000-j2000-noon",
     "provenance": {
       "source": "jhora",
       "toolVersion": "unrecorded",
@@ -8,8 +8,8 @@
     },
     "input": {
       "instant": "2000-01-01T12:00:00Z",
-      "timezone": "Asia/Kolkata",
-      "lat": 51.4769,
+      "timezone": "UTC",
+      "lat": 51.476852,
       "lon": -0.0005,
       "alt": 0,
       "settingsPresetId": "jhora-true-citra-geometric-true-node",
@@ -29,166 +29,160 @@
         }
       },
       "ayanamsa.printed": {
-        "value": "23-51-11.00",
+        "value": "23-50-28.91",
         "tolerance": {
           "type": "exact"
         }
       },
       "ayanamsa.value": {
-        "value": 23.853055555555557,
+        "value": 23.84136388888889,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 0.5
+          "arcsec": 0.0358
         }
       },
       "d1.ascendant.lon": {
-        "value": 272.34471388888886,
+        "value": 0.42273333333333335,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 2
+          "arcsec": 0.0339
         }
       },
       "d1.ascendant.printed": {
-        "value": "2 Cp 20' 40.97\"",
+        "value": "0 Ar 25' 21.84\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.ascendant.sign": {
-        "value": 10,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Jupiter.lon": {
-        "value": 325.209125,
+        "value": 1.4166833333333335,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.023899999999999998
         }
       },
       "d1.planets.Jupiter.printed": {
-        "value": "25 Aq 12' 32.85\"",
+        "value": "1 Ar 25' 00.06\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Jupiter.sign": {
-        "value": 11,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Ketu.lon": {
-        "value": 300.9724833333333,
+        "value": 280.1166361111111,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 2
+          "arcsec": 0.03
         }
       },
       "d1.planets.Ketu.printed": {
-        "value": " 0 Aq 58' 20.94\"",
+        "value": "10 Cp 06' 59.89\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Ketu.sign": {
-        "value": 11,
+        "value": 10,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Mars.lon": {
-        "value": 161.02939722222223,
+        "value": 304.13409444444443,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.0265
         }
       },
       "d1.planets.Mars.printed": {
-        "value": "11 Vi 01' 45.83\"",
+        "value": "4 Aq 08' 02.74\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Mars.sign": {
-        "value": 6,
+        "value": 11,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Mercury.lon": {
-        "value": 219.8674861111111,
+        "value": 248.06451111111113,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.026799999999999997
         }
       },
       "d1.planets.Mercury.printed": {
-        "value": " 9 Sc 52' 02.95\"",
-        "tolerance": {
-          "type": "exact"
-        }
-      },
-      "d1.planets.Mercury.retrograde": {
-        "value": true,
+        "value": "8 Sg 03' 52.24\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Mercury.sign": {
-        "value": 8,
+        "value": 9,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Moon.lon": {
-        "value": 84.51100277777778,
+        "value": 199.48644444444443,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.027
         }
       },
       "d1.planets.Moon.printed": {
-        "value": "24 Ge 30' 39.61\"",
+        "value": "19 Li 29' 11.20\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Moon.sign": {
-        "value": 3,
+        "value": 7,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Rahu.lon": {
-        "value": 120.97248333333333,
+        "value": 100.1166361111111,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 2
+          "arcsec": 0.03
         }
       },
       "d1.planets.Rahu.printed": {
-        "value": " 0 Le 58' 20.94\"",
+        "value": "10 Cn 06' 59.89\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Rahu.sign": {
-        "value": 5,
+        "value": 4,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Saturn.lon": {
-        "value": 3.4434722222222223,
+        "value": 16.557175,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.0266
         }
       },
       "d1.planets.Saturn.printed": {
-        "value": " 3 Ar 26' 36.50\"",
+        "value": "16 Ar 33' 25.83\"",
         "tolerance": {
           "type": "exact"
         }
@@ -206,33 +200,33 @@
         }
       },
       "d1.planets.Sun.lon": {
-        "value": 229.99221944444443,
+        "value": 256.5372138888889,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.0291
         }
       },
       "d1.planets.Sun.printed": {
-        "value": "19 Sc 59' 31.99\"",
+        "value": "16 Sg 32' 13.97\"",
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Sun.sign": {
-        "value": 8,
+        "value": 9,
         "tolerance": {
           "type": "exact"
         }
       },
       "d1.planets.Venus.lon": {
-        "value": 239.14425555555556,
+        "value": 217.73623888888886,
         "tolerance": {
           "type": "arcsec",
-          "arcsec": 1
+          "arcsec": 0.0282
         }
       },
       "d1.planets.Venus.printed": {
-        "value": "29 Sc 08' 39.32\"",
+        "value": "7 Sc 44' 10.46\"",
         "tolerance": {
           "type": "exact"
         }
@@ -244,44 +238,38 @@
         }
       },
       "d10.ascendant.lon": {
-        "value": 36.552875,
+        "value": 4.227385785804358,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.ascendant.printed": {
-        "value": "6 Ta 33' 10.35\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.ascendant.sign": {
-        "value": 2,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.evenSignBodies[0]": {
-        "value": "Sun",
+        "value": "Venus",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.evenSignBodies[1]": {
-        "value": "Mars",
+        "value": "Rahu",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.evenSignBodies[2]": {
-        "value": "Mercury",
-        "tolerance": {
-          "type": "exact"
-        }
-      },
-      "d10.evenSignBodies[3]": {
-        "value": "Venus",
+        "value": "Ketu",
         "tolerance": {
           "type": "exact"
         }
@@ -293,33 +281,33 @@
         }
       },
       "d10.planets.Jupiter.lon": {
-        "value": 192.0912416666667,
+        "value": 14.16685818208407,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Jupiter.printed": {
-        "value": "12 Li 05' 28.47\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Jupiter.sign": {
-        "value": 7,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Ketu.lon": {
-        "value": 309.7248333333333,
+        "value": 318.833597106118,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 20
         }
       },
       "d10.planets.Ketu.printed": {
-        "value": " 9 Aq 43' 29.40\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
@@ -331,71 +319,71 @@
         }
       },
       "d10.planets.Mars.lon": {
-        "value": 189.7060138888889,
+        "value": 341.340976330778,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Mars.printed": {
-        "value": " 9 Li 42' 21.65\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Mars.sign": {
-        "value": 7,
+        "value": 12,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Mercury.lon": {
-        "value": 261.32514166666664,
+        "value": 320.6451439723014,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Mercury.printed": {
-        "value": "21 Sg 19' 30.51\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Mercury.sign": {
-        "value": 9,
+        "value": 11,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Moon.lon": {
-        "value": 305.1100277777778,
+        "value": 14.864477657669,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Moon.printed": {
-        "value": " 5 Aq 06' 36.10\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Moon.sign": {
-        "value": 11,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Rahu.lon": {
-        "value": 129.72483333333332,
+        "value": 138.8335971061178,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 20
         }
       },
       "d10.planets.Rahu.printed": {
-        "value": " 9 Le 43' 29.40\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
@@ -407,58 +395,58 @@
         }
       },
       "d10.planets.Saturn.lon": {
-        "value": 34.43472777777777,
+        "value": 165.57178234488106,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Saturn.printed": {
-        "value": " 4 Ta 26' 05.02\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Saturn.sign": {
-        "value": 2,
+        "value": 6,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Sun.lon": {
-        "value": 160.07779166666666,
+        "value": 45.372177918225,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Sun.printed": {
-        "value": "10 Vi 04' 40.05\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Sun.sign": {
-        "value": 6,
+        "value": 2,
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Venus.lon": {
-        "value": 68.55744166666666,
+        "value": 282.6375745594362,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 10
         }
       },
       "d10.planets.Venus.printed": {
-        "value": " 8 Ge 33' 26.79\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d10.planets.Venus.sign": {
-        "value": 3,
+        "value": 10,
         "tolerance": {
           "type": "exact"
         }
@@ -470,338 +458,338 @@
         }
       },
       "d9.ascendant.lon": {
-        "value": 291.1024138888889,
+        "value": 3.8046472072239226,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.ascendant.printed": {
-        "value": "21 Cp 06' 08.69\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.ascendant.sign": {
-        "value": 10,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Jupiter.lon": {
-        "value": 46.88211666666667,
+        "value": 12.750172363875663,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Jupiter.printed": {
-        "value": "16 Ta 52' 55.62\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Jupiter.sign": {
-        "value": 2,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Ketu.lon": {
-        "value": 188.75235,
+        "value": 1.0497626044938,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 18
         }
       },
       "d9.planets.Ketu.printed": {
-        "value": " 8 Li 45' 08.46\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Ketu.sign": {
-        "value": 7,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Mars.lon": {
-        "value": 9.264586111111111,
+        "value": 217.2068786977002,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Mars.printed": {
-        "value": " 9 Ar 15' 52.51\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Mars.sign": {
-        "value": 1,
+        "value": 8,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Mercury.lon": {
-        "value": 178.80737222222223,
+        "value": 72.58062957507126,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Mercury.printed": {
-        "value": "28 Vi 48' 26.54\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Mercury.sign": {
-        "value": 6,
+        "value": 3,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Moon.lon": {
-        "value": 40.599025000000005,
+        "value": 355.3780298919021,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Moon.printed": {
-        "value": "10 Ta 35' 56.49\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Moon.sign": {
-        "value": 2,
+        "value": 12,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Rahu.lon": {
-        "value": 8.75235,
+        "value": 181.049762604494,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 18
         }
       },
       "d9.planets.Rahu.printed": {
-        "value": " 8 Ar 45' 08.46\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Rahu.sign": {
-        "value": 1,
+        "value": 7,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Saturn.lon": {
-        "value": 30.991255555555558,
+        "value": 149.01460411039295,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Saturn.printed": {
-        "value": " 0 Ta 59' 28.52\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Saturn.sign": {
-        "value": 2,
+        "value": 5,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Sun.lon": {
-        "value": 269.92998611111113,
+        "value": 148.8349601264025,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Sun.printed": {
-        "value": "29 Sg 55' 47.95\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Sun.sign": {
-        "value": 9,
+        "value": 5,
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Venus.lon": {
-        "value": 352.2983027777778,
+        "value": 159.62618289650743,
         "tolerance": {
           "type": "arcsec",
           "arcsec": 9
         }
       },
       "d9.planets.Venus.printed": {
-        "value": "22 Pi 17' 53.89\"",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "d9.planets.Venus.sign": {
-        "value": 12,
+        "value": 6,
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari.startLord": {
-        "value": "Jupiter",
+        "value": "Rahu",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[0].end": {
-        "value": "2009-07-07",
+        "value": "2000-09-10",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[0].lord": {
-        "value": "Jupiter",
+        "value": "Rahu",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[1].end": {
-        "value": "2028-07-06",
+        "value": "2016-09-10",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[1].lord": {
-        "value": "Saturn",
+        "value": "Jupiter",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[2].end": {
-        "value": "2045-07-06",
+        "value": "2035-09-11",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[2].lord": {
-        "value": "Mercury",
+        "value": "Saturn",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[3].end": {
-        "value": "2052-07-06",
+        "value": "2052-09-11",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[3].lord": {
-        "value": "Ketu",
+        "value": "Mercury",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[4].end": {
-        "value": "2072-07-06",
+        "value": "2059-09-11",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[4].lord": {
-        "value": "Venus",
+        "value": "Ketu",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[5].end": {
-        "value": "2078-07-06",
+        "value": "2079-09-11",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[5].lord": {
-        "value": "Sun",
+        "value": "Venus",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[6].end": {
-        "value": "2088-07-06",
+        "value": "2085-09-11",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[6].lord": {
-        "value": "Moon",
+        "value": "Sun",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[7].end": {
-        "value": "2095-07-07",
+        "value": "2095-09-12",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[7].lord": {
-        "value": "Mars",
+        "value": "Moon",
         "tolerance": {
           "type": "exact"
         }
       },
       "dasa.vimshottari[8].end": {
-        "value": "2113-07-07",
+        "value": "2102-09-12",
         "tolerance": {
           "type": "seconds",
           "seconds": 259200
         }
       },
       "dasa.vimshottari[8].lord": {
-        "value": "Rahu",
+        "value": "Mars",
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.local.day": {
-        "value": 6,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.local.hour": {
-        "value": 9,
+        "value": 12,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.local.minute": {
-        "value": 23,
+        "value": 0,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.local.month": {
-        "value": 12,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
@@ -813,31 +801,31 @@
         }
       },
       "meta.birth.local.year": {
-        "value": 1998,
+        "value": 2000,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.utc.day": {
-        "value": 6,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.utc.hour": {
-        "value": 3,
+        "value": 12,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.utc.minute": {
-        "value": 53,
+        "value": 0,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.utc.month": {
-        "value": 12,
+        "value": 1,
         "tolerance": {
           "type": "exact"
         }
@@ -849,13 +837,13 @@
         }
       },
       "meta.birth.utc.year": {
-        "value": 1998,
+        "value": 2000,
         "tolerance": {
           "type": "exact"
         }
       },
       "meta.birth.utcOffsetHours": {
-        "value": 5.5,
+        "value": 0,
         "tolerance": {
           "type": "exact"
         }
@@ -867,98 +855,98 @@
         }
       },
       "panchanga.karana.name": {
-        "value": "Vishti",
+        "value": "Bava",
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.karana.percentLeft": {
-        "value": 24.69,
+        "value": 100,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.nakshatra.index": {
-        "value": 7,
+        "value": 15,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.nakshatra.name": {
-        "value": "Punarvasu",
+        "value": "Swati",
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.nakshatra.pada": {
-        "value": 2,
+        "value": 4,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.nakshatra.percentLeft": {
-        "value": 66.17,
+        "value": 3.85,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.tithi.index": {
-        "value": 18,
+        "value": 26,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.tithi.name": {
-        "value": "Krishna Tritiya",
+        "value": "Krishna 11",
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.tithi.percentLeft": {
-        "value": 12.34,
+        "value": 75.42,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.vara.index": {
-        "value": 0,
+        "value": 6,
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.vara.name": {
-        "value": "Sunday",
+        "value": "Shanivara",
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.yoga.name": {
-        "value": "Sukla",
+        "value": "Dhriti",
         "tolerance": {
           "type": "exact"
         }
       },
       "panchanga.yoga.percentLeft": {
-        "value": 41.23,
+        "value": 100,
         "tolerance": {
           "type": "exact"
         }
       },
       "siderealTime.hours": {
-        "value": 14.218055555555555,
+        "value": 18.69710497151968,
         "tolerance": {
           "type": "seconds",
           "seconds": 2
         }
       },
       "siderealTime.printed": {
-        "value": "14:13:05",
+        "value": "engine@main",
         "tolerance": {
           "type": "exact"
         }
       },
       "time.jd": {
-        "value": 2451545.0,
+        "value": 2451545,
         "tolerance": {
           "type": "exact"
         }

@@ -20,7 +20,7 @@ describe('SPK bytes provider', () => {
         resetSpkCache();
     });
 
-    test('in-memory bytes match filesystem load for Chennai reference instant', async () => {
+    test('in-memory bytes match filesystem load for Varanasi bench instant', async () => {
         const path = resolveBspPath();
         const bytes = new Uint8Array(readFileSync(path));
         setBspBytesLoader(async () => bytes);
@@ -36,8 +36,8 @@ describe('SPK bytes provider', () => {
         await fromDisk.initialize();
 
         const { DateTime } = await import('luxon');
-        const dt = DateTime.utc(2000, 1, 1, 12, 0);
-        const location = { latitude: 13.0827, longitude: 80.2707 };
+        const dt = DateTime.fromISO('2020-12-21T12:50:00', { zone: 'utc' });
+        const location = { latitude: 25.3176, longitude: 82.9739 };
 
         const a = fromBytes.getPlanets(dt, location, {});
         const b = fromDisk.getPlanets(dt, location, {});

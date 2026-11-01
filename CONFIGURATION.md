@@ -196,7 +196,7 @@ calculateVarga(lon, 10, { dasamsaScheme: 'jhora_5_8' });
 import { NodeJHora } from '@node-jhora/core';
 
 const chart = new NodeJHora(
-    { latitude: 51.4769, longitude: -0.0005 },
+    { latitude: 51.476852, longitude: -0.0005 },
     { ayanamsaMode: 27, nodeType: 'mean', houseSystem: 'Equal' },
 );
 
@@ -213,8 +213,8 @@ const chart = new NodeJHora(location, JHORA_PRESET);
 ```
 
 `JHORA_PRESET` sets True Chitrapaksha, geometric positions, the true node, and
-`dasamsaScheme: 'jhora_5_8'`. Verified against a real JHora export: every D1 body
-to **0.01″**, ascendant **0.00″**, D9 **0.1″**, D10 **0.5″**.
+`dasamsaScheme: 'jhora_5_8'`. Verified against the fictional Greenwich J2000
+jhora12 export: D1 within per-body budgets, ascendant within 0.04″.
 
 ### Over the REST API
 
@@ -224,9 +224,9 @@ Every option is a field on the request body:
 {
     "date": "2000-01-01",
     "time": "12:00:00",
-    "latitude": 51.4769,
+    "latitude": 51.476852,
     "longitude": -0.0005,
-    "timezone": "Asia/Kolkata",
+    "timezone": "UTC",
 
     "ayanamsa": "true_chitra",
     "ayanamsaOffset": 0,
@@ -254,7 +254,7 @@ Measured, not asserted. Reproduce with the tools in `tools/`.
 | Comparison                                                   | Result                                          |
 | ------------------------------------------------------------ | ----------------------------------------------- |
 | Tropical longitudes vs **JPL Horizons**, 1900–2024           | ≤ **0.28″** (typically 0.04″)                   |
-| vs **JHora** export, 1998 chart, `JHORA_PRESET`              | D1 **0.01″**, ascendant **0.00″**               |
+| vs **JHora** jhora12 Greenwich chart, `JHORA_PRESET`         | D1 per-chart budgets in `jhora_golden.ts`       |
 | vs JHora's own stored `.jhd` values, scored against Horizons | node-jhora closer on **4/4** charts, by 3×–113× |
 
 ```bash

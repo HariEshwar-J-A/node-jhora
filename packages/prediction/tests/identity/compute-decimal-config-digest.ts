@@ -32,7 +32,7 @@ export interface BirthCase {
 }
 
 export const BIRTH_CASES: BirthCase[] = [
-    { id: 'sample-2000', iso: '2000-01-01T12:00:00+05:30', lat: 13.0827, lon: 80.2707 },
+    { id: 'varanasi-2020', iso: '2020-12-21T18:20:00+05:30', lat: 25.3176, lon: 82.9739 },
     { id: 'leap-2000-utc', iso: '2000-02-29T12:00:00Z', lat: 51.5074, lon: -0.1278 },
     { id: 'leap-2000-kolkata', iso: '2000-02-29T18:00:00+05:30', lat: 22.5726, lon: 88.3639 },
     { id: 'dst-us-fall-2021', iso: '2021-11-07T01:30:00-04:00', lat: 40.7128, lon: -74.006 },

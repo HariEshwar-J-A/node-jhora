@@ -38,7 +38,7 @@ async function sunHex(instant, chunkMap, useLongRange) {
     }
     const planets = engine.getPlanets(
         instant,
-        { latitude: 13.0827, longitude: 80.2707 },
+        { latitude: 25.3176, longitude: 82.9739 },
         { zodiac: 'sidereal', ayanamsaOrder: 27 },
     );
     const sun = planets.find((p) => p.name === 'Sun');
@@ -53,7 +53,7 @@ export default {
             if (!manifestRes.ok) throw new Error(`manifest fetch failed: ${manifestRes.status}`);
             const manifest = await manifestRes.json();
             const chunkMap = await loadChunkMap(manifest);
-            const benchInstant = DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' });
+            const benchInstant = DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' });
             const deepInstant = DateTime.utc(-9999, 6, 15, 12, 0, 0);
             const benchSunHex = await sunHex(benchInstant, chunkMap, false);
             const deepSunHex = await sunHex(deepInstant, chunkMap, true);

@@ -8,7 +8,7 @@ async function runDemo() {
 
     // 1. Initialize
     console.log('Initializing Engine...');
-    const client = new NodeJHora({ latitude: 13.0827, longitude: 80.2707 }); // Chennai
+    const client = new NodeJHora({ latitude: 51.476852, longitude: -0.0005 }); // Greenwich J2000
     await client.init();
 
     // 2. Calculate Chart

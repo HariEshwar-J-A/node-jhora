@@ -20,7 +20,7 @@ CACHE = BENCH_ROOT / "cache"
 sys.path.insert(0, str(BENCH_ROOT / "truth"))
 
 PROBE_JD = [
-    2451545.0,
+    2459205.034722222,
     2451545.0,
     2415020.0,
     2524593.0,

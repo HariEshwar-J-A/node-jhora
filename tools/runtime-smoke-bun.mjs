@@ -29,7 +29,7 @@ import { parseEngineDateTimeOrJsDate } from './dist/validation/input.js';
 const eph = EphemerisEngine.getInstance();
 await eph.initialize();
 const when = parseEngineDateTimeOrJsDate(new Date('2000-01-01T12:00:00.000Z'));
-const n = eph.getPlanets(when, { latitude: 13.0827, longitude: 80.2707 }).length;
+const n = eph.getPlanets(when, { latitude: 51.476852, longitude: -0.0005 }).length;
 if (typeof n !== 'number' || n < 7) throw new Error('unexpected planet count: ' + n);
 console.log('runtime-smoke-bun: ok, planets=' + n);
 `;

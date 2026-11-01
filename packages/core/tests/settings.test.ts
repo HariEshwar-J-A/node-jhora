@@ -167,7 +167,7 @@ describe('presets', () => {
 
 describe('expandCalculationBody', () => {
     test('leaves a body that did not opt in untouched', () => {
-        const body = { date: '2000-01-01', ayanamsa: 'lahiri', nodeType: 'mean' };
+        const body = { date: '2020-12-21', ayanamsa: 'lahiri', nodeType: 'mean' };
         expect(expandCalculationBody(body)).toBe(body);
     });
 

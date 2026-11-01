@@ -2,15 +2,15 @@
     "capturedFrom": "origin/main @ de758a3 (global Decimal.set via @node-jhora/core load); kalachakra digested as UTC epoch ms",
     "serializationNote": "Kalachakra antardasha toISO() uses the process local zone; identity hashes UTC instants only.",
     "cases": {
-        "sample-2000": {
-            "cyclicAshtottari": "d5cab292df6932f4f8a510b85192999a543aa7f673ef979e44fe13c5123d5327",
-            "cyclicShatabdika": "c6326f1a2889645cdda065cb842023bd4d5a69f1f22bbb8817e7a8bcd696b943",
-            "tithiAshtottari": "2fb1800e160070701c8884174d2a8e1a17d3c5cf30e1bfa483e93bf82f27ba3b",
-            "kalachakra": "8212b7cdb809c300985f6cb59b07f93055e9ffc10562ffeb6ee6e6bcccbad349",
-            "moolaDasha": "306341d597ce8e218ac7047637b399b76c6825fde3a1718f308e451bf2975486",
-            "drigDasha": "1874e517484b548bf40e2d151904120cfa1cb90586282ec557c627000a12bd16",
-            "sudasaDasha": "39a30a9a2af2779f058e71d2abf72756180b3b1ee25228261b757dc79fc725ba",
-            "shadbalaTime": "31fce044c9259ce36c4bfc38ef55572ab849c9844d59404b589eb32c92ef8808"
+        "varanasi-2020": {
+            "cyclicAshtottari": "63b89401747a2805b30bf0a8747449e5d635b5a3782670be2583f41968ce9580",
+            "cyclicShatabdika": "d5ee5ef3b68de82b3aca736b85230f31a6e8afdd0a84e46400863977bde4b782",
+            "tithiAshtottari": "ef80b3473a8e1ae5e0823b18d4dcc9205663c44fd6ea79bb24f80b2edd7efffe",
+            "kalachakra": "07a3d1428eff7083a8b847d46939258e3bc02b4896ebcdcbd9fd32d90a15e35d",
+            "moolaDasha": "598e12b8a3e1553f309e1f83a7f3dfb1d76115e2c1b1f6c5a8ebfe239d31f98f",
+            "drigDasha": "a9973076e6ac4ba1ba3886181e1ceffb60a2a15db715194404e02dc1c9a4b725",
+            "sudasaDasha": "3cf79cbcd2eb19717d4b536bdad56f640d838448b81006af36b4de09bb032c4f",
+            "shadbalaTime": "dd83bb77a2b2990f9f429cf7e8e6f89fe671bdc60bc0541092f3765dc93c996a"
         },
         "leap-2000-utc": {
             "cyclicAshtottari": "5e67d86bd3f7b31570eba39730b683587e04f10e36c30cace9fcb09e2e71bad3",

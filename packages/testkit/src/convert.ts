@@ -4,7 +4,7 @@
  * Choices the legacy modules do not record, fixed here so every case still
  * satisfies the schema:
  * - altitude is 0 m
- * - the Chennai chart uses `Asia/Kolkata` (the fixture's +5.5 h offset)
+ * - the Greenwich J2000 chart uses `UTC`; Varanasi corpus rows use `Asia/Kolkata`
  * - Horizons rows are geocentric: lat 0, lon 0, timezone `UTC`
  * - `provenance.toolVersion` is `unrecorded` and `capturedAt` is null
  * - panchanga percent slack stays on `meta.panchanga.tolerancePercent`
@@ -36,8 +36,8 @@ const CLOCK_PARTS = ['year', 'month', 'day', 'hour', 'minute', 'second'] as cons
 
 const LEGACY_PROVENANCE = { toolVersion: 'unrecorded', capturedAt: null } as const;
 
-export const JHORA_CASE_ID = 'jhora-chennai-2000-01-01';
-export const JHORA_TIMEZONE = 'Asia/Kolkata';
+export const JHORA_CASE_ID = 'greenwich-2000-j2000-noon';
+export const JHORA_TIMEZONE = 'UTC';
 export const JHORA_PRESET_ID = 'jhora-true-citra-geometric-true-node';
 export const HORIZONS_PRESET_ID = 'horizons-apparent-geocentric';
 export const LEGACY_ALTITUDE_M = 0;
@@ -141,6 +141,7 @@ export interface HorizonsFixture {
     readonly provenance?: {
         readonly horizonsApiVersion: string;
         readonly ephemeris: string;
+        readonly retrievedAtUtc: string;
         readonly queryUrlTemplate: string;
         readonly requestParameters: Readonly<Record<string, string>>;
     };
@@ -459,6 +460,7 @@ function writeContract(out: ExpectedMap, fixture: HorizonsFixture): void {
     if (fixture.provenance) {
         putExact(out, 'meta.horizons.apiVersion', fixture.provenance.horizonsApiVersion);
         putExact(out, 'meta.horizons.ephemeris', fixture.provenance.ephemeris);
+        putExact(out, 'meta.horizons.retrievedAtUtc', fixture.provenance.retrievedAtUtc);
         putExact(out, 'meta.horizons.queryUrlTemplate', fixture.provenance.queryUrlTemplate);
         putExact(
             out,
@@ -543,6 +545,10 @@ export function fromHorizonsGoldenCases(cases: readonly GoldenCase[]): HorizonsF
                       'meta.horizons.apiVersion',
                   ),
                   ephemeris: exactValue<string>(first.expected, 'meta.horizons.ephemeris'),
+                  retrievedAtUtc: exactValue<string>(
+                      first.expected,
+                      'meta.horizons.retrievedAtUtc',
+                  ),
                   queryUrlTemplate: exactValue<string>(
                       first.expected,
                       'meta.horizons.queryUrlTemplate',

@@ -12,9 +12,9 @@ Independent astrometry check for `@node-jhora/core` against the [JPL Horizons AP
 
 | Site      | Horizons `CENTER`          | Epochs                                                          |
 | --------- | -------------------------- | --------------------------------------------------------------- |
-| Geocenter | `500@399`                  | 1890, 1900, 1970, 2000-01-01, 2000, 2024, 2050, 2100, 2149 (UT) |
-| Chennai   | `coord@399` + `SITE_COORD` | 1900, 2000-01-01, 2024                                          |
-| Palomar   | `coord@399` + `SITE_COORD` | 1900, 2000-01-01, 2024                                          |
+| Geocenter | `500@399`                  | 1890, 1900, 1970, 2000-01-01 12:00, 2024, 2050, 2100, 2149 (UT) |
+| Varanasi  | `coord@399` + `SITE_COORD` | 1900, 2000-01-01 12:00, 2024                                    |
+| Palomar   | `coord@399` + `SITE_COORD` | 1900, 2000-01-01 12:00, 2024                                    |
 
 ## Commands
 

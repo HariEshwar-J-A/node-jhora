@@ -67,23 +67,27 @@ function horizonsFixture(): HorizonsFixture {
 
 describe('legacy fixture conversion', () => {
     it('covers every data export of the legacy modules', () => {
-        expect(dataKeys(jhora)).toEqual([
-            'JHORA_ASCENDANT',
-            'JHORA_AYANAMSA',
-            'JHORA_BIRTH',
-            'JHORA_CONVENTIONS',
-            'JHORA_D1',
-            'JHORA_D10',
-            'JHORA_D10_ASCENDANT',
-            'JHORA_D10_EVEN_SIGN_BODIES',
-            'JHORA_D10_LABEL',
-            'JHORA_D10_SCHEME',
-            'JHORA_D9',
-            'JHORA_D9_ASCENDANT',
-            'JHORA_DASHA',
-            'JHORA_PANCHANGA',
-            'JHORA_SIDEREAL_TIME',
-        ]);
+        expect(dataKeys(jhora).sort()).toEqual(
+            [
+                'JHORA_ASCENDANT',
+                'JHORA_AYANAMSA',
+                'JHORA_BIRTH',
+                'JHORA_CHARTS',
+                'JHORA_CONVENTIONS',
+                'JHORA_D1',
+                'JHORA_D10',
+                'JHORA_D10_ASCENDANT',
+                'JHORA_D10_EVEN_SIGN_BODIES',
+                'JHORA_D10_LABEL',
+                'JHORA_D10_SCHEME',
+                'JHORA_D9',
+                'JHORA_D9_ASCENDANT',
+                'JHORA_DASHA',
+                'JHORA_PANCHANGA',
+                'JHORA_REFERENCE_CHART_ID',
+                'JHORA_SIDEREAL_TIME',
+            ].sort(),
+        );
         expect(dataKeys(horizons).sort()).toEqual([
             'FUTURE_TOLERANCE_ARCSEC',
             'HORIZONS_ENGINE_COMPARE_BODIES',
@@ -109,7 +113,7 @@ describe('legacy fixture conversion', () => {
             tolerance: { type: 'arcsec', arcsec: jhora.JHORA_D1[0].toleranceArcsec },
         });
         expect(golden.expected['dasa.vimshottari[0].end']).toMatchObject({
-            value: '2009-07-07',
+            value: '2000-09-10',
             tolerance: { type: 'seconds', seconds: jhora.JHORA_DASHA.toleranceDays * 86400 },
         });
 

@@ -39,20 +39,20 @@ describe('rise/set properties', () => {
         }
     });
 
-    test('Chennai Sun rise is same calendar day', () => {
+    test('Varanasi Sun rise is same calendar day', () => {
         const def = riseSetDefinitionFromSettings();
-        const jd = jdUtFromDateTime(DateTime.fromISO('2000-01-01T00:00:00Z'));
+        const jd = jdUtFromDateTime(DateTime.fromISO('2020-12-21T00:00:00Z'));
         const out = findRiseSetEvent(
             engine,
             0,
             'rise',
             jd,
-            { latitude: 13.08, longitude: 80.27, altitude: 0 },
+            { latitude: 25.3176, longitude: 82.9739, altitude: 0 },
             def,
         );
         expect(out.kind).toBe('time');
         if (out.kind === 'time') {
-            expect(out.dateTime.toISODate()).toBe('2000-01-01');
+            expect(out.dateTime.toISODate()).toBe('2020-12-21');
         }
     });
 

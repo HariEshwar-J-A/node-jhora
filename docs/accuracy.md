@@ -29,21 +29,21 @@ stays within orbital bounds. Those are what catch a bad re-baseline.
 
 Tropical apparent longitude, all bodies, spanning the DE440s range:
 
-| Epoch      | Worst error                |
-| ---------- | -------------------------- |
-| 1900-01-01 | 0.28″                      |
-| 1970-07-08 | 0.05″                      |
-| 2000-01-01 | 0.20″                      |
-| 2024-06-15 | 0.23″                      |
-| 2100-01-01 | 46″ — ΔT forecast gap only |
+| Epoch               | Worst error                |
+| ------------------- | -------------------------- |
+| 1900-01-01          | 0.28″                      |
+| 1970-07-08          | 0.05″                      |
+| 2000-01-01 12:00 UT | 0.05″                      |
+| 2024-06-15          | 0.23″                      |
+| 2100-01-01          | 46″ — ΔT forecast gap only |
 
 For scale: 1″ is three orders of magnitude below any varga or nakshatra-pada
 boundary. It cannot change a chart reading.
 
 ## Parity with JHora
 
-Against a real JHora natal export (2000-01-01 12:00 IST, Chennai), using
-`JHORA_PRESET`:
+Against JHora screen transcription for the fictional **Greenwich J2000** chart
+(`2000-01-01_1200_Greenwich` in `jhora_golden.ts`), using `JHORA_PRESET`:
 
 | Quantity                                         | Delta                               |
 | ------------------------------------------------ | ----------------------------------- |
@@ -62,10 +62,30 @@ each confirmed by that export:
 
 | Convention        | Setting                      | Evidence                                                                                              |
 | ----------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| True Chitrapaksha | `ayanamsaMode: 27`           | JHora prints `23-51-11.00`; engine 0.015″ away                                                        |
+| True Chitrapaksha | `ayanamsaMode: 27`           | JHora prints `23-50-28.91`; engine within per-chart budget                                            |
 | Geometric places  | `positionMode: 'geometric'`  | removing light-time + aberration moves Venus 43.9″, Sun 20.8″, Saturn 7.4″ — each onto JHora to 0.01″ |
 | True node         | `nodeType: 'true'`           | mean node misses Rahu by 0.97°; osculating node by 0.12″                                              |
 | JHora Dasamsa     | `dasamsaScheme: 'jhora_5_8'` | odd signs agree either way; all five even-sign bodies agree only under this rule                      |
+
+## Twelve-chart JHora comparison (fictional corpus)
+
+Independent screen transcriptions for **twelve non-personal charts** live under
+`packages/core/tests/fixtures/jhora12/` (`.jhd` inputs plus
+`jhora12-comparison.json`). Settings match the single-chart preset above (True
+Chitra, geometric, true node, whole-sign houses). Measured at engine commit
+`21d73f3` against JHora 8.0:
+
+| Metric                  | Value                                                   |
+| ----------------------- | ------------------------------------------------------- |
+| Sidereal cells compared | 132 (11 bodies × 12 charts)                             |
+| Max residual            | 0.165″                                                  |
+| Median residual         | 0.010″                                                  |
+| Within 0.01″            | 65 / 132                                                |
+| Within 0.02″            | 128 / 132                                               |
+| Over 0.05″              | 2 (Moon on Varanasi 2020 and Dallas 2024 — ΔT ≈ 0.27 s) |
+
+Deep-era charts (Rome 1600, Cape Town 1800) require NJCE441 long-range kernels;
+CI skips them when chunks are absent, same pattern as `truth-deep-era.golden.test.ts`.
 
 ## Is node-jhora more accurate than JHora?
 

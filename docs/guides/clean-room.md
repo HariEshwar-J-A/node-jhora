@@ -74,9 +74,9 @@ was transcribed versus computed.**
 
 ```text
 Source: JHora 8.0 screen export, read by hand on 2026-10-26.
-Chart: 2000-01-01, 12:00, Chennai (51N28, 0W00), timezone as recorded.
+Chart: 2000-01-01, 12:00, Greenwich (51°28′37″N, 0°00′02″W), UTC.
 Settings: True Chitrapaksha (mode 27), geometric positions, true node.
-Transcribed: Moon "24 Ge 30' 39.61"" (the DMS string is JHora's).
+Transcribed: ayanamsa and D1 bodies from the jhora12 fixture set.
 Not copied: no binary, help text, or UI string.
 ```
 
@@ -105,7 +105,7 @@ the Horizons settings when a fixture pins astrometry:
 
 ```text
 Source: JPL Horizons (DE440), geometric geocentric ecliptic longitude.
-Settings: date 2000-01-01 TT, no light-time, output QUANTITIES as recorded
+Settings: date 2000-01-01 12:00 UT, no light-time, output QUANTITIES as recorded
 in packages/core/tests/fixtures/horizons_golden.ts.
 ```
 

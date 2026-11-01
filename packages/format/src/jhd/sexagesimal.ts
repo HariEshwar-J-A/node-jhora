@@ -1,46 +1,34 @@
 // Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
 
 /**
- * Convert packed DD.MM / HH.MMSS values to decimal degrees or hours.
+ * Convert JHora `.jhd` packed values on lines 4–7 to decimal degrees or hours.
  *
- * `19.38` → 19 + 38/60; `-5.30` → -(5 + 30/60). Reading packed values as plain
- * decimals shifts the ascendant by several degrees while planets still look fine.
+ * JHora stores the integer degrees (or hours) in the whole part and **decimal
+ * minutes ÷ 100** in the fractional part — not `HH.MMSS`. Example:
+ * `74.002160` → 74° + 0.216′ = 74°00′12.96″, not 74°00′36″.
  */
 export function sexagesimalToDecimal(packed: number): number {
     const sign = packed < 0 ? -1 : 1;
     const abs = Math.abs(packed);
-
     const whole = Math.floor(abs);
     const frac = abs - whole;
-
-    const minutes = Math.floor(frac * 100 + 1e-9);
-    const seconds = (frac * 100 - minutes) * 100;
-
-    return sign * (whole + minutes / 60 + seconds / 3600);
+    const minutesDecimal = frac * 100;
+    return sign * (whole + minutesDecimal / 60);
 }
 
 /**
- * Inverse of {@link sexagesimalToDecimal}: `HH.MMSS` plus up to `secondDecimals`
- * fractional-second digits. Rounds total seconds first so 59.99… s carries into
- * the next minute instead of printing `60`.
+ * Inverse of {@link sexagesimalToDecimal}: whole degrees/hours plus fractional
+ * minutes ÷ 100 (JHora `.jhd` wire format).
  */
-export function decimalToSexagesimal(decimal: number, secondDecimals = 2): string {
+export function decimalToSexagesimal(decimal: number, fractionalDigits = 8): string {
     const negative = decimal < 0;
-    const scale = 10 ** secondDecimals;
-    const totalUnits = Math.round(Math.abs(decimal) * 3600 * scale);
-    const unitsPerMinute = 60 * scale;
-    const unitsPerWhole = 60 * unitsPerMinute;
-    const whole = Math.floor(totalUnits / unitsPerWhole);
-    const minutes = Math.floor((totalUnits % unitsPerWhole) / unitsPerMinute);
-    const secUnits = totalUnits % unitsPerMinute;
-    const secWhole = Math.floor(secUnits / scale);
-    const secFrac = secUnits % scale;
-
-    let digits = String(minutes).padStart(2, '0') + String(secWhole).padStart(2, '0');
-    if (secondDecimals > 0) digits += String(secFrac).padStart(secondDecimals, '0');
-    digits = digits.replace(/0+$/, '');
-    const body = digits ? `${whole}.${digits}` : String(whole);
-    return negative && totalUnits !== 0 ? `-${body}` : body;
+    const abs = Math.abs(decimal);
+    const whole = Math.floor(abs);
+    const minutesDecimal = (abs - whole) * 60;
+    const minOver100 = minutesDecimal / 100;
+    const fracTail = minOver100.toFixed(fractionalDigits).slice(2).replace(/0+$/, '');
+    const unsigned = fracTail ? `${whole}.${fracTail}` : String(whole);
+    return negative && (whole !== 0 || fracTail !== '') ? `-${unsigned}` : unsigned;
 }
 
 export function flipSignPacked(packed: number): number {

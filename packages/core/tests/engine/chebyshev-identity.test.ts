@@ -205,7 +205,7 @@ function collectNjceDirSamples(dir: string, tag: string): RecordSample[] {
 
 function collectJulianDayUtSamples(): number[] {
     const jds = new Set<number>();
-    jds.add(2451545.0);
+    jds.add(2459205.034722222);
 
     const spreadCount = 200;
     const step = (DE440S_JD_TDB_END - DE440S_JD_TDB_START) / (spreadCount + 1);
