@@ -25,8 +25,6 @@ The 20 ms full-chart budget is a **warning only** (does not fail `bench:check`).
 - **Deep-era truth mean node** (y-10000, DE441 secular): cold and warm when NJCE441 chunks are available
 - Legacy alias `full-chart-warm-node` (= `full-chart-jhora`)
 
-Chart fixture: 2000-01-01 12:00 Asia/Kolkata, `node-jhora-default`, dasha depth 3.
-
 ## Commands
 
 From the monorepo root (after `pnpm build`):
@@ -34,6 +32,7 @@ From the monorepo root (after `pnpm build`):
 ```bash
 pnpm run bench          # write artifacts/bench-results.json
 pnpm run bench:check    # re-run benches; fail on >15% p50 regression vs baseline.json
+pnpm run bench:workers  # worker_threads throughput + RSS (not an absolute CI gate)
 ```
 
-Nine samples per case; full-chart cases use five warm-up iterations before sampling.
+Nine samples per case; full-chart cases use five warm-up iterations before sampling. Chart fixture: 2000-01-01 12:00 Asia/Kolkata, `node-jhora-default`, dasha depth 3.

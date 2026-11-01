@@ -53,6 +53,7 @@ Root `tsconfig.json` `references`: `core`, `analytics`, `prediction`, `match`, `
 - **Also exported**: panchanga, KP sub-lord and ruling planets, time-based and dhumadi upagrahas, and the special-lagna functions (Pranapada, Indu, Shree, Hora, Ghati, Bhava, Varnada).
 - **`decimal.js`**: `src/core/precise.ts`, vargas, panchanga, and KP sub-lords. The SPK evaluation and the coordinate chain use JavaScript numbers.
 - **Facade**: `NodeJHora`.
+- **Server deployment**: [Server guide](./guides/server.md) (thread safety, workers, edge `initialize({ kernel })`).
 
 `PlanetaryStream` (`src/stream/planetary_stream.ts`) is a stub that throws. It is imported by `src/index.ts` and is not re-exported.
 

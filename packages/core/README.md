@@ -1,6 +1,6 @@
 # @node-jhora/core
 
-The foundation of the Node-Jhora Vedic astrology engine. Provides high-precision astronomical data via Swiss Ephemeris (WASM), fundamental Vedic math, and an ergonomic facade for common operations.
+The foundation of the Node-Jhora Vedic astrology engine. Provides high-precision astronomical data via a **pure TypeScript JPL DE440s** reader, fundamental Vedic math, and an ergonomic facade for common operations.
 
 > Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/CORE.md)
 
@@ -44,19 +44,19 @@ console.log('Moon Nakshatra:', chart.panchanga.nakshatra);
 
 ## Features
 
-| Feature              | Description                                             |
-| :------------------- | :------------------------------------------------------ |
-| **Ephemeris Engine** | Swiss Ephemeris WASM — 0.0001″ accuracy                 |
-| **NodeJHora Facade** | Static `calculate()` + instance API for ergonomic usage |
-| **Panchanga**        | Tithi, Nakshatra, Yoga, Karana, Vara                    |
-| **16 Vargas**        | D1–D60 divisional charts with `Decimal.js` precision    |
-| **House Systems**    | Whole Sign, Placidus, Porphyry                          |
-| **Special Lagnas**   | Pranapada, Indu, Hora, Ghati, Bhava, Varnada            |
-| **Upagrahas**        | Gulikadi (time-based) and Dhumadi (angular)             |
-| **KP System**        | Sub-lord tables and Ruling Planets                      |
-| **Geocoder**         | Local CSV city lookup (coordinates + timezone)          |
-| **Planetary Stream** | Real-time observable for live chart updates             |
-| **Precision Math**   | `Decimal.js` for all critical calculations              |
+| Feature              | Description                                                          |
+| :------------------- | :------------------------------------------------------------------- |
+| **Ephemeris Engine** | JPL DE440s TypeScript SPK reader (sub-arcsecond vs Horizons oracles) |
+| **NodeJHora Facade** | Static `calculate()` + instance API for ergonomic usage              |
+| **Panchanga**        | Tithi, Nakshatra, Yoga, Karana, Vara                                 |
+| **16 Vargas**        | D1–D60 divisional charts with `Decimal.js` precision                 |
+| **House Systems**    | Whole Sign, Placidus, Porphyry                                       |
+| **Special Lagnas**   | Pranapada, Indu, Hora, Ghati, Bhava, Varnada                         |
+| **Upagrahas**        | Gulikadi (time-based) and Dhumadi (angular)                          |
+| **KP System**        | Sub-lord tables and Ruling Planets                                   |
+| **Geocoder**         | Local CSV city lookup (coordinates + timezone)                       |
+| **Planetary Stream** | Real-time observable for live chart updates                          |
+| **Precision Math**   | `Decimal.js` for all critical calculations                           |
 
 ## Exports
 

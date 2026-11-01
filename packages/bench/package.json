@@ -10,7 +10,8 @@
         "lint": "eslint .",
         "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --config jest.config.js",
         "bench": "node dist/run-bench.js",
-        "bench:check": "node dist/check-baseline.js"
+        "bench:check": "node dist/check-baseline.js",
+        "bench:workers": "node dist/bench-workers.js"
     },
     "dependencies": {
         "@node-jhora/core": "workspace:*",

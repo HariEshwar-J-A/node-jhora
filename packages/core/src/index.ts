@@ -430,7 +430,7 @@ export class NodeJHora {
     // ========== STATIC API ==========
 
     /**
-     * Initialize the WASM engine (call once before calculate)
+     * Initialize the ephemeris kernel (call once before calculate)
      */
     public static async init(): Promise<void> {
         await EphemerisEngine.getInstance().initialize();
