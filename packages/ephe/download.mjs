@@ -37,9 +37,9 @@ import { get as httpsGet } from 'https';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-/** Strip CR/LF so error messages cannot forge log lines (CodeQL log injection). */
+/** Strip CR/LF and control chars so error messages cannot forge log lines (CodeQL). */
 function sanitizeLogLine(value) {
-    return String(value).replace(/[\r\n]/g, ' ');
+    return String(value).replace(/[\r\n\x00-\x1f\x7f]/g, '');
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -178,9 +178,8 @@ async function main() {
             return;
         } catch (err) {
             removeQuiet(PARTIAL);
-            console.warn(
-                `[node-jhora/ephe] Failed: ${sanitizeLogLine(err.message)} — trying next source…`,
-            );
+            const failDetail = String(err?.message ?? err).replace(/[\r\n\x00-\x1f\x7f]/g, '');
+            console.warn(`[node-jhora/ephe] Failed: ${failDetail} — trying next source…`);
         }
     }
     console.error(
@@ -198,7 +197,7 @@ const entry = process.argv[1] ? realpathSync(process.argv[1]) : '';
 const self = realpathSync(fileURLToPath(import.meta.url));
 if (entry === self) {
     main().catch((err) => {
-        console.error(`[node-jhora/ephe] ERROR: ${err.message}`);
+        console.error(`[node-jhora/ephe] ERROR: ${sanitizeLogLine(err?.message ?? err)}`);
         process.exit(1);
     });
 }

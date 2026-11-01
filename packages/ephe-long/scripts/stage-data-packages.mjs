@@ -18,6 +18,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { execCliSync } from '../../../tools/spawn-cli.mjs';
 import {
     copyFileSync,
     existsSync,
@@ -127,9 +128,8 @@ for (const s of staged) {
     let line = `${s.name.padEnd(34)} ${String(s.files).padStart(3)} files ${(s.bytes / 1e6).toFixed(1).padStart(6)} MB`;
     if (values['pack-dry-run']) {
         const [info] = JSON.parse(
-            execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
+            execCliSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
                 cwd: s.dir,
-                encoding: 'utf8',
             }),
         );
         largest = Math.max(largest, info.size);

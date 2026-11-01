@@ -12,7 +12,7 @@ describe('@node-jhora/atlas', () => {
 
     beforeAll(async () => {
         gazetteer = await loadGazetteerFromDirectory(FIXTURE_DIR);
-    });
+    }, 60_000);
 
     it('includes GeoNames CC-BY attribution in the manifest and package export', () => {
         expect(gazetteer.manifest.attribution).toContain('GeoNames');

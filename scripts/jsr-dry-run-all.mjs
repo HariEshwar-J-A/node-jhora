@@ -2,7 +2,7 @@
 /**
  * Run `jsr publish --dry-run` for every JSR publish package; print a summary.
  */
-import { spawnSync } from 'node:child_process';
+import { spawnCliSync } from '../tools/spawn-cli.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,7 +15,7 @@ for (const dir of JSR_PUBLISHABLE) {
     const cwd = join(root, 'packages', dir);
     const slowTypesFlag = dir === 'format' ? ['--allow-slow-types'] : [];
     console.log(`\n=== jsr dry-run: @node-jhora/${dir} ===\n`);
-    const r = spawnSync(
+    const r = spawnCliSync(
         'npx',
         ['--yes', 'jsr@latest', 'publish', '--dry-run', '--allow-dirty', ...slowTypesFlag],
         {

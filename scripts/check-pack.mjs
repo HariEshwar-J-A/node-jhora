@@ -19,6 +19,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { execCliSync } from '../tools/spawn-cli.mjs';
+
 const root = fileURLToPath(new URL('..', import.meta.url));
 const args = new Set(process.argv.slice(2));
 const lint = !args.has('--no-lint');
@@ -45,6 +47,9 @@ const FORBIDDEN = [
 ];
 
 function run(cmd, cmdArgs, cwd) {
+    if (cmd === 'npm') {
+        return execCliSync('npm', cmdArgs, { cwd, maxBuffer: 64 * 1024 * 1024 });
+    }
     return execFileSync(cmd, cmdArgs, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
 

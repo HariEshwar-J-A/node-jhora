@@ -200,6 +200,40 @@ export const JHORA_PRESET: Partial<JyotishConfig> = {
     houseSystem: 'WholeSign',
 };
 
+/** Keys accepted on {@link JyotishConfig}; rejects prototype pollution (CodeQL). */
+const JYOTISH_CONFIG_KEY_LIST: (keyof JyotishConfig)[] = [
+    'positionMode',
+    'topocentric',
+    'altitudeMetres',
+    'ayanamsaMode',
+    'ayanamsaOffset',
+    'ayanamsaOptions',
+    'nodeType',
+    'houseSystem',
+    'houseAnchor',
+    'cuspsInMiddle',
+    'dasamsaScheme',
+    'horaScheme',
+    'sunriseHour',
+    'dashaYearDays',
+    'precisionProfile',
+    'deltaTOverrideSeconds',
+    'deltaTForecast',
+    'starParallax',
+    'calendar',
+];
+
+function copyIfDefined<K extends keyof JyotishConfig>(
+    out: JyotishConfig,
+    key: K,
+    override: Partial<JyotishConfig>,
+): void {
+    const v = override[key];
+    if (v !== undefined) {
+        out[key] = v;
+    }
+}
+
 /**
  * Merge a partial override onto a base configuration.
  *
@@ -211,10 +245,9 @@ export function resolveConfig(
     override: Partial<JyotishConfig> = {},
     base: JyotishConfig = DEFAULT_CONFIG,
 ): JyotishConfig {
-    const out = { ...base };
-    for (const [k, v] of Object.entries(override)) {
-        if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
-        if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+    const out: JyotishConfig = { ...base };
+    for (const key of JYOTISH_CONFIG_KEY_LIST) {
+        copyIfDefined(out, key, override);
     }
     return out;
 }

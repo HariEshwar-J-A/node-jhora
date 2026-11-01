@@ -9,10 +9,11 @@
  * Allowlist: tools/runtime-license-allowlist.json (packages.name@version → reason).
  */
 
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
+import { execCliSync } from './spawn-cli.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -84,9 +85,8 @@ function walkPnpmTree(node, out) {
  * @returns {Map<string, RuntimePackage>}
  */
 export function collectProductionPackages(repoRoot) {
-    const json = execFileSync('pnpm', ['list', '-r', '--prod', '--depth=Infinity', '--json'], {
+    const json = execCliSync('pnpm', ['list', '-r', '--prod', '--depth=Infinity', '--json'], {
         cwd: repoRoot,
-        encoding: 'utf8',
         maxBuffer: 64 * 1024 * 1024,
     });
     const trees = JSON.parse(json);

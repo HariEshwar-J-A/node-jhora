@@ -118,52 +118,75 @@ const dropPreciseModulePlugin: Plugin = {
 
 const REPO_ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 
+/** esbuild bundles are slow on Windows CI runners. */
+const BUNDLE_TEST_TIMEOUT_MS = 60_000;
+
 describe('bundled entry tree-shake parity', () => {
     const nodeVargaDigest = digestVargaCorpus(calculateVarga);
     const nodeChebyDigest = digestChebyshevCorpus(evalCheby);
 
-    test('vargas subpath bundle matches Node on varga corpus', async () => {
-        const { js } = await bundleCoreEntry({
-            entry: join(CORE_SRC, 'vedic/vargas.ts'),
-            external: [],
-        });
-        const digest = await runBundledDigest(js, VARGA_RUNNER, REPO_ROOT);
-        expect(digest).toBe(nodeVargaDigest);
-    });
+    test(
+        'vargas subpath bundle matches Node on varga corpus',
+        async () => {
+            const { js } = await bundleCoreEntry({
+                entry: join(CORE_SRC, 'vedic/vargas.ts'),
+                external: [],
+            });
+            const digest = await runBundledDigest(js, VARGA_RUNNER, REPO_ROOT);
+            expect(digest).toBe(nodeVargaDigest);
+        },
+        BUNDLE_TEST_TIMEOUT_MS,
+    );
 
-    test('chebyshev subpath bundle matches Node on chebyshev corpus', async () => {
-        const { js } = await bundleCoreEntry({
-            entry: join(CORE_SRC, 'engine/chebyshev.ts'),
-            external: [],
-        });
-        const digest = await runBundledDigest(js, CHEBY_RUNNER, REPO_ROOT);
-        expect(digest).toBe(nodeChebyDigest);
-    });
+    test(
+        'chebyshev subpath bundle matches Node on chebyshev corpus',
+        async () => {
+            const { js } = await bundleCoreEntry({
+                entry: join(CORE_SRC, 'engine/chebyshev.ts'),
+                external: [],
+            });
+            const digest = await runBundledDigest(js, CHEBY_RUNNER, REPO_ROOT);
+            expect(digest).toBe(nodeChebyDigest);
+        },
+        BUNDLE_TEST_TIMEOUT_MS,
+    );
 
-    test('browser entry bundle vargas matches Node on varga corpus', async () => {
-        const { js } = await bundleCoreEntry({
-            entry: join(CORE_SRC, 'browser/index.ts'),
-            external: [],
-        });
-        const digest = await runBundledDigest(js, VARGA_RUNNER, REPO_ROOT);
-        expect(digest).toBe(nodeVargaDigest);
-    });
+    test(
+        'browser entry bundle vargas matches Node on varga corpus',
+        async () => {
+            const { js } = await bundleCoreEntry({
+                entry: join(CORE_SRC, 'browser/index.ts'),
+                external: [],
+            });
+            const digest = await runBundledDigest(js, VARGA_RUNNER, REPO_ROOT);
+            expect(digest).toBe(nodeVargaDigest);
+        },
+        BUNDLE_TEST_TIMEOUT_MS,
+    );
 
-    test('bundled vargas retains configured Decimal (clone / 34-digit) in output', async () => {
-        const { js } = await bundleCoreEntry({
-            entry: join(CORE_SRC, 'vedic/vargas.ts'),
-            external: ['decimal.js'],
-        });
-        const text = Buffer.from(js).toString('utf8');
-        expect(text).toMatch(/clone\(|precision:\s*34|34.*precision/);
-    });
+    test(
+        'bundled vargas retains configured Decimal (clone / 34-digit) in output',
+        async () => {
+            const { js } = await bundleCoreEntry({
+                entry: join(CORE_SRC, 'vedic/vargas.ts'),
+                external: ['decimal.js'],
+            });
+            const text = Buffer.from(js).toString('utf8');
+            expect(text).toMatch(/clone\(|precision:\s*34|34.*precision/);
+        },
+        BUNDLE_TEST_TIMEOUT_MS,
+    );
 
-    test('dropping precise.ts makes bundled vargas fail (guard sanity)', async () => {
-        const { js } = await bundleCoreEntry({
-            entry: join(CORE_SRC, 'vedic/vargas.ts'),
-            external: [],
-            extraPlugins: [dropPreciseModulePlugin],
-        });
-        await expect(runBundledDigest(js, VARGA_RUNNER, REPO_ROOT)).rejects.toThrow();
-    });
+    test(
+        'dropping precise.ts makes bundled vargas fail (guard sanity)',
+        async () => {
+            const { js } = await bundleCoreEntry({
+                entry: join(CORE_SRC, 'vedic/vargas.ts'),
+                external: [],
+                extraPlugins: [dropPreciseModulePlugin],
+            });
+            await expect(runBundledDigest(js, VARGA_RUNNER, REPO_ROOT)).rejects.toThrow();
+        },
+        BUNDLE_TEST_TIMEOUT_MS,
+    );
 });

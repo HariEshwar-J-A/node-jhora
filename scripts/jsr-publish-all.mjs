@@ -2,7 +2,7 @@
 /**
  * Publish all JSR packages (upstream release workflow only).
  */
-import { spawnSync } from 'node:child_process';
+import { spawnCliSync } from '../tools/spawn-cli.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,7 +13,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 for (const dir of JSR_PUBLISHABLE) {
     const cwd = join(root, 'packages', dir);
     console.log(`\n=== jsr publish: @node-jhora/${dir} ===\n`);
-    const r = spawnSync('npx', ['--yes', 'jsr@latest', 'publish'], {
+    const r = spawnCliSync('npx', ['--yes', 'jsr@latest', 'publish'], {
         cwd,
         stdio: 'inherit',
     });

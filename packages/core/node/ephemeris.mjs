@@ -97,7 +97,20 @@ function resolvePackageDir(name) {
 }
 
 /** Refuse writing cache files from non-HTTPS or unexpected hosts (CodeQL http-to-file). */
-function assertTrustedDownloadSource(source) {
+const TRUSTED_DOWNLOAD_HOSTS = new Set(['ssd.jpl.nasa.gov', 'cdn.jsdelivr.net']);
+
+/** @param {string | URL} [baseUrl] */
+function hostFromBaseUrl(baseUrl) {
+    if (!baseUrl) return undefined;
+    try {
+        return new URL(baseUrl).hostname;
+    } catch {
+        return undefined;
+    }
+}
+
+/** @param {Set<string>} hosts */
+function assertTrustedDownloadSource(source, hosts = TRUSTED_DOWNLOAD_HOSTS) {
     if (typeof source !== 'string' || !source.includes('://')) return;
     let parsed;
     try {
@@ -108,11 +121,14 @@ function assertTrustedDownloadSource(source) {
     if (parsed.protocol !== 'https:') {
         throw new Error(`refusing non-HTTPS download source: ${source}`);
     }
+    if (!hosts.has(parsed.hostname)) {
+        throw new Error(`refusing download from untrusted host: ${parsed.hostname}`);
+    }
 }
 
 /** Write bytes atomically after checking them against `entry`. */
-export function writeVerified(dest, bytes, entry, source) {
-    assertTrustedDownloadSource(source);
+export function writeVerified(dest, bytes, entry, source, trustedHosts = TRUSTED_DOWNLOAD_HOSTS) {
+    assertTrustedDownloadSource(source, trustedHosts);
     if (bytes.byteLength !== entry.bytes) {
         throw new Error(
             `${entry.file} from ${source}: expected ${entry.bytes} bytes, got ${bytes.byteLength}`,
@@ -295,6 +311,12 @@ export async function createNodeChunkLoader(options = {}) {
             : options.cdn
               ? (key) => cdnUrl(key)
               : undefined);
+    const downloadHosts = new Set(TRUSTED_DOWNLOAD_HOSTS);
+    const mirrorHost = hostFromBaseUrl(options.baseUrl);
+    if (mirrorHost) downloadHosts.add(mirrorHost);
+    for (const host of options.allowedDownloadHosts ?? []) {
+        downloadHosts.add(host);
+    }
 
     function readVerified(path, entry) {
         if (!existsSync(path)) return undefined;
@@ -356,7 +378,7 @@ export async function createNodeChunkLoader(options = {}) {
             const url = urlFor(key);
             const bytes = await fetchBytes(url, options.fetchImpl);
             try {
-                writeVerified(cachePath, bytes, entry, url);
+                writeVerified(cachePath, bytes, entry, url, downloadHosts);
             } catch (err) {
                 throw new m.EphemerisIntegrityError(err.message, entry.file, url);
             }
