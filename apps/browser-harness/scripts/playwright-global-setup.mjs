@@ -1,4 +1,5 @@
-import { spawnSync } from 'node:child_process';
+import { spawnCliSync } from '../../tools/spawn-cli.mjs';
+import { spawnCliSync } from '../../tools/spawn-cli.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -6,16 +7,16 @@ export default async function globalSetup() {
     const harnessRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
     const repoRoot = join(harnessRoot, '../..');
 
-    const monorepoBuild = spawnSync('pnpm', ['build'], {
+    const monorepoBuild = spawnCliSync('pnpm', ['build'], {
         cwd: repoRoot,
         stdio: 'inherit',
         env: process.env,
     });
-    if (monorepoBuild.status !== 0) {
-        throw new Error('monorepo pnpm build failed');
+    if (monorepoBuild.error || monorepoBuild.status !== 0) {
+        throw new Error(monorepoBuild.error?.message ?? 'monorepo pnpm build failed');
     }
 
-    const gen = spawnSync(
+    const gen = spawnCliSync(
         'pnpm',
         ['exec', 'node', 'apps/browser-harness/scripts/generate-fixture.mjs'],
         {
@@ -24,16 +25,16 @@ export default async function globalSetup() {
             env: process.env,
         },
     );
-    if (gen.status !== 0) {
-        throw new Error('generate-fixture.mjs failed');
+    if (gen.error || gen.status !== 0) {
+        throw new Error(gen.error?.message ?? 'generate-fixture.mjs failed');
     }
 
-    const harnessBuild = spawnSync('pnpm', ['run', 'build'], {
+    const harnessBuild = spawnCliSync('pnpm', ['run', 'build'], {
         cwd: harnessRoot,
         stdio: 'inherit',
         env: process.env,
     });
-    if (harnessBuild.status !== 0) {
-        throw new Error('browser-harness vite build failed');
+    if (harnessBuild.error || harnessBuild.status !== 0) {
+        throw new Error(harnessBuild.error?.message ?? 'browser-harness vite build failed');
     }
 }

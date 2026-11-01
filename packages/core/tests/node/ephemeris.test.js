@@ -89,7 +89,7 @@ describe('DE440s', () => {
         await expect(
             downloadDe440s({
                 cacheDir: tmp,
-                urls: ['https://mirror.invalid/de440s.bsp'],
+                urls: ['https://ssd.jpl.nasa.gov/fake/de440s.bsp'],
                 fetchImpl,
             }),
         ).rejects.toThrow(/SHA-256 mismatch/);

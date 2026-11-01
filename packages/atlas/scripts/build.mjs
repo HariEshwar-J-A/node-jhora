@@ -27,9 +27,9 @@ import { fileURLToPath } from 'node:url';
 
 import { normalizeSearchKey, shardIdForKey } from './normalize.mjs';
 
-/** Strip CR/LF so logged values cannot forge log lines (CodeQL log injection). */
+/** Strip CR/LF and control chars (CodeQL log injection). */
 function sanitizeLogLine(value) {
-    return String(value).replace(/[\r\n]/g, ' ');
+    return String(value).replace(/[\r\n\x00-\x1f\x7f]/g, '');
 }
 
 const ATTRIBUTION_TEXT =
@@ -372,6 +372,6 @@ async function main() {
 }
 
 main().catch((err) => {
-    console.error(err);
+    console.error(sanitizeLogLine(err?.message ?? err));
     process.exit(1);
 });

@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { assertSpawnOk, spawnCliSync } from './spawn-cli.mjs';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -21,18 +22,12 @@ function sha256(path) {
 
 function runArgv(argv) {
     const [cmd, ...args] = argv;
-    const result = spawnSync(cmd, args, {
-        cwd: root,
-        stdio: 'pipe',
-        env: { ...process.env, FORCE_COLOR: '0' },
-    });
-    if (result.status !== 0) {
-        const err =
-            result.stderr?.toString() ||
-            result.stdout?.toString() ||
-            `${cmd} exited ${result.status}`;
-        throw new Error(err);
-    }
+    const env = { ...process.env, FORCE_COLOR: '0' };
+    const result =
+        cmd === 'pnpm'
+            ? spawnCliSync('pnpm', args, { cwd: root, stdio: 'pipe', env })
+            : spawnSync(cmd, args, { cwd: root, stdio: 'pipe', env });
+    assertSpawnOk(result, cmd);
 }
 
 test('core/format .d.ts enum order is stable across clean rebuilds', () => {
