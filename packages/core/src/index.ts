@@ -106,7 +106,6 @@ export {
 export type { AyanamsaOptions } from './engine/ayanamsa-options.js';
 export { AYANAMSA_FLAGS, AYANAMSA_MODE_USER } from './engine/ayanamsa-options.js';
 export { AYANAMSA_MODEL_DEFS } from './engine/ayanamsa-registry.js';
-export type { DeltaTForecastId, StarParallaxId } from './engine/deltat.js';
 export {
     DELTA_T_MODEL_MODERN,
     DELTA_T_MODEL_MODERN_ORACLE_COMPAT,
@@ -132,6 +131,8 @@ export {
     DEFAULT_OBSERVATION_CENTER,
     DEFAULT_POSITION_MODE,
 } from './engine/ephemeris.js';
+export type { IersEopSample, IersEopTable } from './engine/iers-eop.js';
+export { getIersEopTable, lookupIersEop, setIersEopTable } from './engine/iers-eop.js';
 export type { ChunkKey, EphemerisChunkLoader } from './engine/provider/index.js';
 export type {
     EphemerisPolicy,

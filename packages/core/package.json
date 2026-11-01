@@ -70,6 +70,7 @@
         "jest": "^30.2.0",
         "ts-jest": "^29.4.6",
         "@node-jhora/ephe": "workspace:*",
+        "@node-jhora/eop": "workspace:*",
         "typescript": "^5.9.3"
     },
     "keywords": [

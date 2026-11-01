@@ -1,0 +1,52 @@
+{
+    "name": "@node-jhora/eop",
+    "version": "1.0.0",
+    "description": "IERS Earth orientation parameters (UT1−UTC, polar motion) and IANA leap-second metadata for the truth precision profile",
+    "type": "module",
+    "license": "LicenseRef-IERS-Public-Data",
+    "main": "index.mjs",
+    "types": "index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "import": "./index.mjs"
+        },
+        "./eop.bin": "./eop.bin",
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "build": "node -e \"process.exit(0)\"",
+        "typecheck": "node -e \"process.exit(0)\"",
+        "lint": "node -e \"process.exit(0)\"",
+        "test": "node --test test/parse.test.mjs",
+        "fetch": "node download.mjs",
+        "pack-data": "node build-pack.mjs",
+        "prepack": "node verify-prepack.mjs"
+    },
+    "files": [
+        "index.mjs",
+        "index.d.ts",
+        "eop.bin",
+        "NOTICE.md",
+        "README.md"
+    ],
+    "keywords": [
+        "iers",
+        "eop",
+        "ut1",
+        "polar-motion",
+        "astronomy"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HariEshwar-J-A/node-jhora.git",
+        "directory": "packages/eop"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "sideEffects": false
+}

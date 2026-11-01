@@ -134,6 +134,12 @@ import {
     sssHouseCusps,
 } from './house-systems.js';
 import {
+    type IersEopTable,
+    polarMotionAscendantDeltaDeg,
+    polarMotionForProfile,
+    setIersEopTable,
+} from './iers-eop.js';
+import {
     APPARENT_SPEED_STEP_DAYS,
     geocentricRelativeState,
     isGeometricPlace,
@@ -479,6 +485,11 @@ export class EphemerisEngine {
         if (this.initialized) {
             this.attachCompositeProvider();
         }
+    }
+
+    /** Optional IERS UT1−UTC and polar motion for the `truth` profile (ADR 0028). */
+    public setIersEopTable(table: IersEopTable | null): void {
+        setIersEopTable(table);
     }
 
     /** Force DE440s, DE431/DE441 long-range, or auto (default). */
@@ -986,7 +997,11 @@ export class EphemerisEngine {
         center: ObservationCenter = DEFAULT_OBSERVATION_CENTER,
         precisionProfile: PrecisionProfile = getDeltaTContext().profile,
     ): { lon: number; lat: number; dist: number } {
-        if (!isGeometricPlace(corrections) || center === 'heliocentric') {
+        if (
+            precisionProfile === 'truth' ||
+            !isGeometricPlace(corrections) ||
+            center === 'heliocentric'
+        ) {
             const h = APPARENT_SPEED_STEP_DAYS;
             const before = this.meanEclipticOfDate(
                 jdUT - h,
@@ -1153,6 +1168,7 @@ export class EphemerisEngine {
     ): HouseData {
         const profile = precision?.precisionProfile;
         const modern = profile === 'modern';
+        const truth = profile === 'truth';
         const siderealFrame = frameArg ?? (modern ? 'se-apparent' : 'jhora');
         const effectiveProfile = profile ?? getDeltaTContext().profile;
         const jdTT = jd + deltaT(jd) / 86400.0;
@@ -1163,10 +1179,19 @@ export class EphemerisEngine {
                 jd > 2469807.5 ||
                 jdTT < DE440S_JD_TDB_START + 30 ||
                 jdTT > DE440S_JD_TDB_END);
-        const eps = trueObliquity(jd, mMain ? 'jhora' : 'modern');
-        const ramc = mod360(getGAST(jd, mMain ? 'jhora' : 'modern') + lon);
+        const gastProfile = truth ? 'truth' : mMain ? 'jhora' : 'modern';
+        const eps = trueObliquity(jd, gastProfile);
+        const ramc = mod360(getGAST(jd, gastProfile) + lon);
 
-        const tropAsc = computeAscendant(ramc, lat, eps);
+        let tropAsc = computeAscendant(ramc, lat, eps);
+        if (truth) {
+            const pm = polarMotionForProfile(jd, 'truth');
+            if (pm.inTable) {
+                tropAsc = mod360(
+                    tropAsc + polarMotionAscendantDeltaDeg(tropAsc, lat, pm.xpArcsec, pm.ypArcsec),
+                );
+            }
+        }
         const tropMC = computeMC(ramc, eps);
         const tropVertex = computeVertex(ramc, lat, eps);
 

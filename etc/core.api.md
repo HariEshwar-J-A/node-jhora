@@ -649,11 +649,8 @@ export const DELTA_T_MODEL_MODERN_PUBLISHED = "modern:smh2016-s15+aa-usno-monthl
 // @public
 export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864000;
 
-// Warning: (ae-forgotten-export) The symbol "DELTA_T_FORECASTS" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "DeltaTForecastId" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
-export type DeltaTForecastId = (typeof DELTA_T_FORECASTS)[number];
-
 // @public
 export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number, forecast?: DeltaTForecastId): string;
 
@@ -746,6 +743,7 @@ export class EphemerisEngine {
     setChunkStore(store: De431ChunkStore): void;
     setDe441ChunkStore(store: De441ChunkStore): void;
     setEphemerisPolicy(policy: EphemerisPolicy): void;
+    setIersEopTable(table: IersEopTable | null): void;
 }
 
 // @public (undocumented)
@@ -817,6 +815,9 @@ export function formatUtcIso(ms: number): string;
 
 // @public (undocumented)
 export type GapLocalPolicy = 'forward' | 'backward' | 'reject';
+
+// @public (undocumented)
+export function getIersEopTable(): IersEopTable | null;
 
 // @public (undocumented)
 export function getPreset(id: PresetId): CalculationSettings;
@@ -915,6 +916,32 @@ export type HouseSystemId = (typeof HOUSE_SYSTEM_IDS)[number];
 export type HouseSystemMethod = HouseSystemLegacy;
 
 // @public (undocumented)
+export interface IersEopSample {
+    // (undocumented)
+    inTable: boolean;
+    // (undocumented)
+    ut1MinusUtcSeconds: number;
+    // (undocumented)
+    xpArcsec: number;
+    // (undocumented)
+    ypArcsec: number;
+}
+
+// @public (undocumented)
+export interface IersEopTable {
+    // (undocumented)
+    readonly count: number;
+    // (undocumented)
+    readonly mjdStart: number;
+    // (undocumented)
+    readonly ut1UtcMicros: Int32Array;
+    // (undocumented)
+    readonly xpMilliarcsec: Int16Array;
+    // (undocumented)
+    readonly ypMilliarcsec: Int16Array;
+}
+
+// @public (undocumented)
 export function inferDasaYearKind(days: number): DasaYearKind;
 
 // @public (undocumented)
@@ -969,6 +996,7 @@ export interface JyotishConfig {
     nodeType: NodeType;
     positionMode: PositionMode;
     precisionProfile?: PrecisionProfile;
+    // Warning: (ae-forgotten-export) The symbol "StarParallaxId" needs to be exported by the entry point index.d.ts
     starParallax?: StarParallaxId;
     sunriseHour: number;
     topocentric: boolean;
@@ -1038,6 +1066,9 @@ export function localClockToHourUT(local: {
 
 // @public
 export function localClockToJulianDay(local: LocalClock, calendar?: CalendarMode): number;
+
+// @public (undocumented)
+export function lookupIersEop(jdUt: number, table?: IersEopTable): IersEopSample;
 
 // @public
 export interface ManualOffsetOverride {
@@ -1436,6 +1467,9 @@ export interface RulingPlanetsResult {
     moonStarLord: number;
 }
 
+// @public (undocumented)
+export function setIersEopTable(table: IersEopTable | null): void;
+
 // @public
 export const SETTINGS_HASH_HEX_LENGTH = 16;
 
@@ -1460,11 +1494,6 @@ export const SEVEN_GRAHAS_JHORA_ORDER: readonly Body_2[];
 
 // @public
 export function sha256HexAsync(bytes: Uint8Array): Promise<string>;
-
-// Warning: (ae-forgotten-export) The symbol "STAR_PARALLAX_MODES" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
-export type StarParallaxId = (typeof STAR_PARALLAX_MODES)[number];
 
 // @public (undocumented)
 export const SUNRISE_LIMBS: readonly ["disc_centre", "upper_limb"];
