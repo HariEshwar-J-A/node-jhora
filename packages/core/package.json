@@ -1,6 +1,7 @@
 {
     "name": "@node-jhora/core",
     "version": "3.1.0",
+    "description": "Vedic astrology core with a pure TypeScript JPL DE440s reader, JPL-grade accuracy, and Vedic math for Node, Bun, Deno and edge runtimes.",
     "type": "module",
     "sideEffects": [
         "./dist/index.js",

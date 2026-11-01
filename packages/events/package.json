@@ -1,6 +1,7 @@
 {
     "name": "@node-jhora/events",
     "version": "3.1.0",
+    "description": "Exact sign ingresses, stations and custom astronomical events for the node-jhora Vedic astrology engine.",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
