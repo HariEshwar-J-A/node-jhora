@@ -74,6 +74,14 @@ export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
 const finite = z.number().finite();
 
+const UserAyanamsaSchema = z
+    .object({
+        t0Jd: finite,
+        ayanamsaDeg: finite,
+        t0IsUt: z.boolean().optional(),
+    })
+    .strict();
+
 export const SunriseSchema = z
     .object({
         limb: z.enum(SUNRISE_LIMBS),
@@ -159,6 +167,10 @@ export const CalculationSettingsSchema = z
          * has no name in {@link AYANAMSA_IDS}.
          */
         customAyanamsaMode: z.number().finite().int().optional(),
+        /** Bitwise OR of sidereal projection flags (see `AYANAMSA_FLAGS`). */
+        ayanamsaFlags: z.number().finite().int().nonnegative().optional(),
+        /** Required when `customAyanamsaMode` is 255 (USER). */
+        userAyanamsa: UserAyanamsaSchema.optional(),
         nodeType: z.enum(['mean', 'true']),
         houseSystem: z.enum(HOUSE_SYSTEM_IDS),
         /** Equal / whole-sign wheels may start at the ascendant, Moon, Sun, or 0° Aries. */
@@ -190,6 +202,13 @@ export const CalculationSettingsSchema = z
                 code: z.ZodIssueCode.custom,
                 message,
                 path: data.customAyanamsaMode !== undefined ? ['customAyanamsaMode'] : ['ayanamsa'],
+            });
+        }
+        if (mode === 255 && data.userAyanamsa === undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'USER ayanamsa (mode 255) requires userAyanamsa { t0Jd, ayanamsaDeg }',
+                path: ['userAyanamsa'],
             });
         }
     });

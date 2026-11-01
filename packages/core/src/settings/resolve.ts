@@ -10,6 +10,8 @@ import {
     resolveConfig,
     TROPICAL_YEAR_DAYS,
 } from '../config.js';
+import type { AyanamsaOptions } from '../engine/ayanamsa-options.js';
+import { AYANAMSA_MODE_USER } from '../engine/ayanamsa-options.js';
 import {
     houseSystemIdFromLegacy,
     houseSystemLegacyFromId,
@@ -64,6 +66,8 @@ const SETTINGS_MARKS = [
     'cuspsInMiddle',
     'houseAnchor',
     'customAyanamsaMode',
+    'ayanamsaFlags',
+    'userAyanamsa',
     'deltaTForecast',
     'starParallax',
 ] as const;
@@ -82,13 +86,37 @@ export interface ResolvedCalculation {
     config: JyotishConfig;
 }
 
+function ayanamsaOptionsFromSettings(
+    settings: CalculationSettings,
+    mode: number,
+): AyanamsaOptions | undefined {
+    const ayanamsaFlags = settings.ayanamsaFlags;
+    const user = settings.userAyanamsa;
+    if (ayanamsaFlags === undefined && user === undefined && mode !== AYANAMSA_MODE_USER) {
+        return undefined;
+    }
+    const options: AyanamsaOptions = {};
+    if (ayanamsaFlags !== undefined) options.ayanamsaFlags = ayanamsaFlags;
+    if (user !== undefined) {
+        options.user = {
+            t0Jd: user.t0Jd,
+            ayanamsaDeg: user.ayanamsaDeg,
+            ...(user.t0IsUt !== undefined ? { t0IsUt: user.t0IsUt } : {}),
+        };
+    }
+    return options;
+}
+
 export function settingsToJyotishConfig(settings: CalculationSettings): JyotishConfig {
+    const mode = settings.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[settings.ayanamsa];
+    const ayanamsaOptions = ayanamsaOptionsFromSettings(settings, mode);
     return {
         positionMode: settings.positionMode,
         topocentric: settings.topocentric,
         altitudeMetres: settings.altitudeMetres,
-        ayanamsaMode: settings.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[settings.ayanamsa],
+        ayanamsaMode: mode,
         ayanamsaOffset: settings.ayanamsaOffsetDeg,
+        ...(ayanamsaOptions ? { ayanamsaOptions } : {}),
         nodeType: settings.nodeType,
         houseSystem: houseSystemLegacyFromId(settings.houseSystem),
         houseAnchor: settings.houseAnchor ?? 'ascendant',

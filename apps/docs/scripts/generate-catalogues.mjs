@@ -15,15 +15,15 @@ const ayanamsaModule = jitiImport(path.join(REPO_ROOT, 'packages/core/src/engine
 const { AYANAMSA_IDS, AYANAMSA_MODE_BY_ID } = schema;
 const { AYANAMSA_MODELS } = ayanamsaModule;
 
-const AYANAMSA_TS = await fs.readFile(
-    path.join(REPO_ROOT, 'packages/core/src/engine/ayanamsa.ts'),
+const REGISTRY_TS = await fs.readFile(
+    path.join(REPO_ROOT, 'packages/core/src/engine/ayanamsa-registry.ts'),
     'utf8',
 );
 
-/** Pull inline // comments on the same line as a model entry. */
-function lineCommentForMode(mode) {
-    const re = new RegExp(`^\\s*${mode}:\\s*\\{[^}]+\\},?\\s*//\\s*(.+)$`, 'm');
-    const m = AYANAMSA_TS.match(re);
+/** Provenance from block comments in the registry (not shipped in the npm package). */
+function provenanceForMode(mode) {
+    const re = new RegExp(`/\\*\\* @provenance ([^*]+) \\*/\\s*\\n\\s*${mode}:`, 'm');
+    const m = REGISTRY_TS.match(re);
     return m ? m[1].trim() : null;
 }
 
@@ -41,14 +41,13 @@ function describeModel(mode, model) {
                 'Star catalogue and proper-motion handling: `packages/core/src/engine/ayanamsa.ts` (`STARS`, `starLongitudeOfDate`). IAU 2006 precession via `precession.ts`.',
         };
     }
-    const src = model.source ?? 'definition';
-    const line = lineCommentForMode(mode);
+    const provenance = provenanceForMode(mode);
     return {
         kind: 'epoch-defined',
-        detail: `${model.label}. Anchor ${model.value}° at JD ${model.jd}.`,
-        citation: line
-            ? `Engine note: ${line}`
-            : `Provenance tag in code: \`source: '${src}'\` on the epoch model in \`ayanamsa.ts\`.`,
+        detail: `${model.label}. Anchor at JD ${model.jd}.`,
+        citation:
+            provenance ??
+            'See [DATA-SOURCES.md](/docs/data-sources/) and ADR 0025 for primary references.',
     };
 }
 

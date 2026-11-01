@@ -1,5 +1,5 @@
 /**
- * Engine SE_SIDM mode numbers must match pyswisseph 2.10 identifiers.
+ * Engine ayanamsa mode numbers must match pyswisseph 2.10 identifiers.
  * Values are API constants only — not copied from Swiss Ephemeris source.
  */
 
@@ -44,13 +44,15 @@ const ENGINE_BY_NAME: Record<string, number> = {
     LAHIRI_ICRC: AYANAMSA.LAHIRI_ICRC,
 };
 
-describe('SE_SIDM mode numbers (pyswisseph 2.10)', () => {
+describe('ayanamsa mode numbers (pyswisseph 2.10)', () => {
     for (const [name, seId] of Object.entries(PY_SWISSEPH_SIDM)) {
         test(`${name} = ${seId}`, () => {
             expect(ENGINE_BY_NAME[name]).toBe(seId);
             if (UNSUPPORTED_AYANAMSA_MODES.has(seId)) {
                 expect(AYANAMSA_MODELS[seId]).toBeUndefined();
                 expect(() => getAyanamsa(seId, 2451545.0)).toThrow(UnsupportedAyanamsaModeError);
+            } else if (seId === 255) {
+                expect(() => getAyanamsa(seId, 2451545.0)).toThrow(/requires options\.user/);
             } else {
                 expect(AYANAMSA_MODELS[seId]).toBeDefined();
             }

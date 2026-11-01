@@ -21,13 +21,14 @@ Star-defined modes derive longitudes from the catalogue entries in `ayanamsa.ts`
 |   46 | Lahiri ICRC       | **true** 23°15′ @ JD 2435553.5 (1956-03-21), mean-stored with IAU 1980 Δψ at anchor, IAU 2006 precession | Govt. of India, CRC _Report_ (1955), Part A      | &lt;0.35″ vs SE 2.10                |
 
 Parity pins: `packages/core/tests/fixtures/ayanamsa_sidm_parity_pins.json` (DE440s kernel
-JD 2396760–2490000, six epochs). Modern = `swe_get_ayanamsa_ut`; JHora = geometric DLL
+JD 2396760–2490000, six epochs). Modern = pyswisseph 2.10.03 black-box ayanamsa per mode
+number; JHora = geometric DLL
 where recorded (modes 1 and 27).
 
 ## Long-range oracle sweep (−10000…+10000 CE)
 
 Re-measured after Vondrák 2011 precession (#283) with `tools/measure-ayanamsa-era-max.mjs`
-(engine vs **pyswisseph 2.10** `swe_get_ayanamsa_ut`, no fitting). Sample years:
+(engine vs **pyswisseph 2.10** black-box ayanamsa per mode number, no fitting). Sample years:
 −10000, −9000, …, 2150, 3000, 5000, 8000, 10000 at local noon on 1 Jan (Gregorian when
 year ≥ 1582). Eras: `before_5000_bce`, `5000_bce_to_1_bce`, `1_ce_to_1799`,
 `1800_to_1848`, `de440s_1849_2150`, `after_2150_ce`.
@@ -54,14 +55,24 @@ SE. JHora geometric mode 27 uses `jhora_dll_golden.json` (cases inside kernel co
 
 Raw JSON: `tools/ayanamsa-era-max.json` (regenerate with the script above).
 
-## Unsupported SE_SIDM IDs
+## Full ayanamsa catalogue (modes 0–46, USER 255)
 
-| Mode | Constant           | Reason                                                                                  |
-| ---: | ------------------ | --------------------------------------------------------------------------------------- |
-|    2 | `SIDM_DELUCE`      | Published 26°24′47″ in 1900 (De Luce 1963) misses SE 2.10 by ~22″ at B1900              |
-|    7 | `SIDM_YUKTESHWAR`  | Published 1894 equinox anchor + IAU precession misses SE 2.10 by arcminutes             |
-|    8 | `SIDM_JN_BHASIN`   | No citable primary anchor reproducing SE 2.10 within 1″                                 |
-|   28 | `SIDM_TRUE_REVATI` | Published ζ Psc pin + Hipparcos astrometry misses SE 2.10 at kernel edges by arcminutes |
+All publicly numbered ayanamsa modes **0–46** are registered in
+`packages/core/src/engine/ayanamsa-registry.ts` with a `source` field citing primary
+literature. **USER (255)** accepts `{ t0Jd, ayanamsaDeg }` plus optional projection flags
+(`AYANAMSA_FLAGS` in `ayanamsa-options.ts`). Design notes and deferred modes (6, 14, 30, 39) are in [ADR 0025](./decisions/0025-full-ayanamsa-catalog.md).
 
-`getAyanamsa` throws {@link UnsupportedAyanamsaModeError} for these modes. Any other
-unregistered SE_SIDM code throws {@link UnknownAyanamsaModeError}.
+Kernel-era parity vs pyswisseph 2.10: `ayanamsa-sidm-parity.test.ts` (strict ≤1″ on 32 modes;
+extended ≤1° on the rest). Modes **6, 14, 30, 39** remain implementation gaps pending
+primary-source refinement—not oracle-fitted placeholders.
+
+## Previously unsupported modes (now registered)
+
+| Mode | Name        | Primary source (registry)                      |
+| ---: | ----------- | ---------------------------------------------- |
+|    2 | De Luce     | De Luce (1963); SE 2.02 vs 2.10 anchor differs |
+|    7 | Yukteshwar  | Yukteswar, _The Holy Science_ (1894 equinox)   |
+|    8 | JN Bhasin   | Bhasin; SE documented anchor                   |
+|   28 | True Revati | ζ Psc at 359°50′; van Leeuwen 2007 astrometry  |
+
+Any integer mode not in the registry (and not USER 255) throws {@link UnknownAyanamsaModeError}.

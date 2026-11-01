@@ -103,6 +103,9 @@ export {
     UNSUPPORTED_AYANAMSA_MODES,
     UnsupportedAyanamsaModeError,
 } from './engine/ayanamsa.js';
+export type { AyanamsaOptions } from './engine/ayanamsa-options.js';
+export { AYANAMSA_FLAGS, AYANAMSA_MODE_USER } from './engine/ayanamsa-options.js';
+export { AYANAMSA_MODEL_DEFS } from './engine/ayanamsa-registry.js';
 export type { DeltaTForecastId, StarParallaxId } from './engine/deltat.js';
 export {
     DELTA_T_MODEL_MODERN,
@@ -387,6 +390,8 @@ export class NodeJHora {
         this.ephemeris = EphemerisEngine.getInstance();
         const resolved = describeCalculation(config);
         this.ephemeris.setEphemerisPolicy(resolved.settings.ephemerisPolicy);
+        this.ephemeris.setAyanamsa(resolved.config.ayanamsaMode);
+        this.ephemeris.setAyanamsaOptions(resolved.config.ayanamsaOptions);
         this.config = resolved.config;
         this.settings = resolved.settings;
         this.settingsHash = resolved.settingsHash;
@@ -445,6 +450,8 @@ export class NodeJHora {
 
         const engine = EphemerisEngine.getInstance();
         engine.setEphemerisPolicy(settings.ephemerisPolicy);
+        engine.setAyanamsa(c.ayanamsaMode);
+        engine.setAyanamsaOptions(c.ayanamsaOptions);
         await engine.initialize();
 
         const dt = DateTime.fromJSDate(date);

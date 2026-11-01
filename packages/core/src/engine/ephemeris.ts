@@ -94,6 +94,7 @@ import {
     setStarKinematicsProvider,
     toSidereal,
 } from './ayanamsa.js';
+import type { AyanamsaOptions } from './ayanamsa-options.js';
 import { getBspBytesLoader } from './bsp-bytes-provider.js';
 import {
     computeAscendant,
@@ -163,12 +164,12 @@ import { loadSpkFromBytes, NAIF } from './spk.js';
 // Ayanamsa constants — identical to previous version for API compatibility
 // ---------------------------------------------------------------------------
 
-/** @provenance Swiss Ephemeris public API `SE_SIDM_*` mode numbers (identifiers, not data). */
+/** @provenance Mode numbers compatible with publicly documented numbering (identifiers, not data). */
 export const AYANAMSA = {
     FAGAN_BRADLEY: 0,
-    /** Lahiri (SE_SIDM_LAHIRI). */
+    /** Lahiri (mode 1). */
     LAHIRI: 1,
-    /** De Luce (SE_SIDM_DELUCE). */
+    /** De Luce (mode 2). */
     DE_LUCE: 2,
     RAMAN: 3,
     KRISHNAMURTI: 5,
@@ -180,7 +181,7 @@ export const AYANAMSA = {
     TRUE_PUSHYA: 29,
     TRUE_REVATI: 28,
     TRUE_MULA: 35,
-    /** Lahiri ICRC variant (SE_SIDM_LAHIRI_ICRC). */
+    /** Lahiri ICRC variant (mode 46). */
     LAHIRI_ICRC: 46,
 } as const;
 
@@ -214,6 +215,8 @@ export interface PrecisionOptions {
     calendar?: CalendarMode;
     /** When set, skips {@link EphemerisEngine.julday} (e.g. civil time from {@link resolveCivilTime}). */
     julianDayUt?: number;
+    /** Per-call USER anchor / sidereal projection flags (overrides instance defaults). */
+    ayanamsaOptions?: AyanamsaOptions;
     /** Settings id for house system when `method` is omitted or is a legacy alias. */
     houseSystemId?: HouseSystemId;
     houseAnchor?: HouseAnchorId;
@@ -391,6 +394,7 @@ export class EphemerisEngine {
     private chunkStoreDe431?: De431ChunkStore;
     private chunkStoreDe441?: De441ChunkStore;
     private ayanamsaMode: number = DEFAULT_AYANAMSA;
+    private ayanamsaOptions?: AyanamsaOptions;
 
     public constructor() {}
 
@@ -495,11 +499,35 @@ export class EphemerisEngine {
     // Configuration
     // -----------------------------------------------------------------------
 
-    /** Set ayanamsa mode. Accepts AYANAMSA.* constants. */
+    /** Set ayanamsa mode. Accepts AYANAMSA.* constants. Does not require initialize(). */
     public setAyanamsa(mode: number): void {
-        this.checkInit();
         assertValidAyanamsaMode(mode);
         this.ayanamsaMode = mode;
+    }
+
+    /** USER anchor and sidereal projection flags for subsequent calculations. */
+    public setAyanamsaOptions(options: AyanamsaOptions | undefined): void {
+        this.ayanamsaOptions = options;
+    }
+
+    private mergedAyanamsaOptions(override?: AyanamsaOptions): AyanamsaOptions | undefined {
+        if (!this.ayanamsaOptions && override === undefined) return undefined;
+        if (!this.ayanamsaOptions) return override;
+        if (!override) return this.ayanamsaOptions;
+        return {
+            ayanamsaFlags: override.ayanamsaFlags ?? this.ayanamsaOptions.ayanamsaFlags,
+            user: override.user ?? this.ayanamsaOptions.user,
+        };
+    }
+
+    private ayanamsaAt(
+        mode: number,
+        jd: number,
+        frame: AyanamsaFrame,
+        profile: PrecisionProfile,
+        options?: AyanamsaOptions,
+    ): number {
+        return computeAyanamsa(mode, jd, frame, profile, this.mergedAyanamsaOptions(options));
     }
 
     // -----------------------------------------------------------------------
@@ -545,14 +573,14 @@ export class EphemerisEngine {
      * Ayanamsa in degrees at the given Julian Day.
      *
      * @param jd    Julian Day (UT)
-     * @param mode  SE_SIDM_* code; defaults to the instance setting. Pass it
+     * @param mode  Ayanamsa mode number; defaults to the instance setting. Pass it
      *              explicitly when a caller has already used a per-call
      *              `ayanamsaOrder` for planets, so the reported ayanamsa cannot
      *              drift out of step with the positions it belongs to.
      * @param frame 'geometric' (default, JHora: the value subtracted from
      *              geometric places and house angles) or opt-in 'apparent'
-     *              (what SE's swe_get_ayanamsa_ut reports, and what apparent
-     *              `positionMode` subtracts).
+     *              (modern-profile black-box ayanamsa per mode number, and what
+     *              apparent `positionMode` subtracts).
      */
     public getAyanamsa(
         jd: number,
@@ -568,12 +596,19 @@ export class EphemerisEngine {
         const effectiveMode = assertAyanamsaMode(mode ?? this.ayanamsaMode);
         assertFiniteNumber(offsetDeg, 'ayanamsaOffset');
         if (frame !== undefined) assertAyanamsaFrame(frame);
-        // 'modern' reports what swe_get_ayanamsa_ut reports: the apparent value.
+        // Modern profile defaults to apparent (matches pyswisseph black-box ayanamsa).
         const f: AyanamsaFrame = frame ?? (profile === 'modern' ? 'apparent' : 'geometric');
         const effectiveProfile = profile ?? getDeltaTContext().profile;
         return withDeltaTContext(
             deltaTContextOf(precision),
-            () => computeAyanamsa(effectiveMode, jd, f, effectiveProfile) + offsetDeg,
+            () =>
+                this.ayanamsaAt(
+                    effectiveMode,
+                    jd,
+                    f,
+                    effectiveProfile,
+                    precision?.ayanamsaOptions,
+                ) + offsetDeg,
         );
     }
 
@@ -658,7 +693,13 @@ export class EphemerisEngine {
         const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
         const ayan =
             zodiac === 'sidereal'
-                ? computeAyanamsa(effectiveMode, jd, frame, precisionProfile) + ayanamsaOffset
+                ? this.ayanamsaAt(
+                      effectiveMode,
+                      jd,
+                      frame,
+                      precisionProfile,
+                      options.ayanamsaOptions,
+                  ) + ayanamsaOffset
                 : 0;
         // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
         // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
@@ -672,12 +713,19 @@ export class EphemerisEngine {
                       'geometric',
                       ayanamsaOffset,
                       precisionProfile,
+                      options.ayanamsaOptions,
                   )
                 : 0;
         /** Meeus eq. 47.7 mean node: keep jhora geometric ayanamsa in the modern profile (ADR 0016). */
         const ayanForMeanNode =
             zodiac === 'sidereal' && precisionProfile === 'modern'
-                ? computeAyanamsa(effectiveMode, jd, 'geometric', 'jhora') + ayanamsaOffset
+                ? this.ayanamsaAt(
+                      effectiveMode,
+                      jd,
+                      'geometric',
+                      'jhora',
+                      options.ayanamsaOptions,
+                  ) + ayanamsaOffset
                 : ayan;
         const ayanRateForMeanNode =
             zodiac === 'sidereal' && precisionProfile === 'modern'
@@ -687,6 +735,7 @@ export class EphemerisEngine {
                       'geometric',
                       ayanamsaOffset,
                       'jhora',
+                      options.ayanamsaOptions,
                   )
                 : ayanRateForSiderealSpeed;
 
@@ -765,10 +814,11 @@ export class EphemerisEngine {
         ayanFrame: AyanamsaFrame,
         offsetDeg = 0,
         profile: PrecisionProfile = getDeltaTContext().profile,
+        options?: AyanamsaOptions,
     ): number {
         const h = APPARENT_SPEED_STEP_DAYS;
-        const a0 = computeAyanamsa(mode, jdUT - h, ayanFrame, profile) + offsetDeg;
-        const a1 = computeAyanamsa(mode, jdUT + h, ayanFrame, profile) + offsetDeg;
+        const a0 = this.ayanamsaAt(mode, jdUT - h, ayanFrame, profile, options) + offsetDeg;
+        const a1 = this.ayanamsaAt(mode, jdUT + h, ayanFrame, profile, options) + offsetDeg;
         return (a1 - a0) / (2 * h);
     }
 
@@ -954,7 +1004,7 @@ export class EphemerisEngine {
      * @param lon      Geographic longitude
      * @param method   'W' whole sign, 'E' equal, 'P' Placidus, 'O' Porphyry
      * @param sidereal When true (default), all angles have ayanamsa subtracted
-     * @param ayanamsaMode   SE_SIDM_* code; defaults to the instance setting
+     * @param ayanamsaMode   Ayanamsa mode number; defaults to the instance setting
      * @param ayanamsaOffset Constant added to the ayanamsa, degrees
      * @param siderealFrame  How the tropical angles are made sidereal.
      *   • `'jhora'` (default) — subtract the geometric star-defined ayanamsa,
@@ -1163,18 +1213,26 @@ export class EphemerisEngine {
             const T = julianCenturies(jd + deltaT(jd) / 86400.0);
             if (effectiveProfile === 'modern') {
                 ayaEx =
-                    computeAyanamsa(mode, jd, 'apparent', 'jhora') +
+                    this.ayanamsaAt(mode, jd, 'apparent', 'jhora', precision?.ayanamsaOptions) +
                     ayanamsaOffset +
                     nutation(T).dpsi;
             } else {
                 ayaEx =
-                    computeAyanamsa(mode, jd, 'apparent', effectiveProfile) +
+                    this.ayanamsaAt(
+                        mode,
+                        jd,
+                        'apparent',
+                        effectiveProfile,
+                        precision?.ayanamsaOptions,
+                    ) +
                     ayanamsaOffset +
                     nutationForProfile(T, effectiveProfile).dpsi;
             }
         } else {
             const ayanProfile = effectiveProfile === 'modern' ? 'jhora' : effectiveProfile;
-            ayaEx = computeAyanamsa(mode, jd, 'geometric', ayanProfile) + ayanamsaOffset;
+            ayaEx =
+                this.ayanamsaAt(mode, jd, 'geometric', ayanProfile, precision?.ayanamsaOptions) +
+                ayanamsaOffset;
         }
         const sub = (d: number) => mod360(d - ayaEx);
         return build(sub);

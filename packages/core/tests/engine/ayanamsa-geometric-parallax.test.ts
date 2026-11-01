@@ -15,6 +15,7 @@ import {
     earthGeocenterBarycentricAuAnalytic,
     setEarthBarycentricDeProvider,
 } from '../../src/engine/earth-geocenter-barycentric.js';
+import { VSOP87_EARTH_MAX_PARALLAX_MAS_VS_DE440 } from '../../src/engine/vsop87-earth.js';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from '../../src/engine/provider/de440s.js';
 import { NAIF } from '../../src/engine/spk.js';
@@ -154,14 +155,8 @@ describe('modern geometric True Citra annual parallax', () => {
             });
         });
 
-        test('truncated VSOP metadata stays within documented DE440 error budget', () => {
-            const meta = JSON.parse(
-                readFileSync(
-                    new URL('../../src/engine/vsop87-earth.data.json', import.meta.url),
-                    'utf8',
-                ),
-            ) as { measuredMaxParallaxMasVsDe440: number };
-            expect(meta.measuredMaxParallaxMasVsDe440).toBeLessThan(0.001);
+        test('truncated VSOP stays within documented DE440 parallax budget (ADR 0023)', () => {
+            expect(VSOP87_EARTH_MAX_PARALLAX_MAS_VS_DE440).toBeLessThan(0.001);
         });
     });
 });

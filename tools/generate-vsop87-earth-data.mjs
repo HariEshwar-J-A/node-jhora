@@ -190,14 +190,8 @@ if (maxPosAu > POSITION_MAX_AU || maxParallaxMas > MAX_PARALLAX_MAS) {
     process.exit(1);
 }
 
-const payload = {
-    catalogue: 'VSOP87E VI/81',
-    theory: 'Bretagnon & Francou 1988, A&A 202, 309',
-    truncationPositionMaxAu: POSITION_MAX_AU,
-    measuredMaxPositionErrorAuVsDe440: maxPosAu,
-    measuredMaxParallaxMasVsDe440: maxParallaxMas,
-    blocks: blocks.map((b) => [b.ic, b.alpha, b.terms]),
-};
+/** Shipped in @node-jhora/core; keep compact (ADR 0006 pack budget). Update VSOP87_EARTH_MAX_PARALLAX_MAS_VS_DE440 when retuning. */
+const payload = { blocks: blocks.map((b) => [b.ic, b.alpha, b.terms]) };
 writeFileSync(outPath, JSON.stringify(payload));
 const nTerms = blocks.reduce((n, b) => n + b.terms.length, 0);
 console.log(
