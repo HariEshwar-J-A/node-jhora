@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 /** Minify published JS under dist/ to stay within the core pack budget (ADR 0006). */
-import { execFileSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { transformSync } from 'esbuild';
 
 const pkgDir = fileURLToPath(new URL('..', import.meta.url));
 const dist = join(pkgDir, 'dist');
-const esbuild = join(pkgDir, '../../node_modules/.bin/esbuild');
 
 function walk(dir) {
     const out = [];
@@ -20,9 +19,11 @@ function walk(dir) {
 }
 
 for (const file of walk(dist)) {
-    execFileSync(
-        esbuild,
-        [file, '--allow-overwrite', '--minify-whitespace', '--minify-syntax', '--outfile=' + file],
-        { stdio: 'inherit' },
-    );
+    const source = readFileSync(file, 'utf8');
+    const { code } = transformSync(source, {
+        minifyWhitespace: true,
+        minifySyntax: true,
+        loader: 'js',
+    });
+    writeFileSync(file, code);
 }

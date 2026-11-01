@@ -67,7 +67,7 @@
             "outputs": []
         },
         "@node-jhora/ephe#test": {
-            "dependsOn": [],
+            "dependsOn": ["@node-jhora/core#build"],
             "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/**"],
             "outputs": ["coverage/**"]
         },
