@@ -1,3 +1,4 @@
+import { resolveCivilTime } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 import { NJH_SCHEMA_VERSION } from '../constants.js';
@@ -246,15 +247,22 @@ export function buildChartFromParsedRow(
     const kind = options.chartKind ?? 'natal';
     const importTag = options.importTag ?? 'csv-import';
 
-    const zoned = DateTime.fromObject(parsed.local, { zone: parsed.timezone });
-    if (!zoned.isValid) {
+    let civil: ReturnType<typeof resolveCivilTime>;
+    try {
+        civil = resolveCivilTime({
+            local: parsed.local,
+            timezone: parsed.timezone,
+            latitude: parsed.latitude,
+            longitude: parsed.longitude,
+        });
+    } catch {
         throw new Error(`Cannot interpret local time in zone ${parsed.timezone}`);
     }
-    // A wall clock inside a DST gap is read with the pre-transition offset; the
-    // row's `dst_gap` warning and the `gap_skip` step below record that choice.
-    const resolvedUtc = normalizeUtcInstant(
-        parsed.dstGap ? gapResolvedUtc(parsed.local, parsed.dstGap) : zoned.toUTC(),
-    );
+    const resolvedUtc = normalizeUtcInstant(DateTime.fromISO(civil.resolvedUtc, { zone: 'utc' }));
+    const resolvedZoned = DateTime.fromISO(resolvedUtc, { zone: 'utc' }).setZone(parsed.timezone);
+    if (!resolvedZoned.isValid) {
+        throw new Error(`Cannot interpret local time in zone ${parsed.timezone}`);
+    }
 
     const steps: NjhChartV2['birth']['tzResolution']['steps'] = [];
     if (parsed.offsetMinutes !== undefined) {
@@ -275,11 +283,19 @@ export function buildChartFromParsedRow(
             ianaZone: parsed.timezone,
         });
     }
+    if (civil.warnings.some((w) => w.code === 'ambiguous_local')) {
+        steps.push({
+            code: 'ambiguous_fold',
+            summary: 'Chose the earlier UTC instant for the repeated local time',
+            at: resolvedUtc,
+            ianaZone: parsed.timezone,
+        });
+    }
     steps.push({
         code: 'legacy_import',
         summary: 'Imported from CSV (wall clock expanded in the recorded time zone)',
         at: resolvedUtc,
-        offsetMinutes: zoned.offset,
+        offsetMinutes: resolvedZoned.offset,
         ianaZone: parsed.timezone,
     });
 
