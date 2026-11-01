@@ -22,3 +22,5 @@ Browser-safe parser and writer: `@node-jhora/format/jhd`. Node-only batch folder
 ## CSV import wizard
 
 `csvWizardParse` → `csvWizardSuggestMappings` → `csvWizardValidate` → `csvWizardBuildCharts` implement a four-step CSV import (RFC 4180, delimiter detection, column mapping heuristics, row validation, `.njh` v2 output). Use `csvWizardImport` to run the full pipeline with optional explicit mappings.
+
+**DST / ambiguous local times:** IANA timezone rows resolve wall clock → UTC via `@node-jhora/core` `resolveCivilTime` (same defaults as chart calculation: ambiguous fall-back hours → **earlier** UTC instant; spring-forward gaps → **forward** with a `dst_gap` warning). This is independent of the host `TZ` and the current system date.

@@ -124,7 +124,15 @@ export function csvWizardBuildCharts(
     return { results, charts, errors, warnings };
 }
 
-/** Run all wizard steps in order (convenience for batch import). */
+/**
+ * Run all wizard steps in order (convenience for batch import).
+ *
+ * **DST policy:** wall-clock + IANA zone rows are converted to UTC with the same
+ * rules as `resolveCivilTime` in `@node-jhora/core` (default ambiguous policy
+ * `'earlier'` for repeated fall-back hours, gap policy `'forward'` for spring-forward
+ * gaps). Resolution does not depend on the host time zone or the current system date.
+ * Gap rows still emit a `dst_gap` import warning; repeated fall-back times do not.
+ */
 export function csvWizardImport(
     text: string,
     mappings?: CsvColumnMapping[],
