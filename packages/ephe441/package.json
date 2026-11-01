@@ -36,5 +36,15 @@
     },
     "engines": {
         "node": ">=22"
-    }
+    },
+    "author": {
+        "name": "Harieshwar Jagan Abirami",
+        "email": "harieshwar.dev@gmail.com",
+        "url": "https://harieshwar.dev"
+    },
+    "bugs": {
+        "url": "https://github.com/HariEshwar-J-A/node-jhora/issues",
+        "email": "harieshwar.dev@gmail.com"
+    },
+    "homepage": "https://github.com/HariEshwar-J-A/node-jhora#readme"
 }

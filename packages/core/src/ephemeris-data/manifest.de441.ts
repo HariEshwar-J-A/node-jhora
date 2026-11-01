@@ -16,7 +16,20 @@ export interface Njce441ChunkEntry {
 }
 
 /** JPL DE441 split kernels (NAIF generic_kernels mirror). */
-export const DE441_SOURCE = Object.freeze({
+export interface De441SourcePart {
+    readonly file: string;
+    readonly bytes: number;
+    readonly url: string;
+    readonly jdTdbStart: number;
+    readonly jdTdbEnd: number;
+}
+
+export interface De441SourceManifest {
+    readonly part1: De441SourcePart;
+    readonly part2: De441SourcePart;
+}
+
+export const DE441_SOURCE: De441SourceManifest = Object.freeze({
     part1: Object.freeze({
         file: 'de441_part-1.bsp',
         bytes: 1_651_119_104,

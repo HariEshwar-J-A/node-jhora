@@ -87,7 +87,7 @@ const KMS_TO_AU_YR = (86400 * 365.25) / AU_KM;
 const mod360 = (x: number): number => ((x % 360) + 360) % 360;
 
 /** Reserved mode numbers with no public definition (see docs/DATA-SOURCES.md). */
-export const UNSUPPORTED_AYANAMSA_MODES = new Set<number>([]);
+export const UNSUPPORTED_AYANAMSA_MODES: Set<number> = new Set<number>([]);
 
 /** Thrown when {@link getAyanamsa} is called for a known-but-unimplemented ayanamsa mode. */
 export class UnsupportedAyanamsaModeError extends Error {

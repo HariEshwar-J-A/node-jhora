@@ -42,7 +42,7 @@ export const NAKSHATRA_SPAN_D: Decimal = D360.div(D27);
 export const NAKSHATRA_SPAN_N: number = NAKSHATRA_SPAN_D.toNumber();
 
 /** Dasha year: Tropical Year = 365.242189623 days (pyjhora standard). */
-export const DASHA_YEAR_DAYS = new Decimal('365.242189623');
+export const DASHA_YEAR_DAYS: Decimal = new Decimal('365.242189623');
 
 /** Dasha year in milliseconds. */
 export const DASHA_YEAR_MS: Decimal = DASHA_YEAR_DAYS.times(24 * 3600 * 1000);

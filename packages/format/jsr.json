@@ -1,0 +1,20 @@
+{
+    "name": "@node-jhora/format",
+    "version": "3.1.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "exports": {
+        ".": "./src/index.ts",
+        "./jhd": "./src/jhd/index.ts",
+        "./node": "./src/node/index.ts",
+        "./schema/njh-chart.schema.json": "./schema/njh-chart.schema.json"
+    },
+    "dependencies": {
+        "@node-jhora/core": "npm:@node-jhora/core@^3.1.0",
+        "decimal.js": "npm:decimal.js@^10.4.3",
+        "zod": "npm:zod@4.6.7"
+    },
+    "publish": {
+        "include": ["src/**/*.ts", "schema/**/*.json", "LICENSE", "README.md"],
+        "exclude": ["**/*.test.ts", "**/*.spec.ts", "tests/**", "**/fixtures/**"]
+    }
+}

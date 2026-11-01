@@ -22,14 +22,14 @@ const jdUtMin = EPHEMERIS_JD_UT_MIN;
 const jdUtMax = EPHEMERIS_JD_UT_MAX;
 
 /** TT Julian day at the low end of advertised coverage (UT min − margin, in TT). */
-export const NJCE_TT_JD_MIN_REQUIRED =
+export const NJCE_TT_JD_MIN_REQUIRED: number =
     jdUtMin + deltaT(jdUtMin) / 86_400 - NJCE_TT_EDGE_MARGIN_DAYS;
 
 /**
  * TT Julian day at the high end: last supported UT instant (10000-12-31) plus ΔT
  * and motion/prefetch margin.
  */
-export const NJCE_TT_JD_MAX_REQUIRED =
+export const NJCE_TT_JD_MAX_REQUIRED: number =
     jdUtMax + deltaT(jdUtMax) / 86_400 + NJCE_TT_EDGE_MARGIN_DAYS;
 
 /** [target, center] NAIF pairs per NJCE body group (must match build-chunks.mjs). */

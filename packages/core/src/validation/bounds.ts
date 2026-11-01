@@ -17,7 +17,7 @@ export const EPHEMERIS_ASTRO_YEAR_MIN = -10_000;
 export const EPHEMERIS_ASTRO_YEAR_MAX = 10_000;
 
 /** Julian Day (UT) at 0h on {@link EPHEMERIS_ASTRO_YEAR_MIN}-01-01. */
-export const EPHEMERIS_JD_UT_MIN = julianDayUt({
+export const EPHEMERIS_JD_UT_MIN: number = julianDayUt({
     astronomicalYear: EPHEMERIS_ASTRO_YEAR_MIN,
     month: 1,
     day: 1,
@@ -27,7 +27,7 @@ export const EPHEMERIS_JD_UT_MIN = julianDayUt({
 });
 
 /** Julian Day (UT) at the end of 10000-12-31 (23:59:59). */
-export const EPHEMERIS_JD_UT_MAX =
+export const EPHEMERIS_JD_UT_MAX: number =
     julianDayUt({
         astronomicalYear: EPHEMERIS_ASTRO_YEAR_MAX,
         month: 12,

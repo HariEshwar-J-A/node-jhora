@@ -1,0 +1,25 @@
+{
+    "name": "@node-jhora/api",
+    "version": "3.1.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "exports": "./src/index.ts",
+    "dependencies": {
+        "@fastify/cors": "npm:@fastify/cors@^10.0.2",
+        "@node-jhora/analytics": "npm:@node-jhora/analytics@^3.1.0",
+        "@node-jhora/core": "npm:@node-jhora/core@^3.1.0",
+        "@node-jhora/engine": "npm:@node-jhora/engine@^3.1.0",
+        "@node-jhora/match": "npm:@node-jhora/match@^3.1.0",
+        "@node-jhora/prediction": "npm:@node-jhora/prediction@^3.1.0",
+        "city-timezones": "npm:city-timezones@^1.2.1",
+        "decimal.js": "npm:decimal.js@^10.4.3",
+        "fastify": "npm:fastify@^5.4.0",
+        "fastify-type-provider-zod": "npm:fastify-type-provider-zod@^7.0.0",
+        "luxon": "npm:luxon@^3.7.2",
+        "pino": "npm:pino@^9.7.0",
+        "zod": "npm:zod@4.6.7"
+    },
+    "publish": {
+        "include": ["src/**/*.ts", "LICENSE", "README.md"],
+        "exclude": ["**/*.test.ts", "**/*.spec.ts", "tests/**", "**/fixtures/**"]
+    }
+}

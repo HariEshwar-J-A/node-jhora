@@ -31,7 +31,7 @@ export const SETTINGS_HASH_HEX_LENGTH = 16;
  * length. Kept so existing dasha dates do not move.
  */
 export const LEGACY_DASHA_YEAR_DAYS_TEXT = '365.256364';
-export const LEGACY_DASHA_YEAR_DAYS = Number(LEGACY_DASHA_YEAR_DAYS_TEXT);
+export const LEGACY_DASHA_YEAR_DAYS: number = Number(LEGACY_DASHA_YEAR_DAYS_TEXT);
 
 export const AYANAMSA_IDS = [
     'true_citra',
@@ -45,7 +45,7 @@ export const AYANAMSA_IDS = [
     'j2000',
 ] as const;
 
-export const AYANAMSA_MODE_BY_ID = {
+export const AYANAMSA_MODE_BY_ID: Record<(typeof AYANAMSA_IDS)[number], number> = {
     fagan_bradley: 0,
     lahiri: 1,
     lahiri_icrc: 46,
@@ -55,7 +55,7 @@ export const AYANAMSA_MODE_BY_ID = {
     true_citra: 27,
     true_pushya: 29,
     true_mula: 35,
-} as const satisfies Record<(typeof AYANAMSA_IDS)[number], number>;
+};
 
 export const SUNRISE_LIMBS = ['disc_centre', 'upper_limb'] as const;
 export const DASA_YEAR_KINDS = [
@@ -74,32 +74,51 @@ export type HouseAnchorId = (typeof HOUSE_ANCHOR_IDS)[number];
 export type SunriseLimb = (typeof SUNRISE_LIMBS)[number];
 export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
-const finite = z.number().finite();
+const finite: z.ZodNumber = z.number().finite();
 
-const UserAyanamsaSchema = z
+export type UserAyanamsaSettings = {
+    t0Jd: number;
+    ayanamsaDeg: number;
+    t0IsUt?: boolean;
+};
+
+const UserAyanamsaSchema: z.ZodType<UserAyanamsaSettings> = z
     .object({
         t0Jd: finite,
         ayanamsaDeg: finite,
         t0IsUt: z.boolean().optional(),
     })
-    .strict();
+    .strict() as z.ZodType<UserAyanamsaSettings>;
 
-export const SunriseSchema = z
+export type SunriseSettings = {
+    limb: (typeof SUNRISE_LIMBS)[number];
+    refraction: boolean;
+    nominalHour: number;
+};
+
+const sunriseSchemaBase: z.ZodType<SunriseSettings> = z
     .object({
         limb: z.enum(SUNRISE_LIMBS),
         refraction: z.boolean(),
         /** Local clock hour used for the weekday until a rise/set solver is wired. */
         nominalHour: finite.min(0).max(24),
     })
-    .strict();
+    .strict() as z.ZodType<SunriseSettings>;
+export const SunriseSchema = sunriseSchemaBase;
 
-export const DasaYearSchema = z
+export type DasaYearSettings = {
+    kind: DasaYearKind;
+    days: number;
+};
+
+const dasaYearSchemaBase: z.ZodType<DasaYearSettings> = z
     .object({
         kind: z.enum(DASA_YEAR_KINDS),
         /** Civil days actually added for one dasa year. */
         days: finite.positive(),
     })
-    .strict();
+    .strict() as z.ZodType<DasaYearSettings>;
+export const DasaYearSchema = dasaYearSchemaBase;
 
 /**
  * Precision profiles. `'jhora'` (default) reproduces Jagannatha Hora (the
@@ -129,93 +148,131 @@ export type EphemerisPolicyId = (typeof EPHEMERIS_POLICIES)[number];
 export const CALENDAR_MODES = ['auto', 'gregorian', 'julian'] as const;
 export type CalendarModeId = (typeof CALENDAR_MODES)[number];
 
-export const CalculationSettingsSchema = z
-    .object({
-        schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
-        precisionProfile: z.enum(PRECISION_PROFILES).default('jhora'),
-        /**
-         * Post-bridge ΔT forecast for `precisionProfile: 'modern'`. `'published'` (default)
-         * uses UKHO lod integration + SMH2016 eq. 4.1; `'oracle-compat'` keeps the legacy
-         * in-house curve that matches pyswisseph 2.10 test extrapolation.
-         */
-        deltaTForecast: z.enum(DELTA_T_FORECASTS).optional(),
-        /**
-         * Modern geometric star-ayanamsa parallax. `'oracle-compat'` (default): DE440
-         * parallax inside the kernel, barycentric outside (matches pyswisseph 2.10 /
-         * full-range oracle). `'continuous'`: VSOP87E + edge blend (ADR 0023).
-         */
-        starParallax: z.enum(STAR_PARALLAX_MODES).optional(),
-        /**
-         * Fixed ΔT = TT − UT1 in seconds, replacing the profile's ΔT model for
-         * the whole calculation. For dates whose ΔT is known from elsewhere
-         * (e.g. a later IERS value, or another program's prediction). Omitted
-         * by default, so it does not change existing settings hashes.
-         */
-        deltaTOverrideSeconds: finite.optional(),
-        /**
-         * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
-         * `de440s` / `de431_long` / `de441_long` force a single kernel (long-range requires chunks).
-         */
-        ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
-        /**
-         * Omitted = `'auto'` (Julian before 1582-10-15). Non-default values are
-         * hashed; `'auto'` is left out so existing settings hashes stay stable.
-         */
-        calendar: z.enum(CALENDAR_MODES).optional(),
-        ayanamsa: z.enum(AYANAMSA_IDS),
-        ayanamsaOffsetDeg: finite,
-        /**
-         * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
-         * has no name in {@link AYANAMSA_IDS}.
-         */
-        customAyanamsaMode: z.number().finite().int().optional(),
-        /** Bitwise OR of sidereal projection flags (see `AYANAMSA_FLAGS`). */
-        ayanamsaFlags: z.number().finite().int().nonnegative().optional(),
-        /** Required when `customAyanamsaMode` is 255 (USER). */
-        userAyanamsa: UserAyanamsaSchema.optional(),
-        nodeType: z.enum(['mean', 'true']),
-        houseSystem: z.enum(HOUSE_SYSTEM_IDS),
-        /** Equal / whole-sign wheels may start at the ascendant, Moon, Sun, or 0° Aries. */
-        houseAnchor: z.enum(HOUSE_ANCHOR_IDS).optional(),
-        /** When true, equal-house cusps are shifted so the ascendant sits at the middle of house 1. */
-        cuspsInMiddle: z.boolean(),
-        positionMode: z.enum(['apparent', 'geometric']),
-        topocentric: z.boolean(),
-        altitudeMetres: finite,
-        sunrise: SunriseSchema,
-        dasaYear: DasaYearSchema,
-        dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
-        horaScheme: z.enum(['parashara', 'parivritti']),
-        /** Division → variant id; applied by {@link calculateVarga} via {@link vargaOptionsFromVariants}. */
-        vargaVariants: z.record(z.string(), z.string()).default({}),
-    })
-    .strict()
-    .superRefine((data, ctx) => {
-        const mode = data.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[data.ayanamsa];
-        try {
-            assertValidAyanamsaMode(mode);
-        } catch (error) {
-            const message =
-                error instanceof UnsupportedAyanamsaModeError ||
-                error instanceof UnknownAyanamsaModeError
-                    ? error.message
-                    : 'Invalid ayanamsa mode';
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message,
-                path: data.customAyanamsaMode !== undefined ? ['customAyanamsaMode'] : ['ayanamsa'],
-            });
-        }
-        if (mode === 255 && data.userAyanamsa === undefined) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'USER ayanamsa (mode 255) requires userAyanamsa { t0Jd, ayanamsaDeg }',
-                path: ['userAyanamsa'],
-            });
-        }
-    });
+/** Validated calculation settings (see {@link CalculationSettingsSchema}). */
+export type CalculationSettings = {
+    schemaVersion: typeof SETTINGS_SCHEMA_VERSION;
+    precisionProfile: PrecisionProfileId;
+    deltaTForecast?: DeltaTForecastId;
+    starParallax?: StarParallaxId;
+    deltaTOverrideSeconds?: number;
+    ephemerisPolicy: EphemerisPolicyId;
+    calendar?: CalendarModeId;
+    ayanamsa: AyanamsaId;
+    ayanamsaOffsetDeg: number;
+    customAyanamsaMode?: number;
+    ayanamsaFlags?: number;
+    userAyanamsa?: UserAyanamsaSettings;
+    nodeType: 'mean' | 'true';
+    houseSystem: HouseSystemId;
+    houseAnchor?: HouseAnchorId;
+    cuspsInMiddle: boolean;
+    positionMode: 'apparent' | 'geometric';
+    topocentric: boolean;
+    altitudeMetres: number;
+    sunrise: SunriseSettings;
+    dasaYear: DasaYearSettings;
+    dasamsaScheme: 'parashara' | 'jhora_5_8';
+    horaScheme: 'parashara' | 'parivritti';
+    vargaVariants: Record<string, string>;
+};
 
-export type CalculationSettings = z.infer<typeof CalculationSettingsSchema>;
+function buildCalculationSettingsSchema(): z.ZodType<CalculationSettings> {
+    const schema = z
+        .object({
+            schemaVersion: z.literal(SETTINGS_SCHEMA_VERSION).default(SETTINGS_SCHEMA_VERSION),
+            precisionProfile: z.enum(PRECISION_PROFILES).default('jhora'),
+            /**
+             * Post-bridge ΔT forecast for `precisionProfile: 'modern'`. `'published'` (default)
+             * uses UKHO lod integration + SMH2016 eq. 4.1; `'oracle-compat'` keeps the legacy
+             * in-house curve that matches pyswisseph 2.10 test extrapolation.
+             */
+            deltaTForecast: z.enum(DELTA_T_FORECASTS).optional(),
+            /**
+             * Modern geometric star-ayanamsa parallax. `'oracle-compat'` (default): DE440
+             * parallax inside the kernel, barycentric outside (matches pyswisseph 2.10 /
+             * full-range oracle). `'continuous'`: VSOP87E + edge blend (ADR 0023).
+             */
+            starParallax: z.enum(STAR_PARALLAX_MODES).optional(),
+            /**
+             * Fixed ΔT = TT − UT1 in seconds, replacing the profile's ΔT model for
+             * the whole calculation. For dates whose ΔT is known from elsewhere
+             * (e.g. a later IERS value, or another program's prediction). Omitted
+             * by default, so it does not change existing settings hashes.
+             */
+            deltaTOverrideSeconds: finite.optional(),
+            /**
+             * `auto` uses DE440s inside 1849–2150 and DE431 long-range chunks outside.
+             * `de440s` / `de431_long` / `de441_long` force a single kernel (long-range requires chunks).
+             */
+            ephemerisPolicy: z.enum(EPHEMERIS_POLICIES).default('auto'),
+            /**
+             * Omitted = `'auto'` (Julian before 1582-10-15). Non-default values are
+             * hashed; `'auto'` is left out so existing settings hashes stay stable.
+             */
+            calendar: z.enum(CALENDAR_MODES).optional(),
+            ayanamsa: z.enum(AYANAMSA_IDS),
+            ayanamsaOffsetDeg: finite,
+            /**
+             * When set, this numeric mode replaces `ayanamsa`. Used for a mode that
+             * has no name in {@link AYANAMSA_IDS}.
+             */
+            customAyanamsaMode: z.number().finite().int().optional(),
+            /** Bitwise OR of sidereal projection flags (see `AYANAMSA_FLAGS`). */
+            ayanamsaFlags: z.number().finite().int().nonnegative().optional(),
+            /** Required when `customAyanamsaMode` is 255 (USER). */
+            userAyanamsa: UserAyanamsaSchema.optional(),
+            nodeType: z.enum(['mean', 'true']),
+            houseSystem: z.enum(HOUSE_SYSTEM_IDS),
+            /** Equal / whole-sign wheels may start at the ascendant, Moon, Sun, or 0° Aries. */
+            houseAnchor: z.enum(HOUSE_ANCHOR_IDS).optional(),
+            /** When true, equal-house cusps are shifted so the ascendant sits at the middle of house 1. */
+            cuspsInMiddle: z.boolean(),
+            positionMode: z.enum(['apparent', 'geometric']),
+            topocentric: z.boolean(),
+            altitudeMetres: finite,
+            sunrise: SunriseSchema,
+            dasaYear: DasaYearSchema,
+            dasamsaScheme: z.enum(['parashara', 'jhora_5_8']),
+            horaScheme: z.enum(['parashara', 'parivritti']),
+            /** Division → variant id; applied by {@link calculateVarga} via {@link vargaOptionsFromVariants}. */
+            vargaVariants: z.record(z.string(), z.string()).default({}),
+        })
+        .strict()
+        .superRefine((data, ctx) => {
+            const mode = data.customAyanamsaMode ?? AYANAMSA_MODE_BY_ID[data.ayanamsa];
+            try {
+                assertValidAyanamsaMode(mode);
+            } catch (error) {
+                const message =
+                    error instanceof UnsupportedAyanamsaModeError ||
+                    error instanceof UnknownAyanamsaModeError
+                        ? error.message
+                        : 'Invalid ayanamsa mode';
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message,
+                    path:
+                        data.customAyanamsaMode !== undefined
+                            ? ['customAyanamsaMode']
+                            : ['ayanamsa'],
+                });
+            }
+            if (mode === 255 && data.userAyanamsa === undefined) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'USER ayanamsa (mode 255) requires userAyanamsa { t0Jd, ayanamsaDeg }',
+                    path: ['userAyanamsa'],
+                });
+            }
+        });
+    return schema as z.ZodType<CalculationSettings>;
+}
+
+const calculationSettingsSchemaBase: z.ZodType<CalculationSettings> =
+    buildCalculationSettingsSchema();
+
+export const CalculationSettingsSchema =
+    calculationSettingsSchemaBase as z.ZodType<CalculationSettings>;
 
 const MODE_TO_ID = new Map<number, AyanamsaId>(
     Object.entries(AYANAMSA_MODE_BY_ID).map(([id, mode]) => [mode, id as AyanamsaId]),

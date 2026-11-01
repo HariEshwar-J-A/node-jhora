@@ -43,7 +43,13 @@ export const DE440S_PRIMARY_URLS: readonly string[] = Object.freeze([
 ]);
 
 /** Source kernel the NJCE chunks were cut from. */
-export const DE431_SOURCE = Object.freeze({
+export interface De431SourceManifest {
+    readonly file: string;
+    readonly bytes: number;
+    readonly url: string;
+}
+
+export const DE431_SOURCE: De431SourceManifest = Object.freeze({
     file: 'de431t.bsp',
     bytes: 3_696_366_592,
     url: 'https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de431t.bsp',

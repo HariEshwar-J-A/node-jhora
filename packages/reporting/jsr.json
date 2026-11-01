@@ -1,0 +1,17 @@
+{
+    "name": "@node-jhora/reporting",
+    "version": "3.1.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "exports": "./src/index.ts",
+    "dependencies": {
+        "@node-jhora/analytics": "npm:@node-jhora/analytics@^3.1.0",
+        "@node-jhora/core": "npm:@node-jhora/core@^3.1.0",
+        "@node-jhora/prediction": "npm:@node-jhora/prediction@^3.1.0",
+        "luxon": "npm:luxon@^3.7.2",
+        "pdfkit": "npm:pdfkit@^0.15.0"
+    },
+    "publish": {
+        "include": ["src/**/*.ts", "LICENSE", "README.md"],
+        "exclude": ["**/*.test.ts", "**/*.spec.ts", "tests/**", "**/fixtures/**"]
+    }
+}
