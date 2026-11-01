@@ -97,7 +97,7 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     },
     2: {
         kind: 'epoch',
-        jd: JD_1900_JAN_1_NOON,
+        jd: JD_1900_JAN_0_5,
         meanAtAnchor: d(26, 24, 47),
         label: 'De Luce',
     },
@@ -170,7 +170,7 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     14: {
         kind: 'star',
         star: 'Aldebaran',
-        atLongitude: d(15, 0),
+        atLongitude: d(45, 0),
         label: 'Aldebaran 15° Taurus',
     },
     15: {

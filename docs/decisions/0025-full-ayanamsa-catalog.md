@@ -33,11 +33,20 @@ deep-era drift vs black-box oracles on Lahiri, Fagan, Raman, KP, and J2000.
    `AYANAMSA_FLAGS.SSY_PLANE` for star-defined modes.
 
 6. **Tests** — `ayanamsa_sidm_parity_pins.json` holds pyswisseph 2.10 fixture pins only.
-   Strict ≤1″ parity on modes with cited anchors matching the oracle; modes **0, 2, 3, 6, 7, 14,
-   30, 39** deferred where published anchors disagree with the oracle or need further work.
+   Strict ≤1″ parity on modes with cited anchors matching the oracle. **Deferred (2026-04):**
+   modes **2, 6, 7, 14, 30, 39** — see amendment below. Modes **0** and **3** strict on
+   kernel JDs after published precession handling.
 
-7. **No oracle-fitted bridges** — Profile-specific arcsecond tweaks copied from black-box output
-   (e.g. Fagan/Raman “Newcomb correction” table) are not embedded in library code.
+7. **Fagan/Bradley (mode 0)** — Fagan & Bradley 24°02′31.36″ @ 1950-01-01 with **IAU 2006 /
+   Vondrák** accumulated precession matches the pyswisseph 2.10 oracle to ~**0.40″** on kernel
+   JDs with **no** extra arcsecond constant. Some third-party ephemeris manuals document a
+   **+0.41256″** modern-profile correction when an anchor was tabulated with Newcomb precession;
+   applying that offset here moves the residual to ~**0.81″**, so it is recorded only as a
+   **known convention difference**, not implemented in library code. Raman (3) omits a similar
+   documented +0.828″ entry for the same reason: the primary formula is already ~0.16″.
+
+8. **No oracle-fitted bridges** — Profile-specific arcsecond tweaks chosen to match black-box
+   output alone are not embedded in library code.
 
 ## Consequences
 
@@ -45,7 +54,26 @@ deep-era drift vs black-box oracles on Lahiri, Fagan, Raman, KP, and J2000.
   ≤1″ on kernel-era JDs where primary sources align.
 - Modes 2, 7, 8, 28 are registered (no longer `UnsupportedAyanamsaModeError`).
 - API settings expose named `ayanamsa` ids; other public mode numbers use `customAyanamsaMode`.
-- Fagan, Raman, and De Luce may exceed 1″ vs pyswisseph until a citable bridge is documented.
+- Fagan and Raman meet ≤1″ vs pyswisseph 2.10 on DE440s kernel JDs with documented handling;
+  De Luce, Djwhal Khul, Yukteshwar, Aldebaran-15°Taurus, Gil Brand GC, and Sheoran remain
+  deferred where primary literature does not close the oracle gap without tuning.
+
+## Amendment (2026-04): deferred-mode primary-source review
+
+| Mode | Primary definition used                                                | Residual vs pyswisseph 2.10 (kernel JDs, modern) | Status                                                             |
+| ---: | ---------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
+|    0 | Fagan & Bradley 24°02′31.36″ @ 1950-01-01; IAU 2006 precession         | ~0.40″                                           | **Strict parity enabled**                                          |
+|    2 | De Luce 26°24′47″ @ 1900; zero 4 Jun 1 BCE (1963 p. 5)                 | ~22″ constant                                    | **Deferred** — TT/anchor split vs black-box                        |
+|    3 | Raman (1900−397)×50⅓″ @ 1900 (App. A)                                  | ≤0.16″                                           | **Strict parity enabled**                                          |
+|    6 | Djwhal Khul Aquarius ingress 2117-07-01 (Bailey/Dawson via public doc) | ~29.8°                                           | **Deferred** — ingress convention, not mean@2117=0 + C1            |
+|    7 | Yukteshwar 20°54′36″ @ 1893 equinox (Holy Science; Dawson)             | ~279″ constant                                   | **Deferred** — yuga linear rate (54″/yr from 499 CE) vs IAU2006 C1 |
+|   14 | Aldebaran 15° Taurus (=45° ecliptic); Mercier §2.8.7                   | ~127″                                            | **Deferred** — star apparent place vs Babylonian −100 BCE oracle   |
+|   30 | Gil Brand golden section 0 Sco–0 Aqu (2014)                            | ~2.1°                                            | **Deferred** — need Brand primary formula, not SE longitude        |
+|   39 | Sheoran −60° at 4174 BCE winter solstice                               | ~63.7°                                           | **Deferred** — chronology JD vs true/mean handling                 |
+
+An opt-in **oracle-compat** variant could document the black-box convention (e.g. Djwhal mean
+at 2117, optional Raman +0.828″ from reference-manual tables) without embedding fitted
+constants in the default registry.
 
 ## References
 

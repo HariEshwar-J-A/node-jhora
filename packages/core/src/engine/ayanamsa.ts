@@ -249,7 +249,7 @@ export const STARS: Record<string, StarData> = {
         parallax: 4.64,
         radVel: -3.0,
     },
-    /** Aldebaran (α Tau) — Babylonian 15° Taurus anchor (SE mode 14). */
+    /** Aldebaran (α Tau) — 15° sidereal Taurus (45° ecliptic); Mercier / §2.8.7 (mode 14). */
     Aldebaran: {
         name: 'Aldebaran (α Tau)',
         ra: hms(4, 35, 55.239),
