@@ -130,23 +130,26 @@ function analyze(deltaTMode) {
     return {
         deltaTMode,
         summary,
+        parityGate: deltaTMode === 'shared' ? buildParityGate({ summary }) : null,
         notBestTropicalTrue: deltaTMode === 'shared' ? buildNotBest(summary, 'tropicalTrue') : [],
         notBestLahiriIae: deltaTMode === 'shared' ? buildNotBest(summary, 'lahiriIae') : [],
         generatedAt: new Date().toISOString(),
     };
 }
 
-function renderSummaryTable(doc) {
+function renderSummaryTable(doc, { frame = null } = {}) {
     const lines = [
         '| Frame | Era | Library | Body | n | max″ | RMS″ | p99″ |',
         '| --- | --- | --- | --- | ---: | ---: | ---: | ---: |',
     ];
-    for (const row of doc.summary.sort((a, b) =>
-        `${a.frame}${a.era}${a.library}${a.body}`.localeCompare(
-            `${b.frame}${a.era}${b.library}${b.body}`,
-        ),
-    )) {
-        if (row.n === 0) continue;
+    const rows = doc.summary
+        .filter((row) => row.n > 0 && (frame == null || row.frame === frame))
+        .sort((a, b) =>
+            `${a.frame}${a.era}${a.library}${a.body}`.localeCompare(
+                `${b.frame}${b.era}${b.library}${b.body}`,
+            ),
+        );
+    for (const row of rows) {
         lines.push(
             `| ${row.frame} | ${row.era} | ${row.library} | ${row.body} | ${row.n} | ${row.max?.toFixed(3)} | ${row.rms?.toFixed(3)} | ${row.p99?.toFixed(3)} |`,
         );
@@ -216,51 +219,122 @@ function renderReport(shared, native) {
     const lines = [
         '# Cross-library ephemeris accuracy',
         '',
-        'Tooling under `bench/accuracy/` (not shipped). Planet truth: apparent **true ecliptic of date** from JPL DE440/DE441 via Skyfield; ERFA gate < 1 mas in DE440 era (`artifacts/validation.json`). True node truth: **TN-MED-LT1** (`truth/true_node_truth.py` — Skyfield DE state + ERFA mean ecliptic + nut06a Δψ; not the engine CLI).',
+        'Tooling under `bench/accuracy/` (not shipped). **Benchmark truth** (`artifacts/truth.json`) uses the same published definition as `truth_profile_erfa.json` / ADR 0027: DE440/DE441 geocentric apparent, TDB (ERFA dtdb) with two-part dates, mean ecliptic (ecm06) with nut06a Δψ on longitude only. Pre-run gate: `artifacts/validation.json` (repeatability + logged bias vs Skyfield true ecliptic of date).',
         '',
-        'See [ADR 0024](../../docs/decisions/0024-cross-library-accuracy-benchmark.md) for every convention.',
+        "The **`skyfield` competitor column** is separate: Skyfield apparent **true** equator/ecliptic of date (`epoch='date'`). Residuals vs benchmark truth are ~0.02″ (IAU 2000 frame-bias / obliquity route), not ephemeris kernel error.",
+        '',
+        'See [ADR 0024](../../docs/decisions/0024-cross-library-accuracy-benchmark.md) for scoring policy.',
         '',
         ...renderSanity(),
         '## ΔT modes',
         '',
-        '- **shared (headline accuracy)**: identical Espenak–Meeus ΔT table (`lib/deltat.json`) passed into every adapter that supports override. Truth uses this same table.',
-        '- **native**: each library’s built-in ΔT. Residuals vs truth measure **ΔT-model differences relative to the Espenak–Meeus reference**, not ephemeris kernel error alone.',
+        '- **shared TT + ΔT (headline table below)**: identical Espenak–Meeus ΔT (`lib/deltat.json`) for benchmark truth and every adapter that supports override. This is the only table used for cross-library ephemeris ranking on `tropicalTrue`.',
+        '- **native ΔT (appendix table)**: each library’s built-in ΔT while truth still uses the shared table. Residuals measure **ΔT-model disagreement**, not ephemeris error alone. Example: `node-jhora-truth` Moon at ~124″ in 1850–2150 is almost entirely Espenak–Meeus vs the engine’s native ΔT (~2.1 min at recent epochs), not a DE440 defect.',
         '',
         '## Hosted APIs',
         '',
         'No payment-free, signup-free hosted astrology API was wired in this revision (most public chart APIs require keys or billing).',
         '',
-        '## Headline accuracy — shared Espenak–Meeus ΔT',
+        '## Headline accuracy — shared Espenak–Meeus ΔT (`tropicalTrue` only)',
         '',
-        '### Residual summary (combined lon/lat, arcsec)',
+        '### Residual summary vs benchmark truth (combined lon/lat, arcsec)',
         '',
-        ...renderSummaryTable(shared),
+        ...renderSummaryTable(shared, { frame: 'tropicalTrue' }),
         '',
         ...renderNotBest(
             'node-jhora not ranked #1 — tropical apparent (tropicalTrue, max residual)',
             shared.notBestTropicalTrue,
             'tropicalTrue',
         ),
+        ...renderParityGate(shared.parityGate),
+        '## Sidereal Lahiri IAE — shared ΔT (`lahiriIae`)',
+        '',
+        ...renderSummaryTable(shared, { frame: 'lahiriIae' }),
+        '',
         ...renderNotBest(
             'node-jhora not ranked #1 — Lahiri IAE sidereal (lahiriIae, max residual)',
             shared.notBestLahiriIae,
             'lahiriIae (shared Lahiri definition)',
         ),
-        '## Native ΔT — ΔT-model differences vs Espenak–Meeus reference',
+        '## Native ΔT appendix — ΔT-model differences vs shared-truth reference',
         '',
-        '_Truth still uses the shared ΔT table; library outputs use native ΔT. Large residuals here usually mean ΔT disagreement, not necessarily wrong ephemeris._',
+        '_Truth still uses the shared Espenak–Meeus ΔT table; library outputs use native ΔT. Large Moon/Sun residuals here usually mean ΔT disagreement (often 100″+ on the Moon), not necessarily wrong JPL state._',
         '',
-        '### Residual summary (combined lon/lat, arcsec)',
+        '### Residual summary (`tropicalTrue` only, arcsec)',
         '',
-        ...renderSummaryTable(native),
+        ...renderSummaryTable(native, { frame: 'tropicalTrue' }),
         '',
     ];
     return lines.join('\n');
 }
 
+function buildParityGate(shared) {
+    const ERA = 'era_1850_2150';
+    const LIB = 'node-jhora-truth';
+    const bodies = [
+        'Sun',
+        'Moon',
+        'Mercury',
+        'Venus',
+        'Mars',
+        'Jupiter',
+        'Saturn',
+        'Uranus',
+        'Neptune',
+        'Pluto',
+        'MeanNode',
+        'TrueNode',
+    ];
+    const TOL = 0.0001;
+    const rows = [];
+    for (const body of bodies) {
+        const row = shared.summary.find(
+            (r) =>
+                r.frame === 'tropicalTrue' && r.era === ERA && r.library === LIB && r.body === body,
+        );
+        const max = row?.max ?? null;
+        rows.push({ body, maxArcsec: max, pass: max != null && max <= TOL });
+    }
+    return { toleranceArcsec: TOL, era: ERA, library: LIB, rows };
+}
+
+function renderParityGate(gate) {
+    const lines = [
+        '## node-jhora-truth vs benchmark truth (shared ΔT, era_1850_2150)',
+        '',
+        'Independent ERFA+Skyfield benchmark truth vs `@node-jhora/core` `precisionProfile: truth` on the same Espenak–Meeus ΔT. Target ≤ 0.0001″ per body (golden fixture parity on Sun/Moon/Pluto; full grid adds outers).',
+        '',
+        '| Body | max″ | Pass |',
+        '| --- | ---: | :---: |',
+    ];
+    for (const row of gate.rows) {
+        const max =
+            row.maxArcsec == null ? '—' : row.maxArcsec < 1e-6 ? '~0' : row.maxArcsec.toFixed(6);
+        lines.push(`| ${row.body} | ${max} | ${row.pass ? 'yes' : '**no**'} |`);
+    }
+    const failed = gate.rows.filter((r) => !r.pass);
+    if (failed.length > 0) {
+        lines.push('');
+        lines.push(
+            `**Parity gate:** ${failed.length} body/bodies above ${gate.toleranceArcsec}″. Example: Neptune max is mostly mean-ecliptic latitude (β) at a grid epoch — Skyfield \`.apparent()\` + ERFA \`ecm06\` chart vs the engine truth pipeline on that outer planet; not the former ~0.022″ frame-bias artefact. Do not relax tolerances; fix the pipeline or oracle in a follow-up.`,
+        );
+    }
+    lines.push('');
+    return lines;
+}
+
 function main() {
     const shared = analyze('shared');
     const native = analyze('native');
+
+    for (const row of shared.parityGate.rows) {
+        if (!row.pass) {
+            throw new Error(
+                `node-jhora-truth ${row.body} era_1850_2150 max ${row.maxArcsec}″ exceeds ${shared.parityGate.toleranceArcsec}″ gate`,
+            );
+        }
+    }
+
     mkdirSync(join(BENCH_ROOT, 'artifacts'), { recursive: true });
     writeFileSync(
         join(BENCH_ROOT, 'artifacts/results.json'),

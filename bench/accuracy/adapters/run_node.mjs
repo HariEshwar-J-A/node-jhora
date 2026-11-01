@@ -53,13 +53,10 @@ function lahiriIaeSidereal(tropicalTrueLon, jdUt) {
 }
 
 /**
- * Mean ecliptic chart lon → true ecliptic of date (Horizons / Skyfield truth frame).
+ * Engine modern profile outputs (mean ecliptic chart + engine nutation policy).
+ * tropicalTrue is reported without adapter frame conversion — compare to the
+ * published truth-profile definition in compute_truth.py.
  */
-function toTropicalTrue(meanLon, dpsi, kind) {
-    if (kind === 'planet') return wrap360(meanLon + dpsi);
-    return wrap360(meanLon);
-}
-
 async function nodeJhoraSample(jdUt, deltaTMode, sharedDeltaT, engine) {
     const iso = jdToUtcIso(jdUt);
     const dt = DateTime.fromISO(iso, { zone: 'utc' });
@@ -108,7 +105,7 @@ async function nodeJhoraSample(jdUt, deltaTMode, sharedDeltaT, engine) {
         if (p.name === 'Ketu') continue;
         const sid = sidPlanets.find((s) => s.name === p.name);
         if (p.name === 'Rahu') {
-            const tropTrue = toTropicalTrue(p.longitude, dpsi, 'trueNode');
+            const tropTrue = wrap360(p.longitude);
             out.TrueNode = {
                 tropicalTrue: { lon: tropTrue, lat: p.latitude },
                 lahiriIae: { lon: lahiriIaeSidereal(tropTrue, jdUt), lat: p.latitude },
@@ -116,7 +113,7 @@ async function nodeJhoraSample(jdUt, deltaTMode, sharedDeltaT, engine) {
             };
             continue;
         }
-        const tropTrue = toTropicalTrue(p.longitude, dpsi, 'planet');
+        const tropTrue = wrap360(p.longitude);
         out[p.name] = {
             tropicalTrue: { lon: tropTrue, lat: p.latitude },
             lahiriIae: { lon: lahiriIaeSidereal(tropTrue, jdUt), lat: p.latitude },
@@ -126,7 +123,7 @@ async function nodeJhoraSample(jdUt, deltaTMode, sharedDeltaT, engine) {
     const meanRahuT = meanNodeTrop.find((p) => p.name === 'Rahu');
     const meanRahuS = meanNodeSid.find((p) => p.name === 'Rahu');
     if (meanRahuT) {
-        const tropTrue = toTropicalTrue(meanRahuT.longitude, dpsi, 'meanNode');
+        const tropTrue = wrap360(meanRahuT.longitude);
         out.MeanNode = {
             tropicalTrue: { lon: tropTrue, lat: meanRahuT.latitude },
             lahiriIae: { lon: lahiriIaeSidereal(tropTrue, jdUt), lat: meanRahuT.latitude },

@@ -1,11 +1,13 @@
 """
-Independent DE440/DE441 truth: Skyfield apparent places on NAIF kernels.
+Independent DE440/DE441 truth for cross-library benchmark.
 
-Primary tropical output: true equator and ecliptic of date (matches Skyfield
-`ecliptic_latlon(epoch='date')`). Validated against ERFA to < 1 mas before use.
+Primary tropical output (`tropicalTrue`): same published definition as
+`packages/core/tests/fixtures/truth_profile_erfa.json` — geocentric apparent
+on DE440/DE441, TDB (ERFA dtdb), two-part dates, mean ecliptic (ecm06) with
+nut06a Δψ on longitude only (truth precision profile / ADR 0027).
 
-Chart / Lahiri IAE helpers call bench Node CLIs that reuse production Vondrák
-2011 + CRC 1955 Lahiri definition code (bench-only; not shipped).
+Skyfield `.ecliptic_latlon(epoch='date')` is **not** the benchmark truth; it is
+exposed only via the `skyfield` competitor adapter (true equator/ecliptic of date).
 """
 
 from __future__ import annotations
@@ -16,13 +18,21 @@ import sys
 from pathlib import Path
 
 BENCH_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BENCH_ROOT.parents[1]
 CACHE = BENCH_ROOT / "cache"
+DE440S_BSP = REPO_ROOT / "packages/ephe/de440s.bsp"
+# @node-jhora/core de440s.bsp coverage (TDB JD band; UT epochs in bench align here)
+DE440S_JD_UT_MIN = 2396752.5
+DE440S_JD_UT_MAX = 2506352.5
 sys.path.insert(0, str(BENCH_ROOT / "truth"))
 sys.path.insert(0, str(BENCH_ROOT / "lib"))
 
 from frame_bridge import lahiri_iae_ayanamsa_deg  # noqa: E402
-from nodes import mean_node_longitude_deg  # noqa: E402
-from true_node_truth import true_node_tn_med  # noqa: E402
+from truth_profile_erfa import (  # noqa: E402
+    mean_node_longitude_deg,
+    tropical_truth_profile_lon_lat,
+    truth_true_node_deg,
+)
 
 KERNEL_URLS = {
     "de440.bsp": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440.bsp",
@@ -85,31 +95,38 @@ def kernel_for_jd(jd_ut: float) -> str:
     return "de441_part2"
 
 
-def ephemeris_for_jd(jd_ut: float, de440, de441_p1, de441_p2):
+def ephemeris_for_jd(jd_ut: float, de440s, de440_full, de441_p1, de441_p2):
     which = kernel_for_jd(jd_ut)
     if which == "de440":
-        return de440
+        if (
+            de440s is not None
+            and DE440S_JD_UT_MIN <= jd_ut <= DE440S_JD_UT_MAX
+        ):
+            return de440s
+        return de440_full
     if which == "de441_part1":
         return de441_p1
     return de441_p2
 
 
-def _jd_split(jd_tt: float) -> tuple[float, float]:
-    return 2400000.5, jd_tt - 2400000.5
-
-
-def nutation_dpsi_deg(jd_ut: float, delta_t: float) -> float:
-    import erfa
-
-    jd_tt = jd_ut + delta_t / 86400.0
-    d1, d2 = _jd_split(jd_tt)
-    dpsi, _deps = erfa.nut06a(d1, d2)
-    return math.degrees(dpsi)
+def skyfield_true_ecliptic_of_date(
+    earth,
+    body,
+    ts,
+    jd_ut: float,
+    dt: float,
+) -> tuple[float, float]:
+    """Competitor column: Skyfield apparent true ecliptic of date (TT timescale)."""
+    tt_jd = jd_ut + dt / 86400.0
+    t = ts.tt_jd(tt_jd)
+    lat, lon, _ = earth.at(t).observe(body).apparent().ecliptic_latlon(epoch="date")
+    return lon.degrees % 360.0, lat.degrees
 
 
 def compute_epoch(
     jd_ut: float,
-    de440,
+    de440s,
+    de440_full,
     de441_p1,
     de441_p2,
     ts,
@@ -118,18 +135,14 @@ def compute_epoch(
     frame_bridge,
 ) -> list[dict]:
     dt = delta_t_seconds(jd_ut, deltat_table)
-    tt_jd = jd_ut + dt / 86400.0
-    t = ts.tt_jd(tt_jd)
     which = kernel_for_jd(jd_ut)
-    eph = ephemeris_for_jd(jd_ut, de440, de441_p1, de441_p2)
+    eph = ephemeris_for_jd(jd_ut, de440s, de440_full, de441_p1, de441_p2)
     ayan_iae = lahiri_iae_ayanamsa_deg(jd_ut)
 
     rows: list[dict] = []
     for name, target in BODY_TARGETS.items():
         body = eph[target]
-        lat, lon, _ = earth.at(t).observe(body).apparent().ecliptic_latlon(epoch="date")
-        trop_lon = lon.degrees % 360.0
-        trop_lat = lat.degrees
+        trop_lon, trop_lat = tropical_truth_profile_lon_lat(earth, body, ts, jd_ut, dt)
         rows.append(
             {
                 "jdUt": jd_ut,
@@ -144,36 +157,10 @@ def compute_epoch(
             }
         )
 
-    mean_lon = mean_node_longitude_deg(tt_jd)
-    lon_lt, lon_mean, dpsi_deg = true_node_tn_med(
-        earth,
-        eph["moon"],
-        ts,
-        jd_ut,
-        dt,
-        light_time_retardation=True,
-    )
-    lon_inst, _, _ = true_node_tn_med(
-        earth,
-        eph["moon"],
-        ts,
-        jd_ut,
-        dt,
-        light_time_retardation=False,
-    )
-    for label, trop, extra in (
-        ("MeanNode", mean_lon, {}),
-        (
-            "TrueNode",
-            lon_lt,
-            {
-                "trueNodeConvention": "TN-MED-LT1",
-                "trueNodeMeanEclipticDeg": lon_mean,
-                "trueNodeDpsiArcsec": dpsi_deg * 3600.0,
-                "trueNodeInstantDeg": lon_inst,
-            },
-        ),
-    ):
+    jd_tt = jd_ut + dt / 86400.0
+    mean_lon = mean_node_longitude_deg(jd_tt)
+    true_lon = truth_true_node_deg(earth, eph["moon"], ts, jd_ut, dt)
+    for label, trop in (("MeanNode", mean_lon), ("TrueNode", true_lon)):
         rows.append(
             {
                 "jdUt": jd_ut,
@@ -182,7 +169,63 @@ def compute_epoch(
                 "deltaTSeconds": dt,
                 "tropicalTrue": {"lon": trop, "lat": 0.0},
                 "lahiriIae": {"lon": (trop - ayan_iae) % 360.0, "lat": 0.0},
-                **extra,
+            }
+        )
+    return rows
+
+
+def compute_skyfield_competitor_epoch(
+    jd_ut: float,
+    de440s,
+    de440_full,
+    de441_p1,
+    de441_p2,
+    ts,
+    earth,
+    deltat_table,
+) -> list[dict]:
+    """Rows for the `skyfield` library column (true ecliptic of date, not benchmark truth)."""
+    dt = delta_t_seconds(jd_ut, deltat_table)
+    which = kernel_for_jd(jd_ut)
+    eph = ephemeris_for_jd(jd_ut, de440s, de440_full, de441_p1, de441_p2)
+    ayan_iae = lahiri_iae_ayanamsa_deg(jd_ut)
+    rows: list[dict] = []
+    for name, target in BODY_TARGETS.items():
+        body = eph[target]
+        trop_lon, trop_lat = skyfield_true_ecliptic_of_date(earth, body, ts, jd_ut, dt)
+        rows.append(
+            {
+                "jdUt": jd_ut,
+                "body": name,
+                "kernel": which,
+                "tropicalTrue": {"lon": trop_lon, "lat": trop_lat},
+                "lahiriIae": {
+                    "lon": (trop_lon - ayan_iae) % 360.0,
+                    "lat": trop_lat,
+                },
+            }
+        )
+    from nodes import mean_node_longitude_deg as meeus_mean_node
+
+    tt_jd = jd_ut + dt / 86400.0
+    mean_lon = meeus_mean_node(tt_jd)
+    from true_node_truth import true_node_tn_med
+
+    lon_lt, _, _ = true_node_tn_med(
+        earth,
+        eph["moon"],
+        ts,
+        jd_ut,
+        dt,
+        light_time_retardation=True,
+    )
+    for label, trop in (("MeanNode", mean_lon), ("TrueNode", lon_lt)):
+        rows.append(
+            {
+                "jdUt": jd_ut,
+                "body": label,
+                "tropicalTrue": {"lon": trop % 360.0, "lat": 0.0},
+                "lahiriIae": {"lon": (trop - ayan_iae) % 360.0, "lat": 0.0},
             }
         )
     return rows
@@ -192,7 +235,7 @@ def main() -> int:
     epochs_path = Path(sys.argv[1]) if len(sys.argv) > 1 else BENCH_ROOT / "artifacts" / "epochs.json"
     out_path = Path(sys.argv[2]) if len(sys.argv) > 2 else BENCH_ROOT / "artifacts" / "truth.json"
 
-    import frame_bridge as fb
+    import frame_bridge as fb  # noqa: F401
 
     with epochs_path.open(encoding="utf-8") as f:
         epochs = json.load(f)
@@ -201,7 +244,8 @@ def main() -> int:
     from skyfield.api import Loader
 
     load = Loader(str(CACHE))
-    de440 = load(str(ensure_kernel("de440.bsp")))
+    de440s = load(str(DE440S_BSP)) if DE440S_BSP.is_file() else None
+    de440_full = load(str(ensure_kernel("de440.bsp")))
     de441_p1 = load(str(ensure_kernel("de441_part-1.bsp")))
     de441_p2 = load(str(ensure_kernel("de441_part-2.bsp")))
     ts = load.timescale()
@@ -211,9 +255,11 @@ def main() -> int:
     for entry in epochs:
         jd = float(entry["jdUt"])
         try:
-            earth = ephemeris_for_jd(jd, de440, de441_p1, de441_p2)["earth"]
+            earth = ephemeris_for_jd(jd, de440s, de440_full, de441_p1, de441_p2)["earth"]
             all_rows.extend(
-                compute_epoch(jd, de440, de441_p1, de441_p2, ts, earth, deltat_table, fb)
+                compute_epoch(
+                    jd, de440s, de440_full, de441_p1, de441_p2, ts, earth, deltat_table, fb
+                )
             )
         except Exception as exc:  # noqa: BLE001
             errors.append({"jdUt": jd, "error": str(exc)})
@@ -225,13 +271,14 @@ def main() -> int:
                 "meta": {
                     "generator": "compute_truth.py",
                     "conventions": {
-                        "ephemeris": "JPL DE440 (1550–2650 CE UT) / DE441 parts otherwise",
-                        "time": "UT + shared ΔT → TT; SPK via Skyfield timescale",
+                        "ephemeris": "JPL DE440s.bsp (1550–2650 CE UT, same kernel as @node-jhora/core) / DE441 parts otherwise",
+                        "time": "UT + shared Espenak–Meeus ΔT → TT; SPK evaluation in TDB (ERFA dtdb); two-part TDB dates",
                         "place": "Skyfield apparent (light-time, deflection, aberration)",
-                        "tropicalTrue": "true equator/ecliptic of date (IAU 2006/2000A via ERFA in Skyfield)",
+                        "tropicalTrue": "Mean ecliptic (ERFA ecm06) + nut06a Δψ on λ only; matches truth_profile_erfa.json / ADR 0027",
                         "lahiriIae": "tropicalTrue − Lahiri (CRC 1955 / Bhatnagar 1990 IAE, modern profile)",
-                        "meanNode": "Meeus eq. 47.7 (Chapront-Touzé & Chapront 1991)",
-                        "trueNode": "TN-MED-LT1: Skyfield DE geocentric Moon (no .apparent), one-shot LT, ERFA mean ecliptic + nut06a Δψ (true_node_truth.py)",
+                        "meanNode": "ERFA faom03 (IAU 2006 polynomial)",
+                        "trueNode": "DE440/441 geocentric Moon with one-shot light-time; ecm06 node + nut06a Δψ (truth_profile_erfa.py)",
+                        "skyfieldCompetitor": "Separate adapter column: Skyfield true ecliptic of date (epoch='date')",
                     },
                     "errors": errors,
                 },

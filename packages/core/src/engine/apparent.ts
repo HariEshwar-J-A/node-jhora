@@ -23,6 +23,7 @@
 
 import type { Vec3 } from './chebyshev.js';
 import type { Vec } from './precession.js';
+import { NAIF } from './spk.js';
 
 /** Speed of light, km/s (IAU / SI exact). */
 const C_KM_S = 299792.458;
@@ -35,6 +36,10 @@ export const AU_KM = 149597870.7;
  * GM☉ = 1.32712440018e11 km³/s² (IAU 2009).
  */
 const SUN_2GM_C2 = (2 * 1.32712440018e11) / (C_KM_S * C_KM_S);
+
+/** 2·GM/c² for Jupiter and Saturn (IAU 2009 / NAIF, km). Truth-profile deflectors. */
+const JUPITER_2GM_C2 = (2 * 1.26686534e8) / (C_KM_S * C_KM_S);
+const SATURN_2GM_C2 = (2 * 3.7931187e7) / (C_KM_S * C_KM_S);
 
 /** Minimal slice of SpkFile that this module needs. */
 export interface BarycentricSource {
@@ -158,14 +163,14 @@ function aberrate(u: Vec, v: Vec): Vec {
  * @param e  Sun → observer vector, km
  * @param q  Sun → body vector at emission, km
  */
-function deflect(u: Vec, e: Vec, q: Vec): Vec {
+function deflect(u: Vec, e: Vec, q: Vec, twoGmOverC2Km: number = SUN_2GM_C2): Vec {
     const eDist = norm(e);
     if (eDist === 0) return u;
 
     const eHat = unit(e);
     const qHat = unit(q);
 
-    const g1 = SUN_2GM_C2 / eDist;
+    const g1 = twoGmOverC2Km / eDist;
     const g2 = 1 + dot(qHat, eHat);
     if (g2 <= 1e-12) return u; // body exactly behind the Sun — deflection undefined
 
@@ -202,6 +207,8 @@ export function computePlace(
     observer: ObserverState,
     corrections: Required<PlaceCorrections> = APPARENT,
     tdbReception?: { D: number; f: number },
+    /** Sun + Jupiter + Saturn (Skyfield / ERFA ldn); truth profile apparent places only. */
+    multiBodyDeflection = false,
 ): ApparentPlace {
     const wantDeflection = corrections.deflection && naifBody !== sunNaifId;
     const useSplit =
@@ -214,6 +221,7 @@ export function computePlace(
     let bodyPos: Vec = [0, 0, 0];
 
     const passes = corrections.lightTime ? 3 : 1;
+    let emissionTdb: { D: number; f: number } | undefined;
     for (let i = 0; i < passes; i++) {
         const b = useSplit
             ? (() => {
@@ -227,6 +235,7 @@ export function computePlace(
                       fPrime -= 1;
                       DPrime += 1;
                   }
+                  emissionTdb = { D: DPrime, f: fPrime };
                   return spk.getBarycentricAtTdb!(naifBody, DPrime, fPrime);
               })()
             : spk.getBarycentric(naifBody, et - tau);
@@ -258,6 +267,29 @@ export function computePlace(
             bodyPos[2] - sunPos[2],
         ];
         dir = deflect(dir, sunToObserver, sunToBody);
+        if (multiBodyDeflection && naifBody !== sunNaifId) {
+            const extras: { naif: number; bm: number }[] = [
+                { naif: NAIF.Jupiter, bm: JUPITER_2GM_C2 },
+                { naif: NAIF.Saturn, bm: SATURN_2GM_C2 },
+            ];
+            for (const { naif, bm } of extras) {
+                const d = useSplit
+                    ? spk.getBarycentricAtTdb!(naif, emissionTdb!.D, emissionTdb!.f)
+                    : spk.getBarycentric(naif, et - tau);
+                const dPos: Vec = [d.x, d.y, d.z];
+                const toObs: Vec = [
+                    observer.position[0] - dPos[0],
+                    observer.position[1] - dPos[1],
+                    observer.position[2] - dPos[2],
+                ];
+                const toBody: Vec = [
+                    bodyPos[0] - dPos[0],
+                    bodyPos[1] - dPos[1],
+                    bodyPos[2] - dPos[2],
+                ];
+                dir = deflect(dir, toObs, toBody, bm);
+            }
+        }
     }
 
     // ── 3. Annual (+ diurnal, if topocentric) aberration ────────────────────

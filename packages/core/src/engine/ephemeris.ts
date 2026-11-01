@@ -919,6 +919,7 @@ export class EphemerisEngine {
             observer,
             corrections,
             tdbParts ?? undefined,
+            precisionProfile === 'truth' && corrections.deflection,
         );
         const jdTT = jdUT + deltaT(jdUT) / 86400.0;
         return {
