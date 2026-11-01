@@ -6,48 +6,9 @@ import { gzipSync } from 'node:zlib';
 import { build } from 'esbuild';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { nodeStubPlugin } from '../tools/esbuild-node-stub-plugin.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-const nodeStubPlugin = {
-    name: 'node-stub',
-    setup(build) {
-        build.onResolve({ filter: /spk-node\.js$/ }, () => ({
-            path: 'spk-node-stub',
-            namespace: 'njh-stub',
-        }));
-        build.onLoad({ filter: /.*/, namespace: 'njh-stub' }, () => ({
-            contents:
-                'export function loadSpk(){throw new Error("spk-node unavailable in browser bundle");}',
-            loader: 'js',
-        }));
-        for (const id of [
-            'fs',
-            'path',
-            'module',
-            'node:fs',
-            'node:path',
-            'node:module',
-            'fs/promises',
-            'node:fs/promises',
-        ]) {
-            build.onResolve({ filter: new RegExp(`^${id.replace(':', ':')}$`) }, () => ({
-                path: id,
-                namespace: 'njh-node',
-            }));
-        }
-        build.onLoad({ filter: /.*/, namespace: 'njh-node' }, () => ({
-            contents: `
-                export function existsSync(){return false;}
-                export async function readFile(){throw new Error('no fs in browser');}
-                export function join(...p){return p.join('/');}
-                export function dirname(){return '';}
-                export function createRequire(){return {resolve(){throw new Error('no require in browser');}};}
-            `,
-            loader: 'js',
-        }));
-    },
-};
 
 const CASES = [
     {

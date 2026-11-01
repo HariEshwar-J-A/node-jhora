@@ -34,8 +34,13 @@ import {
     unlinkSync,
 } from 'fs';
 import { get as httpsGet } from 'https';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+/** Strip CR/LF so error messages cannot forge log lines (CodeQL log injection). */
+function sanitizeLogLine(value) {
+    return String(value).replace(/[\r\n]/g, ' ');
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEST = join(__dirname, 'de440s.bsp');
@@ -173,7 +178,9 @@ async function main() {
             return;
         } catch (err) {
             removeQuiet(PARTIAL);
-            console.warn(`[node-jhora/ephe] Failed: ${err.message} — trying next source…`);
+            console.warn(
+                `[node-jhora/ephe] Failed: ${sanitizeLogLine(err.message)} — trying next source…`,
+            );
         }
     }
     console.error(

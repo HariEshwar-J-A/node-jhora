@@ -27,6 +27,11 @@ import { fileURLToPath } from 'node:url';
 
 import { normalizeSearchKey, shardIdForKey } from './normalize.mjs';
 
+/** Strip CR/LF so logged values cannot forge log lines (CodeQL log injection). */
+function sanitizeLogLine(value) {
+    return String(value).replace(/[\r\n]/g, ' ');
+}
+
 const ATTRIBUTION_TEXT =
     'Data © GeoNames (https://www.geonames.org/), used under Creative Commons Attribution 4.0 International (CC-BY 4.0).';
 
@@ -360,7 +365,7 @@ async function main() {
     await buildFull(outDir);
     const bytes = dirSizeBytes(outDir);
     const mb = (bytes / (1024 * 1024)).toFixed(2);
-    console.log(`[atlas:build] Total data size: ${mb} MB`);
+    console.log(`[atlas:build] Total data size: ${sanitizeLogLine(mb)} MB`);
     if (bytes > 26 * 1024 * 1024) {
         console.warn('[atlas:build] Warning: output exceeds ~25 MB web budget');
     }

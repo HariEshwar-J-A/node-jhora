@@ -96,8 +96,23 @@ function resolvePackageDir(name) {
     return undefined;
 }
 
+/** Refuse writing cache files from non-HTTPS or unexpected hosts (CodeQL http-to-file). */
+function assertTrustedDownloadSource(source) {
+    if (typeof source !== 'string' || !source.includes('://')) return;
+    let parsed;
+    try {
+        parsed = new URL(source);
+    } catch {
+        throw new Error(`invalid download source: ${source}`);
+    }
+    if (parsed.protocol !== 'https:') {
+        throw new Error(`refusing non-HTTPS download source: ${source}`);
+    }
+}
+
 /** Write bytes atomically after checking them against `entry`. */
 export function writeVerified(dest, bytes, entry, source) {
+    assertTrustedDownloadSource(source);
     if (bytes.byteLength !== entry.bytes) {
         throw new Error(
             `${entry.file} from ${source}: expected ${entry.bytes} bytes, got ${bytes.byteLength}`,

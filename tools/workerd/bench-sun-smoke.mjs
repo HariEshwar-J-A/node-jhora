@@ -162,7 +162,7 @@ function startAssetServer(assetRoot, assetPort) {
             res.end('not found');
         } catch (err) {
             res.writeHead(500);
-            res.end(String(err));
+            res.end(err instanceof Error ? err.message : 'internal error');
         }
     }).listen(assetPort, '127.0.0.1');
 }

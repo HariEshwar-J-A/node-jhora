@@ -3,21 +3,14 @@
  * Verify SPDX-style copyright header on library TypeScript sources.
  */
 import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listPackageSrcTsFiles } from './git-package-src-files.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const HEADER = '// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.';
 
-const files = execSync("git ls-files 'packages/*/src/**/*.ts' ':!:**/*.d.ts'", {
-    cwd: root,
-    encoding: 'utf8',
-})
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .filter((rel) => !rel.includes('/generated/'));
+const files = listPackageSrcTsFiles(root).filter((rel) => !rel.includes('/generated/'));
 
 let failed = 0;
 for (const rel of files) {
