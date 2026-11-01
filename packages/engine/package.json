@@ -44,6 +44,7 @@
         "luxon": "^3.7.2"
     },
     "devDependencies": {
+        "@node-jhora/testkit": "workspace:*",
         "@types/jest": "^30.0.0",
         "@types/luxon": "^3.7.1",
         "jest": "^30.2.0",

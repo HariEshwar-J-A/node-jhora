@@ -8,6 +8,7 @@ export default {
         '^@node-jhora/core$': '<rootDir>/../core/src/index.ts',
         '^@node-jhora/analytics$': '<rootDir>/../analytics/src/index.ts',
         '^@node-jhora/prediction$': '<rootDir>/../prediction/src/index.ts',
+        '^@node-jhora/testkit$': '<rootDir>/../testkit/src/index.ts',
         '^(\\.{1,2}/.*)\\.js$': '$1',
     },
     transform: {

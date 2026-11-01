@@ -104,7 +104,8 @@ interface DashaBalance {
  */
 function addYears(date: DateTime, years: Decimal, yearDays: Decimal): DateTime {
     const ms = years.times(yearDays).times(MS_PER_DAY).round();
-    return date.plus({ milliseconds: ms.toNumber() });
+    const nextMs = date.toMillis() + ms.toNumber();
+    return DateTime.fromMillis(nextMs, { zone: date.zone });
 }
 
 export function yearLength(options?: VimshottariOptions): { days: Decimal; settingsHash?: string } {
