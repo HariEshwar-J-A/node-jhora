@@ -35,18 +35,19 @@ def load_truth_sun_lon() -> float:
             best = row
     if best is not None and best_d <= 30.0:
         return float(best["tropicalTrue"]["lon"])
+    from compute_truth import DE440S_BSP, tropical_truth_profile_lon_lat
     from skyfield.api import Loader
-    from compute_truth import BODY_TARGETS, delta_t_seconds, ensure_kernel, load_deltat_table
 
     table = load_deltat_table()
     dt = delta_t_seconds(J2000_JD_UT, table)
     load = Loader(str(BENCH_ROOT / "cache"))
-    de440 = load(str(ensure_kernel("de440.bsp")))
+    de440s = load(str(DE440S_BSP)) if DE440S_BSP.is_file() else None
+    de440_full = load(str(ensure_kernel("de440.bsp")))
     ts = load.timescale()
-    jd_tt = J2000_JD_UT + dt / 86400.0
-    t = ts.tt_jd(jd_tt)
-    lat, lon, _ = de440["earth"].at(t).observe(de440["sun"]).apparent().ecliptic_latlon(epoch="date")
-    return float(lon.degrees) % 360.0
+    eph = de440s if de440s is not None else de440_full
+    earth = eph["earth"]
+    lon, _lat = tropical_truth_profile_lon_lat(earth, eph["sun"], ts, J2000_JD_UT, dt)
+    return float(lon) % 360.0
 
 
 def delta_deg(a: float, b: float) -> float:

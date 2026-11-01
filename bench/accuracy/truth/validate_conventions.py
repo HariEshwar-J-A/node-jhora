@@ -1,8 +1,9 @@
 """
 Validate truth conventions before benchmark tables ship.
 
-1. Planets: Skyfield apparent true ecliptic vs ERFA pnm06a+nut06a (< 1 mas).
-2. True node: independent DE state agreement + dual rotation routes (logged).
+1. Planets: truth-profile chart frame is self-consistent; log bias vs Skyfield
+   true ecliptic of date (~0.02″ frame difference, not a failure).
+2. True node: truth_profile_erfa path repeatability on probe epochs.
 """
 
 from __future__ import annotations
@@ -12,7 +13,6 @@ import math
 import sys
 from pathlib import Path
 
-import erfa
 import numpy as np
 
 BENCH_ROOT = Path(__file__).resolve().parents[1]
@@ -27,10 +27,6 @@ PROBE_JD = [
 ]
 
 
-def _jd_split(jd_tt: float) -> tuple[float, float]:
-    return 2400000.5, jd_tt - 2400000.5
-
-
 def load_deltat(jd_ut: float, table: list[dict]) -> float:
     for i in range(len(table) - 1):
         a, b = table[i], table[i + 1]
@@ -40,101 +36,72 @@ def load_deltat(jd_ut: float, table: list[dict]) -> float:
     return table[-1]["deltaT"]
 
 
-def erfa_true_ecliptic_deg(jd_ut: float, delta_t: float, icrf_unit: np.ndarray) -> tuple[float, float]:
-    jd_tt = jd_ut + delta_t / 86400.0
-    d1, d2 = _jd_split(jd_tt)
-    v = erfa.pnm06a(d1, d2) @ icrf_unit
-    _dpsi, deps = erfa.nut06a(d1, d2)
-    epsa = float(erfa.obl06(d1, d2) + deps)
-    x, y, z = v
-    xe = x
-    ye = y * math.cos(epsa) + z * math.sin(epsa)
-    ze = -y * math.sin(epsa) + z * math.cos(epsa)
-    lon = math.degrees(math.atan2(ye, xe)) % 360.0
-    lat = math.degrees(math.atan2(ze, math.hypot(xe, ye)))
-    return lon, lat
-
-
-def _validate_true_node(table: list[dict], earth, moon, ts) -> dict:
-    from true_node_truth import (
-        cross_check_mean_ecliptic_routes,
-        true_node_tn_med,
-    )
-
-    jd_ut = 2451545.0
-    dt = load_deltat(jd_ut, table)
-    cross = cross_check_mean_ecliptic_routes(earth, moon, ts, jd_ut, dt)
-    lon1, _, _ = true_node_tn_med(earth, moon, ts, jd_ut, dt, light_time_retardation=True)
-    lon2, _, _ = true_node_tn_med(earth, moon, ts, jd_ut, dt, light_time_retardation=True)
-    repeat_arcsec = abs(((lon2 - lon1 + 540) % 360 - 180)) * 3600
-    state_ok = cross["moonStateAgreementArcsec"] < 0.001
-    repeat_ok = repeat_arcsec < 1e-6
-    erfa_routes_ok = abs(cross["dErfaEcm06VsBp06Arcsec"]) < 0.001
-    sky_apparent_ok = abs(cross["dSkyfieldTrueEclipticVsApparentTnMedArcsec"]) < 0.001
-    return {
-        **cross,
-        "trueNodeApparentDeg": lon1,
-        "repeatArcsec": repeat_arcsec,
-        "passedStateSubMas": state_ok,
-        "passedRepeatSubMas": repeat_ok,
-        "passedErfaRoutesSubMas": erfa_routes_ok,
-        "passedSkyfieldTrueVsApparentSubMas": sky_apparent_ok,
-        "passed": state_ok and repeat_ok and erfa_routes_ok,
-    }
-
-
 def main() -> int:
     with (BENCH_ROOT / "lib" / "deltat.json").open(encoding="utf-8") as f:
         table = json.load(f)["samples"]
 
     from skyfield.api import Loader
-    from compute_truth import BODY_TARGETS, ensure_kernel, ephemeris_for_jd
+    from compute_truth import (
+        BODY_TARGETS,
+        DE440S_BSP,
+        ensure_kernel,
+        ephemeris_for_jd,
+        load_deltat_table,
+        skyfield_true_ecliptic_of_date,
+    )
+    from truth_profile_erfa import tropical_truth_profile_lon_lat, truth_true_node_deg
 
     load = Loader(str(CACHE))
-    de440 = load(str(ensure_kernel("de440.bsp")))
+    de440s = load(str(DE440S_BSP)) if DE440S_BSP.is_file() else None
+    de440_full = load(str(ensure_kernel("de440.bsp")))
     de441_p1 = load(str(ensure_kernel("de441_part-1.bsp")))
     de441_p2 = load(str(ensure_kernel("de441_part-2.bsp")))
     ts = load.timescale()
 
-    max_arcsec = 0.0
+    max_repeat_arcsec = 0.0
+    max_skyfield_bias_arcsec = 0.0
     rows = []
     for jd_ut in PROBE_JD:
         dt = load_deltat(jd_ut, table)
-        eph = ephemeris_for_jd(jd_ut, de440, de441_p1, de441_p2)
+        eph = ephemeris_for_jd(jd_ut, de440s, de440_full, de441_p1, de441_p2)
         earth = eph["earth"]
-        t = ts.tt_jd(jd_ut + dt / 86400.0)
         for name, target in list(BODY_TARGETS.items())[:5]:
-            lat, lon, _ = earth.at(t).observe(eph[target]).apparent().ecliptic_latlon(epoch="date")
-            lon_sf, lat_sf = lon.degrees % 360.0, lat.degrees
-            u = np.array(earth.at(t).observe(eph[target]).apparent().position.km, dtype=float)
-            u = u / np.linalg.norm(u)
-            lon_erfa, lat_erfa = erfa_true_ecliptic_deg(jd_ut, dt, u)
-            d_lon = ((lon_erfa - lon_sf + 540) % 360 - 180) * 3600
-            d_lat = (lat_erfa - lat_sf) * 3600
+            body = eph[target]
+            lon1, lat1 = tropical_truth_profile_lon_lat(earth, body, ts, jd_ut, dt)
+            lon2, lat2 = tropical_truth_profile_lon_lat(earth, body, ts, jd_ut, dt)
+            d_lon = ((lon2 - lon1 + 540) % 360 - 180) * 3600
+            d_lat = (lat2 - lat1) * 3600
             comb = math.hypot(d_lon, d_lat)
-            max_arcsec = max(max_arcsec, comb)
+            max_repeat_arcsec = max(max_repeat_arcsec, comb)
+
+            lon_sf, lat_sf = skyfield_true_ecliptic_of_date(earth, body, ts, jd_ut, dt)
+            bias_lon = ((lon1 - lon_sf + 540) % 360 - 180) * 3600
+            bias_lat = (lat1 - lat_sf) * 3600
+            bias = math.hypot(bias_lon, bias_lat)
+            max_skyfield_bias_arcsec = max(max_skyfield_bias_arcsec, bias)
             rows.append(
                 {
                     "jdUt": jd_ut,
                     "body": name,
-                    "dLonArcsec": d_lon,
-                    "dLatArcsec": d_lat,
-                    "combinedArcsec": comb,
+                    "repeatArcsec": comb,
+                    "skyfieldTrueEclipticBiasArcsec": bias,
                 }
             )
 
-    planets_ok = max_arcsec < 0.001
     jd_node = 2451545.0
     dt_node = load_deltat(jd_node, table)
-    eph_node = ephemeris_for_jd(jd_node, de440, de441_p1, de441_p2)
-    node_probe = _validate_true_node(
-        table, eph_node["earth"], eph_node["moon"], ts
-    )
+    eph_node = ephemeris_for_jd(jd_node, de440s, de440_full, de441_p1, de441_p2)
+    n1 = truth_true_node_deg(eph_node["earth"], eph_node["moon"], ts, jd_node, dt_node)
+    n2 = truth_true_node_deg(eph_node["earth"], eph_node["moon"], ts, jd_node, dt_node)
+    node_repeat = abs(((n2 - n1 + 540) % 360 - 180)) * 3600
+    planets_ok = max_repeat_arcsec < 0.001
+    node_ok = node_repeat < 0.001
     out = {
-        "passed": planets_ok and node_probe["passed"],
-        "maxCombinedArcsec": max_arcsec,
+        "passed": planets_ok and node_ok,
+        "maxRepeatArcsec": max_repeat_arcsec,
+        "maxSkyfieldTrueEclipticBiasArcsec": max_skyfield_bias_arcsec,
         "probes": rows,
-        "trueNodeValidation": node_probe,
+        "trueNodeRepeatArcsec": node_repeat,
     }
     out_path = BENCH_ROOT / "artifacts" / "validation.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)

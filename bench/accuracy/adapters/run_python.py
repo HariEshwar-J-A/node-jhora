@@ -74,14 +74,15 @@ def swisseph_rows(jd_ut: float, shared_dt: float | None, deltat_table: list[dict
     return rows
 
 
-def skyfield_rows(jd_ut: float, de440, de441_p1, de441_p2, ts, deltat_table) -> list[dict]:
-    from compute_truth import compute_epoch, ephemeris_for_jd
-    import frame_bridge as fb
+def skyfield_rows(jd_ut: float, de440s, de440_full, de441_p1, de441_p2, ts, deltat_table) -> list[dict]:
+    from compute_truth import compute_skyfield_competitor_epoch, ephemeris_for_jd
 
-    eph = ephemeris_for_jd(jd_ut, de440, de441_p1, de441_p2)
+    eph = ephemeris_for_jd(jd_ut, de440s, de440_full, de441_p1, de441_p2)
     earth = eph["earth"]
     rows = []
-    for row in compute_epoch(jd_ut, de440, de441_p1, de441_p2, ts, earth, deltat_table, fb):
+    for row in compute_skyfield_competitor_epoch(
+        jd_ut, de440s, de440_full, de441_p1, de441_p2, ts, earth, deltat_table
+    ):
         rows.append(
             {
                 "jdUt": row["jdUt"],
@@ -109,7 +110,10 @@ def main() -> int:
     from compute_truth import ensure_kernel
 
     load = Loader(str(BENCH_ROOT / "cache"))
-    de440 = load(str(ensure_kernel("de440.bsp")))
+    from compute_truth import DE440S_BSP
+
+    de440s = load(str(DE440S_BSP)) if DE440S_BSP.is_file() else None
+    de440_full = load(str(ensure_kernel("de440.bsp")))
     de441_p1 = load(str(ensure_kernel("de441_part-1.bsp")))
     de441_p2 = load(str(ensure_kernel("de441_part-2.bsp")))
     ts = load.timescale()
@@ -123,7 +127,7 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             rows.append({"jdUt": jd, "library": "pyswisseph", "error": str(exc)})
         try:
-            rows.extend(skyfield_rows(jd, de440, de441_p1, de441_p2, ts, deltat_table))
+            rows.extend(skyfield_rows(jd, de440s, de440_full, de441_p1, de441_p2, ts, deltat_table))
         except Exception as exc:  # noqa: BLE001
             rows.append({"jdUt": jd, "library": "skyfield", "error": str(exc)})
 
