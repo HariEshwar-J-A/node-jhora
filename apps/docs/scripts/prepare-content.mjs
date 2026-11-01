@@ -38,10 +38,41 @@ function rewriteLinks(body) {
     out = out.replace(/\]\(\.\/docs\/decisions\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
         return `](/guides/${decisionSlug(name)}${anchor || ''})`;
     });
-    // docs/*.md
+    out = out.replace(/\]\(\.\/docs\/guides\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+    });
+    out = out.replace(
+        /\]\(\.\/docs\/getting-started\/([^)/#]+)\.md([^)]*)\)/gi,
+        (_, name, anchor) => {
+            return `](/getting-started-${DOC_SLUG(name)}${anchor || ''})`;
+        },
+    );
+    // docs/*.md at repo root (accuracy, architecture, …)
     out = out.replace(/\]\(\.\/docs\/([^)#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
         const url = `/guides/${DOC_SLUG(name)}${anchor || ''}`;
         return `](${url})`;
+    });
+    out = out.replace(/\]\(\.\.\/docs\/guides\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+    });
+    out = out.replace(/\]\(\.\.\/guides\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+    });
+    out = out.replace(/\]\(\.\/guides\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+    });
+    out = out.replace(/\]\(\.\.\/decisions\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        return `](/guides/${decisionSlug(name)}${anchor || ''})`;
+    });
+    out = out.replace(/\]\(\.\.\/([^)/#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
+        const lower = name.toLowerCase();
+        if (lower === 'architecture' || lower === 'accuracy' || lower === 'performance') {
+            return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+        }
+        if (lower === 'license' || lower === 'contributing') {
+            return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
+        }
+        return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
     });
     out = out.replace(/\]\(\.\.\/docs\/([^)#]+)\.md([^)]*)\)/gi, (_, name, anchor) => {
         const url = `/guides/${DOC_SLUG(name)}${anchor || ''}`;
@@ -53,6 +84,9 @@ function rewriteLinks(body) {
         if (lower === 'readme') return `](/getting-started${anchor || ''})`;
         if (lower === 'contributing') return `](/guides/contributing${anchor || ''})`;
         if (lower === 'configuration') return `](/guides/configuration${anchor || ''})`;
+        if (['node', 'bun', 'deno', 'edge-workers', 'browser'].includes(lower)) {
+            return `](/getting-started-${lower}${anchor || ''})`;
+        }
         return `](/guides/${DOC_SLUG(name)}${anchor || ''})`;
     });
     out = out.replace(/\]\(([A-Za-z0-9_-]+)\.md([^)]*)\)/gi, (match, name, anchor) => {
@@ -137,21 +171,42 @@ export async function prepareContent() {
     }
 
     const docsDir = path.join(REPO_ROOT, 'docs');
-    const entries = await fs.readdir(docsDir);
-    for (const name of entries.sort()) {
-        if (!name.endsWith('.md')) continue;
-        if (name === 'decisions') continue;
-        const full = path.join(docsDir, name);
-        const stat = await fs.stat(full);
-        if (!stat.isFile()) continue;
+
+    async function syncDocFile(full, relFromDocs) {
         const body = await readUtf8(full);
-        const { slug } = registerSlug(name);
-        await writePage(
-            path.join(GENERATED_GUIDES, `${slug}.md`),
-            titleFromMarkdown(body, slug),
-            body,
-        );
+        const base = path.basename(full);
+        let slug;
+        if (relFromDocs.startsWith('getting-started/')) {
+            slug = `getting-started-${DOC_SLUG(base)}`;
+        } else if (relFromDocs.startsWith('reference/')) {
+            slug = `reference-${DOC_SLUG(base)}`;
+        } else {
+            slug = DOC_SLUG(base);
+        }
+        const outDir = relFromDocs.startsWith('getting-started/') ? CONTENT_DOCS : GENERATED_GUIDES;
+        const outName =
+            base.toLowerCase() === 'readme.md' && relFromDocs === 'README.md'
+                ? 'documentation-index.md'
+                : `${slug}.md`;
+        await writePage(path.join(outDir, outName), titleFromMarkdown(body, slug), body);
     }
+
+    async function walkDocs(dir, rel = '') {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const ent of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+            if (ent.name === 'decisions') continue;
+            const relPath = rel ? `${rel}/${ent.name}` : ent.name;
+            const full = path.join(dir, ent.name);
+            if (ent.isDirectory()) {
+                await walkDocs(full, relPath);
+                continue;
+            }
+            if (!ent.name.endsWith('.md')) continue;
+            await syncDocFile(full, relPath);
+        }
+    }
+
+    await walkDocs(docsDir);
 
     // decisions/*.md
     const decisionsDir = path.join(docsDir, 'decisions');

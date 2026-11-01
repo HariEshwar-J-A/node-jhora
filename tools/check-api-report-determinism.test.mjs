@@ -46,6 +46,9 @@ test('api-extractor reports match committed etc after a forced package build', (
     for (const pkg of ['core', 'format']) {
         rmSync(join(root, 'temp'), { recursive: true, force: true });
         run(`pnpm --filter @node-jhora/${pkg} api:report`);
+        if (pkg === 'format') {
+            run('node tools/normalize-format-api-report.mjs temp/format.api.md');
+        }
         const report = `etc/${pkg}.api.md`;
         const temp = `temp/${pkg}.api.md`;
         assert.equal(

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Optional sidereal ayanamsa flags (public numbering documented in swisseph.htm §2.8).
  */

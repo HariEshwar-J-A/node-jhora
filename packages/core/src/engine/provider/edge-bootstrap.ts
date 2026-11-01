@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Edge runtime bootstrap: DE440s bytes via `initialize({ kernel })` and
  * windowed DE441 NJCE chunks via an in-memory loader (no multi-GB century kernels).

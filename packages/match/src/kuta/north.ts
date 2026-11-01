@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Gana, KutaScore, MatchResult, Nadi, Varna, YoniAnimal } from '../types.js';
 import {
     GANA_TABLE,

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * ephemeris.ts — EphemerisEngine backed by JPL DE440s (public domain)
  *

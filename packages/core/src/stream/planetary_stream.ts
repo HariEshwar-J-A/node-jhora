@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Browser-safe stub for PlanetaryStream
  * The real implementation uses EventEmitter which is not available in browsers.

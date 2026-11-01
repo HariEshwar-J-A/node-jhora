@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /** Bodies in the order observed in legacy `.jhd` position blocks. */
 export const JHD_BODY_ORDER = [
     'Sun',

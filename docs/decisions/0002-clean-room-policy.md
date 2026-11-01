@@ -29,7 +29,7 @@ code, text, or assets into this repository?
 
 Chosen option: "a clean-room policy", because it allows parity testing and
 forbids copying the expression of JHora. The full rule is
-[docs/CLEAN_ROOM.md](../CLEAN_ROOM.md). In short:
+[docs/guides/clean-room.md](../guides/clean-room.md). In short:
 
 - No JHora code, decompiled output, help text, icons, images, fonts, or other
   assets.
@@ -68,6 +68,6 @@ forbids copying the expression of JHora. The full rule is
 ## More Information
 
 Provenance for classical texts, JPL Horizons, and Swiss Ephemeris
-documentation is specified in [docs/CLEAN_ROOM.md](../CLEAN_ROOM.md). Swiss
+documentation is specified in [docs/guides/clean-room.md](../guides/clean-room.md). Swiss
 Ephemeris as a dependency is rejected separately in
 [ADR 0003](0003-pure-typescript-de440s-ephemeris.md).

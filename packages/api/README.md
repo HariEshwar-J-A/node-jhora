@@ -2,7 +2,7 @@
 
 Production-ready REST API server for the Node-Jhora Vedic astrology engine. Built on **Fastify** with **Zod** schema validation, exposing all core calculations through a clean JSON API.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/API.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/api.md)
 
 ## Installation
 
@@ -97,7 +97,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

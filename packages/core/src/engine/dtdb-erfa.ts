@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * ERFA eraDtdb — TDB−TT at the geocentre (Fairhead & Bretagnon + zero topocentric).
  *

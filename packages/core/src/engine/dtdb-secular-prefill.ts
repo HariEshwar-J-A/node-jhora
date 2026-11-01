@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Window-local cubic-Lagrange ΔTDB for DE441 secular Ω prefill only (not chart-grade TT→TDB).
  */

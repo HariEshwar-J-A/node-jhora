@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { decimalToSexagesimal } from './sexagesimal.js';
 import type { JhdChart, JhdWriteOptions } from './types.js';
 import { JHD_BODY_ORDER } from './types.js';

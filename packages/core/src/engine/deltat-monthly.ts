@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * @provenance U.S. Naval Observatory Earth Orientation Department,
  * observed monthly ΔT file "deltat.data" (ΔT = (TAI−UTC)−(UT1−UTC)+32.184 s),

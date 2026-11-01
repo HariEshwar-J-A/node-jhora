@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Routes ephemeris queries between DE440s (in-range, byte-identical default),
  * optional DE441 long-range chunks (preferred outside DE440s in `auto`), and

@@ -28,7 +28,7 @@ carries no such condition, so node-jhora has **no WASM, no Swiss Ephemeris and
 no AGPL** anywhere in its dependency graph.
 
 Accuracy is not a trade-off here: the engine sits within **0.28″ of JPL Horizons**
-across 1900–2024. See [docs/ACCURACY.md](../../docs/ACCURACY.md).
+across 1900–2024. See [docs/accuracy.md](../../docs/accuracy.md).
 
 ## Installation
 

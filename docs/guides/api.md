@@ -10,7 +10,7 @@ The `@node-jhora/api` package provides a production-ready REST API server built 
 - **Validation**: [Zod](https://zod.dev/) type provider for compile-time safe schemas and runtime input validation.
 - **Logging**: [Pino](https://getpino.io/) structured logging (pretty-print in development, JSON in production).
 - **CORS**: Configurable via `CORS_ORIGIN` environment variable.
-- **Ephemeris**: Singleton `EphemerisEngine` (DE440s TypeScript kernel) initialized once at server startup via `initEngine()`. See [Server guide](./guides/server.md).
+- **Ephemeris**: Singleton `EphemerisEngine` (DE440s TypeScript kernel) initialized once at server startup via `initEngine()`. See [Server guide](./server.md).
 
 ---
 

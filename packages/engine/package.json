@@ -14,7 +14,7 @@
         "./browser/worker-api": "./dist/browser/worker-api.js",
         "./package.json": "./package.json"
     },
-    "license": "LicenseRef-NodeJHora-Source-Available",
+    "license": "SEE LICENSE IN LICENSE",
     "engines": {
         "node": ">=22"
     },

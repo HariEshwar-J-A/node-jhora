@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * In-house ΔT forecast after the USNO preds bridge (2028 CE).
  *

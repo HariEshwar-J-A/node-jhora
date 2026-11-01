@@ -2,7 +2,7 @@
 
 The foundation of the Node-Jhora Vedic astrology engine. Provides high-precision astronomical data via a **pure TypeScript JPL DE440s** reader, fundamental Vedic math, and an ergonomic facade for common operations.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/CORE.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/core.md)
 
 ## Installation
 
@@ -142,7 +142,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Result provenance
 

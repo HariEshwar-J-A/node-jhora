@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Turn a preset id, a settings object, or the existing config fields into
  * one validated settings bundle and the legacy {@link JyotishConfig} the

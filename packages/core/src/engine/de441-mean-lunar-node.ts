@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * DE441 secular mean lunar node for the truth profile outside faom03's valid span.
  *

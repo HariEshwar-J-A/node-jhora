@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { calculateShadbala, VargaInfo } from '@node-jhora/analytics';
 import { Body, calculateHouseCusps, calculateVarga } from '@node-jhora/core';
 import { FastifyInstance } from 'fastify';

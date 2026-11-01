@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * NJCE chunk helpers for DE441 secular mean-node sampling (not exported from `@node-jhora/core`).
  */

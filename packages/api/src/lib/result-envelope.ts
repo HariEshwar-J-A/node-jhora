@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { type SettingsHashValue, withResultEnvelope } from '@node-jhora/core';
 
 export interface ApiEnvelopeOptions {

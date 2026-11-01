@@ -35,7 +35,7 @@
         "atlas:build": "node scripts/build.mjs",
         "atlas:build:mini": "node scripts/build.mjs --fixture tests/fixtures/gazetteer-mini --out data-mini"
     },
-    "license": "LicenseRef-NodeJHora-Source-Available",
+    "license": "SEE LICENSE IN LICENSE",
     "engines": {
         "node": ">=22"
     },

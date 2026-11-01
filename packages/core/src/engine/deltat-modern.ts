@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * ΔT for precision profile 'modern' — layout described in Swiss Ephemeris
  * programmer manual ch. 7 (ΔT), built from peer-reviewed SMH2016, USNO/IERS

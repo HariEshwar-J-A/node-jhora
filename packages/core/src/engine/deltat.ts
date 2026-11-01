@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * deltat.ts — ΔT = TT − UT1, the offset between uniform dynamical time and
  * Earth-rotation-based civil time.

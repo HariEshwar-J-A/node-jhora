@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import type { CsvDelimiter } from './types.js';
 
 const UTF8_BOM = '\uFEFF';

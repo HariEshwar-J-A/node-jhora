@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * spk.ts — JPL SPK Type 2 binary ephemeris reader
  *

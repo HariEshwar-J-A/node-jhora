@@ -2,7 +2,7 @@
 
 Depth and strength analysis layer for the Node-Jhora Vedic astrology engine. Provides Shadbala (6-fold planetary strength), Ashtakavarga (BAV/SAV grids), an extensible Yoga detection engine, and KP Engine significators.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/ANALYTICS.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/analytics.md)
 
 ## Installation
 
@@ -93,7 +93,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

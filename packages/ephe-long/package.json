@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Build tool for node-jhora long-range JPL DE431 ephemeris chunks (the chunk data ships in separate packages)",
     "type": "module",
-    "license": "LicenseRef-NASA-Open-Government",
+    "license": "SEE LICENSE IN LICENSE",
     "scripts": {
         "build": "node -e \"process.exit(0)\"",
         "build:chunks": "node scripts/build-chunks.mjs",
@@ -14,6 +14,7 @@
         "stage:data": "node scripts/stage-data-packages.mjs"
     },
     "files": [
+        "LICENSE",
         "README.md",
         "FORMAT.md",
         "NOTICE.md",

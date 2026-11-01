@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Instance-level memo for expensive IAU/Vondrák series keyed by Julian century T (TT)
  * and a series id. Not a module-global Map — bind per {@link EphemerisEngine} via

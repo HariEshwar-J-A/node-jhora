@@ -2,7 +2,7 @@
 
 Comprehensive Vedic marriage compatibility analysis. Supports **North Indian Ashta Kuta** (36-point), **South Indian Dasha Kuta** (10 Poruthams), and **Mangal Dosha** assessment.
 
-> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/MATCHMAKING.md)
+> Part of the [node-jhora](../../README.md) monorepo. [📖 Full Documentation](../../docs/guides/matchmaking.md)
 
 ## Installation
 
@@ -90,7 +90,7 @@ const jhora = new NodeJHora(location, JHORA_PRESET);
 ```
 
 Full reference: [CONFIGURATION.md](../../CONFIGURATION.md) ·
-Measured accuracy: [docs/ACCURACY.md](../../docs/ACCURACY.md)
+Measured accuracy: [docs/accuracy.md](../../docs/accuracy.md)
 
 ## Accuracy
 

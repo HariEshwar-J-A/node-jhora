@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * VSOP87 version E — Earth geocentre barycentric rectangular coordinates in the
  * J2000 dynamical ecliptic and equinox (AU).

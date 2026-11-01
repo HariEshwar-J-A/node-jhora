@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Advertised TT (TDB) Julian-day span that NJCE chunks must cover after a full
  * `build:chunks` run. UT limits come from {@link ../validation/bounds.js}; TT

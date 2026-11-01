@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * DE441 secular mean-node sampler from NJCE441 chunks (same Chebyshev records as BSP).
  */

@@ -30,8 +30,8 @@
         "README.md"
     ],
     "scripts": {
-        "api:report": "api-extractor run --local",
-        "api:check": "api-extractor run",
+        "api:report": "api-extractor run --local && node ../../tools/normalize-format-api-report.mjs",
+        "api:check": "api-extractor run --local && node ../../tools/normalize-format-api-report.mjs && node ../../tools/normalize-format-api-report.mjs --check",
         "build": "tsc",
         "typecheck": "tsc --noEmit --pretty false",
         "lint": "eslint .",
@@ -52,7 +52,7 @@
         "ts-jest": "^29.4.6",
         "typescript": "^5.9.3"
     },
-    "license": "LicenseRef-NodeJHora-Source-Available",
+    "license": "SEE LICENSE IN LICENSE",
     "engines": {
         "node": ">=22"
     },

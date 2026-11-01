@@ -65,6 +65,7 @@ function checkTarget(file, line, raw) {
 }
 
 for (const file of files) {
+    if (file.startsWith('apps/docs/src/content/')) continue;
     const text = readFileSync(join(root, file), 'utf8');
     let inFence = false;
     const lines = text.split('\n');

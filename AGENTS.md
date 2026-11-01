@@ -15,7 +15,7 @@ pnpm workspaces (`packages/*` and `apps/*` in `pnpm-workspace.yaml`), ESM, TypeS
 | `docs/`     | Technical documentation.                                                                                                                                                                   |
 | `tools/`    | Maintenance scripts: Markdown link check, clean-room asset guard, tsconfig-reference test.                                                                                                 |
 
-Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, `format` (.njh chart files), private `testkit` (golden-case schema), and private `bench` (performance budgets). Dependency edges are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Current libraries: `core`, `ephe` (DE440s data only), `analytics`, `prediction`, `match`, `events`, `reporting`, `engine` (ChartSession facade), `api`, `format` (.njh chart files), private `testkit` (golden-case schema), and private `bench` (performance budgets). Dependency edges are in [docs/architecture.md](docs/architecture.md).
 
 ## Engine facts to keep intact
 
@@ -66,7 +66,7 @@ Library packages (`core`, `analytics`, `prediction`, `match`, `engine`, `events`
 
 `@node-jhora/ephe` is DE440s data only: no `tsconfig.json` and no unit tests. `build` and `typecheck` exit 0. `lint` is the same placeholder. `test` runs the repo-level suites that are not a library package (`tools/jest.config.js` and `node --test tools/check-forbidden-assets.test.mjs`). Root `pnpm test` is `turbo run test` across workspace packages; the sum of per-package Jest totals plus the seven `node:test` guard cases from `@node-jhora/ephe` matches what the old root Jest multi-project run reported (no double counting). The kernel is not in git. The root `postinstall` and the package's `prepack` run `packages/ephe/download.mjs`, which skips the download when `de440s.bsp` already matches the pinned SHA-256. The published package has no install scripts (ADR 0006).
 
-Root `pnpm run lint` runs `turbo run lint --filter=./packages/*`, i.e. `eslint .` in every workspace package (cached per package). Rule set: [docs/LINT.md](docs/LINT.md).
+Root `pnpm run lint` runs `turbo run lint --filter=./packages/*`, i.e. `eslint .` in every workspace package (cached per package). Rule set: [docs/guides/lint.md](docs/guides/lint.md).
 
 Internal dependencies use `workspace:*`. There is no `.npmrc`: pnpm's isolated `node_modules` is unchanged. pnpm 12 records dependency lifecycle-script decisions in `allowBuilds` inside `pnpm-workspace.yaml`.
 
@@ -81,4 +81,4 @@ Call `await EphemerisEngine.getInstance().initialize()` before planetary calcula
 
 ## Clean-room rule
 
-Do not add Jagannatha Hora (JHora) source code, help text, icons, fonts, or other assets. JHora numbers may be used only as test oracles. Full policy: [docs/CLEAN_ROOM.md](docs/CLEAN_ROOM.md). Contribution rules: [CONTRIBUTING.md](CONTRIBUTING.md).
+Do not add Jagannatha Hora (JHora) source code, help text, icons, fonts, or other assets. JHora numbers may be used only as test oracles. Full policy: [docs/guides/clean-room.md](docs/guides/clean-room.md). Contribution rules: [CONTRIBUTING.md](CONTRIBUTING.md).

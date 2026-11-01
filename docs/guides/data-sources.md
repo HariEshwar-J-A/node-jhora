@@ -60,7 +60,7 @@ Raw JSON: `tools/ayanamsa-era-max.json` (regenerate with the script above).
 All publicly numbered ayanamsa modes **0–46** are registered in
 `packages/core/src/engine/ayanamsa-registry.ts` with a `source` field citing primary
 literature (see table above and ADR 0025). **USER (255)** accepts `{ t0Jd, ayanamsaDeg }` plus optional projection flags
-(`AYANAMSA_FLAGS` in `ayanamsa-options.ts`). Design notes and deferred modes **2, 6, 7** are in [ADR 0025](./decisions/0025-full-ayanamsa-catalog.md). Modes **14, 30, 39** follow primary definitions (van Leeuwen 2007 freeze, Gil Brand 2014, Sheoran 2017) with ≤1″ kernel parity.
+(`AYANAMSA_FLAGS` in `ayanamsa-options.ts`). Design notes and deferred modes **2, 6, 7** are in [ADR 0025](../decisions/0025-full-ayanamsa-catalog.md). Modes **14, 30, 39** follow primary definitions (van Leeuwen 2007 freeze, Gil Brand 2014, Sheoran 2017) with ≤1″ kernel parity.
 
 Kernel-era parity vs pyswisseph 2.10: `ayanamsa-sidm-parity.test.ts` (strict ≤1″ on modes with
 closed primary definitions; deferred set above).

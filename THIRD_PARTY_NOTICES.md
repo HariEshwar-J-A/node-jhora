@@ -67,3 +67,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Runtime nutation code in `packages/core/src/engine/nutation-iau2000a.ts` follows
 the same ERFA algorithms (nut00a, faom03, nut06a) under the same licence terms.
+
+## JPL planetary ephemerides (DE440s / DE431 / DE441)
+
+SPK kernels and Chebyshev segment data loaded from `@node-jhora/ephe`,
+`@node-jhora/ephe-long`, and `@node-jhora/ephe441` are **U.S. Government works**
+(NASA/JPL NAIF). See `packages/ephe/README.md` and `docs/guides/data-sources.md`.
+
+## IERS Earth orientation parameters
+
+Bulletin A/B data in `@node-jhora/eop` is © IERS and used under the IERS open-data
+terms recorded in that package's README.
+
+## Gaia / Hipparcos star catalogues
+
+Star positions for true ayanamsa modes cite published catalogue values transcribed
+in `packages/core/src/vedic/ayanamsa.ts` (see `@provenance` comments and ADR 0025).
+
+## GeoNames (atlas)
+
+City gazetteer data in `@node-jhora/atlas` is © GeoNames, used under **CC-BY 4.0**
+(see `packages/atlas/README.md`).

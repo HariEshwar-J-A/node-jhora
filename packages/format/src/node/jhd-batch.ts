@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 

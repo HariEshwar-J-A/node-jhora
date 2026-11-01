@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import type { JhdChart } from './types.js';
 
 /** UTC instant of birth from local clock time and stored offset. */

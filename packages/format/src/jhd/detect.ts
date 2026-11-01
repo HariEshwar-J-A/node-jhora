@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import type { JhdVariant } from './types.js';
 
 /** True when lines 9–17 look like nine sidereal longitudes and line 18 is retrograde flags. */

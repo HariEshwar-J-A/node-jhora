@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * JHora-profile yearly ΔT table (1620–2019), 1 January values.
  *

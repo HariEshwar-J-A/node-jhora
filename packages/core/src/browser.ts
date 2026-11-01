@@ -120,7 +120,7 @@ export class NodeJHora {
     // ========== STATIC API ==========
 
     /**
-     * Initialize the WASM engine (call once before calculate)
+     * Initialize the ephemeris engine (call once before calculate; pass `{ kernel }` bytes in the browser).
      */
     public static async init(): Promise<void> {
         await getEngine();

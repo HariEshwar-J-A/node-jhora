@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Published graha-year dasha definitions (BPHS chapter 46).
  * Used by {@link generateCyclicDasha}; not oracles — cite ADR 0018.

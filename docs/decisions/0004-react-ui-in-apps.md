@@ -69,6 +69,6 @@ Intended shape, to be confirmed when the app lands:
 
 ## More Information
 
-Clean-room constraints on art and wording: [docs/CLEAN_ROOM.md](../CLEAN_ROOM.md).
+Clean-room constraints on art and wording: [docs/guides/clean-room.md](../guides/clean-room.md).
 Scaffolding is a separate change; do not treat this ADR as permission to copy
 layout assets from JHora.

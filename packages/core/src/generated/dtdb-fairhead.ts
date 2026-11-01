@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /** Fairhead & Bretagnon TDB-TT terms (ERFA eraDtdb, BSD). Generated; do not edit. */
 export const DTDB_FAIRHD: readonly (readonly [number, number, number])[] = [
     [1656.674564e-6, 6283.075849991, 6.240054195],

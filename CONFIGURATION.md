@@ -59,7 +59,7 @@ position and so carry no fitted constant — prefer them.
 | `18` | J2000 (no ayanamsa)                    | —                                  |
 
 Modes `2`, `7`, `8`, and `28` are not in the registry (`UnsupportedAyanamsaModeError`).
-Primary references for each mode are listed in [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) and ADR 0025 (not duplicated in the npm bundle).
+Primary references for each mode are listed in [docs/guides/data-sources.md](docs/guides/data-sources.md) and ADR 0025 (not duplicated in the npm bundle).
 
 ### `ayanamsaOffset`
 
@@ -128,7 +128,7 @@ the second half in the Moon's, reversed for even signs — so **a D2 position is
 always Leo or Cancer**. `'parivritti'` is the twelve-sign Parivritti Dwaya
 variant, which is what this library did before 3.1.
 
-See [docs/BPHS-VARGA-AUDIT.md](docs/BPHS-VARGA-AUDIT.md).
+See [docs/guides/bphs-varga-audit.md](docs/guides/bphs-varga-audit.md).
 
 ### `sunriseHour`
 

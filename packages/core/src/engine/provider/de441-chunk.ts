@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * DE441 long-range NJCE chunk reader — same `.njce` layout as DE431
  * (coefficients copied verbatim from JPL DE441 part-1/part-2 BSP kernels).

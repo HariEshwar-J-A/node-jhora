@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import { Body } from '@node-jhora/core';
 import { calculateDashaBalance, generateVimshottari } from '@node-jhora/prediction';
 import { FastifyInstance } from 'fastify';

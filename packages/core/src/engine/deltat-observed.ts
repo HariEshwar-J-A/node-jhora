@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * @provenance Observed ΔT = TT − UT1 (seconds) at 1 January 0h of each year,
  * 1620–2019. Measured record, not a model output.

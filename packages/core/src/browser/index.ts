@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Browser entry for @node-jhora/core — no Geocoder, PlanetaryStream, or Node fs.
  */

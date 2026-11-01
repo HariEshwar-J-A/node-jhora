@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 import type { SettingsInput } from '@node-jhora/core/browser';
 import { ensureEphemerisBytes, EphemerisEngine, resetSpkCache } from '@node-jhora/core/browser';
 import { DateTime } from 'luxon';

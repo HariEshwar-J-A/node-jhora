@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Modern geometric True Citra annual parallax mode (star-defined ayanamsa only).
  *

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * Sunshine houses — Makransky algorithm (registry letter `i`; see swephprg.htm).
  *
@@ -138,6 +140,7 @@ export function makranskySunshineCusps(
     cusps[9] = mc;
     cusps[3] = mod360(mc + 180);
 
+    /** @provenance Makransky sunshine house offsets (house index, semi-arc fraction); published algorithm structure. */
     const offsets: ReadonlyArray<readonly [MakranskyIntermediateIndex, number]> = [
         [2, -2 * nightThird],
         [3, -nightThird],

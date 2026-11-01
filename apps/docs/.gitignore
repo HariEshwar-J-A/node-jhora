@@ -1,5 +1,6 @@
 # Generated at build time (see scripts/prepare-*.mjs)
 src/content/docs/getting-started.md
+src/content/docs/getting-started-*.md
 src/content/docs/guides/
 src/content/docs/catalogues/
 public/api-reference/

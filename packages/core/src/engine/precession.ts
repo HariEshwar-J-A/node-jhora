@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Harieshwar Jagan Abirami. All rights reserved. See LICENSE.
+
 /**
  * precession.ts — long-term precession and mean obliquity (Vondrák et al. 2011).
  *
@@ -13,6 +15,8 @@
  * docs/precision-profiles.md). The `'truth'` profile uses IAU 2006 inside
  * 1600–2200 TT with Vondrák mean ecliptic outside that window. Near J2000 Vondrák agrees with IAU
  * 2006 P03 to ~0.1 mas (Vondrák et al. 2011, §4).
+ *
+ * @provenance Vondrák, Capitaine & Wallace (2011) A&A 534 A22 Table 1 and periodic terms; 2012 erratum C7; ERFA eraLtp* (SOFA BSD).
  */
 
 import { icrfToMeanEclipticOfDateForProfile } from '../truth/mean-ecliptic-iau2006.js';
@@ -68,6 +72,7 @@ const XY_POL: readonly (readonly [number, number])[] = [
     [-1.52e-7, 2.31e-7],
 ];
 
+/** @provenance Vondrák et al. (2011) Table 2 (X_A, Y_A) periodic coefficients. */
 const XY_PER: readonly (readonly [number, number, number, number, number])[] = [
     [256.75, -819.940624, 75004.344875, 81491.287984, 1558.515853],
     [708.15, -8444.676815, 624.033993, 787.163481, 7774.939698],
@@ -93,6 +98,7 @@ const PE_POL: readonly (readonly [number, number])[] = [
     [2.71e-7, -1.1e-7],
 ];
 
+/** @provenance Vondrák et al. (2011) Table 3 (p_A, ε_A) periodic coefficients. */
 const PE_PER: readonly (readonly [number, number, number, number, number])[] = [
     [409.9, -6908.287473, 753.87278, -2845.175469, -1704.720302],
     [396.15, -3198.706291, -247.805823, 449.844989, -862.308358],
