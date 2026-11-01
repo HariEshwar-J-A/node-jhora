@@ -22,7 +22,10 @@ export function formatCanonicalNumber(value: number): string {
     let text = value.toString();
     if (!text.includes('e') && !text.includes('E')) {
         if (text.includes('.')) {
-            text = text.replace(/0+$/, '').replace(/\.$/, '');
+            let end = text.length;
+            while (end > 0 && text[end - 1] === '0') end--;
+            if (end > 0 && text[end - 1] === '.') end--;
+            text = text.slice(0, end);
         }
         return text;
     }

@@ -13,7 +13,7 @@
  * skips only the paths in CONTENT_EXEMPT. Reviewers read those diffs by hand.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -129,20 +129,13 @@ export function scan(root) {
 
             if (CONTENT_EXEMPT.has(rel) || !TEXT_EXTENSIONS.has(ext)) continue;
 
-            let info;
-            try {
-                info = statSync(abs);
-            } catch {
-                continue;
-            }
-            if (info.size > MAX_TEXT_BYTES) continue;
-
             let text;
             try {
                 text = readFileSync(abs);
             } catch {
                 continue;
             }
+            if (text.length > MAX_TEXT_BYTES) continue;
             if (text.includes(0)) continue;
 
             const haystack = text.toString('utf8').toLowerCase();

@@ -258,13 +258,19 @@ function copyFixture(fixturePath, outDir) {
     for (const name of readdirSync(source)) {
         const src = join(source, name);
         const dest = join(outDir, name);
-        if (statSync(src).isDirectory()) {
+        let childNames;
+        try {
+            childNames = readdirSync(src);
             mkdirSync(dest, { recursive: true });
-            for (const child of readdirSync(src)) {
+            for (const child of childNames) {
                 writeFileSync(join(dest, child), readFileSync(join(src, child)));
             }
-        } else {
-            writeFileSync(dest, readFileSync(src));
+        } catch (err) {
+            if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOTDIR') {
+                writeFileSync(dest, readFileSync(src));
+            } else {
+                throw err;
+            }
         }
     }
 }

@@ -119,6 +119,14 @@
             "dependsOn": ["^build", "build"],
             "outputs": ["coverage/**"]
         },
+        "@node-jhora/format#test": {
+            "dependsOn": ["^build", "build"],
+            "outputs": ["coverage/**"]
+        },
+        "@node-jhora/bench#test": {
+            "dependsOn": ["^build", "build"],
+            "outputs": ["coverage/**"]
+        },
         "@node-jhora/atlas#api:report": {
             "outputs": ["../../etc/atlas.api.md"]
         }

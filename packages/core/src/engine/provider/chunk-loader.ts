@@ -115,11 +115,15 @@ export function chunkKeysForJdTdb(
     return keys;
 }
 
-let syncFs: typeof import('fs') | undefined;
-let syncPath: typeof import('path') | undefined;
+let syncFs: typeof import('node:fs') | undefined;
+let syncPath: typeof import('node:path') | undefined;
 const syncModulesReady = (async () => {
-    syncFs = await import('fs');
-    syncPath = await import('path');
+    try {
+        syncFs = await import('node:fs');
+        syncPath = await import('node:path');
+    } catch {
+        // Non-Node runtimes (Deno, browsers): sync prefetch stays unavailable.
+    }
 })();
 
 /** Await before synchronous NJCE prefetch in Node (dynamic `fs` import). */
@@ -140,8 +144,8 @@ export function nodeFsChunkLoader(baseDir: string): EphemerisChunkLoader {
     return {
         async load(key) {
             await syncModulesReady;
-            const { readFile } = await import('fs/promises');
-            const { join } = await import('path');
+            const { readFile } = await import('node:fs/promises');
+            const { join } = await import('node:path');
             const name = `g${key.groupId}-c${key.century}.njce`;
             try {
                 const buf = await readFile(join(baseDir, name));

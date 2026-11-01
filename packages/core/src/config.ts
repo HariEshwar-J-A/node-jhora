@@ -213,6 +213,7 @@ export function resolveConfig(
 ): JyotishConfig {
     const out = { ...base };
     for (const [k, v] of Object.entries(override)) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
         if (v !== undefined) (out as Record<string, unknown>)[k] = v;
     }
     return out;

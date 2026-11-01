@@ -5,7 +5,7 @@
  * re-running it is deterministic. The root `pnpm build` and core's `build`
  * both run it before tsc. `--check` exits 1 if the committed file is stale.
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +31,12 @@ export const TZDB_VERSION = 'luxon-${luxonVersion}';
 
 const outDir = join(coreRoot, 'src', 'generated');
 const outFile = join(outDir, 'build-constants.ts');
-const current = existsSync(outFile) ? readFileSync(outFile, 'utf8') : null;
+let current = null;
+try {
+    current = readFileSync(outFile, 'utf8');
+} catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code !== 'ENOENT') throw err;
+}
 
 if (process.argv.includes('--check')) {
     if (current !== contents) {

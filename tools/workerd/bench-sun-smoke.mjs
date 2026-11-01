@@ -7,7 +7,15 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -295,7 +303,7 @@ async function main() {
     console.log('Node reference:', JSON.stringify(ref));
 
     const { manifest, chunkDir } = await buildDeepChunkManifest();
-    const workDir = join(tmpdir(), `njh-edge-${process.pid}`);
+    const workDir = mkdtempSync(join(tmpdir(), 'njh-edge-'));
     mkdirSync(join(workDir, 'chunks'), { recursive: true });
     copyFileSync(join(root, 'packages/ephe/de440s.bsp'), join(workDir, 'de440s.bsp'));
     writeFileSync(join(workDir, 'chunks/manifest.json'), JSON.stringify(manifest));
