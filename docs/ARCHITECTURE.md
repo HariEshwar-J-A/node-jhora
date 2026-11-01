@@ -115,7 +115,7 @@ Private. No dependency on the engine. Depends on `zod@4.6.7` only. pnpm's isolat
 
 ### `@node-jhora/bench`
 
-Private. `tinybench` suites for `ChartSession` (D1–D60, Vimshottari dasha depth 3, strengths) and cold `EphemerisEngine.initialize()` in a child process. `pnpm run bench` writes `artifacts/bench-results.json`; `pnpm run bench:check` compares medians to `baseline.json` and fails on a >15% regression. Node warm-chart budget 20 ms; browser worker 40 ms is documented with `registerBrowserWorkerBenchHook()` for a later worker host PR.
+Private. `tinybench`-style sampling in `@node-jhora/bench`: p50, p99, and RSS for full chart, planets, houses, and ayanamsa across `jhora`, `modern`, `truth`, and `truth+EOP`, plus distinct-JD truth planets and deep-era truth mean-node (when NJCE441 is present). `pnpm run bench` writes `artifacts/bench-results.json`; `pnpm run bench:check` fails on a >15% **p50** regression vs `baseline.json`. `NODE_FULL_CHART_BUDGET_MS` (20 ms) is a **warning only** (dasha-dominated); browser worker 40 ms is documented with `registerBrowserWorkerBenchHook()` for a later worker host PR.
 
 ## `apps/`
 
@@ -134,7 +134,7 @@ From the repository root:
 | `pnpm run validate-github-templates` | `node scripts/validate-github-templates.mjs`                                                                        |
 | `pnpm run lint`                      | `eslint packages/**/src --ext .ts` — ESLint is not a root `devDependency`                                           |
 | `pnpm run bench`                     | `@node-jhora/bench` performance suites → `packages/bench/artifacts/bench-results.json`                              |
-| `pnpm run bench:check`               | Re-run benches; fail on >15% regression vs `packages/bench/baseline.json`                                           |
+| `pnpm run bench:check`               | Re-run benches; fail on >15% **p50** regression vs `packages/bench/baseline.json`                                   |
 
 Jest's root config loads `packages/*/jest.config.js` and `tools/jest.config.js`. `ephe` has no Jest config. Package tests use `ts-jest` ESM. `moduleNameMapper` strips a trailing `.js` so TypeScript source can be imported with NodeNext specifiers.
 
