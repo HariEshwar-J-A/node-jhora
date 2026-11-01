@@ -4,14 +4,14 @@ Plain-text, one value per line (CRLF in JHora exports; LF is accepted on import)
 
 ## Header (lines 1–8)
 
-| Line | Field                                                        |
-| ---- | ------------------------------------------------------------ |
-| 1–3  | month, day, year                                             |
-| 4    | local time (packed sexagesimal `HH.MMSS`, not decimal hours) |
-| 5    | time zone east of UTC, sign-flipped packed sexagesimal       |
-| 6    | longitude east, sign-flipped packed sexagesimal              |
-| 7    | latitude north, packed sexagesimal                           |
-| 8    | **ambiguous** — see below                                    |
+| Line | Field                                                            |
+| ---- | ---------------------------------------------------------------- |
+| 1–3  | month, day, year                                                 |
+| 4    | local time (packed: whole hours/degrees + decimal minutes ÷ 100) |
+| 5    | time zone east of UTC, sign-flipped (same packing)               |
+| 6    | longitude east, sign-flipped (same packing)                      |
+| 7    | latitude north (same packing)                                    |
+| 8    | **ambiguous** — see below                                        |
 
 ## Line 8 ambiguity
 

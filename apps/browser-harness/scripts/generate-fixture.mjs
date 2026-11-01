@@ -17,10 +17,10 @@ await registerNodeBspLoaderFromCore();
 
 const CASES = [
     {
-        id: 'sample-2000',
-        instant: '2000-01-01T12:00:00.000Z',
-        latitude: 13.0827,
-        longitude: 80.2707,
+        id: 'varanasi-2020',
+        instant: '2020-12-21T12:50:00.000Z',
+        latitude: 25.3176,
+        longitude: 82.9739,
         settings: 'node-jhora-default',
     },
     {

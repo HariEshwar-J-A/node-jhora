@@ -17,19 +17,19 @@ export interface DeterminismCorpusCase {
  */
 export const DETERMINISM_CORPUS: readonly DeterminismCorpusCase[] = [
     {
-        id: 'chennai-jhora-default',
-        instant: '2000-01-01T12:00:00.000Z',
+        id: 'varanasi-jhora-default',
+        instant: '2020-12-21T12:50:00.000Z',
         timezone: 'Asia/Kolkata',
-        latitude: 13.0827,
-        longitude: 80.2707,
+        latitude: 25.3176,
+        longitude: 82.9739,
         settings: 'node-jhora-default',
     },
     {
-        id: 'chennai-jhora-8',
-        instant: '2000-01-01T12:00:00.000Z',
+        id: 'varanasi-jhora-8',
+        instant: '2020-12-21T12:50:00.000Z',
         timezone: 'Asia/Kolkata',
-        latitude: 13.0827,
-        longitude: 80.2707,
+        latitude: 25.3176,
+        longitude: 82.9739,
         settings: 'jhora-default@8.0',
     },
     {

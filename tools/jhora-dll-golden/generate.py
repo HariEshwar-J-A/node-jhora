@@ -14,8 +14,8 @@ What is measured
     planet = λ − corr ; ayanamsa = swe_get_ayanamsa(ET) + corr
     houses = swe_houses(UT, lat, lon, hsys) tropical angles − ayanamsa
   That is "tropical − geometric True-Chitra ayanamsa". It reproduces JHora's
-  printed reference chart (2000-01-01 12:00 UTC, Chennai) to the printed
-  0.01″: ayanamsa 23-51-11.00, lagna 2 Cp 20′40.97″, Ketu 0 Aq 58′20.94″.
+  printed reference chart (Greenwich J2000, 2000-01-01 12:00 UT) to the printed
+  0.01″: ayanamsa 23-50-28.91, ascendant from jhora12 transcription.
 
 Cases
   340 cases from random seed 20261026 (same generator as the validation

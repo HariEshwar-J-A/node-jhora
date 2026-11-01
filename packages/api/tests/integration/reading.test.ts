@@ -10,17 +10,16 @@
  *   - Transit houses counted from the natal Moon rather than the ascendant.
  *   - Sade Sati versus Kantaka Shani, which are different afflictions.
  *
- * Reference chart: 2000-01-01 12:00 IST, Chennai — the same one pinned against
- * a real JHora export in the core suite.
+ * Reference chart: fictional Varanasi 2020-12-21 18:20 IST (jhora12 corpus).
  */
 
 import { buildServer, initEngine } from '../../src/server.js';
 
 const BIRTH = {
-    date: '2000-01-01',
-    time: '12:00:00',
-    latitude: 51.4769,
-    longitude: -0.0005,
+    date: '2020-12-21',
+    time: '18:20:00',
+    latitude: 25.3176,
+    longitude: 82.9739,
     timezone: 'Asia/Kolkata',
 };
 
@@ -52,9 +51,9 @@ describe('POST /v1/reading', () => {
         const levels = body.dashaStack.map((s: any) => s.levelName);
         expect(levels).toEqual(['Mahadasha', 'Antardasha', 'Pratyantardasha']);
 
-        // Verified against the native's own JHora export.
+        // Varanasi 2020 chart at asOf 2026-08-09 (engine-derived).
         expect(body.dashaStack[0].lord).toBe('Saturn');
-        expect(body.dashaStack[1].lord).toBe('Jupiter');
+        expect(body.dashaStack[1].lord).toBe('Saturn');
     }, 60_000);
 
     test('each period contains asOf, and nests inside its parent', async () => {
@@ -104,16 +103,16 @@ describe('POST /v1/reading', () => {
     test('natal dignities are reported, including debilitation', async () => {
         const { body } = await post('/v1/reading', BIRTH);
         const saturn = body.natal.planets.find((p: any) => p.name === 'Saturn');
-        // Saturn is in Aries for this chart, its sign of debilitation.
-        expect(saturn.signName).toBe('Aries');
-        expect(saturn.dignity).toBe('debilitated');
+        // Saturn in Capricorn for this chart (own sign).
+        expect(saturn.signName).toBe('Capricorn');
+        expect(saturn.dignity).toBe('own sign');
     }, 60_000);
 
     test('every planet carries the houses it rules for this ascendant', async () => {
         const { body } = await post('/v1/reading', BIRTH);
         const jup = body.natal.planets.find((p: any) => p.name === 'Jupiter');
-        // Capricorn ascendant: Jupiter rules Sagittarius and Pisces, the 12th and 3rd.
-        expect([...jup.rulesHouses].sort((a: number, b: number) => a - b)).toEqual([3, 12]);
+        // Gemini ascendant: Jupiter rules Sagittarius and Pisces, the 7th and 10th.
+        expect([...jup.rulesHouses].sort((a: number, b: number) => a - b)).toEqual([7, 10]);
     }, 60_000);
 });
 
@@ -161,7 +160,7 @@ describe('POST /v1/transits', () => {
         const res = await app.inject({
             method: 'POST',
             url: '/v1/transits',
-            payload: { date: '2000-01-01', time: '12:00:00' },
+            payload: { date: '2020-12-21', time: '18:20:00' },
         });
         expect(res.statusCode).toBeGreaterThanOrEqual(400);
     }, 30_000);

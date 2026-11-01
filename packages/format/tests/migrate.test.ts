@@ -33,10 +33,10 @@ describe('njh migrations', () => {
             schemaVersion: 1,
             name: 'Legacy Person',
             birth: {
-                instant: '2000-01-01T12:00:00Z',
+                instant: '2020-12-21T12:50:00Z',
                 timezone: 'Asia/Kolkata',
-                latitude: 13.0827,
-                longitude: 80.2707,
+                latitude: 25.3176,
+                longitude: 82.9739,
                 altitudeMetres: 0,
             },
             tags: ['legacy'],
@@ -45,8 +45,8 @@ describe('njh migrations', () => {
         const v2 = migrateV1ToV2(v1);
         expect(v2.schemaVersion).toBe(2);
         expect(v2.metadata.name).toBe('Legacy Person');
-        expect(v2.birth.local.hour).toBe(9);
-        expect(v2.birth.tzResolution.resolvedUtc).toBe('2000-01-01T12:00:00Z');
+        expect(v2.birth.local.hour).toBe(18);
+        expect(v2.birth.tzResolution.resolvedUtc).toBe('2020-12-21T12:50:00Z');
         expect(v2.tags).toEqual(['legacy']);
     });
 
@@ -68,7 +68,7 @@ describe('njh migrations', () => {
     });
 
     it.each([
-        ['2000-01-01T12:00:00Z', 'Asia/Kolkata'],
+        ['2020-12-21T12:50:00Z', 'Asia/Kolkata'],
         ['2021-11-07T05:30:00Z', 'America/New_York'], // 01:30 EDT, first pass through the fold
         ['2021-11-07T06:30:00Z', 'America/New_York'], // 01:30 EST, second pass
         ['2021-03-14T07:00:00Z', 'America/New_York'], // just after the spring gap

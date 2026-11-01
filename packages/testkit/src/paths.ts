@@ -99,7 +99,7 @@ export const FEATURE_PATH_RULES: readonly FeaturePathRule[] = [
     ),
     rule(
         'meta-horizons-api',
-        'meta\\.horizons\\.(?:apiVersion|ephemeris|queryUrlTemplate)',
+        'meta\\.horizons\\.(?:apiVersion|ephemeris|retrievedAtUtc|queryUrlTemplate)',
         'exact',
         'string',
     ),

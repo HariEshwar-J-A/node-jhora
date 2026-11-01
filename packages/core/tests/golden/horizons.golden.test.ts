@@ -136,10 +136,10 @@ describe('Horizons parity — max residuals', () => {
 // ---------------------------------------------------------------------------
 
 describe('Astrometry regression guards', () => {
-    const refEpoch = HORIZONS_EPOCHS.find((e) => e.label.startsWith('2000-01-01'))!;
+    const refEpoch = HORIZONS_EPOCHS.find((e) => e.label.startsWith('2000-01-01 12:00'))!;
     const utc = DateTime.fromObject(refEpoch.utc, { zone: 'utc' });
 
-    test('ΔT is applied — 1998 value is ~63 s, not zero', () => {
+    test('ΔT is applied — J2000 noon value is ~64 s, not zero', () => {
         const jd = engine.julday(utc);
         expect(engine.getDeltaT(jd)).toBeGreaterThan(60);
         expect(engine.getDeltaT(jd)).toBeLessThan(66);
@@ -153,9 +153,11 @@ describe('Astrometry regression guards', () => {
         expect(Math.abs(moon.speed)).toBeLessThan(15.5);
     });
 
-    test('retrogression is detected — Mercury is retrograde on 2000-01-01', () => {
+    test('retrogression is detected — Mercury is retrograde on 2050-01-01', () => {
+        const retroEpoch = HORIZONS_EPOCHS.find((e) => e.label.startsWith('2050-01-01'))!;
+        const utcRetro = DateTime.fromObject(retroEpoch.utc, { zone: 'utc' });
         const mercury = engine
-            .getPlanets(utc, undefined, { positionMode: 'apparent' })
+            .getPlanets(utcRetro, undefined, { positionMode: 'apparent' })
             .find((p) => p.name === 'Mercury')!;
         expect(mercury.speed).toBeLessThan(0);
     });

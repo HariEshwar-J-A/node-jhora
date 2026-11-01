@@ -6,7 +6,7 @@ async function verifyPrecision() {
     console.log('🔍 High Precision Verification Mode');
 
     // Location: Chennai
-    const loc = { latitude: 13.0827, longitude: 80.2707 };
+    const loc = { latitude: 51.476852, longitude: -0.0005 };
     const date = DateTime.fromISO('2000-01-01T12:00:00Z');
 
     // 1. Geocentric

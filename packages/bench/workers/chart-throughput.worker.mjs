@@ -18,8 +18,8 @@ await engine.initialize();
 
 const rssAfterInitMb = process.memoryUsage().rss / (1024 * 1024);
 
-const instant = DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' });
-const location = { latitude: 13.0827, longitude: 80.2707 };
+const instant = DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' });
+const location = { latitude: 25.3176, longitude: 82.9739 };
 const settings = 'node-jhora-default';
 const dasha = { depth: 3 };
 

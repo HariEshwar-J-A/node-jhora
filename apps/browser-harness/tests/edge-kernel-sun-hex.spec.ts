@@ -6,9 +6,9 @@ test('worker initialize({ kernel }) bench Sun sidereal IEEE hex', async ({ page 
     await page.goto('/');
     const sunHex = await page.evaluate(async () => {
         const snapshot = (await window.__njhRunHarness({
-            instant: '2000-01-01T12:00:00+05:30',
-            latitude: 13.0827,
-            longitude: 80.2707,
+            instant: '2020-12-21T18:20:00+05:30',
+            latitude: 25.3176,
+            longitude: 82.9739,
             settings: 'node-jhora-default',
             include: ['planets'],
         })) as { planets?: Array<{ name: string; longitude: number }> };

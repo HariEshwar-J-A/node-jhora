@@ -10,12 +10,12 @@ describe('JHora house options', () => {
     });
 
     const date = DateTime.fromObject(
-        { year: 2000, month: 1, day: 1, hour: 12, minute: 0 },
+        { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
         {
             zone: 'utc',
         },
     );
-    const lat = 51.4769;
+    const lat = 51.476852;
     const lon = -0.0005;
 
     test('cuspsInMiddle shifts equal cusps by 15°', () => {
@@ -27,7 +27,8 @@ describe('JHora house options', () => {
             houseSystemId: 'equal',
             cuspsInMiddle: true,
         });
-        expect(middle.cusps[0] - plain.cusps[0]).toBeCloseTo(-15, 5);
+        const shift = ((middle.cusps[0] - plain.cusps[0] + 540) % 360) - 180;
+        expect(shift).toBeCloseTo(-15, 5);
         expect(middle.ascendant).toBeCloseTo(plain.ascendant, 8);
     });
 

@@ -15,9 +15,9 @@ import {
 import { julianDayUt } from '../../src/time/historical.js';
 import { getTzdbVersion } from '../../src/time/tzdb.js';
 
-const chennai: Pick<CivilTimeInput, 'latitude' | 'longitude' | 'timezone'> = {
-    latitude: 13.0827,
-    longitude: 80.2707,
+const varanasi: Pick<CivilTimeInput, 'latitude' | 'longitude' | 'timezone'> = {
+    latitude: 25.3176,
+    longitude: 82.9739,
     timezone: 'Asia/Kolkata',
 };
 
@@ -37,16 +37,16 @@ const clock = (year: number, month: number, day: number, hour: number, minute = 
 });
 
 describe('resolveCivilTime — IANA zones', () => {
-    test('Sample 2000 resolves with IST (UTC+05:30)', () => {
-        const result = resolveCivilTime({ ...chennai, local: clock(2000, 1, 1, 12, 0) });
-        expect(result.resolvedUtc).toBe('2000-01-01T12:00:00.000Z');
-        expect(result.tzResolution.resolvedUtc).toBe('2000-01-01T12:00:00.000Z');
+    test('Varanasi 2020 resolves with IST (UTC+05:30)', () => {
+        const result = resolveCivilTime({ ...varanasi, local: clock(2020, 12, 21, 18, 20) });
+        expect(result.resolvedUtc).toBe('2020-12-21T12:50:00.000Z');
+        expect(result.tzResolution.resolvedUtc).toBe('2020-12-21T12:50:00.000Z');
         expect(result.tzResolution.tzdbVersion).toBe(getTzdbVersion());
         expect(result.tzResolution.steps[0].code).toBe('user_timezone');
         expect(result.inDaylightSaving).toBe(false);
         expect(result.warnings).toHaveLength(0);
-        // JD of 2000-01-01 12:00 UT: 2000-01-01 0h = 2451545.0
-        expect(result.julianDayUt).toBeCloseTo(2451545.0, 8);
+        // JD of 2020-12-21 12:50 UT: 2020-12-21 0h = 2459204.5
+        expect(result.julianDayUt).toBeCloseTo(2459204.5 + (12 + 50 / 60) / 24, 8);
     });
 
     test('tzdbVersion reports the runtime tz database, not a nominal constant', () => {
@@ -145,7 +145,7 @@ describe('resolveCivilTime — IANA zones', () => {
     });
 
     test('India 1900–1905 uses the IANA Madras Time entry, not a hand-coded offset', () => {
-        const result = resolveCivilTime({ ...chennai, local: clock(1901, 1, 1, 12, 0) });
+        const result = resolveCivilTime({ ...varanasi, local: clock(1901, 1, 1, 12, 0) });
         expect(result.tzResolution.steps.some((s) => s.code === 'lmt_offset')).toBe(false);
         const expected = DateTime.fromObject(clock(1901, 1, 1, 12, 0), { zone: 'Asia/Kolkata' })
             .toUTC()
@@ -155,30 +155,34 @@ describe('resolveCivilTime — IANA zones', () => {
 
     test('rejects unknown zones', () => {
         expect(() =>
-            resolveCivilTime({ ...chennai, timezone: 'Mars/Olympus', local: clock(2000, 1, 1, 0) }),
+            resolveCivilTime({
+                ...varanasi,
+                timezone: 'Mars/Olympus',
+                local: clock(2000, 1, 1, 0),
+            }),
         ).toThrow(/Unknown IANA/);
     });
 });
 
 describe('resolveCivilTime — local mean time', () => {
-    test('India 1850 uses exact longitude LMT (80.2707° E = UTC+05:21:04.968)', () => {
-        const result = resolveCivilTime({ ...chennai, local: clock(1850, 6, 15, 12, 0) });
+    test('India 1850 uses exact longitude LMT (82.9739° E = UTC+05:31:53.736)', () => {
+        const result = resolveCivilTime({ ...varanasi, local: clock(1850, 6, 15, 12, 0) });
         expect(result.tzResolution.steps.some((s) => s.code === 'lmt_offset')).toBe(true);
         expect(result.warnings.some((w) => w.code === 'lmt_fallback')).toBe(true);
-        // 80.2707° × 240 s/° = 19264.968 s = 5h21m04.968s; 12:00:00 − that = 06:38:55.032 UT
-        expect(result.resolvedUtc).toBe('1850-06-15T06:38:55.032Z');
+        // 82.9739° × 240 s/° = 19913.736 s = 5h31m53.736s; 12:00:00 − that = 06:28:06.264 UT
+        expect(result.resolvedUtc).toBe('1850-06-15T06:28:06.264Z');
         const jd0 = 2396923.5; // 1850-06-15 0h UT (Gregorian)
-        expect(result.julianDayUt).toBeCloseTo(jd0 + (12 * 3600 - 19264.968) / 86400, 8);
+        expect(result.julianDayUt).toBeCloseTo(jd0 + (12 * 3600 - 19913.736) / 86400, 8);
         // Trace keeps the integer-minute schema; summary carries the exact offset.
         const lmt = result.tzResolution.steps.find((s) => s.code === 'lmt_offset')!;
-        expect(lmt.offsetMinutes).toBe(321);
-        expect(lmt.summary).toContain('+05:21:04.968');
+        expect(lmt.offsetMinutes).toBe(332);
+        expect(lmt.summary).toContain('+05:31:53.736');
     });
 
     test('preferIanaForIndia switches India pre-1900 to the IANA entry', () => {
-        const lmt = resolveCivilTime({ ...chennai, local: clock(1850, 6, 15, 12, 0) });
+        const lmt = resolveCivilTime({ ...varanasi, local: clock(1850, 6, 15, 12, 0) });
         const iana = resolveCivilTime({
-            ...chennai,
+            ...varanasi,
             local: clock(1850, 6, 15, 12, 0),
             preferIanaForIndia: true,
         });
@@ -267,18 +271,18 @@ describe('resolveCivilTime — local mean time', () => {
 
     test('forceLmt overrides the zone', () => {
         const result = resolveCivilTime({
-            ...chennai,
-            local: clock(2000, 1, 1, 12, 0),
+            ...varanasi,
+            local: clock(2020, 12, 21, 18, 20),
             forceLmt: true,
         });
-        expect(result.resolvedUtc).toBe('2000-01-01T04:01:55.032Z');
+        expect(result.resolvedUtc).toBe('2020-12-21T12:48:06.264Z');
     });
 });
 
 describe('resolveCivilTime — overrides and range', () => {
     test('manual war-time offset override', () => {
         const result = resolveCivilTime({
-            ...chennai,
+            ...varanasi,
             local: clock(1942, 6, 15, 12, 0),
             manualOffset: {
                 offsetMinutes: 120,

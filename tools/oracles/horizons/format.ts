@@ -27,6 +27,7 @@ export function formatHorizonsGoldenTs(
     provenance: {
         horizonsApiVersion: string;
         ephemeris: string;
+        retrievedAtUtc: string;
         queryUrlTemplate: string;
         requestParameters: Readonly<Record<string, string>>;
     },
@@ -81,6 +82,7 @@ export interface HorizonsEpoch {
 export const HORIZONS_PROVENANCE = {
     horizonsApiVersion: '${provenance.horizonsApiVersion}',
     ephemeris: '${provenance.ephemeris}',
+    retrievedAtUtc: '${provenance.retrievedAtUtc}',
     queryUrlTemplate: '${provenance.queryUrlTemplate}',
     requestParameters: ${JSON.stringify(provenance.requestParameters, null, 4).replace(/\n/g, '\n    ')},
 } as const;

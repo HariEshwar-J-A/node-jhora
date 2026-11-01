@@ -25,9 +25,12 @@ import {
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from '../../src/engine/provider/de440s.js';
 
 const repoRoot = join(fileURLToPath(import.meta.url), '../../../../..');
-const BENCH_INSTANT = DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' });
-const BENCH_LOCATION = { latitude: 13.0827, longitude: 80.2707 };
-const BENCH_SUN_SIDEREAL_HEX = '488f2f4bc0bf6c40';
+const BENCH_INSTANT = DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' });
+const BENCH_LOCATION = { latitude: 25.3176, longitude: 82.9739 };
+const BENCH_JD_UT = 2_459_205.034_722_222;
+/** TDB Julian day at bench instant (Varanasi 2020-12-21 18:20 IST). */
+const BENCH_JD_TDB = 2_459_205.035_559_346;
+const BENCH_SUN_SIDEREAL_HEX = 'b84932bcd6bf6e40';
 
 function f64Hex(value: number): string {
     const buf = Buffer.alloc(8);
@@ -101,7 +104,7 @@ describe('server-grade PR5 edge and long-range provider', () => {
             return;
         }
         const engine = new EphemerisEngine();
-        const keys = de441ChunkKeysForJdTdb(2_451_153.661_805_555_7);
+        const keys = de441ChunkKeysForJdTdb(BENCH_JD_TDB);
         const store = createDe441ChunkStoreFromMemory(loadNjceWindow(chunkDir, keys));
         engine.setDe441ChunkStore(store);
         await engine.initialize({ kernel: loadKernelBytes() });
@@ -128,7 +131,7 @@ describe('server-grade PR5 edge and long-range provider', () => {
         const chunkDir = chunk441Dir();
         if (!chunkDir) return;
 
-        const jdBench = 2_451_153.661_805_555_7;
+        const jdBench = BENCH_JD_TDB;
         expect(jdBench).toBeGreaterThanOrEqual(DE440S_JD_TDB_START);
         expect(jdBench).toBeLessThanOrEqual(DE440S_JD_TDB_END);
 

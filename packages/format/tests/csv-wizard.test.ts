@@ -104,15 +104,15 @@ Bad,,10:00:00,Asia/Kolkata,13,80
         for (const chart of charts) {
             expect(NjhChartV2Schema.safeParse(chart).success).toBe(true);
         }
-        const chennai = charts.find((c) => c.metadata.name === 'Chennai Sample');
-        expect(chennai?.birth.local.hour).toBe(9);
-        expect(chennai?.birth.timezone).toBe('Asia/Kolkata');
-        expect(chennai?.birth.placeName).toBe('Chennai');
-        expect(chennai?.metadata.sex).toBe('female');
-        const utc = DateTime.fromISO(chennai!.birth.tzResolution.resolvedUtc);
+        const varanasi = charts.find((c) => c.metadata.name === 'Varanasi Sample');
+        expect(varanasi?.birth.local.hour).toBe(18);
+        expect(varanasi?.birth.timezone).toBe('Asia/Kolkata');
+        expect(varanasi?.birth.placeName).toBe('Varanasi');
+        expect(varanasi?.metadata.sex).toBe('female');
+        const utc = DateTime.fromISO(varanasi!.birth.tzResolution.resolvedUtc);
         expect(utc.toMillis()).toBe(
             DateTime.fromObject(
-                { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+                { year: 2020, month: 12, day: 21, hour: 18, minute: 20, second: 0 },
                 { zone: 'Asia/Kolkata' },
             )
                 .toUTC()

@@ -159,6 +159,7 @@ export async function fetchHorizonsFixture(options: FetchOptions = {}): Promise<
             ephemeris,
             queryUrlTemplate: horizonsQueryUrlTemplate(),
             requestParameters: HORIZONS_REQUEST_PARAMS,
+            retrievedAtUtc: new Date().toISOString().slice(0, 10),
         },
     };
 }

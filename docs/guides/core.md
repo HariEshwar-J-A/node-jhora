@@ -182,10 +182,10 @@ structured trace compatible with `.njh` `birth.tzResolution` (`@node-jhora/forma
 import { resolveCivilTime, getTzdbVersion } from '@node-jhora/core';
 
 const { resolvedUtc, julianDayUt, tzResolution, warnings } = resolveCivilTime({
-    local: { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+    local: { year: 2020, month: 12, day: 21, hour: 18, minute: 20, second: 0 },
     timezone: 'Asia/Kolkata',
-    latitude: 13.0827,
-    longitude: 80.2707,
+    latitude: 25.3176,
+    longitude: 82.9739,
     policy: { ambiguous: 'earlier', gap: 'forward' },
 });
 

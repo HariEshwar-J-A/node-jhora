@@ -51,11 +51,12 @@ Your objective is to refactor the `node-jhora` monorepo to achieve 100% mathemat
 
 3. **JHora conventions are choices, not accuracy.** Correct astronomy alone will
    not reproduce JHora. Four discrete settings must also match, and each was
-   confirmed against a real JHora export (2000-01-01, Chennai):
+   confirmed against JHora screen transcription for the fictional Greenwich J2000
+   chart (`2000-01-01_1200_Greenwich`):
 
    | Setting | Default | Evidence it is right |
    |---|---|---|
-   | `AYANAMSA.TRUE_CITRA` (27) | ✔ | JHora prints `23-51-11.00`; engine 0.015″ away |
+   | `AYANAMSA.TRUE_CITRA` (27) | ✔ | JHora prints `23-50-28.91`; engine within budget |
    | `positionMode: 'geometric'` | ✔ | JHora applies **no** light-time or aberration — removing them moves Venus 43.9″, Sun 20.8″, Saturn 7.4″, each onto JHora to 0.01″ |
    | `nodeType: 'true'` | ✔ | mean node misses Rahu by 0.97°; osculating node by 0.12″ |
    | `dasamsaScheme: 'jhora_5_8'` | ✔ | JHora's "D-10 (5-8)": even signs count backward from the 5th sign, degree reversed |
@@ -115,7 +116,9 @@ Please acknowledge these instructions. Begin Phase 1 by searching for the test f
 - **Mathematical Precision:** NEVER use native JavaScript floating-point math for planetary longitudes, Ayanamsa, or divisional charts. ALWAYS use `Decimal.js` (or our designated math library) to prevent precision loss and rounding errors.
 - **Testing:** All logic changes must be verified against **JHora output** for known reference charts. PyJHora's ephemeris values are NOT the standard — only its algorithmic formulas (Varga calculation methods, Dasha cycles, etc.) may be referenced.
 - **Why not PyJHora?** It is a port, not the reference implementation; JHora is. See the note at the top of this file on why the repo's former PyJHora fixture could not support any accuracy claim, and why it was deleted rather than repaired.
-- **Beware second-hand reference values.** JHora's Moon for the 2000-01-01 chart is `24 Ge 30' 39.61"` = 84.511003°, verified against a real export. An earlier revision of this file and its fixtures quoted 84.411° — 6′ low, because the numbers had been generated from an ayanamsa 6′ high rather than read from JHora. Always re-derive from an actual export.
+- **Beware second-hand reference values.** Always store the literal DMS string
+  JHora displays in `jhora_golden.ts` and re-derive from an actual export when
+  adding charts. Do not back-fit ayanamsa constants to one expected Moon longitude.
 
 ## Commands
 

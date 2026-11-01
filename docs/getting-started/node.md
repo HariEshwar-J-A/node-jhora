@@ -13,8 +13,8 @@ const eph = EphemerisEngine.getInstance();
 await eph.initialize();
 
 const planets = eph.getPlanets(
-    '2000-01-01T12:00:00+05:30',
-    { latitude: 13.0827, longitude: 80.2707 },
+    '2020-12-21T18:20:00+05:30',
+    { latitude: 51.476852, longitude: -0.0005 },
     { zodiac: 'sidereal', ayanamsaOrder: 27 },
 );
 console.log(planets.find((p) => p.name === 'Sun')?.longitude);

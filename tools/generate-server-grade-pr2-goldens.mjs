@@ -33,8 +33,8 @@ const {
 const { DateTime } = await import(require.resolve('luxon'));
 
 const BENCH = {
-    instant: DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' }),
-    location: { latitude: 13.0827, longitude: 80.2707 },
+    instant: DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' }),
+    location: { latitude: 25.3176, longitude: 82.9739 },
     dasha: { depth: 5 },
 };
 
@@ -76,7 +76,7 @@ for (const profile of PROFILES) {
         dasha: BENCH.dasha,
         ephemeris: engine,
     });
-    const jd = 2451545.0;
+    const jd = 2459205.034722222;
     const snap = session.collect(['planets', 'houses', 'dasha']);
     const frame =
         profile.precisionProfile === 'modern' || profile.precisionProfile === 'truth'

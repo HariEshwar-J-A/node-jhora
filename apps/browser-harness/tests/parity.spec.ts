@@ -94,21 +94,21 @@ test.describe('browser worker parity', () => {
     }
 
     test('offline reload uses cached ephemeris', async ({ page, context }, testInfo) => {
-        const chennai = jsonFixture.cases['sample-2000'];
+        const varanasi = jsonFixture.cases['varanasi-2020'];
         await page.goto('/');
         await page.evaluate(async (req) => {
             await window.__njhRunHarness(req);
-        }, chennai.request);
+        }, varanasi.request);
 
         await context.setOffline(true);
-        const offlineReq = { ...chennai.request, offline: true };
+        const offlineReq = { ...varanasi.request, offline: true };
         const workerSnapshot = await runWorkerSnapshot(page, offlineReq);
-        const reference = chennai.snapshot;
+        const reference = varanasi.snapshot;
         const engine = testInfo.project.name;
 
         nonNumericParity(reference, workerSnapshot);
 
-        const summary = summarizeParity(engine, 'sample-2000-offline', reference, workerSnapshot);
+        const summary = summarizeParity(engine, 'varanasi-2020-offline', reference, workerSnapshot);
         parityRows.push(summary);
         assertParity(summary, engine === 'chromium');
     });

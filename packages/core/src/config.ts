@@ -186,8 +186,8 @@ export const DEFAULT_CONFIG: JyotishConfig = {
 /**
  * Preset reproducing Jagannatha Hora's own conventions.
  *
- * Verified against a real JHora export (2000-01-01, Chennai): every D1 body to
- * 0.01″, ascendant to 0.00″, D9 to 0.1″, D10 to 0.5″.
+ * Verified against JHora screen transcription (Greenwich J2000, `2000-01-01_1200_Greenwich`):
+ * every D1 body to 0.01″, ascendant to 0.00″, D9 to 0.1″, D10 to 0.5″.
  *
  * Note this deliberately departs from the library default on `dasamsaScheme`,
  * because JHora's D10 variant is not the BPHS rule.

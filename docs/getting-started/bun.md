@@ -13,7 +13,7 @@ import { parseEngineDateTimeOrJsDate } from './dist/validation/input.js';
 const eph = EphemerisEngine.getInstance();
 await eph.initialize();
 const when = parseEngineDateTimeOrJsDate(new Date('2000-01-01T12:00:00.000Z'));
-console.log(eph.getPlanets(when, { latitude: 13.0827, longitude: 80.2707 }).length);
+console.log(eph.getPlanets(when, { latitude: 51.476852, longitude: -0.0005 }).length);
 "
 ```
 

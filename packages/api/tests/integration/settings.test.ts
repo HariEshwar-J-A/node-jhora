@@ -17,10 +17,10 @@ import type { FastifyInstance } from 'fastify';
 let app: FastifyInstance;
 
 const birth = {
-    date: '2000-01-01',
+    date: '2020-12-21',
     time: '10:30:00',
-    latitude: 13.0827,
-    longitude: 80.2707,
+    latitude: 25.3176,
+    longitude: 82.9739,
     timezone: 'Asia/Kolkata',
 };
 

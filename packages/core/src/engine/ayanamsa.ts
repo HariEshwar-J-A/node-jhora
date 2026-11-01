@@ -663,7 +663,7 @@ function getLahiriAyanamsa(jd: number, profile: PrecisionProfile): number {
  *     profile; matches pyswisseph 2.10.03 black-box ayanamsa per mode number).
  *   • `'geometric'` — neither aberration nor deflection. This is the zero point
  *     subtracted from TRUEPOS sidereal planets, and the number JHora prints
- *     for the 1998 reference chart (`23-51-11.00`).
+ *     for the Greenwich J2000 reference chart (`23-50-28.91`).
  *
  * Epoch-defined modes have no star-dependent aberration; `apparent` and
  * `geometric` return the same mean propagated value (same as the modern oracle

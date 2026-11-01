@@ -13,10 +13,10 @@ import {
     settingsForBenchProfile,
 } from './profiles.js';
 
-/** Canonical warm-chart fixture (Chennai reference instant). */
+/** Canonical warm-chart fixture (fictional Varanasi reference from jhora12). */
 export const BENCH_CHART = {
-    instant: DateTime.fromISO('2000-01-01T12:00:00', { zone: 'Asia/Kolkata' }),
-    location: { latitude: 13.0827, longitude: 80.2707 },
+    instant: DateTime.fromISO('2020-12-21T18:20:00', { zone: 'Asia/Kolkata' }),
+    location: { latitude: 25.3176, longitude: 82.9739 },
     settings: 'node-jhora-default' as const,
     dasha: { depth: 3 },
 };
@@ -27,8 +27,8 @@ export const DEEP_ERA_TRUTH_MEAN_NODE_JD_TT = -1_931_455.0;
 export const DISTINCT_JD_PLANET_COUNT = 40;
 export const DISTINCT_JD_PLANET_STEP_DAYS = 3;
 
-/** UT Julian day for the Chennai bench instant (2000-01-01 12:00 IST). */
-export const BENCH_JD_UT = 2_451_153.661_805_555_7;
+/** UT Julian day for the bench instant (2020-12-21 18:20 IST = 12:50 UT). */
+export const BENCH_JD_UT = 2_459_205.034_722_222;
 
 export function benchJulianDayUt(): number {
     return BENCH_JD_UT;

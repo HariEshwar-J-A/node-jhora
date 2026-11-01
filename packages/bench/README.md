@@ -35,4 +35,4 @@ pnpm run bench:check    # re-run benches; fail on >15% p50 regression vs baselin
 pnpm run bench:workers  # worker_threads throughput + RSS (not an absolute CI gate)
 ```
 
-Nine samples per case; full-chart cases use five warm-up iterations before sampling. Chart fixture: 2000-01-01 12:00 Asia/Kolkata, `node-jhora-default`, dasha depth 3.
+Nine samples per case; full-chart cases use five warm-up iterations before sampling. Chart fixture: 2020-12-21 18:20 Asia/Kolkata (Varanasi, jhora12), `node-jhora-default`, dasha depth 3.

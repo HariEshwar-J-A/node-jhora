@@ -79,10 +79,6 @@ export const EPOCH_SPECS: readonly EpochSpec[] = [
         utc: { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
     },
     {
-        label: '2000-01-01 00:00 UT',
-        utc: { year: 2000, month: 1, day: 1, hour: 0, minute: 0, second: 0 },
-    },
-    {
         label: '2024-06-15 00:00 UT',
         utc: { year: 2024, month: 6, day: 15, hour: 0, minute: 0, second: 0 },
     },

@@ -11,7 +11,7 @@ describe('njh round-trip', () => {
         const raw = readFileSync(fixturePath, 'utf8');
         const chart = roundTripNjh(raw);
         expect(chart.metadata.name).toBe('Sample Chart');
-        expect(chart.birth.tzResolution.resolvedUtc).toBe('2000-01-01T12:00:00Z');
+        expect(chart.birth.tzResolution.resolvedUtc).toBe('2020-12-21T12:50:00Z');
         const again = serializeNjh(chart);
         expect(parseNjh(again)).toEqual(chart);
     });
