@@ -1,5 +1,4 @@
-import { Body, getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
-import { Decimal } from 'decimal.js';
+import { Body, Decimal, getShortestDistance, normalize360, PlanetPosition } from '@node-jhora/core';
 
 // ==========================================
 // 1. Dig Bala (Directional Strength)

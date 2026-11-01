@@ -8,9 +8,7 @@
  * INTERNAL:   uses `Decimal` for all division/modulo operations.
  */
 
-import { Decimal } from 'decimal.js';
-
-import { D, normalize360D, toNum } from '../core/precise.js';
+import { D, Decimal, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Public types

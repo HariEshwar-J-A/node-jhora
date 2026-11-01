@@ -13,10 +13,8 @@
  *   Actual planet IDs: [8, 3, 0, 1, 4, 7, 5, 6, 2]
  */
 
-import { Decimal } from 'decimal.js';
-
 import { Body } from '../core/body.js';
-import { D, normalize360D, toNum } from '../core/precise.js';
+import { D, Decimal, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -4,8 +4,7 @@
  * @see docs/decisions/0020-extended-dashas-kalachakra-jaimini-tajika.md
  */
 
-import { type PlanetPosition } from '@node-jhora/core';
-import { Decimal } from 'decimal.js';
+import { Decimal, type PlanetPosition } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 import { DashaPeriod, type VimshottariOptions, yearLength } from '../dasha.js';

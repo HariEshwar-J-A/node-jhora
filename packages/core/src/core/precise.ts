@@ -9,11 +9,15 @@
  * Rounding:  ROUND_HALF_EVEN (banker's rounding — minimises statistical bias).
  */
 
-import { Decimal } from 'decimal.js';
+import { Decimal as DecimalLib } from 'decimal.js';
 
-Decimal.set({ precision: 34, rounding: Decimal.ROUND_HALF_EVEN });
+export type Decimal = InstanceType<typeof DecimalLib>;
 
-export { Decimal };
+/** Configured constructor — no global `Decimal.set` (safe for `sideEffects: false` bundlers). */
+export const Decimal = DecimalLib.clone({
+    precision: 34,
+    rounding: DecimalLib.ROUND_HALF_EVEN,
+}) as typeof DecimalLib;
 
 // ---------------------------------------------------------------------------
 // Constants

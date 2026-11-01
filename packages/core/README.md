@@ -10,7 +10,21 @@ The foundation of the Node-Jhora Vedic astrology engine. Provides high-precision
 npm install @node-jhora/core
 ```
 
-> **Note**: Pure ESM — requires `"type": "module"` in your `package.json`.
+> **Note**: Pure ESM — requires `"type": "module"` in your `package.json`. CommonJS
+> `require()` is not supported on the root export (see ADR 0031). Leaf subpaths
+> `@node-jhora/core/chebyshev` and `@node-jhora/core/vargas` are available for
+> bundlers that want Chebyshev or varga math without the full engine barrel.
+
+## Subpath exports
+
+```typescript
+import { evalRecordAtS } from '@node-jhora/core/chebyshev';
+import { calculateVarga } from '@node-jhora/core/vargas';
+```
+
+The root package still loads the full ephemeris graph (including long-range house
+nutation data). A planets-only entry without the IAU 2000A JSON is not published
+until the engine module graph splits on that path (ADR 0030).
 
 ## Quick Start
 

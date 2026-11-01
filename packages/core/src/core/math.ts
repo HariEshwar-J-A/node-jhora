@@ -8,10 +8,9 @@
  * This module is intentionally kept thin. All heavy lifting lives in precise.ts.
  */
 
-import { Decimal } from 'decimal.js';
-
 import {
     D,
+    Decimal,
     decimalToDmsD,
     dmsToDecimalD,
     midpointD,

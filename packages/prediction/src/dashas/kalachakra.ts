@@ -9,7 +9,7 @@
  * @see docs/decisions/0020-extended-dashas-kalachakra-jaimini-tajika.md
  */
 
-import { Decimal } from 'decimal.js';
+import { Decimal } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 import { type VimshottariOptions, yearLength } from '../dasha.js';

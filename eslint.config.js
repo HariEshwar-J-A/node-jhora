@@ -107,6 +107,24 @@ export default tseslint.config(
         },
     },
     {
+        files: ['packages/**/src/**/*.ts'],
+        ignores: ['packages/core/src/core/precise.ts'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: 'decimal.js',
+                            message:
+                                'Use configured Decimal from @node-jhora/core (core/precise.ts clone).',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         files: ['packages/*/src/**/*.ts'],
         ignores: ['packages/core/src/**'],
         plugins: {

@@ -10,10 +10,9 @@
  * All angle arithmetic uses Decimal.js to eliminate IEEE-754 drift.
  */
 
-import { Decimal } from 'decimal.js';
 import { DateTime } from 'luxon';
 
-import { D, NAKSHATRA_SPAN_D, normalize360D, toNum } from '../core/precise.js';
+import { D, Decimal, NAKSHATRA_SPAN_D, normalize360D, toNum } from '../core/precise.js';
 
 // ---------------------------------------------------------------------------
 // Public types
