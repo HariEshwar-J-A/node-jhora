@@ -10,7 +10,7 @@ Star-defined modes derive longitudes from the catalogue entries in `ayanamsa.ts`
 
 | Mode | Name              | Anchor / definition                                                                                      | Primary source                                   | Max error (kit)                     |
 | ---: | ----------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
-|    0 | Fagan/Bradley     | 24°02′31.36″ @ JD 2433282.5                                                                              | Fagan & Firebrace, _Fixed Zodiac Ephemeris_      | &lt;0.5″ vs SE 2.10                 |
+|    0 | Fagan/Bradley     | 24°02′31.36″ @ JD 2433282.5; IAU 2006 precession                                                         | Fagan & Bradley                                  | ~0.4″ vs pyswisseph 2.10 kernel JDs |
 |    1 | Lahiri            | 22°27′37.76″ @ JD 2415020.0                                                                              | Indian CRC (1955); QJRAS mean ayanamsa           | &lt;0.1″ modern; &lt;0.1″ JHora DLL |
 |    3 | Raman             | (1900−397)×50⅓″ @ JD 2415020.0 + IAU 2006 precession                                                     | B.V. Raman, _Hindu Predictive Astrology_, App. A | &lt;0.2″ vs SE 2.10                 |
 |    5 | KP                | 22°21′50″ @ JD 2415020.0                                                                                 | K.S. Krishnamurti, _Krishnamurti Paddhati_       | &lt;1″ vs SE 2.10                   |
@@ -59,12 +59,11 @@ Raw JSON: `tools/ayanamsa-era-max.json` (regenerate with the script above).
 
 All publicly numbered ayanamsa modes **0–46** are registered in
 `packages/core/src/engine/ayanamsa-registry.ts` with a `source` field citing primary
-literature. **USER (255)** accepts `{ t0Jd, ayanamsaDeg }` plus optional projection flags
-(`AYANAMSA_FLAGS` in `ayanamsa-options.ts`). Design notes and deferred modes (6, 14, 30, 39) are in [ADR 0025](./decisions/0025-full-ayanamsa-catalog.md).
+literature (see table above and ADR 0025). **USER (255)** accepts `{ t0Jd, ayanamsaDeg }` plus optional projection flags
+(`AYANAMSA_FLAGS` in `ayanamsa-options.ts`). Design notes and deferred modes **2, 6, 7, 14, 30, 39** are in [ADR 0025](./decisions/0025-full-ayanamsa-catalog.md).
 
-Kernel-era parity vs pyswisseph 2.10: `ayanamsa-sidm-parity.test.ts` (strict ≤1″ on 32 modes;
-extended ≤1° on the rest). Modes **6, 14, 30, 39** remain implementation gaps pending
-primary-source refinement—not oracle-fitted placeholders.
+Kernel-era parity vs pyswisseph 2.10: `ayanamsa-sidm-parity.test.ts` (strict ≤1″ on modes with
+closed primary definitions; deferred set above).
 
 ## Previously unsupported modes (now registered)
 
