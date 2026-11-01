@@ -39,3 +39,4 @@ log. The clean-room rule those records must respect is
 | [0021](0021-heliocentric-equatorial-output.md)                | Heliocentric and equatorial planet output          | accepted |
 | [0022](0022-makransky-sunshine-wedge.md)                      | Makransky Sunshine wedge (SE letter `i`)           | accepted |
 | [0023](0023-geometric-parallax-long-range.md)                 | Geometric True Citra parallax outside DE440s       | accepted |
+| [0024](0024-cross-library-accuracy-benchmark.md)              | Cross-library ephemeris accuracy benchmark         | accepted |

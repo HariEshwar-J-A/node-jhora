@@ -1,0 +1,11 @@
+{
+    "name": "node-jhora-accuracy-bench",
+    "private": true,
+    "type": "module",
+    "description": "Cross-library ephemeris accuracy benchmark (not published)",
+    "dependencies": {
+        "astronomia": "4.2.0",
+        "astronomy-engine": "2.1.19",
+        "luxon": "3.7.1"
+    }
+}
