@@ -148,7 +148,9 @@ export type {
 } from './engine/provider/index.js';
 export {
     CachingChunkLoader,
+    chunkKeysForJdTdb,
     CompositeEphemerisProvider,
+    createDe441ChunkStoreFromMemory,
     De431ChunkFile,
     De431ChunkStore,
     DE440S_JD_TDB_END,
@@ -158,11 +160,14 @@ export {
     DE441_NATIVE_JD_TDB_END,
     DE441_NATIVE_JD_TDB_START,
     De441ChunkFile,
+    de441ChunkKeysForJdTdb,
     De441ChunkStore,
     De441LongEphemerisProvider,
     fetchChunkLoader,
+    inMemoryChunkLoader,
     NJCE_TT_JD_MAX_REQUIRED,
     NJCE_TT_JD_MIN_REQUIRED,
+    njceMapKey,
     nodeFsChunkLoader,
 } from './engine/provider/index.js';
 export type {
@@ -212,6 +217,7 @@ export {
     njcePackageStartYear,
     sha256HexAsync,
     verifyEphemerisBytes,
+    verifyEphemerisBytesSync,
     verifyingChunkLoader,
 } from './ephemeris-data/index.js';
 export { isNodeJHoraError, NodeJHoraError, NodeJHoraErrorCode } from './errors.js';

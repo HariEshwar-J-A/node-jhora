@@ -36,19 +36,81 @@ export type ChunkUrlBuilder = (key: ChunkKey) => string;
 /**
  * In-memory cache over an async loader (works in Node and workers).
  */
+function chunkCacheId(key: ChunkKey): string {
+    return `${key.groupId}:${key.century}`;
+}
+
 export class CachingChunkLoader implements EphemerisChunkLoader {
     private readonly cache = new Map<string, ArrayBuffer>();
 
     constructor(private readonly inner: EphemerisChunkLoader) {}
 
     async load(key: ChunkKey): Promise<ArrayBuffer | undefined> {
-        const id = `${key.groupId}:${key.century}`;
+        const id = chunkCacheId(key);
         const hit = this.cache.get(id);
         if (hit) return hit;
         const buf = await this.inner.load(key);
         if (buf) this.cache.set(id, buf);
         return buf;
     }
+
+    loadSync(key: ChunkKey): ArrayBuffer | undefined {
+        const id = chunkCacheId(key);
+        const hit = this.cache.get(id);
+        if (hit) return hit;
+        const buf = this.inner.loadSync?.(key);
+        if (buf) this.cache.set(id, buf);
+        return buf;
+    }
+}
+
+/**
+ * Synchronous loader over bytes the caller already holds (embed, fetch, R2, KV).
+ * Keys use {@link chunkCacheId} (`groupId:century`).
+ */
+export function inMemoryChunkLoader(
+    chunks: ReadonlyMap<string, ArrayBuffer> | Record<string, ArrayBuffer>,
+): EphemerisChunkLoader {
+    const map = chunks instanceof Map ? chunks : new Map(Object.entries(chunks));
+    return {
+        loadSync(key) {
+            return map.get(chunkCacheId(key));
+        },
+        async load(key) {
+            return map.get(chunkCacheId(key));
+        },
+    };
+}
+
+/** NJCE filenames use `g{group}-c{century}.njce`; map keys use `groupId:century`. */
+export function njceMapKey(groupId: number, century: number): string {
+    return chunkCacheId({ groupId, century });
+}
+
+/**
+ * Julian-century NJCE keys needed for synchronous `getPlanets` at `jdTdb`
+ * (includes ±1 century neighbours and motion margin).
+ */
+export function chunkKeysForJdTdb(
+    jdTdb: number,
+    bounds: { minCentury: number; maxCentury: number },
+    marginDays = CHUNK_PREFETCH_MARGIN_DAYS + PLANET_SPEED_STEP_DAYS,
+): ChunkKey[] {
+    const lo = jdTdb - marginDays;
+    const hi = jdTdb + marginDays;
+    const centuries = new Set<number>();
+    for (const jd of [lo, jdTdb, hi]) {
+        centuries.add(centuryIndex(jdTdbToAstronomicalYear(jd)));
+    }
+    const keys: ChunkKey[] = [];
+    for (const cent of centuries) {
+        for (const c of [cent - 1, cent, cent + 1]) {
+            if (c < bounds.minCentury || c > bounds.maxCentury) continue;
+            keys.push({ century: c, groupId: BODY_GROUP_PLANETS });
+            keys.push({ century: c, groupId: BODY_GROUP_EMB });
+        }
+    }
+    return keys;
 }
 
 let syncFs: typeof import('fs') | undefined;
@@ -153,6 +215,13 @@ export class De431ChunkStore {
 
     get(century: number, groupId: number): De431ChunkFile | undefined {
         return this.files.get(`${groupId}:${century}`);
+    }
+
+    /**
+     * Inject pre-fetched `.njce` bytes (edge embed / KV) without reading the filesystem.
+     */
+    seedChunk(century: number, groupId: number, bytes: ArrayBuffer): void {
+        this.files.set(`${groupId}:${century}`, new De431ChunkFile(bytes));
     }
 
     /**

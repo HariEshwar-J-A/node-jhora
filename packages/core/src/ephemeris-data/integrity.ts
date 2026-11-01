@@ -37,6 +37,31 @@ export async function sha256HexAsync(bytes: Uint8Array): Promise<string> {
     return sha256Hex(bytes);
 }
 
+/** Throw unless `bytes` has the entry's exact length and SHA-256 (sync digest). */
+export function verifyEphemerisBytesSync(
+    entry: EphemerisFileEntry,
+    bytes: Uint8Array | ArrayBuffer,
+    source?: string,
+): void {
+    const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const from = source ? ` from ${source}` : '';
+    if (view.byteLength !== entry.bytes) {
+        throw new EphemerisIntegrityError(
+            `${entry.file}${from}: expected ${entry.bytes} bytes, got ${view.byteLength}`,
+            entry.file,
+            source,
+        );
+    }
+    const digest = sha256Hex(view);
+    if (digest !== entry.sha256) {
+        throw new EphemerisIntegrityError(
+            `${entry.file}${from}: SHA-256 mismatch (expected ${entry.sha256}, got ${digest})`,
+            entry.file,
+            source,
+        );
+    }
+}
+
 /** Throw unless `bytes` has the entry's exact length and SHA-256. */
 export async function verifyEphemerisBytes(
     entry: EphemerisFileEntry,
@@ -94,6 +119,20 @@ export function verifyingChunkLoader(
             await verifyEphemerisBytes(entry, buf, options.source);
             return buf;
         },
+        loadSync(key) {
+            const buf = inner.loadSync?.(key);
+            if (!buf) return undefined;
+            const entry = entryFor(key);
+            if (!entry) {
+                throw new EphemerisIntegrityError(
+                    `no manifest entry for chunk g${key.groupId}-c${key.century}`,
+                    `g${key.groupId}-c${key.century}.njce`,
+                    options.source,
+                );
+            }
+            verifyEphemerisBytesSync(entry, buf, options.source);
+            return buf;
+        },
     };
 }
 
@@ -108,6 +147,13 @@ export function firstAvailableChunkLoader(
         async load(key) {
             for (const loader of loaders) {
                 const buf = await loader.load(key);
+                if (buf) return buf;
+            }
+            return undefined;
+        },
+        loadSync(key) {
+            for (const loader of loaders) {
+                const buf = loader.loadSync?.(key);
                 if (buf) return buf;
             }
             return undefined;
