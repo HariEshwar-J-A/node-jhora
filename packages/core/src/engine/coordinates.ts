@@ -20,6 +20,7 @@ import {
     matTransposeVec,
     matVec,
     meanObliquity,
+    meanObliquityForProfile,
     precessionMatrix,
     rotateX,
     type Vec,
@@ -215,7 +216,7 @@ export function getGAST(
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
     const { dpsi, deps } = nutationForProfile(T, profile);
-    const epsTrue = meanObliquity(T, jdTT) + deps;
+    const epsTrue = meanObliquityForProfile(T, jdTT, profile) + deps;
     return mod360(getGMST(jdUT) + dpsi * Math.cos(epsTrue * DEG));
 }
 
@@ -226,7 +227,7 @@ export function trueObliquity(
 ): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
-    return meanObliquity(T, jdTT) + nutationForProfile(T, profile).deps;
+    return meanObliquityForProfile(T, jdTT, profile) + nutationForProfile(T, profile).deps;
 }
 
 // ---------------------------------------------------------------------------

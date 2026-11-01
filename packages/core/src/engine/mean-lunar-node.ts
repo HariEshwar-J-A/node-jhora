@@ -9,13 +9,14 @@
  */
 
 import { mod360 } from './coordinates.js';
+import { de441SecularMeanNodeDeg } from './de441-mean-lunar-node.js';
 import type { PrecisionProfile } from './deltat.js';
 import { julianCenturies } from './precession.js';
 
 const J2000_JD = 2451545.0;
 
 /** IERS Conventions (2010) Ω (`faom03`, Simon et al. 1994). */
-function meanLunarNodeFaom(T: number): number {
+export function meanLunarNodeFaomAtT(T: number): number {
     const omAs =
         (((450160.398036 + T * (-6962890.5431 + T * (7.4722 + T * (0.007702 + T * -0.00005939)))) %
             1296000) +
@@ -38,9 +39,9 @@ export function meanLunarNodeMeeus(T: number): number {
     );
 }
 
-/** Approximate Gregorian year from TT Julian day (proleptic). */
+/** Proleptic astronomical year from TT (365.25-day year, deep-era plan step 4). */
 export function gregorianYearFromJdTT(jdTT: number): number {
-    return 2000 + julianCenturies(jdTT) * 100;
+    return 2000 + (jdTT - J2000_JD) / 365.25;
 }
 
 /**
@@ -60,7 +61,16 @@ export function meanLunarNodeFromJdTT(jdTT: number): number {
 /** Mean node at TT Julian day for a precision profile. */
 export function meanLunarNodeFromJdTTForProfile(jdTT: number, profile: PrecisionProfile): number {
     const T = julianCenturies(jdTT);
-    return profile === 'truth' ? meanLunarNodeFaom(T) : meanLunarNodeMeeus(T);
+    if (profile !== 'truth') {
+        return meanLunarNodeMeeus(T);
+    }
+    const year = gregorianYearFromJdTT(jdTT);
+    if (year >= -500 && year <= 5000) {
+        return meanLunarNodeFaomAtT(T);
+    }
+    const de = de441SecularMeanNodeDeg(jdTT);
+    if (de !== null) return de;
+    return meanLunarNodeFaomAtT(T);
 }
 
 /** Degrees per day (TT) for the mean node at `jdTT`. */

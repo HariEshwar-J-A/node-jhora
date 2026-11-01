@@ -288,7 +288,7 @@ export const STARS: Record<string, StarData> = {
 
 /** True Chitrapaksha Spica catalogue entry for a precision profile (ADR 0015). */
 export function spicaForProfile(profile: PrecisionProfile): StarData {
-    return profile === 'modern' ? SPICA_MODERN : SPICA_JHORA;
+    return profile === 'modern' || profile === 'truth' ? SPICA_MODERN : SPICA_JHORA;
 }
 
 function starDataForModel(starKey: keyof typeof STARS, profile: PrecisionProfile): StarData {

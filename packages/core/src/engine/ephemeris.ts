@@ -109,6 +109,8 @@ import {
     trueObliquity,
     wholeSignCusps,
 } from './coordinates.js';
+import { setDe441MeanNodeSampler } from './de441-mean-lunar-node.js';
+import { createDe441NjceMeanNodeSampler } from './de441-njce-mean-node.js';
 import {
     deltaT,
     type DeltaTContext,
@@ -1316,6 +1318,8 @@ export class EphemerisEngine {
                     ayanamsaOffset +
                     nutationForProfile(T, effectiveProfile).dpsi;
             }
+        } else if (truth) {
+            ayaEx = this.ayanamsaAt(mode, jd, 'apparent', 'truth', ayanOpts) + ayanamsaOffset;
         } else {
             ayaEx = this.ayanamsaAt(mode, jd, 'geometric', 'jhora', ayanOpts) + ayanamsaOffset;
         }
@@ -1442,6 +1446,17 @@ export class EphemerisEngine {
                 : undefined,
         });
         this.source = this.composite;
+        this.attachDe441MeanNodeSampler();
+    }
+
+    private attachDe441MeanNodeSampler(): void {
+        if (this.chunkStoreDe441) {
+            setDe441MeanNodeSampler(
+                createDe441NjceMeanNodeSampler(this.chunkStoreDe441.asGetter()),
+            );
+            return;
+        }
+        setDe441MeanNodeSampler(null);
     }
 
     /** Fail fast when a date needs long-range NJCE data that is not resident. */

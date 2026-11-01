@@ -1,0 +1,124 @@
+{
+  "description": "Truth deep-era oracle (pyerfa + independent DE441 BSP reference)",
+  "generator": "bench/truth-profile/generate_deep_era_fixture.py",
+  "toleranceArcsec": 0.0001,
+  "nodeToleranceArcsec": 0.001,
+  "cases": [
+    {
+      "id": "y_minus_3000",
+      "jdUt": 625674.0,
+      "deltaTSeconds": 64200.0,
+      "jdTT": 625674.7430555555,
+      "inIau2006Window": false,
+      "poleObliquityDeg": 24.01938869811269,
+      "faom03MeanNodeDeg": 336.5654135049383,
+      "icrfEquinoxLonDeg": 290.89418079457727
+    },
+    {
+      "id": "y_minus_7500",
+      "jdUt": 168453.5,
+      "deltaTSeconds": 64200.0,
+      "jdTT": 168454.24305555556,
+      "inIau2006Window": false,
+      "poleObliquityDeg": 24.116704118323117,
+      "faom03MeanNodeDeg": 70.63114695542389,
+      "icrfEquinoxLonDeg": 273.78036782788274
+    },
+    {
+      "id": "y_plus_5000",
+      "jdUt": 2087130.5,
+      "deltaTSeconds": 64200.0,
+      "jdTT": 2087131.2430555555,
+      "inIau2006Window": false,
+      "poleObliquityDeg": 23.568528136043906,
+      "faom03MeanNodeDeg": 342.32928011534113,
+      "icrfEquinoxLonDeg": 346.09356258464607
+    },
+    {
+      "id": "y_minus_500",
+      "jdUt": 1927130.5,
+      "deltaTSeconds": 60.0,
+      "jdTT": 1927130.5006944444,
+      "inIau2006Window": false,
+      "poleObliquityDeg": 23.624412144053526,
+      "faom03MeanNodeDeg": 175.18748681609415,
+      "icrfEquinoxLonDeg": 340.00683605956164
+    }
+  ],
+  "de441MeanNode": [
+    {
+      "id": "y_minus_10000",
+      "prolepticYear": -10000,
+      "jdTT": -1931455.0,
+      "meanNodeDeg": 45.162904649980355,
+      "faom03MeanNodeDeg": 44.16696767667929
+    },
+    {
+      "id": "y_minus_7500",
+      "prolepticYear": -7500,
+      "jdTT": -1018330.0,
+      "meanNodeDeg": 283.97255875725784,
+      "faom03MeanNodeDeg": 283.54381740758816
+    },
+    {
+      "id": "y_minus_5000",
+      "prolepticYear": -5000,
+      "jdTT": -105205.0,
+      "meanNodeDeg": 163.78081709956345,
+      "faom03MeanNodeDeg": 163.62345976000032
+    },
+    {
+      "id": "y_minus_3000",
+      "prolepticYear": -3000,
+      "jdTT": 625295.0,
+      "meanNodeDeg": 356.7326017112147,
+      "faom03MeanNodeDeg": 356.6761432044539
+    },
+    {
+      "id": "y_minus_1000",
+      "prolepticYear": -1000,
+      "jdTT": 1355795.0,
+      "meanNodeDeg": 190.94387348640834,
+      "faom03MeanNodeDeg": 190.92933642667202
+    },
+    {
+      "id": "y_plus_5500",
+      "prolepticYear": 5500,
+      "jdTT": 3729920.0,
+      "meanNodeDeg": 112.86797195237284,
+      "faom03MeanNodeDeg": 112.8849821297907
+    },
+    {
+      "id": "y_plus_7500",
+      "prolepticYear": 7500,
+      "jdTT": 4460420.0,
+      "meanNodeDeg": 313.964000369583,
+      "faom03MeanNodeDeg": 314.03386032422384
+    },
+    {
+      "id": "y_plus_10000",
+      "prolepticYear": 10000,
+      "jdTT": 5373545.0,
+      "meanNodeDeg": 207.63497296706925,
+      "faom03MeanNodeDeg": 207.84717767665782
+    },
+    {
+      "id": "kernel_tt_min",
+      "prolepticYear": -9999.82369779519,
+      "jdTT": -1931390.605619693,
+      "meanNodeDeg": 41.752166680997014,
+      "faom03MeanNodeDeg": 40.756528539690706
+    },
+    {
+      "id": "kernel_tt_max",
+      "prolepticYear": 10000.714992876354,
+      "jdTT": 5373806.151148088,
+      "meanNodeDeg": 193.80821825721753,
+      "faom03MeanNodeDeg": 194.02066789027717
+    }
+  ],
+  "faom03WindowYears": [
+    -500,
+    5000
+  ]
+}

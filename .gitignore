@@ -64,3 +64,4 @@ de431*.bsp
 
 # Staged data packages (packages/ephe-long/scripts/stage-data-packages.mjs)
 .release/
+packages/ephe441/.cache/

@@ -60,9 +60,7 @@ export class De441LongEphemerisProvider implements EphemerisProvider {
     ) {}
 
     private resolveChunk(nominalCentury: number, groupId: number, et: number): De431ChunkFile {
-        const candidates = [nominalCentury, nominalCentury - 1, nominalCentury + 1].filter(
-            (c) => c >= NJCE441_MIN_CENTURY && c <= NJCE441_MAX_CENTURY,
-        );
+        const candidates = [nominalCentury, nominalCentury - 1, nominalCentury + 1];
         for (const c of candidates) {
             const chunk = this.getChunk(c, groupId);
             if (chunk?.coversGroupAtEt(groupId, et)) return chunk;
