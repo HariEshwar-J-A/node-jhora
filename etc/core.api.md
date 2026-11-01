@@ -5,7 +5,7 @@
 ```ts
 
 import { DateTime } from 'luxon';
-import { Decimal } from 'decimal.js';
+import { Decimal as Decimal_2 } from 'decimal.js';
 import { z } from 'zod';
 
 // @public (undocumented)
@@ -474,7 +474,7 @@ export type DasamsaScheme = 'parashara' | 'jhora_5_8';
 export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
 // @public
-export const DASHA_YEAR_DAYS: Decimal;
+export const DASHA_YEAR_DAYS: Decimal_2;
 
 // @public
 export function dateTimeToJulianDayUt(date: DateTime, options?: {
@@ -599,6 +599,12 @@ export class De441LongEphemerisProvider implements EphemerisProvider {
     // (undocumented)
     state(jdTdb: number, body: EphemerisBodyId, frame: EphemerisFrame): EphemerisState;
 }
+
+// @public (undocumented)
+export type Decimal = InstanceType<typeof Decimal_2>;
+
+// @public
+export const Decimal: typeof Decimal_2;
 
 // @public
 export function decimalToDms(deg: number): {

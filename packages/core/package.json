@@ -2,12 +2,26 @@
     "name": "@node-jhora/core",
     "version": "3.1.0",
     "type": "module",
+    "sideEffects": [
+        "./dist/index.js",
+        "./dist/engine/provider/chunk-loader.js",
+        "./dist/ephemeris-data/manifest.js",
+        "./dist/ephemeris-data/manifest.de441.js"
+    ],
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
+        },
+        "./chebyshev": {
+            "types": "./dist/engine/chebyshev.d.ts",
+            "import": "./dist/engine/chebyshev.js"
+        },
+        "./vargas": {
+            "types": "./dist/vedic/vargas.d.ts",
+            "import": "./dist/vedic/vargas.js"
         },
         "./browser": "./dist/browser/index.js",
         "./node/register": {

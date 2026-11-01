@@ -14,11 +14,11 @@
  */
 
 import {
+    Decimal,
     describeCalculation,
     LEGACY_DASHA_YEAR_DAYS_TEXT,
     type SettingsInput,
 } from '@node-jhora/core';
-import { Decimal } from 'decimal.js';
 import { DateTime } from 'luxon';
 
 // ---------------------------------------------------------------------------

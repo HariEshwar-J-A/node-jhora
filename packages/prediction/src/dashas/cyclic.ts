@@ -1,4 +1,4 @@
-import { Decimal } from 'decimal.js';
+import { Decimal } from '@node-jhora/core';
 import { DateTime } from 'luxon';
 
 import { DashaPeriod, VimshottariOptions, yearLength } from '../dasha.js';

@@ -62,7 +62,14 @@ export type {
 
 // Re-export Utils
 export { decimalToDms, dmsToDecimal, getShortestDistance, normalize360 } from './core/math.js';
-export { D, DASHA_YEAR_DAYS, NAKSHATRA_SPAN_D, normalize360D, toNum } from './core/precise.js';
+export {
+    D,
+    DASHA_YEAR_DAYS,
+    Decimal,
+    NAKSHATRA_SPAN_D,
+    normalize360D,
+    toNum,
+} from './core/precise.js';
 export {
     Body,
     BODY_ASHTAKAVARGA_LAGNA_DONOR,

@@ -40,3 +40,4 @@ log. The clean-room rule those records must respect is
 | [0022](0022-makransky-sunshine-wedge.md)                      | Makransky Sunshine wedge (SE letter `i`)           | accepted |
 | [0023](0023-geometric-parallax-long-range.md)                 | Geometric True Citra parallax outside DE440s       | accepted |
 | [0024](0024-cross-library-accuracy-benchmark.md)              | Cross-library ephemeris accuracy benchmark         | accepted |
+| [0031](0031-subpath-exports-and-esm-only.md)                  | Subpath exports (chebyshev, vargas) and ESM-only   | accepted |

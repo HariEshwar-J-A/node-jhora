@@ -1,0 +1,216 @@
+{
+    "capturedFrom": "origin/main @ de758a3 (global Decimal.set via @node-jhora/core load); kalachakra digested as UTC epoch ms",
+    "serializationNote": "Kalachakra antardasha toISO() uses the process local zone; identity hashes UTC instants only.",
+    "cases": {
+        "sample-2000": {
+            "cyclicAshtottari": "d5cab292df6932f4f8a510b85192999a543aa7f673ef979e44fe13c5123d5327",
+            "cyclicShatabdika": "c6326f1a2889645cdda065cb842023bd4d5a69f1f22bbb8817e7a8bcd696b943",
+            "tithiAshtottari": "2fb1800e160070701c8884174d2a8e1a17d3c5cf30e1bfa483e93bf82f27ba3b",
+            "kalachakra": "8212b7cdb809c300985f6cb59b07f93055e9ffc10562ffeb6ee6e6bcccbad349",
+            "moolaDasha": "306341d597ce8e218ac7047637b399b76c6825fde3a1718f308e451bf2975486",
+            "drigDasha": "1874e517484b548bf40e2d151904120cfa1cb90586282ec557c627000a12bd16",
+            "sudasaDasha": "39a30a9a2af2779f058e71d2abf72756180b3b1ee25228261b757dc79fc725ba",
+            "shadbalaTime": "31fce044c9259ce36c4bfc38ef55572ab849c9844d59404b589eb32c92ef8808"
+        },
+        "leap-2000-utc": {
+            "cyclicAshtottari": "5e67d86bd3f7b31570eba39730b683587e04f10e36c30cace9fcb09e2e71bad3",
+            "cyclicShatabdika": "158d2d540670af7380cf62a964e1bcbe74251b42578fd2e844ed69fb91aa825c",
+            "tithiAshtottari": "e350df303729b2a7c37634509ded24f081a2219ce593b947cfec741f322a369b",
+            "kalachakra": "c2edf2c5742d1e056b804c81a102019f2ccec402a6045118fc0e6432ca2edfdb",
+            "moolaDasha": "bf25885a0e87565a2659347d2c6fce6c1a77f944cecbe1b6aceebd4cd6650095",
+            "drigDasha": "c307ccf460819ffb6fe3841dde617da29c497814708a9af3ddcc99b8060a3814",
+            "sudasaDasha": "68fa24a9ebb53c8cc9b03ec5c0f9dbb379ac6a4efc3ddc7de7d643af0422126c",
+            "shadbalaTime": "539e1fce4a073d907864300b57e85a40621f50524213958b84036eea8241e93d"
+        },
+        "leap-2000-kolkata": {
+            "cyclicAshtottari": "7a3027f4b3548ee4d0cfac6b00704b2de5e62872cd56f9c149228fee4882af0f",
+            "cyclicShatabdika": "612d1e1567325bc60968539d3e01332d9f9970d6471153287b05c019c7bdb24f",
+            "tithiAshtottari": "95d8beda756a536cbc21ac227cbbc7032e907530eaae00344b1b795ff4288be3",
+            "kalachakra": "a325aac2f498601c813daab638cb54a3ac08cb153ede29516422bef5b81183d6",
+            "moolaDasha": "fd5d7b30da1a4ab38c19d4eaefbdb0cbbb0d705dfad92a51008c89e68d21b22b",
+            "drigDasha": "d2e90517f0497de6ad97ea4d59674aa6d5e4ad5282ff2ba90b3b1db738328d42",
+            "sudasaDasha": "e712d668f9ab97ed0a14676268f43254102a1b3d849f43134db8c8c41f06831b",
+            "shadbalaTime": "b230329ba00fbe49ea1c9f52955d57711b62b7ef6b275c7754e47ca7482717cc"
+        },
+        "dst-us-fall-2021": {
+            "cyclicAshtottari": "4b1636c8cadc068a49014df00a2fcc984bfa023cb31f76d2792f9d9f59a61ddd",
+            "cyclicShatabdika": "3de5f12638126a7add59f369c7b2705bb465de708969623bfc7b7f6a9c3e300c",
+            "tithiAshtottari": "2eb65996887c6fa6a1a7e93f24aa978ed8382a23a04070fed132dce46ac4a1e0",
+            "kalachakra": "b11a9e8afcdd84ef138d9f602c8cb29cd0fa26109b54a50eb68add4f5b8f0e3a",
+            "moolaDasha": "6f8beab4c9463f50d520fecc1e3206d9c8c0dc4d2db0caa0ca60d507b9c59e2f",
+            "drigDasha": "73b7ffc0645fdeb365985cb1fa82b302d0f4fe5f848fda54a93bb88fa775bbcf",
+            "sudasaDasha": "aeff8eb5f9f2021b795953e604bea63b62df15849a04f3e69fbcc8117677f254",
+            "shadbalaTime": "23cd2f81f64b175a85fd2551b9d1acf82bf9cc4ef6fe17ed7bcbfc02d77ead7e"
+        },
+        "dst-us-spring-2021": {
+            "cyclicAshtottari": "9ba620fdbc54ac221c8df5f4e4af6698adcc78c85d5a4619329bf1c29593e7fe",
+            "cyclicShatabdika": "ca7a920f57586d72b2402dbab9ae1f2a0f1484b6042af687f538fda5e04f74f1",
+            "tithiAshtottari": "bfde4d3c0c02242539dfa7a4ba7f0e3162ab540891e1fe554409f6e502f179bf",
+            "kalachakra": "0773216b909f5569a0ecf99af57be67ad74c692d98fe93c5e7a82b5dc3a3a16f",
+            "moolaDasha": "0e43b75b5bcc290e8c57a5b320432bbbd42defd400b07910b7912ee2cbf72557",
+            "drigDasha": "7e40133f44ed50d1f236cde4e7839c62c0eb62bcc213d2427cb90915ab933049",
+            "sudasaDasha": "d7c41c2db524636942289983c79007a9770bca836dd9a45ceda4eec6348223a4",
+            "shadbalaTime": "d9c3eb69d294dfd8cfff464f83b1afa25c9abab4762e6a2ebab7cbfbf883dc99"
+        },
+        "dst-eu-2024": {
+            "cyclicAshtottari": "40b6034e1a2f7631179bd3005dc611a38b3d1f1c3059964daa456f73e163e1ba",
+            "cyclicShatabdika": "fa9c346dffb6455bbae7d76546ad03a24b5c196cb8bef74fa76510ee8c7daaff",
+            "tithiAshtottari": "be89501f9420ac7443250bbda132ab066b150cfffcfc4e8c0f2983bc2ac8af74",
+            "kalachakra": "565f6138f2392b27b49879a77838866e112e45e8d65f94197e21418ccc281ee2",
+            "moolaDasha": "117d508f2f2503a525303fe9e32941f37feada583c6c73c3927bbd73fc8102c3",
+            "drigDasha": "cfe660d6409a0af389867edd211fb2bfbe44c745816c181782bfe084ace1a1b7",
+            "sudasaDasha": "c9b30aa0a8411f872532f7f0e1e7612848d43b1aca5647f298b7edf7468431b0",
+            "shadbalaTime": "c9f0c7f22a541d58a57353080f105ae224440a157a1191e97c04ba8bec64f60a"
+        },
+        "pre-1900-1850": {
+            "cyclicAshtottari": "b974f279d630722acc597aae3493ed6cfd3c5b36586468923d314c1bb86242f6",
+            "cyclicShatabdika": "ce556dfba187af30f66c86f8c3c941a0ade3abb063d05542874df55b4dbe32b0",
+            "tithiAshtottari": "6ede824d57f68c0e1a1e76da4931d6bb5b6e9c65ef3025fb469f3de2a63410c6",
+            "kalachakra": "8cf82b0c7309872f4cd57a537dd2929f1d56d6683059f68c7d95fee297bdbb7a",
+            "moolaDasha": "19ac5c83537909396ba0ba386dc5d4536041393c18044180c4ae7e20ac2788e8",
+            "drigDasha": "287c0156babf38753a111e24c8e6df451ef4b1d6f92a0a9c4108c8b366bc2a15",
+            "sudasaDasha": "8790f1474d0dd4be5aa6efc53114aa2f72d519e5822dd02ded0d433fabdd1dd2",
+            "shadbalaTime": "a2b72e378acb1c7f8789f2158f04b3f121bade1e2bfe2f7de248619a7a7f8b58"
+        },
+        "kernel-start-1850": {
+            "cyclicAshtottari": "2aa57c6458f6a16275176d2badd43bec666d716f0ebd6f2e14948b12708e3a7a",
+            "cyclicShatabdika": "8ca705c07f3592454a6879fd4208b5cda017267f0f0fac29c2a9d8b1aa56c830",
+            "tithiAshtottari": "d733b557d61d811ee188d462897d772266a55efb2d7af9a1235d41dc32f67353",
+            "kalachakra": "dc355ecc9ac7a824dadaf0aabe4d0cc6efdb980dde6d4fe098f79d42bb593bde",
+            "moolaDasha": "ab33e78a8279a38a0f0c3dafd2f5c8a63d6a239aae30f44ec7d4f4dc70c76691",
+            "drigDasha": "5d83885713bea8048b20e4f2203341da2d6d95424b410a1f9469e5bebd4a63bf",
+            "sudasaDasha": "da05f2291b05148caf027b6879f488f180bdf519dd24b493bae52fdd3feb43f0",
+            "shadbalaTime": "be10aa391ca1b80003a95ea4084e03e9043aa00df1e6b70391b4d22a5caceb95"
+        },
+        "future-2050": {
+            "cyclicAshtottari": "d7c5119361ee88d4aff52e0cb8e8e0ae86119bce5c6d4592ef7ef8783ca1a6a6",
+            "cyclicShatabdika": "2a0c2ade23e02bbcc0a22289cb42face1e5c4f39b5068742148906aceae9ace7",
+            "tithiAshtottari": "8d1be4be32b7b26e67574e162740eff4970dff8dab97a8c4ced079e2c2d1d25d",
+            "kalachakra": "291b66aad1a07df1e7c70f7386813b44fecb703aa136d06dd81e1b2f84d11971",
+            "moolaDasha": "f4696adaeda0b020a93293a5d49f1143f641904e900c9115e802e145415f8883",
+            "drigDasha": "afe3ac52b2330beaa1b80090056aa2b2633a6c546d7f13085a1b36d89bf038b7",
+            "sudasaDasha": "38c6e61fa5220f0207627668d467cdd398af93d8417818ccb91517dc7f12fc50",
+            "shadbalaTime": "2801cc1649ba5dd6c2a145288665dc39d0e0247a14b3202376f75d0b0ce8580b"
+        },
+        "kernel-end-2149": {
+            "cyclicAshtottari": "dd86ed28a289e2d3ede7d0ff595cdb3d8f2cec513ea9cbdc66506f79d5410fe1",
+            "cyclicShatabdika": "146cc9607f55dd2eec79af571f6cc9ea403850edf1bc2da4f18a178c2905f12e",
+            "tithiAshtottari": "27dc30435b53b21ae0635fedf67ad807b33f7d2ccbeab61a0ca5a61e60b08d4c",
+            "kalachakra": "c8fa7fe3b2aa80357d4998304c212e89451c1b3e09d37b47cd20145e89858950",
+            "moolaDasha": "232d3f9c40fe5df38684a4e1558ba9316026e5581234fc07b35615a2ff633022",
+            "drigDasha": "7f6b32b1ff9d4c6ab9ef4dc0c5af8ca7f7b4a40c1541303c9a619cad13ad1749",
+            "sudasaDasha": "cf45e8e21aeee258fb1c7af2c56a2ced5398f23e679ac8ff278b58b988fa1b0c",
+            "shadbalaTime": "1f1bb6ac0f183a21d327e81122afe29c493b95bf07b85629c155e12e62513166"
+        },
+        "south-pole-ish": {
+            "cyclicAshtottari": "89d1ca5b297deb0b1dd08aec4646193374489373f428cfcb762e3ee60e8acd8d",
+            "cyclicShatabdika": "9ff5e2c27ebe74a0071dd37916f1e47ef7fe2c6fceeb8c489ad49462a26b7679",
+            "tithiAshtottari": "bf6a9b9e2caa05aa6c0b80c6318d9c89cba62034ac948ccfd20fb70b99bd2c6b",
+            "kalachakra": "1545807b0bf1486f08fa32c9948f68fb68f95c4b10271189ba6dc764fee6e3ab",
+            "moolaDasha": "2cd6f0db2c3f47fec037dbef8294bf8395a9faf3a7e0772e30555d07f6c0c613",
+            "drigDasha": "0d34c93115ca369040788c7ba59763810b1ca88bf0e993b63f0c1f814aff2709",
+            "sudasaDasha": "ab55cfb83f759f0cc9c3ca3416e5b4c5b95f6e8484196b893e28dcb609393388",
+            "shadbalaTime": "6548c2d2178455df1db0d7e1b23059a13df8db16cfbc4546a8db9581585df06e"
+        },
+        "north-high-lat": {
+            "cyclicAshtottari": "fc1da7df3a27f38d0ab36cd421650d3e1426b68986844bc6ff5f8d24937b361b",
+            "cyclicShatabdika": "ba1b70d74aed4424059071ec3bcc62c8542028ec7754f001f5383bbc20589ae4",
+            "tithiAshtottari": "8e4bcc86b7cdbc4df9e9e12111ff1acd79c92741a34307e8181698fcafeb3856",
+            "kalachakra": "47e063a51d733c4296e82e08cfa6df36c6af52e02cf60e1bb73f4bdbacb54519",
+            "moolaDasha": "8df03cab6a168cda0a8a5867eb2aaa84cd994136fd124c2da13127b35b03a0aa",
+            "drigDasha": "48d5bebdee1a9b66e5506b916242c304d34d4c9a19140d68446bab39940afb6a",
+            "sudasaDasha": "06427fa082f521690d0040e5c7f857c32f6f72152075fc8f70009d19bf0fe0ee",
+            "shadbalaTime": "d4fa38866ab8ddeaaba8e99e044ec9097f94b2cd73d07d6462ac1f610e4f3c8b"
+        },
+        "sydney-2016": {
+            "cyclicAshtottari": "55ce9f2809134faa952fa44b80452c854e768909a6e1c7025cd6e021366d3aba",
+            "cyclicShatabdika": "f4cb5d4b2e335116579f6b450d59d6c013d26ca0d811a2c572d6c0174857852f",
+            "tithiAshtottari": "c3ee9e6988f741bdc1d46c2af6a824f81ca75b9879400ea79cd455ad059c919f",
+            "kalachakra": "095b3e842079ce55c53243dd2c0de08c627b1656e9f621c3050dfd2d1b4ad215",
+            "moolaDasha": "971c3c6d804aca128a1df902c99d06c5eaa50b0118efa9f8709190049cdfb2a6",
+            "drigDasha": "ce6791f41c720b68edda917bf033803f7c3ce969de0cda133423692977dde46c",
+            "sudasaDasha": "0f50527075963adbb592249afd5ba365429e95d14dcdf78e633d46ec85eee01a",
+            "shadbalaTime": "d146ea4179e7b2e8d415afcf413a91e8444fd9a13e5c987f847a3e06dbe02237"
+        },
+        "tokyo-1988": {
+            "cyclicAshtottari": "8ef73006139866b12c9a57b35f0c2d89c5edc737cbb9f3025cbc585529d482da",
+            "cyclicShatabdika": "9d5659b9bc543755330d5e80eb9aaef6b1ceca3a6babe29dbed2f58067de0495",
+            "tithiAshtottari": "4186f0758fd3a2a1e7c40397de198e5884fb40e501e6a2af743415ac9300e2ce",
+            "kalachakra": "c90048ea449f544cd468d79c53ff7285f1e87d723c79c6b87e6301aba6798d9a",
+            "moolaDasha": "6b05fda68fb05e567ccca80a257f4271f2c12bc2afc418e90c4c11a7ee56d175",
+            "drigDasha": "b910011889f400b4eae1dab24bb00f28129c6e08c4ad20ad8769d9a440f7300c",
+            "sudasaDasha": "8fe1e34759e164262737e60ebd03c2221d0791a0577d0aa29d5def03dc0c7d53",
+            "shadbalaTime": "f07a1f242507ce9904495bd31dab425fcadf4e443effaeed3e23def0c650fd60"
+        },
+        "la-1994": {
+            "cyclicAshtottari": "c6f6b6b769f9b77d04fd2e9c83a04388f833978892b5382c2be17e06f1cc5dd0",
+            "cyclicShatabdika": "2437a008d404d4f7c9b6b9721cdee23df0947f8d73fb4d35a5432a9c7239428b",
+            "tithiAshtottari": "f3c8c91b422234ecdea3ea24c16acf1749b31c983877612c9d59c3208f347772",
+            "kalachakra": "b48ae6c20dd87785bf3968eb162dfde8da2dbc1055d53a9e02321182a6af34fa",
+            "moolaDasha": "aa47c32583b43c8eb991e946234916bc8e44b03a6203fc1d6b3ed00fdcfeebc2",
+            "drigDasha": "fc516b8cda911fe1782fae3a278b94a55fec0f72c5faac75e67c0f8fc59f7db8",
+            "sudasaDasha": "77529944bcd8e8ead0cbba4e6b9d0b3809952c00eeae45f6fd2ac4b18477ae6b",
+            "shadbalaTime": "69d28870fdce498d48ecc8d22057db1ac082e66d28d35cfbce02793fef283173"
+        },
+        "utc-midnight-2022": {
+            "cyclicAshtottari": "37235b3830381a88668c8788a55d0dd963523abde2c2caf2dbc1a225deef90d2",
+            "cyclicShatabdika": "091a971f75fc0142e19f9475d6c0cfa1946b070a7674fe346fb8e7bbd771eeba",
+            "tithiAshtottari": "3cf8adeb98de80aecacb71c2c6ccffcbdc71092eb1afa57984653fb96288eae8",
+            "kalachakra": "f183d5f03df3d2b31ab571d8d0ad7f21f7a0abff4cfa72f523f5f66f14df3b18",
+            "moolaDasha": "e3ff50cef0260b440a8a871572ab4f4e44b44f6325f73c6950eae9d23a0a511f",
+            "drigDasha": "cba91d6f1a587347c4b8863c446ea0d98b353f3f9e75a13b5b8f85f8e33f47ca",
+            "sudasaDasha": "b50028228c21e2eed1b0f8a785e1ac348934f88c9034188de889fe51483a4f8f",
+            "shadbalaTime": "0ce5d9e173fdd206e84de729ee057acffdc31063b41d4b09417edf577f26873f"
+        },
+        "kathmandu-2015": {
+            "cyclicAshtottari": "b857b95c92338589ef6614124484e9d15edce338c8cc8b5a1e93705fc6381c85",
+            "cyclicShatabdika": "4fd13486bbd48a428faab4a862330f63c870df14cecb977cb5b9029da8e9aaef",
+            "tithiAshtottari": "11a3fdb1cf67422544f10013741035835e16a386c8f1b1817d3879e3d7d0c791",
+            "kalachakra": "1e5b31cbcd17fb25d8a231b2990f3e4c0a156d2df2b62b82370db20e86432828",
+            "moolaDasha": "450bc00ffdfc515266b87a80125f75109f4d5a7cb49096ab74a8fbb7d13ce869",
+            "drigDasha": "878051ba30bd8280c849146742521f81ed4f53a91e1351f257338f75b4655b07",
+            "sudasaDasha": "d8cbda1395149bf354a59b120f1eeb62cef17b4c93ea025d5d47515e3f6c9c73",
+            "shadbalaTime": "d371970e2d0ffbe2c8213caa878f63d532b36e1ddd68eba7fb942fcdd1f645f0"
+        },
+        "dubai-2033": {
+            "cyclicAshtottari": "dc62d09a78381f92302d3a4cb33691a7120eff37929deace0cf892253dcbb6e0",
+            "cyclicShatabdika": "e3e131b4d23f41ee2604c92d612bcaaa50d6d2505e26f12b3a58458b186b4be5",
+            "tithiAshtottari": "70076249128690354b914f2d4cb08cdf9865d45c6590bac64ab8ad60a8e40eb1",
+            "kalachakra": "2d7ffbc64d61afed536f1a944145505a36495d6d0615956af91bc5b62e22ce3b",
+            "moolaDasha": "6d54092d7a713fc964fecf892afa6c688d9348a4bce591b8823219e6911a8820",
+            "drigDasha": "8e8a7f887bc958d2bde0689c320d6c5a3ba6851a07143c975b51faacbfa2d0ad",
+            "sudasaDasha": "ff7ac6653936c83f49a344b84880136160a6299dbdaae37bd8501b46f4ae7722",
+            "shadbalaTime": "b4247278342c11919073d2a86e95c8e3a561e31616e7c620968fb5c973b44f19"
+        },
+        "chile-2016": {
+            "cyclicAshtottari": "65567bc4fcd30869a7c3a6759d79a68299e8fe6f6b47b65be868eaf0a6f78c35",
+            "cyclicShatabdika": "77842bc43e90ff7349fb922df4a6821ae26bd8134c43c64b2ac2f405a7170a05",
+            "tithiAshtottari": "099f1dcc73d389ce616dee56ea3b7a2efe65c0afa67440e80e5b160fe302a239",
+            "kalachakra": "781644b52b8ea3722b0e639610bf07c07d014800fa32577c273103d0ad34cdd9",
+            "moolaDasha": "82892ced1376514cfd83693b5799336e3b3aab14f47b13d9b7190593b044a3e9",
+            "drigDasha": "4b1501de06286714acf69b8420c0e3a933e5ffeb3dd4bbbd806341c20c4fc219",
+            "sudasaDasha": "e25b6cddbae9109a67c2c7fa90cdc469e0652b207c940e4dc42e5787374407b0",
+            "shadbalaTime": "f1be3f3a4615a89681bcdbe844626574f609419ef8186e1a4cb17a98049c6de3"
+        },
+        "iceland-2020": {
+            "cyclicAshtottari": "c6a7dda0fd31350d16299f91491f00fccaaf53d27fc15b7eb8bde51a99d0a4df",
+            "cyclicShatabdika": "a154db1960579821d1105802b96ee891c64d7483078fcbeadbf52e99105e705a",
+            "tithiAshtottari": "a0b523bfe451fea180ee30d9999144b02efb881c8b69ac5f5bce4659a854aedc",
+            "kalachakra": "4a8f47ae16d574f189e4f8ac4fce129cba442cc73f428663821f11be2501e377",
+            "moolaDasha": "b9074f96e1449dfef05c4d74abfa4ab9b3109c3d9258d5ec78cec05e7372020c",
+            "drigDasha": "7427a0bb588e9114cf61473a389af500716bbffb3f49a40e6d49933bed7ebb2a",
+            "sudasaDasha": "2e03c143c3ee17f5eabf2d881d78b2dca8b403fe77a9b4665b66cd17e69e75bf",
+            "shadbalaTime": "a2b8b44235f822163d1acc6e02d2408eec285b6482b0237e0b091186ca6fd490"
+        },
+        "india-no-dst-2019": {
+            "cyclicAshtottari": "c91804de868fd6d9ff9246ac257f23c801444f58058ec708fcacb90d920faa11",
+            "cyclicShatabdika": "533df57efe794340421cf45d4b0ca713d4754fe141bc24d421c9e35d1f8875c3",
+            "tithiAshtottari": "b966ee1d4c132d04f3b122481c9573edd573a7c3502f07b06b166a8d8fefd446",
+            "kalachakra": "51c4e7607173e9b1406713989be2b8d7d9019ecb5189a9861474e18a2b80fe2f",
+            "moolaDasha": "7fad72ceaf6c31286885913dcb97a4858774e04c51f409012d1787748462f9db",
+            "drigDasha": "720c50bda1de583417f31da1f00649082eb4f3cf4fcc5bba53c77eaa53b0778e",
+            "sudasaDasha": "689537a0c200b261f4c0bb656142bb1849a6d409e1ce45fe21674bf803dfba3a",
+            "shadbalaTime": "df1fa9b501e4426cfd55ee5e3ca0d558229a17eada2743978287f306e3967997"
+        }
+    }
+}

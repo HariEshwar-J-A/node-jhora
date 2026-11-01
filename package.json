@@ -22,7 +22,7 @@
         "check:links": "node tools/check-markdown-links.mjs",
         "check:determinism": "node scripts/check-determinism.mjs",
         "check:licenses": "node tools/check-runtime-licenses.mjs",
-        "check:browser-bundle": "node scripts/check-browser-bundle-size.mjs",
+        "check:browser-bundle": "node scripts/check-browser-bundle-size.mjs && node scripts/check-core-subpath-bundles.mjs",
         "test:browser": "pnpm --filter @node-jhora/browser-harness test:browser",
         "validate-github-templates": "node scripts/validate-github-templates.mjs",
         "docs:dev": "pnpm --filter @node-jhora/docs dev",
