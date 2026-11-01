@@ -48,7 +48,7 @@
   }
   },
   "provenance": {
-    "oracle": "pyswisseph 2.10.03 swe_get_ayanamsa_ut after swe_set_sid_mode",
+    "oracle": "pyswisseph 2.10.03 black-box ayanamsa output per mode number",
     "use": "test fixture only"
   }
 }

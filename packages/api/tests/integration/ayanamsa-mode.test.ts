@@ -25,7 +25,16 @@ afterAll(async () => {
 });
 
 describe('customAyanamsaMode validation', () => {
-    test.each([30, 99, -1])('mode %i returns 4xx, not 500', async (mode) => {
+    test('registered mode 30 (Gil Brand) returns 200', async () => {
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/chart',
+            payload: { ...CHART_BODY, customAyanamsaMode: 30 },
+        });
+        expect(res.statusCode).toBe(200);
+    });
+
+    test.each([99, -1])('unknown mode %i returns 4xx, not 500', async (mode) => {
         const res = await app.inject({
             method: 'POST',
             url: '/v1/chart',

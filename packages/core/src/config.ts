@@ -26,6 +26,7 @@
  *   - a per-call override, on the individual function
  */
 
+import type { AyanamsaOptions } from './engine/ayanamsa-options.js';
 import type { PrecisionProfile } from './engine/deltat.js';
 import {
     AYANAMSA,
@@ -73,7 +74,8 @@ export interface JyotishConfig {
     // ── Layer 2: sidereal zero point ────────────────────────────────────────
 
     /**
-     * Swiss Ephemeris `SE_SIDM_*` mode. Default 27 = True Chitrapaksha, which is
+     * Ayanamsa mode number compatible with publicly documented numbering.
+     * Default 27 = True Chitrapaksha, which is
      * derived from Spica's computed position and so needs no fitted constant.
      */
     ayanamsaMode: number;
@@ -83,6 +85,11 @@ export interface JyotishConfig {
      * with a personal offset from a standard model; leave at 0 otherwise.
      */
     ayanamsaOffset: number;
+
+    /**
+     * USER mode anchor and optional sidereal projection flags (`AYANAMSA_FLAGS`).
+     */
+    ayanamsaOptions?: AyanamsaOptions;
 
     // ── Layer 3: Jyotish rules ──────────────────────────────────────────────
 

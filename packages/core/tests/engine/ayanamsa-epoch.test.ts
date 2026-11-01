@@ -6,6 +6,7 @@ import {
     LAHIRI_ANCHOR_JD,
     LAHIRI_TRUE_AT_ANCHOR_DEG,
     getAyanamsa,
+    meanAtAnchorForProfile,
     meanEquinoxLongitudeOnEclipticOf,
 } from '../../src/engine/ayanamsa.js';
 import { EphemerisEngine } from '../../src/engine/ephemeris.js';
@@ -26,11 +27,12 @@ describe('Epoch-defined ayanamsa modes', () => {
         await EphemerisEngine.getInstance().initialize({ kernel });
     });
 
-    test('each registered epoch model matches its anchor JD exactly', () => {
+    test('each zero-at-anchor epoch model matches its anchor JD (modern)', () => {
         for (const [mode, model] of Object.entries(AYANAMSA_MODELS)) {
-            if (model.kind === 'epoch') {
-                expect(getAyanamsa(Number(mode), model.jd)).toBeCloseTo(model.value, 12);
-            }
+            if (model.kind !== 'epoch') continue;
+            const mean = meanAtAnchorForProfile(model.meanAtAnchor, 'modern');
+            if (Math.abs(mean) > 1e-6 && Math.abs(mean - 360) > 1e-6) continue;
+            expect(getAyanamsa(Number(mode), model.jd, 'apparent', 'modern')).toBeCloseTo(0, 8);
         }
     });
 

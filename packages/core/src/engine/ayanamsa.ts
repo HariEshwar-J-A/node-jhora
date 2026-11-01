@@ -30,6 +30,23 @@
  */
 
 import { apparentStarDirection, AU_KM } from './apparent.js';
+import { ayanamsaForGalacticNode } from './ayanamsa-galactic.js';
+import { invariableEclipticLongitude } from './ayanamsa-invariable-plane.js';
+import {
+    AYANAMSA_FLAGS,
+    AYANAMSA_MODE_USER,
+    type AyanamsaOptions,
+    hasAyanamsaFlag,
+} from './ayanamsa-options.js';
+import {
+    AYANAMSA_MODEL_DEFS,
+    type AyanamsaModelDef,
+    type EpochModelDef,
+    LAHIRI_ANCHOR_JD,
+    LAHIRI_TRUE_AT_ANCHOR_DEG,
+    meanAtAnchorForProfile,
+    type ProfileMean,
+} from './ayanamsa-registry.js';
 import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
 import { earthGeocenterBarycentricAu } from './earth-geocenter-barycentric.js';
 import { nutation } from './nutation.js';
@@ -48,6 +65,15 @@ import {
 import { DE440S_JD_TDB_END, DE440S_JD_TDB_START } from './provider/de440s.js';
 import { effectiveStarParallaxMode } from './star-parallax.js';
 
+export type { AyanamsaOptions } from './ayanamsa-options.js';
+export { AYANAMSA_FLAGS, AYANAMSA_MODE_USER, hasAyanamsaFlag } from './ayanamsa-options.js';
+export {
+    AYANAMSA_MODEL_DEFS,
+    LAHIRI_ANCHOR_JD,
+    LAHIRI_TRUE_AT_ANCHOR_DEG,
+    meanAtAnchorForProfile,
+} from './ayanamsa-registry.js';
+
 const DEG = Math.PI / 180;
 const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);
 const PC_IN_AU = 206264.806247;
@@ -56,20 +82,15 @@ const KMS_TO_AU_YR = (86400 * 365.25) / AU_KM;
 
 const mod360 = (x: number): number => ((x % 360) + 360) % 360;
 
-/** SE_SIDM modes that are known but intentionally not implemented (see docs/DATA-SOURCES.md). */
-export const UNSUPPORTED_AYANAMSA_MODES = new Set<number>([
-    2, // De Luce — published anchor does not match SE 2.10 within 1″; not embedded.
-    7, // Yukteshwar — published spring-1894 anchor + IAU precession misses SE/JHora by arcminutes.
-    8, // J.N. Bhasin — no citable primary anchor that tracks SE 2.10 within 1″.
-    28, // True Revati — ζ Psc catalogue + IAU precession misses SE 2.10 at DE440s kernel edges.
-]);
+/** Reserved mode numbers with no public definition (see docs/DATA-SOURCES.md). */
+export const UNSUPPORTED_AYANAMSA_MODES = new Set<number>([]);
 
-/** Thrown when {@link getAyanamsa} is called for a known-but-unimplemented SE_SIDM mode. */
+/** Thrown when {@link getAyanamsa} is called for a known-but-unimplemented ayanamsa mode. */
 export class UnsupportedAyanamsaModeError extends Error {
     readonly mode: number;
 
     constructor(mode: number) {
-        super(`ayanamsa: SE_SIDM mode ${mode} is not implemented in this engine`);
+        super(`ayanamsa: mode ${mode} is not implemented in this engine`);
         this.name = 'UnsupportedAyanamsaModeError';
         this.mode = mode;
     }
@@ -77,7 +98,7 @@ export class UnsupportedAyanamsaModeError extends Error {
 
 export type UnknownAyanamsaModeCode = 'not_finite' | 'not_integer' | 'unknown';
 
-/** Thrown for SE_SIDM codes that are neither in {@link AYANAMSA_MODELS} nor {@link UNSUPPORTED_AYANAMSA_MODES}. */
+/** Thrown for mode numbers that are neither in {@link AYANAMSA_MODELS} nor {@link UNSUPPORTED_AYANAMSA_MODES}. */
 export class UnknownAyanamsaModeError extends Error {
     readonly mode: number;
     readonly code: UnknownAyanamsaModeCode;
@@ -87,8 +108,8 @@ export class UnknownAyanamsaModeError extends Error {
             code === 'not_finite'
                 ? 'must be a finite number'
                 : code === 'not_integer'
-                  ? 'must be an integer SE_SIDM code'
-                  : 'is not a supported SE_SIDM mode';
+                  ? 'must be an integer ayanamsa mode number'
+                  : 'is not a supported ayanamsa mode';
         super(`ayanamsa: mode ${String(mode)} ${detail}`);
         this.name = 'UnknownAyanamsaModeError';
         this.mode = mode;
@@ -96,13 +117,13 @@ export class UnknownAyanamsaModeError extends Error {
     }
 }
 
-/** SE_SIDM mode numbers implemented in {@link AYANAMSA_MODELS}. */
+/** Mode numbers implemented in {@link AYANAMSA_MODEL_DEFS} (and USER 255). */
 export function isRegisteredAyanamsaMode(mode: number): boolean {
-    return AYANAMSA_MODELS[mode] !== undefined;
+    return AYANAMSA_MODEL_DEFS[mode] !== undefined || mode === AYANAMSA_MODE_USER;
 }
 
 /**
- * Reject invalid, unknown, and intentionally unsupported SE_SIDM mode numbers.
+ * Reject invalid, unknown, and intentionally unsupported ayanamsa mode numbers.
  * @throws {UnknownAyanamsaModeError} | {@link UnsupportedAyanamsaModeError}
  */
 export function assertValidAyanamsaMode(mode: number): void {
@@ -115,11 +136,13 @@ export function assertValidAyanamsaMode(mode: number): void {
     if (UNSUPPORTED_AYANAMSA_MODES.has(mode)) {
         throw new UnsupportedAyanamsaModeError(mode);
     }
+    if (mode === AYANAMSA_MODE_USER) {
+        return;
+    }
     if (!isRegisteredAyanamsaMode(mode)) {
         throw new UnknownAyanamsaModeError(mode, 'unknown');
     }
 }
-
 // ---------------------------------------------------------------------------
 // Fixed-star catalogue (only the stars used to define ayanamsas)
 // ---------------------------------------------------------------------------
@@ -225,6 +248,29 @@ export const STARS: Record<string, StarData> = {
         pmDec: -29.95,
         parallax: 4.64,
         radVel: -3.0,
+    },
+    /** Aldebaran (α Tau) — Babylonian 15° Taurus anchor (SE mode 14). */
+    Aldebaran: {
+        name: 'Aldebaran (α Tau)',
+        ra: hms(4, 35, 55.239),
+        dec: dms(16, 30, 33.49),
+        pmRA: 62.78,
+        pmDec: -189.35,
+        parallax: 48.94,
+        radVel: 54.26,
+    },
+    /**
+     * Galactic centre (Sgr A*) — ICRS (Reid & Brunthaler 2004; Malkin 2012).
+     * RA 17h45m40.036s, Dec −29°00′28.17″; zero proper motion at this precision.
+     */
+    GalacticCenter: {
+        name: 'Galactic centre (Sgr A*)',
+        ra: hms(17, 45, 40.036),
+        dec: dms(-29, 0, 28.17),
+        pmRA: 0,
+        pmDec: 0,
+        parallax: 0,
+        radVel: 0,
     },
 };
 
@@ -360,16 +406,39 @@ function starGeometricLongitude(star: StarData, jd: number, profile: PrecisionPr
     return starLongitudeOfDate(star, jd);
 }
 
+function starLongitudeForAyanamsa(
+    star: StarData,
+    jd: number,
+    profile: PrecisionProfile,
+    frame: AyanamsaFrame,
+    useInvariablePlane: boolean,
+): number {
+    if (useInvariablePlane) {
+        const jdTdb = jd + deltaT(jd) / 86400.0;
+        const inKernel = jdTdb >= DE440S_JD_TDB_START && jdTdb <= DE440S_JD_TDB_END;
+        const observerAU =
+            profile === 'modern' && inKernel ? kinematicsProvider?.(jd)?.observerAU : undefined;
+        const vec = starIcrfVector(star, jd, observerAU);
+        return invariableEclipticLongitude(vec, jd);
+    }
+    if (frame === 'geometric') {
+        return starGeometricLongitude(star, jd, profile);
+    }
+    return starApparentLongitude(star, jd, profile);
+}
+
+function pinLongitude(atLongitude: ProfileMean, profile: PrecisionProfile): number {
+    return meanAtAnchorForProfile(atLongitude, profile);
+}
+
 /**
  * Apparent longitude of a star on the **mean** ecliptic of date.
  *
- * This is what `swe_get_ayanamsa_ut` is measured to return for a star-defined
- * mode: the star's apparent place (annual aberration and solar deflection,
- * annual parallax) with nutation left off, so Spica's reported ayanamsa is
- * its apparent mean-ecliptic longitude minus 180°. Swiss Ephemeris general
- * documentation §2.8.5 item 27 and §2.8.12 method 4: Spica is exactly 180°
- * both geometrically and apparently, and the ayanamsa that produces each is
- * a different number. `swe_get_ayanamsa_ut` is the apparent one, without nutation.
+ * Apparent place for a star-defined mode (annual aberration and solar deflection,
+ * annual parallax) with nutation left off — the modern-profile convention matched
+ * by pyswisseph 2.10.03 black-box ayanamsa output per mode number. Spica is
+ * exactly 180° both geometrically and apparently, and the ayanamsa that produces
+ * each is a different number; the apparent one omits nutation.
  */
 function starApparentLongitude(star: StarData, jdUT: number, profile: PrecisionProfile): number {
     const kin = kinematicsProvider?.(jdUT);
@@ -396,204 +465,65 @@ function starApparentLongitude(star: StarData, jdUT: number, profile: PrecisionP
 }
 
 // ---------------------------------------------------------------------------
-// Ayanamsa model registry
+// Model registry (see ayanamsa-registry.ts)
 // ---------------------------------------------------------------------------
 
-/** A star-defined ("true") ayanamsa: `star` sits at exactly `atLongitude`. */
-interface StarModel {
-    kind: 'star';
-    star: keyof typeof STARS;
-    /** Sidereal longitude the star is pinned to, degrees. */
-    atLongitude: number;
-    label: string;
-}
+/** @deprecated Use {@link AYANAMSA_MODEL_DEFS}. Kept for tests and API reports. */
+export const AYANAMSA_MODELS: Record<number, AyanamsaModelDef> = AYANAMSA_MODEL_DEFS;
 
-/** An epoch-defined ayanamsa: `value` degrees at Julian Day `jd`. */
-interface EpochModel {
-    kind: 'epoch';
-    jd: number;
-    value: number;
-    label: string;
-    /** Where the anchor came from — see AYANAMSA_MODELS for the provenance rules. */
-    source: 'definition' | 'jhora' | 'provisional';
-}
-
-/**
- * Lahiri (SE_SIDM 1): CRC 1955 / Bhatnagar 1990 true anchor at 1956-03-21 0h UT,
- * propagated on the mean ecliptic of the anchor (traditional algorithm).
- */
-interface LahiriModel {
-    kind: 'lahiri';
-    jd: number;
-    /** True (nutation-bearing) ayanamsa at `jd`, degrees. */
-    trueValue: number;
-    label: string;
-    source: 'definition';
-}
-
-/**
- * True ayanamsa at a reference epoch, stored as mean by subtracting IAU 1980
- * nutation in longitude at that instant, then propagated with IAU 2006 precession
- * (same rotation as other epoch modes). Matches Swiss Ephemeris `SIDM_LAHIRI_ICRC`.
- */
-interface TrueEpochModel {
-    kind: 'true_epoch';
-    jd: number;
-    /** True (nutation-bearing) ayanamsa at `jd`, degrees. */
-    trueValue: number;
-    label: string;
-    source: 'definition';
-}
-
-export type AyanamsaModel = StarModel | EpochModel | TrueEpochModel | LahiriModel;
-
-/** 1956-03-21 0h UT — Lahiri anchor (CRC 1955; Bhatnagar 1990, 0h UT). JD is UT. */
-export const LAHIRI_ANCHOR_JD = 2435553.5;
-
-/**
- * True Lahiri at {@link LAHIRI_ANCHOR_JD}: 23°15′00.658″.
- *
- * CRC (1955) and Bhatnagar (1990, IAU Symp. 141 p. 186,
- * DOI 10.1017/S0074180900086745) define the true tropical ayanamsa as 23°15′00″
- * on 21 March 1956, 0h UT. The 0.658″ excess matches Bhatnagar's IAE J2000 mean
- * algorithm A = 23°51′25.532″ + 5029.0966″T + 1.11161″T² (T from J2000) plus
- * IAU 2000A nutation in longitude Δψ ≈ 16.777″ at the anchor (≈ 23°15′00.666″).
- */
-export const LAHIRI_TRUE_AT_ANCHOR_DEG = 23 + 15 / 60 + 0.658 / 3600;
+export type AyanamsaModel = AyanamsaModelDef;
 
 /**
  * IAU 2000A (+ IAU 2006 adjustment) nutation in longitude at the Lahiri anchor,
- * arcseconds. Derived value: Δψ at T ≈ −0.4378234 (JD 2435553.5); used to demean
- * the CRC/Bhatnagar true value for the jhora profile (IAU 1980 nutation chain).
+ * arcseconds (Bhatnagar / CRC demeaning for jhora profile).
  */
 export const LAHIRI_IAU2000A_DPSI_AT_ANCHOR_ARCSEC = 16.7769;
 
 /**
- * Accumulated general precession, anchor → J2000, between the IAU 1976 / IAE rate
- * (Bhatnagar 1990: 5029.0966″/cy, 1.11161″/cy²) and IAU 2006 p_A (Capitaine et al.
- * 2003; ERFA p06e). Modern profile only; bridges Lahiri under Vondrák 2011.
+ * General-precession bridge IAU 1976 / IAE vs IAU 2006 p_A at the Lahiri anchor
+ * (modern profile only), arcseconds.
  */
 export const LAHIRI_IAU1976_PRECESSION_CORRECTION_ARCSEC = 0.13036;
-
-/** B.V. Raman, *Hindu Predictive Astrology*, App. A: (year − 397) × 50⅓″ at 1900 January 0.5. */
-const RAMAN_AYANAMSA_1900_DEG = ((1900 - 397) * (50 + 1 / 3)) / 3600;
 
 function nutationLongitudeDegrees(jdUT: number): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     return nutation(julianCenturies(jdTT)).dpsi;
 }
 
-function meanAyanamsaFromTrueEpoch(trueValue: number, anchorJd: number, jd: number): number {
-    const meanAtAnchor = trueValue - nutationLongitudeDegrees(anchorJd);
-    return meanAtAnchor + accumulatedPrecession(anchorJd, jd);
+function propagateMeanEpochAyanamsa(meanAtAnchor: number, anchorJd: number, jd: number): number {
+    return mod360(meanAtAnchor - meanEquinoxLongitudeOnEclipticOf(anchorJd, jd));
 }
 
-/**
- * Swiss Ephemeris `SE_SIDM_*` mode number → model.
- *
- * `source` records where each epoch anchor comes from:
- *
- *   'definition'  — the published definition of the ayanamsa itself.
- *   'provisional' — best available anchor, not yet checked against JHora. Treat
- *                   these as approximate; they may be off by arcminutes.
- *
- * Star-defined entries need no anchor at all and are exact by construction —
- * prefer them. True Chitrapaksha (27) is the project default and is verified
- * against JHora to 0.015″; True Pushya (29) is verified to 0.03″.
- *
- * ── A caution, from experience ──────────────────────────────────────────────
- * An earlier revision carried a mode-1 anchor of 23.926408° at the 1998 chart,
- * described as a JHora reading showing that "JHora's Lahiri sits 4.78′ above the
- * ICRC definition". That was wrong. The figure came from a corrupted transcript
- * whose ayanamsa was 6′ too high and whose planets were correspondingly 6′ too
- * low — the signature of numbers generated from a bad ayanamsa rather than read
- * off a screen. Actual JHora output for that chart reads 23°49′35.07″, which is
- * True Chitrapaksha, and matches this engine to 0.015″.
- *
- * The lesson: an ayanamsa anchor is only as good as the provenance of the single
- * number behind it. Anchor to a published definition, or to a star; do not
- * anchor to a reading you cannot re-verify.
- */
-/**
- * @provenance Star models: the star and the longitude it is pinned to are the
- * published definitions (e.g. Chitrapaksha: Spica at 180°). Epoch models: the
- * per-entry comment and `source` field give the definition each anchor comes
- * from; 'provisional' entries are flagged as unverified.
- */
-export const AYANAMSA_MODELS: Record<number, AyanamsaModel> = {
-    // ── Exact, star-defined: no fitted constants ────────────────────────────
-    27: {
-        kind: 'star',
-        star: 'Spica',
-        atLongitude: 180,
-        label: 'True Chitrapaksha (Spica at 180°)',
-    },
-    29: {
-        kind: 'star',
-        star: 'DeltaCancri',
-        atLongitude: 106,
-        label: 'True Pushya (δ Cnc at 106°)',
-    },
-    35: {
-        kind: 'star',
-        star: 'LambdaScorpii',
-        atLongitude: 240,
-        label: 'True Mula (λ Sco at 240°)',
-    },
+function getEpochAyanamsa(
+    model: EpochModelDef,
+    jd: number,
+    profile: PrecisionProfile,
+    ayanamsaFlags: number | undefined,
+): number {
+    const mean0 = meanAtAnchorForProfile(model.meanAtAnchor, profile);
+    const anchorJd = model.jd;
+    if (hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.ECL_DATE)) {
+        return mod360(mean0 + accumulatedPrecession(anchorJd, jd));
+    }
+    return propagateMeanEpochAyanamsa(mean0, anchorJd, jd);
+}
 
-    // ── Epoch-defined ───────────────────────────────────────────────────────
-    // Fagan/Bradley: 24°02′31.36″ at 1950-01-01.
-    0: {
-        kind: 'epoch',
-        jd: 2433282.5,
-        value: 24.042044444,
-        label: 'Fagan/Bradley',
-        source: 'definition',
-    },
-    // Lahiri (SE_SIDM_LAHIRI = 1). See docs/DATA-SOURCES.md and ADR 0015.
-    1: {
-        kind: 'lahiri',
-        jd: LAHIRI_ANCHOR_JD,
-        trueValue: LAHIRI_TRUE_AT_ANCHOR_DEG,
-        label: 'Lahiri',
-        source: 'definition',
-    },
-    // Raman (SE_SIDM_RAMAN = 3). See docs/DATA-SOURCES.md.
-    3: {
-        kind: 'epoch',
-        jd: 2415020.0,
-        value: RAMAN_AYANAMSA_1900_DEG,
-        label: 'Raman',
-        source: 'definition',
-    },
-    // Krishnamurti / KP (SE_SIDM_KRISHNAMURTI = 5). See docs/DATA-SOURCES.md.
-    5: {
-        kind: 'epoch',
-        jd: 2415020.0,
-        value: 22 + 21 / 60 + 50 / 3600,
-        label: 'Krishnamurti (KP)',
-        source: 'definition',
-    },
-    18: {
-        kind: 'epoch',
-        jd: 2451545.0,
-        value: 0.0,
-        label: 'J2000 (no ayanamsa)',
-        source: 'definition',
-    },
-    // Lahiri ICRC (SE_SIDM_LAHIRI_ICRC = 46). CRC 1955 true ayanamsa; see docs/DATA-SOURCES.md.
-    46: {
-        kind: 'true_epoch',
-        jd: 2435553.5,
-        trueValue: 23 + 15 / 60,
-        label: 'Lahiri ICRC',
-        source: 'definition',
-    },
-};
+function meanAyanamsaFromTrueEpoch(
+    trueValue: number,
+    anchorJd: number,
+    jd: number,
+    profile: PrecisionProfile,
+): number {
+    const dpsiDeg = nutationLongitudeDegrees(anchorJd);
+    const bridgeDeg = profile === 'modern' ? LAHIRI_IAU1976_PRECESSION_CORRECTION_ARCSEC / 3600 : 0;
+    const mean0 = trueValue - dpsiDeg + bridgeDeg;
+    return propagateMeanEpochAyanamsa(mean0, anchorJd, jd);
+}
 
 /** Human-readable name for a mode, for logs and API responses. */
 export function ayanamsaName(mode: number): string {
-    return AYANAMSA_MODELS[mode]?.label ?? `Unknown (${mode})`;
+    if (mode === AYANAMSA_MODE_USER) return 'User-defined';
+    return AYANAMSA_MODEL_DEFS[mode]?.label ?? `Unknown (${mode})`;
 }
 
 // ---------------------------------------------------------------------------
@@ -657,60 +587,96 @@ function getLahiriAyanamsa(jd: number, profile: PrecisionProfile): number {
 /**
  * Which place of the defining star `getAyanamsa` reduces.
  *
- *   • `'apparent'`  — aberration and solar deflection, no nutation. This is
- *     `swe_get_ayanamsa_ut` (Swiss Ephemeris general doc §2.8.5 / §2.8.12).
+ *   • `'apparent'`  — aberration and solar deflection, no nutation (modern
+ *     profile; matches pyswisseph 2.10.03 black-box ayanamsa per mode number).
  *   • `'geometric'` — neither aberration nor deflection. This is the zero point
  *     subtracted from TRUEPOS sidereal planets, and the number JHora prints
  *     for the 1998 reference chart (`23-51-11.00`).
  *
  * Epoch-defined modes have no star-dependent aberration; `apparent` and
- * `geometric` return the same mean propagated value (matching
- * `swe_get_ayanamsa_ut` for fixed-epoch systems).
+ * `geometric` return the same mean propagated value (same as the modern oracle
+ * for fixed-epoch systems).
  */
 export type AyanamsaFrame = 'apparent' | 'geometric';
 
 /**
- * Ayanamsa in degrees for a given SE mode and Julian Day (UT).
+ * Ayanamsa in degrees for a given mode and Julian Day (UT).
  *
- * @param mode   Swiss Ephemeris SE_SIDM_* code (27 = True Chitrapaksha)
+ * @param mode   Ayanamsa mode number compatible with publicly documented numbering
+ *               (27 = True Chitrapaksha)
  * @param jd     Julian Day, UT
  * @param frame  Star-defined modes only. Defaults to the geometric place JHora
- *               subtracts; 'apparent' is the swe_get_ayanamsa_ut value (opt-in).
+ *               subtracts; 'apparent' is the modern-profile oracle value (opt-in).
  */
 export function getAyanamsa(
     mode: number,
     jd: number,
     frame: AyanamsaFrame = 'geometric',
     profile?: PrecisionProfile,
+    options?: AyanamsaOptions,
 ): number {
+    if (mode === AYANAMSA_MODE_USER) {
+        const user = options?.user;
+        if (!user) {
+            throw new Error(
+                'ayanamsa: mode 255 (USER) requires options.user { t0Jd, ayanamsaDeg }',
+            );
+        }
+        const ayanamsaFlags = options?.ayanamsaFlags;
+        const anchorJd = user.t0Jd;
+        const mean0 = user.ayanamsaDeg;
+        if (hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.ECL_DATE)) {
+            return mod360(mean0 + accumulatedPrecession(anchorJd, jd));
+        }
+        return propagateMeanEpochAyanamsa(mean0, anchorJd, jd);
+    }
+
     assertValidAyanamsaMode(mode);
-    const model = AYANAMSA_MODELS[mode]!;
+    const model = AYANAMSA_MODEL_DEFS[mode]!;
     const effectiveProfile = profile ?? getDeltaTContext().profile ?? 'jhora';
+    const ayanamsaFlags = options?.ayanamsaFlags;
+    const useSsy = hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.SSY_PLANE);
 
     if (model.kind === 'star') {
         const star = starDataForModel(model.star, effectiveProfile);
-        const lon =
-            frame === 'geometric'
-                ? starGeometricLongitude(star, jd, effectiveProfile)
-                : starApparentLongitude(star, jd, effectiveProfile);
-        return mod360(lon - model.atLongitude);
+        const lon = starLongitudeForAyanamsa(star, jd, effectiveProfile, frame, useSsy);
+        return mod360(lon - pinLongitude(model.atLongitude, effectiveProfile));
     }
 
     if (model.kind === 'lahiri') {
+        if (hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.ORIGINAL_PRECESSION)) {
+            return getLahiriAyanamsa(jd, 'jhora');
+        }
         return getLahiriAyanamsa(jd, effectiveProfile);
     }
 
     if (model.kind === 'true_epoch') {
-        return mod360(meanAyanamsaFromTrueEpoch(model.trueValue, model.jd, jd));
+        return meanAyanamsaFromTrueEpoch(
+            model.trueValue,
+            model.jd,
+            jd,
+            hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.ORIGINAL_PRECESSION)
+                ? 'jhora'
+                : effectiveProfile,
+        );
     }
 
-    return mod360(model.value + accumulatedPrecession(model.jd, jd));
+    if (model.kind === 'galactic_node') {
+        return ayanamsaForGalacticNode(jd, model.siderealNodeDeg, model.useLz2010);
+    }
+
+    return getEpochAyanamsa(model, jd, effectiveProfile, ayanamsaFlags);
 }
 
 /** True ayanamsa (mean + nutation in longitude) for a `true_epoch` model at `jd` UT. */
-export function trueAyanamsaFromModel(model: TrueEpochModel, jd: number): number {
+export function trueAyanamsaFromModel(
+    model: Extract<AyanamsaModelDef, { kind: 'true_epoch' }>,
+    jd: number,
+    profile: PrecisionProfile = 'jhora',
+): number {
     return mod360(
-        meanAyanamsaFromTrueEpoch(model.trueValue, model.jd, jd) + nutationLongitudeDegrees(jd),
+        meanAyanamsaFromTrueEpoch(model.trueValue, model.jd, jd, profile) +
+            nutationLongitudeDegrees(jd),
     );
 }
 

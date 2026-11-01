@@ -31,6 +31,9 @@ function loadBlocks(raw: unknown): VsopBlock[] {
 
 const blocks: VsopBlock[] = loadBlocks(data.blocks);
 
+/** Max |Δπ| (mas) vs DE440 on the generator sample grid; update when retuning truncation. */
+export const VSOP87_EARTH_MAX_PARALLAX_MAS_VS_DE440 = 0.0006922846296220087;
+
 /** Julian millennia from J2000 (VSOP87 time argument). */
 function vsop87T(jdUT: number): number {
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;

@@ -41,6 +41,15 @@ export const AYANAMSA: {
 export type Ayanamsa = 'TrueChitra' | 'TruePushya' | 'TrueRevati' | 'TrueMula' | 'Lahiri' | 'LahiriICRC' | 'Raman' | 'KP' | 'Yukteshwar' | 'FaganBradley';
 
 // @public (undocumented)
+export const AYANAMSA_FLAGS: {
+    readonly ECL_T0: 256;
+    readonly SSY_PLANE: 512;
+    readonly USER_UT: 1024;
+    readonly ECL_DATE: 2048;
+    readonly ORIGINAL_PRECESSION: 8192;
+};
+
+// @public (undocumented)
 export const AYANAMSA_IDS: readonly ["true_citra", "true_pushya", "true_mula", "fagan_bradley", "lahiri", "lahiri_icrc", "raman", "kp", "j2000"];
 
 // @public (undocumented)
@@ -56,10 +65,16 @@ export const AYANAMSA_MODE_BY_ID: {
     readonly true_mula: 35;
 };
 
-// Warning: (ae-forgotten-export) The symbol "AyanamsaModel" needs to be exported by the entry point index.d.ts
-//
 // @public
-export const AYANAMSA_MODELS: Record<number, AyanamsaModel>;
+export const AYANAMSA_MODE_USER = 255;
+
+// Warning: (ae-forgotten-export) The symbol "AyanamsaModelDef" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef>;
+
+// @public @deprecated (undocumented)
+export const AYANAMSA_MODELS: Record<number, AyanamsaModelDef>;
 
 // @public (undocumented)
 export type AyanamsaId = (typeof AYANAMSA_IDS)[number];
@@ -69,6 +84,16 @@ export type AyanamsaMode = (typeof AYANAMSA)[keyof typeof AYANAMSA];
 
 // @public
 export function ayanamsaName(mode: number): string;
+
+// @public
+export interface AyanamsaOptions {
+    ayanamsaFlags?: number;
+    user?: {
+        t0Jd: number;
+        ayanamsaDeg: number;
+        t0IsUt?: boolean;
+    };
+}
 
 // @public
 enum Body_2 {
@@ -221,6 +246,12 @@ export const CalculationSettingsSchema: z.ZodObject<{
     }>;
     ayanamsaOffsetDeg: z.ZodNumber;
     customAyanamsaMode: z.ZodOptional<z.ZodNumber>;
+    ayanamsaFlags: z.ZodOptional<z.ZodNumber>;
+    userAyanamsa: z.ZodOptional<z.ZodObject<{
+        t0Jd: z.ZodNumber;
+        ayanamsaDeg: z.ZodNumber;
+        t0IsUt: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strict>>;
     nodeType: z.ZodEnum<{
         mean: "mean";
         true: "true";
@@ -276,13 +307,13 @@ export const CalculationSettingsSchema: z.ZodObject<{
     }, z.core.$strict>;
     dasaYear: z.ZodObject<{
         kind: z.ZodEnum<{
+            user: "user";
             mean_tropical: "mean_tropical";
             true_tropical: "true_tropical";
             mean_sidereal: "mean_sidereal";
             true_sidereal: "true_sidereal";
             savana: "savana";
             tithi_360: "tithi_360";
-            user: "user";
         }>;
         days: z.ZodNumber;
     }, z.core.$strict>;
@@ -708,6 +739,7 @@ export class EphemerisEngine {
         longitude?: number;
     }): number;
     setAyanamsa(mode: number): void;
+    setAyanamsaOptions(options: AyanamsaOptions | undefined): void;
     setChunkStore(store: De431ChunkStore): void;
     setDe441ChunkStore(store: De441ChunkStore): void;
     setEphemerisPolicy(policy: EphemerisPolicy): void;
@@ -920,6 +952,7 @@ export interface JyotishConfig {
     altitudeMetres: number;
     ayanamsaMode: number;
     ayanamsaOffset: number;
+    ayanamsaOptions?: AyanamsaOptions;
     calendar?: CalendarMode;
     cuspsInMiddle: boolean;
     dasamsaScheme: DasamsaScheme;
@@ -1238,6 +1271,7 @@ export const PRECISION_PROFILES: readonly ["jhora", "modern"];
 
 // @public
 export interface PrecisionOptions {
+    ayanamsaOptions?: AyanamsaOptions;
     calendar?: CalendarMode;
     // (undocumented)
     cuspsInMiddle?: boolean;
@@ -1441,10 +1475,10 @@ export function toNum(d: Decimal): number;
 // @public
 export const TROPICAL_YEAR_DAYS = 365.242189623;
 
-// Warning: (ae-forgotten-export) The symbol "TrueEpochModel" needs to be exported by the entry point index.d.ts
-//
 // @public
-export function trueAyanamsaFromModel(model: TrueEpochModel, jd: number): number;
+export function trueAyanamsaFromModel(model: Extract<AyanamsaModelDef, {
+    kind: 'true_epoch';
+}>, jd: number, profile?: PrecisionProfile): number;
 
 // @public
 export const TZDB_VERSION = "luxon-3.7.2";

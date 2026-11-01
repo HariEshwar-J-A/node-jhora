@@ -59,7 +59,7 @@ position and so carry no fitted constant — prefer them.
 | `18` | J2000 (no ayanamsa)                    | —                                  |
 
 Modes `2`, `7`, `8`, and `28` are not in the registry (`UnsupportedAyanamsaModeError`).
-`AYANAMSA_MODELS[mode].source` records provenance for supported modes.
+Primary references for each mode are listed in [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) and ADR 0025 (not duplicated in the npm bundle).
 
 ### `ayanamsaOffset`
 

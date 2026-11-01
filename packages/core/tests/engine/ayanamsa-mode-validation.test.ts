@@ -10,18 +10,20 @@ import { CalculationSettingsSchema } from '../../src/settings/schema.js';
 const JD = 2451545.0;
 
 describe('ayanamsa mode validation', () => {
-    test('mode 30 (Gil Brand) throws instead of returning True Chitra', () => {
-        expect(() => getAyanamsa(30, JD)).toThrow(UnknownAyanamsaModeError);
+    test('mode 30 (Gil Brand) is registered', () => {
+        expect(() => getAyanamsa(30, JD)).not.toThrow();
     });
 
     test.each([
         [99, UnknownAyanamsaModeError],
         [-1, UnknownAyanamsaModeError],
-        [2, UnsupportedAyanamsaModeError],
-        [28, UnsupportedAyanamsaModeError],
     ])('mode %i throws', (mode, errorType) => {
         expect(() => getAyanamsa(mode, JD)).toThrow(errorType);
         expect(() => assertValidAyanamsaMode(mode)).toThrow(errorType);
+    });
+
+    test('USER mode 255 requires options.user', () => {
+        expect(() => getAyanamsa(255, JD)).toThrow(/requires options\.user/);
     });
 
     test('non-finite and non-integer modes throw UnknownAyanamsaModeError', () => {
@@ -32,8 +34,9 @@ describe('ayanamsa mode validation', () => {
     test('EphemerisEngine.setAyanamsa rejects unknown modes', async () => {
         const engine = EphemerisEngine.getInstance();
         await engine.initialize();
-        expect(() => engine.setAyanamsa(30)).toThrow(UnknownAyanamsaModeError);
-        expect(() => engine.setAyanamsa(7)).toThrow(UnsupportedAyanamsaModeError);
+        expect(() => engine.setAyanamsa(99)).toThrow(UnknownAyanamsaModeError);
+        expect(() => engine.setAyanamsa(7)).not.toThrow();
+        expect(() => engine.setAyanamsa(30)).not.toThrow();
     });
 
     test('CalculationSettingsSchema rejects customAyanamsaMode 99', () => {
