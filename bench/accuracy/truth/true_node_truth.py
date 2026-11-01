@@ -6,8 +6,8 @@ Convention TN-MED-LT1 (headline `tropicalTrue` for TrueNode):
     `.apparent()` (no stellar aberration / deflection on the state).
   - One-shot light-time retardation: τ = |r( jd_ut )| / c, evaluate state at
     jd_eval = jd_ut − τ (shared ΔT at jd_eval for TT and ERFA arguments).
-  - IAU 2000 frame bias (ERFA bp06) + precession to mean equator of date
-    (pmat06), rotate to mean ecliptic with mean obliquity (obl06).
+  - IAU 2006 bias-precession `rbp` from ERFA bp06 (ICRS → mean equator of date),
+    then rotation to mean ecliptic with mean obliquity obl06 (same as ecm06).
   - Ascending node longitude from h = r × v in that mean ecliptic frame.
   - Add nutation in longitude Δψ from ERFA nut06a exactly once (true equinox
     of date for the published apparent-node comparison policy).
@@ -37,6 +37,18 @@ def _jd_tt_split(jd_tt: float) -> tuple[float, float]:
     return 2400000.5, jd_tt - 2400000.5
 
 
+def _mean_obliquity_rotation(eps: float) -> np.ndarray:
+    c, s = math.cos(eps), math.sin(eps)
+    return np.array([[1.0, 0.0, 0.0], [0.0, c, s], [0.0, -s, c]], dtype=float)
+
+
+def _icrs_to_mean_ecliptic_matrix(d1: float, d2: float) -> np.ndarray:
+    """ICRS → mean ecliptic of date (matches erfa.ecm06 to machine precision)."""
+    _rb, _rp, rbp = erfa.bp06(d1, d2)
+    eps = erfa.obl06(d1, d2)
+    return _mean_obliquity_rotation(eps) @ rbp
+
+
 def _mean_ecliptic_node_deg(
     icrf_km: np.ndarray, icrf_km_per_day: np.ndarray, jd_tt: float
 ) -> float:
@@ -50,36 +62,19 @@ def _mean_ecliptic_node_deg(
 def _mean_ecliptic_node_deg_bp06_route(
     icrf_km: np.ndarray, icrf_km_per_day: np.ndarray, jd_tt: float
 ) -> float:
-    """Second ERFA route: bp06 + pmat06 + obliquity on h = r × v (cross-check)."""
+    """Second ERFA route: obl06 ∘ rbp (bp06) on h = r × v — must match ecm06."""
     d1, d2 = _jd_tt_split(jd_tt)
-    rb, _rp, _rbp = erfa.bp06(d1, d2)
-    pm = erfa.pmat06(d1, d2)
-    eps = erfa.obl06(d1, d2)
-    c, s = math.cos(eps), math.sin(eps)
-    m = np.array([[1.0, 0.0, 0.0], [0.0, c, s], [0.0, -s, c]]) @ pm @ rb
     h = np.cross(icrf_km, icrf_km_per_day)
-    h_ecl = m @ h
-    return math.degrees(math.atan2(h_ecl[0], -h_ecl[1])) % 360.0
+    h_ecl = _icrs_to_mean_ecliptic_matrix(d1, d2) @ h
+    return ascending_node_from_h_ecl(h_ecl)
 
 
 def _to_mean_ecliptic_km(
     icrf_km: np.ndarray, icrf_km_per_day: np.ndarray, jd_tt: float
 ) -> tuple[np.ndarray, np.ndarray]:
     d1, d2 = _jd_tt_split(jd_tt)
-    rb, _rp, _rbp = erfa.bp06(d1, d2)
-    pm = erfa.pmat06(d1, d2)
-    eps = erfa.obl06(d1, d2)
-    req = pm @ (rb @ icrf_km)
-    veq = pm @ (rb @ icrf_km_per_day)
-
-    def obliquity_ecl(v: np.ndarray) -> np.ndarray:
-        x, y, z = v
-        return np.array(
-            [x, y * math.cos(eps) + z * math.sin(eps), -y * math.sin(eps) + z * math.cos(eps)],
-            dtype=float,
-        )
-
-    return obliquity_ecl(req), obliquity_ecl(veq)
+    m = _icrs_to_mean_ecliptic_matrix(d1, d2)
+    return m @ icrf_km, m @ icrf_km_per_day
 
 
 def ascending_node_longitude_deg(pos: np.ndarray, vel: np.ndarray) -> float:
@@ -241,8 +236,8 @@ def cross_check_mean_ecliptic_routes(
     delta_t_seconds: float,
 ) -> dict:
     """
-    Gate: ERFA bp06+pmat06+obl06 vs erfa.ecm06 on the same DE ICRS state (before Δψ).
-    Skyfield ecliptic rotation is logged separately (different precession model).
+    Gate: ERFA ecm06 vs obl06∘rbp (bp06) on the same DE ICRS h (before Δψ).
+    Skyfield true ecliptic of date is logged vs mean and vs TN-MED apparent.
     """
     r0, _ = geocentric_moon_icrf_km(earth, moon, ts, jd_ut, delta_t_seconds)
     eval_jd = jd_ut - float(np.linalg.norm(r0)) / C_KM_S / 86400.0
@@ -258,17 +253,26 @@ def cross_check_mean_ecliptic_routes(
     from skyfield import framelib
 
     t = ts.tt_jd(jd_tt)
-    rot = framelib.ecliptic_frame.rotation_at(t)
-    h_sky = rot @ h
-    lon_sky = ascending_node_from_h_ecl(h_sky)
-    d_sky_arcsec = ((lon_sky - lon_ecm + 540.0) % 360.0 - 180.0) * 3600.0
+    # Skyfield: true ecliptic and equinox of date (mean obliquity + nutation in obliquity).
+    rot_true = framelib.ecliptic_frame.rotation_at(t)
+    lon_sky_true = ascending_node_from_h_ecl(rot_true @ h)
+    dpsi = nutation_dpsi_deg(jd_tt)
+    lon_apparent = (lon_ecm + dpsi) % 360.0
+    d_sky_vs_mean_arcsec = ((lon_sky_true - lon_ecm + 540.0) % 360.0 - 180.0) * 3600.0
+    d_sky_vs_apparent_arcsec = ((lon_sky_true - lon_apparent + 540.0) % 360.0 - 180.0) * 3600.0
     return {
         "jdUt": jd_ut,
         "meanEclipticNodeEcm06Deg": lon_ecm,
         "meanEclipticNodeBp06Deg": lon_bp06,
         "dErfaEcm06VsBp06Arcsec": d_erfa_arcsec,
-        "meanEclipticNodeSkyfieldDeg": lon_sky,
-        "dSkyfieldVsEcm06Arcsec": d_sky_arcsec,
+        "trueNodeApparentTnMedDeg": lon_apparent,
+        "meanEclipticNodeSkyfieldTrueDeg": lon_sky_true,
+        "dSkyfieldTrueEclipticVsMeanEcm06Arcsec": d_sky_vs_mean_arcsec,
+        "dSkyfieldTrueEclipticVsApparentTnMedArcsec": d_sky_vs_apparent_arcsec,
+        "skyfieldEclipticFrameNote": (
+            "Skyfield framelib.ecliptic_frame is true ecliptic/equinox of date; "
+            "TN-MED headline uses mean ecliptic (ecm06) + nut06a Δψ once."
+        ),
         "moonStateAgreementArcsec": moon_state_agreement_arcsec(
             earth, moon, ts, eval_jd, delta_t_seconds
         ),
