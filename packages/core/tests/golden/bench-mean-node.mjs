@@ -29,11 +29,5 @@ const store = new De441ChunkStore(nodeFsChunkLoader(chunkDir), {
 });
 prefetchNjceForSecularMeanNode(store, jd);
 setDe441MeanNodeSampler(createDe441NjceMeanNodeSampler(store.asGetter()));
-const breakdown = profileDe441MeanNodePrefill(jd);
 const perf = benchmarkDe441MeanNode(jd);
-console.log(
-    JSON.stringify({
-        ...perf,
-        breakdown,
-    }),
-);
+console.log(JSON.stringify({ ...perf }));

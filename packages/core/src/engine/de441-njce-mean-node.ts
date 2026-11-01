@@ -3,7 +3,7 @@
  */
 
 import type { De441MeanNodeSampler } from './de441-mean-lunar-node.js';
-import { eraDtdbGeocenterSeconds } from './dtdb-erfa.js';
+import { eraDtdbGeocenterSecondsSecularPrefill } from './dtdb-secular-prefill.js';
 import type { De431ChunkFile } from './provider/de431-chunk.js';
 import { BODY_GROUP_EMB } from './provider/de431-chunk.js';
 import { DE441_NATIVE_JD_TDB_END, DE441_NATIVE_JD_TDB_START } from './provider/de441-chunk.js';
@@ -52,7 +52,7 @@ export function createDe441NjceMeanNodeSampler(
         const scratch = createNjceMoonSeqScratch();
         for (let n = nMin; n <= nMax; n++) {
             const jdTT = anchorJdTT + n * stepDays;
-            const jdTdb = jdTT + eraDtdbGeocenterSeconds(jdTT) / 86400.0;
+            const jdTdb = jdTT + eraDtdbGeocenterSecondsSecularPrefill(jdTT) / 86400.0;
             if (jdTdb < DE441_NATIVE_JD_TDB_START || jdTdb > DE441_NATIVE_JD_TDB_END) {
                 continue;
             }
@@ -79,7 +79,7 @@ export function createDe441NjceMeanNodeSampler(
         let chunk: De431ChunkFile | undefined;
         const scratch = createNjceMoonSeqScratch();
         for (const jdTT of jdTTList) {
-            const jdTdb = jdTT + eraDtdbGeocenterSeconds(jdTT) / 86400.0;
+            const jdTdb = jdTT + eraDtdbGeocenterSecondsSecularPrefill(jdTT) / 86400.0;
             if (jdTdb < DE441_NATIVE_JD_TDB_START || jdTdb > DE441_NATIVE_JD_TDB_END) {
                 continue;
             }

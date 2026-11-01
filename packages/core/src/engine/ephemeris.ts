@@ -88,6 +88,11 @@ import {
     type PlaceCorrections,
 } from './apparent.js';
 import {
+    ASTRO_SERIES_CACHE_DEFAULT_CAP,
+    AstroSeriesCache,
+    withAstroSeriesCache,
+} from './astro-series-cache.js';
+import {
     assertValidAyanamsaMode,
     type AyanamsaFrame,
     ayanamsaName,
@@ -405,6 +410,8 @@ export class EphemerisEngine {
     private chunkStoreDe441?: De441ChunkStore;
     private ayanamsaMode: number = DEFAULT_AYANAMSA;
     private ayanamsaOptions?: AyanamsaOptions;
+    /** FIFO memo for nutation IAU 2000A and Vondrák precession (server-grade PR4). */
+    private readonly astroSeriesCache = new AstroSeriesCache(ASTRO_SERIES_CACHE_DEFAULT_CAP);
 
     public constructor() {}
 
@@ -414,6 +421,11 @@ export class EphemerisEngine {
             EphemerisEngine.instance = new EphemerisEngine();
         }
         return EphemerisEngine.instance;
+    }
+
+    /** Clear the per-instance nutation / Vondrák series memo (tests and long-lived workers). */
+    public clearAstroSeriesCache(): void {
+        this.astroSeriesCache.clear();
     }
 
     // -----------------------------------------------------------------------
@@ -614,16 +626,18 @@ export class EphemerisEngine {
         // Modern profile defaults to apparent (matches pyswisseph black-box ayanamsa).
         const f: AyanamsaFrame = frame ?? (profile === 'modern' ? 'apparent' : 'geometric');
         const effectiveProfile = profile ?? getDeltaTContext().profile;
-        return withDeltaTContext(
-            deltaTContextOf(precision),
-            () =>
-                this.ayanamsaAt(
-                    effectiveMode,
-                    jd,
-                    f,
-                    effectiveProfile,
-                    precision?.ayanamsaOptions,
-                ) + offsetDeg,
+        return withDeltaTContext(deltaTContextOf(precision), () =>
+            withAstroSeriesCache(
+                this.astroSeriesCache,
+                () =>
+                    this.ayanamsaAt(
+                        effectiveMode,
+                        jd,
+                        f,
+                        effectiveProfile,
+                        precision?.ayanamsaOptions,
+                    ) + offsetDeg,
+            ),
         );
     }
 
@@ -671,157 +685,160 @@ export class EphemerisEngine {
             return withDeltaTContext(ctx, () => this.getPlanets(date, location, rest));
         }
 
-        const dt = parseEngineDateTime(date);
-        const {
-            ayanamsaOrder,
-            topocentric = false,
-            nodeType: nodeTypeOpt = DEFAULT_NODE_TYPE,
-            positionMode: positionModeOpt = DEFAULT_POSITION_MODE,
-            ayanamsaOffset = 0,
-            calendar = 'auto',
-            julianDayUt: jdOverride,
-            includeOuterPlanets = false,
-            zodiac = 'sidereal',
-            observationCenter = DEFAULT_OBSERVATION_CENTER,
-            coordinateOutput = DEFAULT_COORDINATE_OUTPUT,
-        } = options;
-        const nodeType = assertNodeType(nodeTypeOpt);
-        const positionMode = assertPositionMode(positionModeOpt);
-        const effectiveMode = assertAyanamsaMode(ayanamsaOrder ?? this.ayanamsaMode);
-        assertFiniteNumber(ayanamsaOffset, 'ayanamsaOffset');
-        const loc = assertGeoLocation(location, { required: topocentric });
-        const corrections = correctionsFor(positionMode);
+        return withAstroSeriesCache(this.astroSeriesCache, () => {
+            const dt = parseEngineDateTime(date);
+            const {
+                ayanamsaOrder,
+                topocentric = false,
+                nodeType: nodeTypeOpt = DEFAULT_NODE_TYPE,
+                positionMode: positionModeOpt = DEFAULT_POSITION_MODE,
+                ayanamsaOffset = 0,
+                calendar = 'auto',
+                julianDayUt: jdOverride,
+                includeOuterPlanets = false,
+                zodiac = 'sidereal',
+                observationCenter = DEFAULT_OBSERVATION_CENTER,
+                coordinateOutput = DEFAULT_COORDINATE_OUTPUT,
+            } = options;
+            const nodeType = assertNodeType(nodeTypeOpt);
+            const positionMode = assertPositionMode(positionModeOpt);
+            const effectiveMode = assertAyanamsaMode(ayanamsaOrder ?? this.ayanamsaMode);
+            assertFiniteNumber(ayanamsaOffset, 'ayanamsaOffset');
+            const loc = assertGeoLocation(location, { required: topocentric });
+            const corrections = correctionsFor(positionMode);
 
-        const jd =
-            jdOverride ??
-            this.julday(dt, {
-                calendar,
-                latitude: loc?.latitude,
-                longitude: loc?.longitude,
-            });
-        this.prefetchEphemerisChunks(jd);
-        this.assertLongRangeChunksForJd(jd);
-        const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
-        // Geometric (TRUEPOS) sidereal positions subtract the geometric star
-        // place. Apparent positions subtract the same apparent ayanamsa
-        // getAyanamsa() reports, so adding it back recovers the tropical place.
-        const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
-        const ayan =
-            zodiac === 'sidereal'
-                ? this.ayanamsaAt(
-                      effectiveMode,
-                      jd,
-                      frame,
-                      precisionProfile,
-                      options.ayanamsaOptions,
-                  ) + ayanamsaOffset
-                : 0;
-        // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
-        // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
-        // lower by d(ayan)/dt (~0.138″/day). `modern` reports sidereal rate =
-        // tropical − d(ayan)/dt (geometric True Citra, same 1 s step on ayanamsa).
-        const ayanRateForSiderealSpeed =
-            zodiac === 'sidereal' && precisionProfile === 'modern'
-                ? this.ayanamsaRateDegPerDay(
-                      jd,
-                      effectiveMode,
-                      'geometric',
-                      ayanamsaOffset,
-                      precisionProfile,
-                      options.ayanamsaOptions,
-                  )
-                : 0;
-        /** Meeus eq. 47.7 mean node: keep jhora geometric ayanamsa in the modern profile (ADR 0016). */
-        const ayanForMeanNode =
-            zodiac === 'sidereal' && precisionProfile === 'modern'
-                ? this.ayanamsaAt(
-                      effectiveMode,
-                      jd,
-                      'geometric',
-                      'jhora',
-                      options.ayanamsaOptions,
-                  ) + ayanamsaOffset
-                : ayan;
-        const ayanRateForMeanNode =
-            zodiac === 'sidereal' && precisionProfile === 'modern'
-                ? this.ayanamsaRateDegPerDay(
-                      jd,
-                      effectiveMode,
-                      'geometric',
-                      ayanamsaOffset,
-                      'jhora',
-                      options.ayanamsaOptions,
-                  )
-                : ayanRateForSiderealSpeed;
+            const jd =
+                jdOverride ??
+                this.julday(dt, {
+                    calendar,
+                    latitude: loc?.latitude,
+                    longitude: loc?.longitude,
+                });
+            this.prefetchEphemerisChunks(jd);
+            this.assertLongRangeChunksForJd(jd);
+            const precisionProfile = options.precisionProfile ?? getDeltaTContext().profile;
+            // Geometric (TRUEPOS) sidereal positions subtract the geometric star
+            // place. Apparent positions subtract the same apparent ayanamsa
+            // getAyanamsa() reports, so adding it back recovers the tropical place.
+            const frame: AyanamsaFrame = positionMode === 'apparent' ? 'apparent' : 'geometric';
+            const ayan =
+                zodiac === 'sidereal'
+                    ? this.ayanamsaAt(
+                          effectiveMode,
+                          jd,
+                          frame,
+                          precisionProfile,
+                          options.ayanamsaOptions,
+                      ) + ayanamsaOffset
+                    : 0;
+            // Sidereal longitudes subtract ayanamsa; speeds follow oracle SP-B2:
+            // `jhora` reports tropical TRUEPOS rate (≈ d(tropical)/dt); sidereal FD is
+            // lower by d(ayan)/dt (~0.138″/day). `modern` reports sidereal rate =
+            // tropical − d(ayan)/dt (geometric True Citra, same 1 s step on ayanamsa).
+            const ayanRateForSiderealSpeed =
+                zodiac === 'sidereal' && precisionProfile === 'modern'
+                    ? this.ayanamsaRateDegPerDay(
+                          jd,
+                          effectiveMode,
+                          'geometric',
+                          ayanamsaOffset,
+                          precisionProfile,
+                          options.ayanamsaOptions,
+                      )
+                    : 0;
+            /** Meeus eq. 47.7 mean node: keep jhora geometric ayanamsa in the modern profile (ADR 0016). */
+            const ayanForMeanNode =
+                zodiac === 'sidereal' && precisionProfile === 'modern'
+                    ? this.ayanamsaAt(
+                          effectiveMode,
+                          jd,
+                          'geometric',
+                          'jhora',
+                          options.ayanamsaOptions,
+                      ) + ayanamsaOffset
+                    : ayan;
+            const ayanRateForMeanNode =
+                zodiac === 'sidereal' && precisionProfile === 'modern'
+                    ? this.ayanamsaRateDegPerDay(
+                          jd,
+                          effectiveMode,
+                          'geometric',
+                          ayanamsaOffset,
+                          'jhora',
+                          options.ayanamsaOptions,
+                      )
+                    : ayanRateForSiderealSpeed;
 
-        const planets: PlanetPosition[] = [];
+            const planets: PlanetPosition[] = [];
 
-        const bodyIds = includeOuterPlanets
-            ? [...SPK_BODY_IDS, ...OUTER_SPK_BODY_IDS]
-            : [...SPK_BODY_IDS];
+            const bodyIds = includeOuterPlanets
+                ? [...SPK_BODY_IDS, ...OUTER_SPK_BODY_IDS]
+                : [...SPK_BODY_IDS];
 
-        for (const pid of bodyIds) {
-            const naifId = ID_TO_NAIF[pid];
+            for (const pid of bodyIds) {
+                const naifId = ID_TO_NAIF[pid];
 
-            const topoLoc = topocentric ? loc : undefined;
-            const here = this.meanEclipticOfDate(
-                jd,
-                naifId,
-                corrections,
-                topoLoc,
-                observationCenter,
-                precisionProfile,
-            );
-            const motion = this.meanEclipticDailyMotion(
-                jd,
-                naifId,
-                corrections,
-                topoLoc,
-                observationCenter,
-                precisionProfile,
-            );
+                const topoLoc = topocentric ? loc : undefined;
+                const here = this.meanEclipticOfDate(
+                    jd,
+                    naifId,
+                    corrections,
+                    topoLoc,
+                    observationCenter,
+                    precisionProfile,
+                );
+                const motion = this.meanEclipticDailyMotion(
+                    jd,
+                    naifId,
+                    corrections,
+                    topoLoc,
+                    observationCenter,
+                    precisionProfile,
+                );
 
-            const eq = this.equatorialOf(jd, here.lon, here.lat);
+                const eq = this.equatorialOf(jd, here.lon, here.lat);
+                planets.push({
+                    id: pid,
+                    name: PLANET_NAMES[pid] ?? `P${pid}`,
+                    longitude: toSidereal(here.lon, ayan),
+                    latitude: here.lat,
+                    distance: here.dist,
+                    speed: motion.lon - ayanRateForSiderealSpeed,
+                    declination: eq.dec,
+                    ...(coordinateOutput === 'equatorial' ? { rightAscension: eq.ra } : {}),
+                });
+            }
+
+            // ── Lunar nodes ─────────────────────────────────────────────────────
+            const node = this.lunarNode(jd, nodeType, precisionProfile, positionMode);
+            const nodeAyan = nodeType === 'mean' ? ayanForMeanNode : ayan;
+            const nodeAyanRate =
+                nodeType === 'mean' ? ayanRateForMeanNode : ayanRateForSiderealSpeed;
+            const rahuEq = this.equatorialOf(jd, node.lon, 0);
             planets.push({
-                id: pid,
-                name: PLANET_NAMES[pid] ?? `P${pid}`,
-                longitude: toSidereal(here.lon, ayan),
-                latitude: here.lat,
-                distance: here.dist,
-                speed: motion.lon - ayanRateForSiderealSpeed,
-                declination: eq.dec,
-                ...(coordinateOutput === 'equatorial' ? { rightAscension: eq.ra } : {}),
+                id: Body.Rahu,
+                name: 'Rahu',
+                longitude: toSidereal(node.lon, nodeAyan),
+                latitude: 0,
+                distance: node.dist,
+                speed: node.speed - nodeAyanRate,
+                declination: rahuEq.dec,
+                ...(coordinateOutput === 'equatorial' ? { rightAscension: rahuEq.ra } : {}),
             });
-        }
 
-        // ── Lunar nodes ─────────────────────────────────────────────────────
-        const node = this.lunarNode(jd, nodeType, precisionProfile, positionMode);
-        const nodeAyan = nodeType === 'mean' ? ayanForMeanNode : ayan;
-        const nodeAyanRate = nodeType === 'mean' ? ayanRateForMeanNode : ayanRateForSiderealSpeed;
-        const rahuEq = this.equatorialOf(jd, node.lon, 0);
-        planets.push({
-            id: Body.Rahu,
-            name: 'Rahu',
-            longitude: toSidereal(node.lon, nodeAyan),
-            latitude: 0,
-            distance: node.dist,
-            speed: node.speed - nodeAyanRate,
-            declination: rahuEq.dec,
-            ...(coordinateOutput === 'equatorial' ? { rightAscension: rahuEq.ra } : {}),
+            const rahu = planets[planets.length - 1];
+            planets.push({
+                id: Body.Ketu,
+                name: 'Ketu',
+                longitude: mod360(rahu.longitude + 180),
+                latitude: 0,
+                distance: rahu.distance,
+                speed: rahu.speed,
+                declination: -rahu.declination,
+            });
+
+            return planets;
         });
-
-        const rahu = planets[planets.length - 1];
-        planets.push({
-            id: Body.Ketu,
-            name: 'Ketu',
-            longitude: mod360(rahu.longitude + 180),
-            latitude: 0,
-            distance: rahu.distance,
-            speed: rahu.speed,
-            declination: -rahu.declination,
-        });
-
-        return planets;
     }
 
     /** d(ayanamsa)/d(UT day), degrees/day — symmetric 1 s step. */
@@ -1119,29 +1136,33 @@ export class EphemerisEngine {
         const ctx = deltaTContextOf(precision);
         if (ctx) {
             return withDeltaTContext(ctx, () =>
-                this.housesIn(
-                    jd,
-                    lat,
-                    lonNorm,
-                    houseMethod,
-                    sidereal,
-                    ayanamsaMode,
-                    ayanamsaOffset,
-                    siderealFrame,
-                    precision,
+                withAstroSeriesCache(this.astroSeriesCache, () =>
+                    this.housesIn(
+                        jd,
+                        lat,
+                        lonNorm,
+                        houseMethod,
+                        sidereal,
+                        ayanamsaMode,
+                        ayanamsaOffset,
+                        siderealFrame,
+                        precision,
+                    ),
                 ),
             );
         }
-        return this.housesIn(
-            jd,
-            lat,
-            lonNorm,
-            houseMethod,
-            sidereal,
-            ayanamsaMode,
-            ayanamsaOffset,
-            siderealFrame,
-            precision,
+        return withAstroSeriesCache(this.astroSeriesCache, () =>
+            this.housesIn(
+                jd,
+                lat,
+                lonNorm,
+                houseMethod,
+                sidereal,
+                ayanamsaMode,
+                ayanamsaOffset,
+                siderealFrame,
+                precision,
+            ),
         );
     }
 

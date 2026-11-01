@@ -14,6 +14,17 @@ const SERVER_GRADE_PR2_FULL_CHART_MAX_P50 = SERVER_GRADE_PR1_FULL_CHART_JHORA_P5
 const SERVER_GRADE_PR1_PLANETS_JHORA_P50 = 0.5597119999999904;
 const SERVER_GRADE_PR2_PLANETS_MAX_DELTA = 0.15;
 
+/** Post-PR2 baseline (main @ de758a3) p50 before PR4 memo — PR4 improvement gates. */
+const SERVER_GRADE_PR4_TRUTH_PLANETS_BASE_P50 = 1.9086559999999508;
+const SERVER_GRADE_PR4_TRUTH_PLANETS_MAX_P50 = SERVER_GRADE_PR4_TRUTH_PLANETS_BASE_P50 * 0.5;
+const SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_BASE_P50 = 72.05270599999994;
+const SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_MAX_P50 =
+    SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_BASE_P50 * 0.6;
+const SERVER_GRADE_PR4_HOUSES_JHORA_BASE_P50 = 0.3208649999999693;
+const SERVER_GRADE_PR4_PLANETS_JHORA_BASE_P50 = 0.5398720000000026;
+/** Aspirational cold path (golden subprocess); bench p50 includes full Ω prefill. */
+const SERVER_GRADE_PR4_DEEP_ERA_COLD_MAX_P50 = 250;
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function baselineP50(entry: { p50Ms?: number; medianMs?: number }): number {
@@ -78,12 +89,49 @@ async function main(): Promise<void> {
     const planetsJhora = results.cases.find((c) => c.id === 'planets-jhora' && !c.skipped);
     if (planetsJhora) {
         const base = SERVER_GRADE_PR1_PLANETS_JHORA_P50;
-        const ratio = Math.abs(planetsJhora.p50Ms - base) / base;
-        if (ratio > SERVER_GRADE_PR2_PLANETS_MAX_DELTA) {
+        if (planetsJhora.p50Ms > base * (1 + SERVER_GRADE_PR2_PLANETS_MAX_DELTA)) {
             failures.push(
-                `planets-jhora: p50 ${planetsJhora.p50Ms.toFixed(3)} ms moved ${(ratio * 100).toFixed(1)}% vs PR1 ${base.toFixed(3)} ms (limit ${SERVER_GRADE_PR2_PLANETS_MAX_DELTA * 100}%)`,
+                `planets-jhora: p50 ${planetsJhora.p50Ms.toFixed(3)} ms regressed >${(SERVER_GRADE_PR2_PLANETS_MAX_DELTA * 100).toFixed(0)}% vs PR1 ${base.toFixed(3)} ms`,
             );
         }
+    }
+
+    const planetsTruth = results.cases.find((c) => c.id === 'planets-truth' && !c.skipped);
+    if (planetsTruth && planetsTruth.p50Ms > SERVER_GRADE_PR4_TRUTH_PLANETS_MAX_P50) {
+        failures.push(
+            `planets-truth: p50 ${planetsTruth.p50Ms.toFixed(3)} ms exceeds PR4 gate ${SERVER_GRADE_PR4_TRUTH_PLANETS_MAX_P50.toFixed(3)} ms (0.50× post-PR2 ${SERVER_GRADE_PR4_TRUTH_PLANETS_BASE_P50.toFixed(3)} ms)`,
+        );
+    }
+    const distinctFirst = results.cases.find(
+        (c) => c.id === 'planets-truth-distinct-jd-first' && !c.skipped,
+    );
+    if (distinctFirst && distinctFirst.p50Ms > SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_MAX_P50) {
+        failures.push(
+            `planets-truth-distinct-jd-first: p50 ${distinctFirst.p50Ms.toFixed(3)} ms exceeds PR4 gate ${SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_MAX_P50.toFixed(3)} ms (0.60× post-PR2 ${SERVER_GRADE_PR4_TRUTH_DISTINCT_JD_FIRST_BASE_P50.toFixed(3)} ms)`,
+        );
+    }
+    const housesJhora = results.cases.find((c) => c.id === 'houses-jhora' && !c.skipped);
+    if (housesJhora && housesJhora.p50Ms >= SERVER_GRADE_PR4_HOUSES_JHORA_BASE_P50) {
+        failures.push(
+            `houses-jhora: p50 ${housesJhora.p50Ms.toFixed(3)} ms did not improve vs post-PR2 ${SERVER_GRADE_PR4_HOUSES_JHORA_BASE_P50.toFixed(3)} ms`,
+        );
+    }
+    if (
+        planetsJhora &&
+        planetsJhora.p50Ms > SERVER_GRADE_PR4_PLANETS_JHORA_BASE_P50 * (1 + REGRESSION_TOLERANCE)
+    ) {
+        failures.push(
+            `planets-jhora: p50 ${planetsJhora.p50Ms.toFixed(3)} ms regressed vs post-PR2 ${SERVER_GRADE_PR4_PLANETS_JHORA_BASE_P50.toFixed(3)} ms`,
+        );
+    }
+
+    const deepCold = results.cases.find(
+        (c) => c.id === 'deep-era-truth-mean-node-cold' && !c.skipped,
+    );
+    if (deepCold && deepCold.p50Ms > SERVER_GRADE_PR4_DEEP_ERA_COLD_MAX_P50) {
+        failures.push(
+            `deep-era-truth-mean-node-cold: p50 ${deepCold.p50Ms.toFixed(3)} ms exceeds PR4 gate ${SERVER_GRADE_PR4_DEEP_ERA_COLD_MAX_P50} ms`,
+        );
     }
 
     if (budgetMisses.length > 0) {

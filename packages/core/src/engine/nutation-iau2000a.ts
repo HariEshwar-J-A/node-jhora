@@ -7,6 +7,7 @@
  * Delaunay Ω follows ERFA faom03 / Simon et al. 1994.
  */
 
+import { ASTRO_SERIES_NUTATION_IAU2000A, getActiveAstroSeriesCache } from './astro-series-cache.js';
 import { fundamentalArgumentsIers2010Radians } from './iers-fundamental-arguments.js';
 import type { Nutation } from './nutation.js';
 import data from './nutation-iau2000a.data.json' with { type: 'json' };
@@ -64,10 +65,7 @@ function mhbPlanetaryArguments(t: number): number[] {
     return [al, af, ad, aom, f[5], f[6], f[7], f[8], f[9], f[10], f[11], alne, f[13]];
 }
 
-/**
- * Nutation in longitude and obliquity (degrees) at Julian centuries T (TT).
- */
-export function nutationIau2000a(T: number): Nutation {
+function nutationIau2000aExact(T: number): Nutation {
     const t = T;
     const [el, elp, f, d, om] = mhbLuniSolarArguments(t);
     let dp = 0;
@@ -101,4 +99,16 @@ export function nutationIau2000a(T: number): Nutation {
 
     const rad2deg = 180 / Math.PI;
     return { dpsi: dp * U2R * rad2deg, deps: de * U2R * rad2deg };
+}
+
+/**
+ * Nutation in longitude and obliquity (degrees) at Julian centuries T (TT).
+ * Uses the active {@link AstroSeriesCache} on the engine call stack when bound.
+ */
+export function nutationIau2000a(T: number): Nutation {
+    const cache = getActiveAstroSeriesCache();
+    if (!cache) {
+        return nutationIau2000aExact(T);
+    }
+    return cache.get(ASTRO_SERIES_NUTATION_IAU2000A, T, () => nutationIau2000aExact(T));
 }

@@ -714,6 +714,7 @@ export interface EphemerisChunkLoader {
 // @public (undocumented)
 export class EphemerisEngine {
     constructor();
+    clearAstroSeriesCache(): void;
     // Warning: (ae-forgotten-export) The symbol "AyanamsaFrame" needs to be exported by the entry point index.d.ts
     getAyanamsa(jd: number, mode?: number, offsetDeg?: number, frame?: AyanamsaFrame, precision?: PrecisionOptions): number;
     getAyanamsaName(mode?: number): string;

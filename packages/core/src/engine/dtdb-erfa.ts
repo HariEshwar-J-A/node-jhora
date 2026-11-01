@@ -8,40 +8,39 @@ import { DTDB_FAIRHD } from '../generated/dtdb-fairhead.js';
 const DJ00 = 2451545.0;
 const DJM = 365250.0;
 
-/**
- * TDB−TT in seconds for an observer at the geocentre (u = v = 0).
- *
- * @param jdTT Terrestrial Time as Julian Date
- */
-export function eraDtdbGeocenterSeconds(jdTT: number): number {
-    const date1 = DJ00;
-    const date2 = jdTT - DJ00;
-    const t = (date1 - DJ00 + date2) / DJM;
+let uncachedCallCount = 0;
+
+export function eraDtdbGeocenterSecondsUncachedCallCount(): number {
+    return uncachedCallCount;
+}
+
+export function resetEraDtdbGeocenterSecondsUncachedCallCount(): void {
+    uncachedCallCount = 0;
+}
+
+/** Fairhead + Bretagnon geocentre series (no call-count side effect). */
+export function fairheadGeocenterSeconds(jdTT: number): number {
+    const t = (jdTT - DJ00) / DJM;
 
     let w0 = 0;
-    for (let j = 473; j >= 0; j--) {
-        const row = DTDB_FAIRHD[j]!;
-        w0 += row[0] * Math.sin(row[1] * t + row[2]);
-    }
     let w1 = 0;
-    for (let j = 678; j >= 474; j--) {
-        const row = DTDB_FAIRHD[j]!;
-        w1 += row[0] * Math.sin(row[1] * t + row[2]);
-    }
     let w2 = 0;
-    for (let j = 763; j >= 679; j--) {
-        const row = DTDB_FAIRHD[j]!;
-        w2 += row[0] * Math.sin(row[1] * t + row[2]);
-    }
     let w3 = 0;
-    for (let j = 783; j >= 764; j--) {
-        const row = DTDB_FAIRHD[j]!;
-        w3 += row[0] * Math.sin(row[1] * t + row[2]);
-    }
     let w4 = 0;
-    for (let j = 786; j >= 784; j--) {
+    for (let j = 786; j >= 0; j--) {
         const row = DTDB_FAIRHD[j]!;
-        w4 += row[0] * Math.sin(row[1] * t + row[2]);
+        const s = row[0] * Math.sin(row[1] * t + row[2]);
+        if (j <= 473) {
+            w0 += s;
+        } else if (j <= 678) {
+            w1 += s;
+        } else if (j <= 763) {
+            w2 += s;
+        } else if (j <= 783) {
+            w3 += s;
+        } else {
+            w4 += s;
+        }
     }
 
     const wf = t * (t * (t * (t * w4 + w3) + w2) + w1) + w0;
@@ -53,6 +52,22 @@ export function eraDtdbGeocenterSeconds(jdTT: number): number {
         0.03638e-6 * t * t;
 
     return wf + wj;
+}
+
+/** Full Fairhead + Bretagnon series (increments uncached call-count metric). */
+export function eraDtdbGeocenterSecondsUncached(jdTT: number): number {
+    uncachedCallCount++;
+    return fairheadGeocenterSeconds(jdTT);
+}
+
+/**
+ * TDB−TT in seconds for an observer at the geocentre (u = v = 0).
+ *
+ * @param jdTT Terrestrial Time as Julian Date
+ */
+export function eraDtdbGeocenterSeconds(jdTT: number): number {
+    uncachedCallCount++;
+    return fairheadGeocenterSeconds(jdTT);
 }
 
 /** Julian day (TDB) from TT for the truth precision profile SPK argument. */
