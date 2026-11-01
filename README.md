@@ -264,5 +264,6 @@ Copyright (c) 2026 Harieshwar Jagan Abirami. All Rights Reserved.
 
 - **Public access**: source is available for inspection and education.
 - **Restricted use**: usage, distribution, and derivative works require a commercial license.
+- **Commercial licensing**: contact [harieshwar.dev@gmail.com](mailto:harieshwar.dev@gmail.com) or [harieshwar.dev](https://harieshwar.dev).
 - See [LICENSE](LICENSE).
 - `@node-jhora/atlas` place data is derived from [GeoNames](https://www.geonames.org/) and licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/); see [packages/atlas/ATTRIBUTION.md](./packages/atlas/ATTRIBUTION.md).

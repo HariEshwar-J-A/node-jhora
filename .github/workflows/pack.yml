@@ -35,3 +35,6 @@ jobs:
 
             - name: Check package tarballs
               run: pnpm check:pack
+
+            - name: JSR dry-run (types and publish layout)
+              run: pnpm jsr:dry-run

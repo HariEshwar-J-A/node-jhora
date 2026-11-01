@@ -61,7 +61,9 @@ export type { MatchSystem, MatchResult, KutaScore, DoshaResult, CompatibilityRes
 
 **© Copyright HariEshwar-J-A (Harieshwar Jagan Abirami).** All rights reserved.
 
-This software is proprietary. For commercial use, enterprise integration, or any other use cases, explicit permission is required. Usage is subject to agreed-upon payment and licensing terms. Please contact the author for licensing inquiries.
+This software is proprietary. For commercial use, enterprise integration, or any other use cases, explicit permission is required. Usage is subject to agreed-upon payment and licensing terms.
+
+**Commercial licensing:** [harieshwar.dev@gmail.com](mailto:harieshwar.dev@gmail.com) · [harieshwar.dev](https://harieshwar.dev)
 
 ## Configuration
 

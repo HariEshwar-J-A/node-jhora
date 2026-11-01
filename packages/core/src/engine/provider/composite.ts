@@ -17,6 +17,7 @@ import { De441LongEphemerisProvider } from './de441-chunk.js';
 import { etToJdTdb } from './time.js';
 import type {
     EphemerisBodyId,
+    EphemerisCoverage,
     EphemerisFrame,
     EphemerisPolicy,
     EphemerisProvenance,
@@ -39,8 +40,8 @@ export interface CompositeEphemerisOptions {
 
 export class CompositeEphemerisProvider implements EphemerisProvider, BarycentricSource {
     readonly id = 'composite';
-    readonly coverage;
-    readonly bodies;
+    readonly coverage: EphemerisCoverage;
+    readonly bodies: readonly EphemerisBodyId[];
 
     private readonly de440s: De440sEphemerisProvider;
     private readonly spkFile: SpkFile;

@@ -1,0 +1,24 @@
+{
+    "name": "@node-jhora/core",
+    "version": "3.1.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "exports": {
+        ".": "./src/index.ts",
+        "./chebyshev": "./src/engine/chebyshev.ts",
+        "./vargas": "./src/vedic/vargas.ts",
+        "./browser": "./src/browser/index.ts",
+        "./truth/mean-ecliptic-iau2006": "./src/truth/mean-ecliptic-iau2006.ts"
+    },
+    "dependencies": {
+        "decimal.js": "npm:decimal.js@^10.4.3",
+        "luxon": "npm:luxon@^3.7.2",
+        "zod": "npm:zod@4.6.7"
+    },
+    "peerDependencies": {
+        "@node-jhora/ephe": "npm:@node-jhora/ephe@^440.2.0"
+    },
+    "publish": {
+        "include": ["src/**/*.ts", "src/**/*.json", "LICENSE", "README.md"],
+        "exclude": ["**/*.test.ts", "**/*.spec.ts", "tests/**", "**/fixtures/**", "scripts/**"]
+    }
+}

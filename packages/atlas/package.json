@@ -52,5 +52,15 @@
         "jest": "^30.2.0",
         "ts-jest": "^29.4.6",
         "typescript": "^5.9.3"
-    }
+    },
+    "author": {
+        "name": "Harieshwar Jagan Abirami",
+        "email": "harieshwar.dev@gmail.com",
+        "url": "https://harieshwar.dev"
+    },
+    "bugs": {
+        "url": "https://github.com/HariEshwar-J-A/node-jhora/issues",
+        "email": "harieshwar.dev@gmail.com"
+    },
+    "homepage": "https://github.com/HariEshwar-J-A/node-jhora#readme"
 }

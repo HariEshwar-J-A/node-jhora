@@ -53,17 +53,7 @@ export const AYANAMSA_FLAGS: {
 export const AYANAMSA_IDS: readonly ["true_citra", "true_pushya", "true_mula", "fagan_bradley", "lahiri", "lahiri_icrc", "raman", "kp", "j2000"];
 
 // @public (undocumented)
-export const AYANAMSA_MODE_BY_ID: {
-    readonly fagan_bradley: 0;
-    readonly lahiri: 1;
-    readonly lahiri_icrc: 46;
-    readonly raman: 3;
-    readonly kp: 5;
-    readonly j2000: 18;
-    readonly true_citra: 27;
-    readonly true_pushya: 29;
-    readonly true_mula: 35;
-};
+export const AYANAMSA_MODE_BY_ID: Record<(typeof AYANAMSA_IDS)[number], number>;
 
 // @public
 export const AYANAMSA_MODE_USER = 255;
@@ -205,131 +195,36 @@ export function calculateVarga(longitude: number, division: number, options?: Va
 export function calculateVarnadaLagna(ascendantLong: number, horaLagnaLong: number, ascendantSign: number, // 1-12
 horaLagnaSign: number): number;
 
-// @public (undocumented)
-export type CalculationSettings = z.infer<typeof CalculationSettingsSchema>;
+// @public
+export type CalculationSettings = {
+    schemaVersion: typeof SETTINGS_SCHEMA_VERSION;
+    precisionProfile: PrecisionProfileId;
+    deltaTForecast?: DeltaTForecastId;
+    starParallax?: StarParallaxId;
+    deltaTOverrideSeconds?: number;
+    ephemerisPolicy: EphemerisPolicyId;
+    calendar?: CalendarModeId;
+    ayanamsa: AyanamsaId;
+    ayanamsaOffsetDeg: number;
+    customAyanamsaMode?: number;
+    ayanamsaFlags?: number;
+    userAyanamsa?: UserAyanamsaSettings;
+    nodeType: 'mean' | 'true';
+    houseSystem: HouseSystemId;
+    houseAnchor?: HouseAnchorId;
+    cuspsInMiddle: boolean;
+    positionMode: 'apparent' | 'geometric';
+    topocentric: boolean;
+    altitudeMetres: number;
+    sunrise: SunriseSettings;
+    dasaYear: DasaYearSettings;
+    dasamsaScheme: 'parashara' | 'jhora_5_8';
+    horaScheme: 'parashara' | 'parivritti';
+    vargaVariants: Record<string, string>;
+};
 
 // @public (undocumented)
-export const CalculationSettingsSchema: z.ZodObject<{
-    schemaVersion: z.ZodDefault<z.ZodLiteral<1>>;
-    precisionProfile: z.ZodDefault<z.ZodEnum<{
-        jhora: "jhora";
-        modern: "modern";
-        truth: "truth";
-    }>>;
-    deltaTForecast: z.ZodOptional<z.ZodEnum<{
-        published: "published";
-        "oracle-compat": "oracle-compat";
-    }>>;
-    starParallax: z.ZodOptional<z.ZodEnum<{
-        "oracle-compat": "oracle-compat";
-        continuous: "continuous";
-    }>>;
-    deltaTOverrideSeconds: z.ZodOptional<z.ZodNumber>;
-    ephemerisPolicy: z.ZodDefault<z.ZodEnum<{
-        auto: "auto";
-        de440s: "de440s";
-        de431_long: "de431_long";
-        de441_long: "de441_long";
-    }>>;
-    calendar: z.ZodOptional<z.ZodEnum<{
-        auto: "auto";
-        gregorian: "gregorian";
-        julian: "julian";
-    }>>;
-    ayanamsa: z.ZodEnum<{
-        lahiri: "lahiri";
-        true_citra: "true_citra";
-        true_pushya: "true_pushya";
-        true_mula: "true_mula";
-        fagan_bradley: "fagan_bradley";
-        lahiri_icrc: "lahiri_icrc";
-        raman: "raman";
-        kp: "kp";
-        j2000: "j2000";
-    }>;
-    ayanamsaOffsetDeg: z.ZodNumber;
-    customAyanamsaMode: z.ZodOptional<z.ZodNumber>;
-    ayanamsaFlags: z.ZodOptional<z.ZodNumber>;
-    userAyanamsa: z.ZodOptional<z.ZodObject<{
-        t0Jd: z.ZodNumber;
-        ayanamsaDeg: z.ZodNumber;
-        t0IsUt: z.ZodOptional<z.ZodBoolean>;
-    }, z.core.$strict>>;
-    nodeType: z.ZodEnum<{
-        mean: "mean";
-        true: "true";
-    }>;
-    houseSystem: z.ZodEnum<{
-        porphyry: "porphyry";
-        whole_sign: "whole_sign";
-        equal: "equal";
-        placidus: "placidus";
-        koch: "koch";
-        regiomontanus: "regiomontanus";
-        campanus: "campanus";
-        alcabitius: "alcabitius";
-        topocentric: "topocentric";
-        morinus: "morinus";
-        meridian: "meridian";
-        krusinski: "krusinski";
-        horizontal: "horizontal";
-        vehlow: "vehlow";
-        equal_mc: "equal_mc";
-        equal_aries: "equal_aries";
-        sripati: "sripati";
-        carter: "carter";
-        pullen_sd: "pullen_sd";
-        pullen_sr: "pullen_sr";
-        apc: "apc";
-        gauquelin: "gauquelin";
-        sunshine: "sunshine";
-        sunshine_treindl: "sunshine_treindl";
-        nine_pada_equal: "nine_pada_equal";
-        surya_siddhanta_houses: "surya_siddhanta_houses";
-    }>;
-    houseAnchor: z.ZodOptional<z.ZodEnum<{
-        ascendant: "ascendant";
-        moon: "moon";
-        sun: "sun";
-        aries: "aries";
-    }>>;
-    cuspsInMiddle: z.ZodBoolean;
-    positionMode: z.ZodEnum<{
-        apparent: "apparent";
-        geometric: "geometric";
-    }>;
-    topocentric: z.ZodBoolean;
-    altitudeMetres: z.ZodNumber;
-    sunrise: z.ZodObject<{
-        limb: z.ZodEnum<{
-            disc_centre: "disc_centre";
-            upper_limb: "upper_limb";
-        }>;
-        refraction: z.ZodBoolean;
-        nominalHour: z.ZodNumber;
-    }, z.core.$strict>;
-    dasaYear: z.ZodObject<{
-        kind: z.ZodEnum<{
-            user: "user";
-            mean_tropical: "mean_tropical";
-            true_tropical: "true_tropical";
-            mean_sidereal: "mean_sidereal";
-            true_sidereal: "true_sidereal";
-            savana: "savana";
-            tithi_360: "tithi_360";
-        }>;
-        days: z.ZodNumber;
-    }, z.core.$strict>;
-    dasamsaScheme: z.ZodEnum<{
-        parashara: "parashara";
-        jhora_5_8: "jhora_5_8";
-    }>;
-    horaScheme: z.ZodEnum<{
-        parashara: "parashara";
-        parivritti: "parivritti";
-    }>;
-    vargaVariants: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodString>>;
-}, z.core.$strict>;
+export const CalculationSettingsSchema: z.ZodType<CalculationSettings>;
 
 // @public
 export const CALENDAR_MODES: readonly ["auto", "gregorian", "julian"];
@@ -428,15 +323,14 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     // Warning: (ae-forgotten-export) The symbol "SpkFile" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "CompositeEphemerisOptions" needs to be exported by the entry point index.d.ts
     constructor(spk: SpkFile, options?: CompositeEphemerisOptions);
+    // Warning: (ae-forgotten-export) The symbol "EphemerisBodyId" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    readonly bodies: readonly number[];
+    readonly bodies: readonly EphemerisBodyId[];
+    // Warning: (ae-forgotten-export) The symbol "EphemerisCoverage" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    readonly coverage: {
-        jdTdbStart: number;
-        jdTdbEnd: number;
-        kernelId: string;
-        version: string;
-    };
+    readonly coverage: EphemerisCoverage;
     // Warning: (ae-forgotten-export) The symbol "Vec3" needs to be exported by the entry point index.d.ts
     getBarycentric(naifBody: number, et: number): Vec3;
     // (undocumented)
@@ -450,7 +344,6 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     provenance(jdTdb: number): EphemerisProvenance;
     // (undocumented)
     setPolicy(policy: EphemerisPolicy): void;
-    // Warning: (ae-forgotten-export) The symbol "EphemerisBodyId" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "EphemerisFrame" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "EphemerisState" needs to be exported by the entry point index.d.ts
     //
@@ -485,7 +378,7 @@ export type DasamsaScheme = 'parashara' | 'jhora_5_8';
 export type DasaYearKind = (typeof DASA_YEAR_KINDS)[number];
 
 // @public
-export const DASHA_YEAR_DAYS: Decimal_2;
+export const DASHA_YEAR_DAYS: Decimal;
 
 // @public
 export function dateTimeToJulianDayUt(date: DateTime, options?: {
@@ -494,12 +387,10 @@ export function dateTimeToJulianDayUt(date: DateTime, options?: {
     longitude?: number;
 }): number;
 
-// @public
-export const DE431_SOURCE: Readonly<{
-    file: "de431t.bsp";
-    bytes: 3696366592;
-    url: "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de431t.bsp";
-}>;
+// Warning: (ae-forgotten-export) The symbol "De431SourceManifest" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export const DE431_SOURCE: De431SourceManifest;
 
 // @public (undocumented)
 class De431ChunkFile {
@@ -566,28 +457,10 @@ export const DE441_NATIVE_JD_TDB_END = 8000016.5;
 // @public
 export const DE441_NATIVE_JD_TDB_START = -3100015.5;
 
-// @public
-export const DE441_SOURCE: Readonly<{
-    part1: Readonly<{
-        file: "de441_part-1.bsp";
-        bytes: 1651119104;
-        url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441_part-1.bsp";
-        jdTdbStart: -3100015.5;
-        jdTdbEnd: 2440432.5;
-    }>;
-    part2: Readonly<{
-        file: "de441_part-2.bsp";
-        bytes: 1656830976;
-        url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441_part-2.bsp";
-        jdTdbStart: 2440400.5;
-        jdTdbEnd: 8000016.5;
-    }>;
-    monolith: Readonly<{
-        file: "de441.bsp";
-        bytes: 3308032000;
-        url: "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp";
-    }>;
-}>;
+// Warning: (ae-forgotten-export) The symbol "De441SourceManifest" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export const DE441_SOURCE: De441SourceManifest;
 
 // @public
 export function de441ChunkKeysForJdTdb(jdTdb: number): ChunkKey[];
@@ -670,8 +543,6 @@ export const DELTA_T_MODEL_MODERN_PUBLISHED = "modern:smh2016-s15+aa-usno-monthl
 // @public
 export const DELTA_T_OVERRIDE_ABS_MAX_SECONDS = 864000;
 
-// Warning: (ae-forgotten-export) The symbol "DeltaTForecastId" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function deltaTModelId(profile?: PrecisionProfile, overrideSeconds?: number, forecast?: DeltaTForecastId): string;
 
@@ -805,8 +676,6 @@ export interface EphemerisProvenance {
 // @public (undocumented)
 export interface EphemerisProvider {
     readonly bodies: readonly EphemerisBodyId[];
-    // Warning: (ae-forgotten-export) The symbol "EphemerisCoverage" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     readonly coverage: EphemerisCoverage;
     // (undocumented)
@@ -1021,7 +890,6 @@ export interface JyotishConfig {
     nodeType: NodeType;
     positionMode: PositionMode;
     precisionProfile?: PrecisionProfile;
-    // Warning: (ae-forgotten-export) The symbol "StarParallaxId" needs to be exported by the entry point index.d.ts
     starParallax?: StarParallaxId;
     sunriseHour: number;
     topocentric: boolean;
@@ -1730,6 +1598,16 @@ export interface WithResultEnvelopeOptions {
 
 // @public (undocumented)
 export type ZodiacOutput = 'sidereal' | 'tropical';
+
+// Warnings were encountered during analysis:
+//
+// dist/settings/schema.d.ts:72:5 - (ae-forgotten-export) The symbol "SETTINGS_SCHEMA_VERSION" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:74:5 - (ae-forgotten-export) The symbol "DeltaTForecastId" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:75:5 - (ae-forgotten-export) The symbol "StarParallaxId" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:78:5 - (ae-forgotten-export) The symbol "CalendarModeId" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:83:5 - (ae-forgotten-export) The symbol "UserAyanamsaSettings" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:91:5 - (ae-forgotten-export) The symbol "SunriseSettings" needs to be exported by the entry point index.d.ts
+// dist/settings/schema.d.ts:92:5 - (ae-forgotten-export) The symbol "DasaYearSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

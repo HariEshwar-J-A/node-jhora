@@ -1,34 +1,36 @@
 name: Release
 
+# Standard Changesets flow on upstream main only. Opens/updates "Version Packages"
+# when changesets are pending; publishes to npm (OIDC trusted publishing) when
+# the version PR merges and no changesets remain. JSR publish runs after npm.
+# See docs/guides/releasing.md.
+
 on:
-    workflow_dispatch:
-        inputs:
-            dry_run:
-                description: Preview the release (no version bumps committed, no npm publish)
-                type: boolean
-                default: true
-            publish:
-                description: Publish to npm (requires NPM_TOKEN; ignored when dry_run is true)
-                type: boolean
-                default: false
+    push:
+        branches: [main]
 
 concurrency:
-    group: release
+    group: release-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: false
 
 jobs:
     release:
+        if: github.repository == 'HariEshwar-J-A/node-jhora'
         runs-on: ubuntu-latest
         permissions:
-            contents: read
+            contents: write
+            pull-requests: write
+            id-token: write
+        outputs:
+            published: ${{ steps.changesets.outputs.published }}
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
               with:
                   fetch-depth: 0
 
-            - uses: pnpm/action-setup@v4
+            - uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
                   node-version: '22.23.4'
                   cache: pnpm
@@ -37,21 +39,55 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Build packages
-              run: pnpm build
+            # Node 22 images ship npm 10.x; npm Trusted Publishing (OIDC) needs npm ≥ 11.5.1.
+            # pnpm changeset publish delegates to npm publish for registry upload.
+            - name: Install npm CLI for OIDC trusted publishing
+              run: npm install -g npm@11.5.1
 
-            - name: Apply changesets (version packages)
-              if: ${{ inputs.publish && !inputs.dry_run }}
-              run: pnpm changeset version
+            - name: Release gates
+              run: |
+                  pnpm build
+                  pnpm lint
+                  pnpm typecheck
+                  pnpm api:check
+                  pnpm test
+                  pnpm check:pack
+                  pnpm check:licenses
+                  pnpm check:copyright
+                  pnpm check:license-sync
+                  pnpm check:jsr-versions
 
-            - name: Preview npm publish (dry run)
-              if: ${{ inputs.dry_run || !inputs.publish }}
-              run: >-
-                  pnpm -r --filter "./packages/*" --filter "!@node-jhora/testkit"
-                  publish --dry-run --no-git-checks
-
-            - name: Publish to npm
-              if: ${{ inputs.publish && !inputs.dry_run }}
+            - name: Create Release Pull Request or publish to npm
+              id: changesets
+              uses: changesets/action@06245a4e0a36c064a573d4150030f5ec548e4fcc # v1.4.10
+              with:
+                  version: pnpm changeset version
+                  publish: pnpm changeset publish
+                  commit: 'chore(release): version packages'
+                  title: Version Packages
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-              run: pnpm changeset publish
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: 'true'
+
+    jsr:
+        needs: release
+        if: >-
+            github.repository == 'HariEshwar-J-A/node-jhora' &&
+            needs.release.outputs.published == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+        steps:
+            - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+            - uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
+
+            - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: '22.23.4'
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            - name: Publish JSR packages (OIDC)
+              run: node scripts/jsr-publish-all.mjs
