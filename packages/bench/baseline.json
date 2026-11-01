@@ -3,8 +3,8 @@
     "regressionTolerance": 0.15,
     "cases": {
         "full-chart-jhora": {
-            "p50Ms": 14.818648999999994,
-            "medianMs": 14.818648999999994,
+            "p50Ms": 16.832504799999946,
+            "medianMs": 16.832504799999946,
             "budgetMs": 20
         },
         "planets-jhora": {
@@ -13,103 +13,103 @@
             "budgetMs": null
         },
         "houses-jhora": {
-            "p50Ms": 0.3208649999999693,
-            "medianMs": 0.3208649999999693,
+            "p50Ms": 0.1257208000000128,
+            "medianMs": 0.1257208000000128,
             "budgetMs": null
         },
         "ayanamsa-jhora": {
-            "p50Ms": 0.08964800000001105,
-            "medianMs": 0.08964800000001105,
+            "p50Ms": 0.09894916000008379,
+            "medianMs": 0.09894916000008379,
             "budgetMs": null
         },
         "full-chart-modern": {
-            "p50Ms": 14.19723799999997,
-            "medianMs": 14.19723799999997,
+            "p50Ms": 15.782038959999944,
+            "medianMs": 15.782038959999944,
             "budgetMs": null
         },
         "planets-modern": {
-            "p50Ms": 0.5019089999999551,
-            "medianMs": 0.5019089999999551,
+            "p50Ms": 0.2424527599999055,
+            "medianMs": 0.2424527599999055,
             "budgetMs": null
         },
         "houses-modern": {
-            "p50Ms": 0.3615630000000465,
-            "medianMs": 0.3615630000000465,
+            "p50Ms": 0.1527163200000359,
+            "medianMs": 0.1527163200000359,
             "budgetMs": null
         },
         "ayanamsa-modern": {
-            "p50Ms": 0.12890900000002148,
-            "medianMs": 0.12890900000002148,
+            "p50Ms": 0.11368927999992592,
+            "medianMs": 0.11368927999992592,
             "budgetMs": null
         },
         "full-chart-truth": {
-            "p50Ms": 15.457479000000035,
-            "medianMs": 15.457479000000035,
+            "p50Ms": 15.887276480000109,
+            "medianMs": 15.887276480000109,
             "budgetMs": null
         },
         "planets-truth": {
-            "p50Ms": 1.9086559999999508,
-            "medianMs": 1.9086559999999508,
+            "p50Ms": 0.4087410799999634,
+            "medianMs": 0.4087410799999634,
             "budgetMs": null
         },
         "houses-truth": {
-            "p50Ms": 0.3754709999999477,
-            "medianMs": 0.3754709999999477,
+            "p50Ms": 0.16264011999990544,
+            "medianMs": 0.16264011999990544,
             "budgetMs": null
         },
         "ayanamsa-truth": {
-            "p50Ms": 0.1669650000000047,
-            "medianMs": 0.1669650000000047,
+            "p50Ms": 0.10428167999994002,
+            "medianMs": 0.10428167999994002,
             "budgetMs": null
         },
         "full-chart-truth-plus-eop": {
-            "p50Ms": 15.711241999999856,
-            "medianMs": 15.711241999999856,
+            "p50Ms": 16.00661032000029,
+            "medianMs": 16.00661032000029,
             "budgetMs": null
         },
         "planets-truth-plus-eop": {
-            "p50Ms": 1.9269540000000234,
-            "medianMs": 1.9269540000000234,
+            "p50Ms": 0.3474559600001339,
+            "medianMs": 0.3474559600001339,
             "budgetMs": null
         },
         "houses-truth-plus-eop": {
-            "p50Ms": 0.3931720000000496,
-            "medianMs": 0.3931720000000496,
+            "p50Ms": 0.18849071999991793,
+            "medianMs": 0.18849071999991793,
             "budgetMs": null
         },
         "ayanamsa-truth-plus-eop": {
-            "p50Ms": 0.19671999999991385,
-            "medianMs": 0.19671999999991385,
+            "p50Ms": 0.10719676000009712,
+            "medianMs": 0.10719676000009712,
             "budgetMs": null
         },
         "planets-truth-distinct-jd-first": {
-            "p50Ms": 72.05270599999994,
-            "medianMs": 72.05270599999994,
+            "p50Ms": 21.00005652000007,
+            "medianMs": 21.00005652000007,
             "budgetMs": null
         },
         "planets-truth-distinct-jd-second": {
-            "p50Ms": 66.28033899999991,
-            "medianMs": 66.28033899999991,
+            "p50Ms": 20.403770120000043,
+            "medianMs": 20.403770120000043,
             "budgetMs": null
         },
         "ephemeris-init-cold": {
-            "p50Ms": 34.255084,
-            "medianMs": 34.255084,
+            "p50Ms": 42.86637900000001,
+            "medianMs": 42.86637900000001,
             "budgetMs": 150
         },
         "deep-era-truth-mean-node-cold": {
-            "p50Ms": 1644.3113809999995,
-            "medianMs": 1644.3113809999995,
+            "p50Ms": 137.8339800000001,
+            "medianMs": 137.8339800000001,
             "budgetMs": null
         },
         "deep-era-truth-mean-node-warm": {
-            "p50Ms": 0.0002080000012938399,
-            "medianMs": 0.0002080000012938399,
+            "p50Ms": 0.0001990000000660075,
+            "medianMs": 0.0001990000000660075,
             "budgetMs": null
         },
         "full-chart-warm-node": {
-            "p50Ms": 14.818648999999994,
-            "medianMs": 14.818648999999994,
+            "p50Ms": 16.832504799999946,
+            "medianMs": 16.832504799999946,
             "budgetMs": 20
         }
     }

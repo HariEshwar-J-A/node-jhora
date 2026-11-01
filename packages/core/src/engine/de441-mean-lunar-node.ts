@@ -9,14 +9,20 @@
  */
 
 import { mod360 } from './coordinates.js';
-import { eraDtdbGeocenterSeconds } from './dtdb-erfa.js';
 import {
-    icrfToMeanEclipticOfDateForProfile,
-    julianCenturies,
-    type Vec,
-    vondrakLtecmMatrixInto,
-} from './precession.js';
+    buildDtdbSecularPrefillTable,
+    eraDtdbGeocenterSecondsSecularPrefill,
+    setDtdbSecularPrefillTable,
+} from './dtdb-secular-prefill.js';
+import { icrfToMeanEclipticOfDateForProfile, julianCenturies, type Vec } from './precession.js';
+import { vondrakLtecmMatrixInto } from './precession.js';
 import type { EphemerisState } from './provider/types.js';
+import {
+    buildVondrakLtecmSegmentTable,
+    VONDRAK_LTECM_NODE_DAYS,
+    vondrakLtecmMatrixIntoLagrange,
+    type VondrakLtecmSegmentTable,
+} from './vondrak-ltecm-interp.js';
 
 const DRACONIC_PERIOD_DAYS = 6798.383;
 const HALF_WINDOW_JD = 250 * 365.25;
@@ -29,8 +35,18 @@ const GRID_EPS = 1e-5;
 /** Sampled Ω (deg) keyed by JD(TT). */
 const omegaSampleCache = new Map<number, number>();
 const vondrakScratch9 = new Float64Array(9);
+const lagrangeSegHint = { seg: 0 };
 let meanNodePrefillActive = false;
 let secularAnchorJdTT: number | null = null;
+let secularLtecmTable: VondrakLtecmSegmentTable | undefined;
+let secularLtecmAnchor: number | undefined;
+/** Test hook: exact `eraLtecm` per sample instead of the shared Lagrange table. */
+let forceExactVondrakLtecm = false;
+
+/** @internal Tests only — compare Lagrange table vs exact Vondrák matrix path. */
+export function setForceExactVondrakLtecmForTests(on: boolean): void {
+    forceExactVondrakLtecm = on;
+}
 
 export interface De441MeanNodeSampler {
     readonly jdTdbMin: number;
@@ -64,6 +80,8 @@ export function setDe441MeanNodeSampler(s: De441MeanNodeSampler | null): void {
     secularCache.clear();
     omegaSampleCache.clear();
     secularAnchorJdTT = null;
+    secularLtecmTable = undefined;
+    secularLtecmAnchor = undefined;
 }
 
 export function clearDe441MeanNodeCaches(): void {
@@ -71,6 +89,10 @@ export function clearDe441MeanNodeCaches(): void {
     secularCache.clear();
     omegaSampleCache.clear();
     secularAnchorJdTT = null;
+    secularLtecmTable = undefined;
+    secularLtecmAnchor = undefined;
+    lagrangeSegHint.seg = 0;
+    setDtdbSecularPrefillTable(undefined);
 }
 
 function sampleKey(jdTT: number): number {
@@ -103,6 +125,30 @@ function applyTruthEclipticMatrix(
     ];
 }
 
+function ensureSecularLtecmTable(
+    anchorJdTT: number,
+    jdMin: number,
+    jdMax: number,
+): VondrakLtecmSegmentTable {
+    if (
+        secularLtecmTable &&
+        secularLtecmAnchor === anchorJdTT &&
+        secularLtecmTable.jdLo <= jdMin + 1e-6 &&
+        secularLtecmTable.jdHi >= jdMax - 1e-6
+    ) {
+        return secularLtecmTable;
+    }
+    secularLtecmTable = buildVondrakLtecmSegmentTable(
+        anchorJdTT,
+        jdMin,
+        jdMax,
+        VONDRAK_LTECM_NODE_DAYS,
+        false,
+    );
+    secularLtecmAnchor = anchorJdTT;
+    return secularLtecmTable;
+}
+
 function truthRotateAngularMomentum(hx: number, hy: number, hz: number, jdTT: number): Vec {
     if (jdTT >= IAU2006_JD_MIN && jdTT <= IAU2006_JD_MAX) {
         return icrfToMeanEclipticOfDateForProfile(
@@ -112,7 +158,14 @@ function truthRotateAngularMomentum(hx: number, hy: number, hz: number, jdTT: nu
             'truth',
         );
     }
-    vondrakLtecmMatrixInto(julianCenturies(jdTT), vondrakScratch9);
+    const anchor = secularAnchorJdTT ?? jdTT;
+    if (forceExactVondrakLtecm) {
+        vondrakLtecmMatrixInto(julianCenturies(jdTT), vondrakScratch9);
+        return applyTruthEclipticMatrix(vondrakScratch9, hx, hy, hz);
+    }
+    const { jdMin, jdMax } = secularWindowBounds(anchor);
+    const table = ensureSecularLtecmTable(anchor, jdMin, jdMax);
+    vondrakLtecmMatrixIntoLagrange(table, jdTT, vondrakScratch9, lagrangeSegHint);
     return applyTruthEclipticMatrix(vondrakScratch9, hx, hy, hz);
 }
 
@@ -125,7 +178,7 @@ function omegaDegFromState(jdTT: number, st: EphemerisState): number {
 }
 
 function jdTdbFromJdTT(jdTT: number): number {
-    return jdTT + eraDtdbGeocenterSeconds(jdTT) / 86400.0;
+    return jdTT + eraDtdbGeocenterSecondsSecularPrefill(jdTT) / 86400.0;
 }
 
 function cacheOmegaFromState(jdTT: number, st: EphemerisState): number {
@@ -269,20 +322,22 @@ function allSecularSampleJds(jdTT: number): number[] {
 function prefillAllOmegaSamples(jdTT: number): void {
     secularAnchorJdTT = jdTT;
     meanNodePrefillActive = true;
+    const { jdMin, jdMax } = secularWindowBounds(jdTT);
+    ensureSecularLtecmTable(jdTT, jdMin, jdMax);
+    setDtdbSecularPrefillTable(buildDtdbSecularPrefillTable(jdTT, jdMin, jdMax));
     try {
-        const jds = allSecularSampleJds(jdTT);
+        const allJds = allSecularSampleJds(jdTT);
         if (sampler?.fillSortedJdSamples) {
-            sampler.fillSortedJdSamples(jds, (jd, st) => {
-                cacheOmegaFromState(jd, st);
-            });
-            return;
-        }
-        for (const jd of jds) {
-            const st = sampler?.moonGeocentricState(jdTdbFromJdTT(jd));
-            if (st) cacheOmegaFromState(jd, st);
+            sampler.fillSortedJdSamples(allJds, (jd, st) => cacheOmegaFromState(jd, st));
+        } else {
+            for (const jd of allJds) {
+                const st = sampler?.moonGeocentricState(jdTdbFromJdTT(jd));
+                if (st) cacheOmegaFromState(jd, st);
+            }
         }
     } finally {
         meanNodePrefillActive = false;
+        setDtdbSecularPrefillTable(undefined);
     }
 }
 
@@ -312,16 +367,10 @@ export function profileDe441MeanNodePrefill(jdTT: number): {
     vondrakExactPerSample: boolean;
 } {
     clearDe441MeanNodeCaches();
-    const jds = allSecularSampleJds(jdTT);
-    secularAnchorJdTT = jdTT;
-    meanNodePrefillActive = true;
     const t0 = performance.now();
-    if (sampler?.fillSortedJdSamples) {
-        sampler.fillSortedJdSamples(jds, (jd, st) => {
-            cacheOmegaFromState(jd, st);
-        });
-    }
+    prefillAllOmegaSamples(jdTT);
     const prefillMs = performance.now() - t0;
-    meanNodePrefillActive = false;
-    return { prefillMs, sampleCount: jds.length, vondrakExactPerSample: true };
+    const { nMin, nMax } = secularWindowBounds(jdTT);
+    const sampleCount = nMax - nMin + 1 + collectOffGridCycleSampleJds(jdTT).length;
+    return { prefillMs, sampleCount, vondrakExactPerSample: false };
 }

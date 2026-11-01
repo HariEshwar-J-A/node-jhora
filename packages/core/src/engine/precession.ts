@@ -16,6 +16,11 @@
  */
 
 import { icrfToMeanEclipticOfDateForProfile } from '../truth/mean-ecliptic-iau2006.js';
+import {
+    ASTRO_SERIES_VONDRAK_MEAN_OBLIQUITY,
+    ASTRO_SERIES_VONDRAK_PRECESSION_MATRIX,
+    getActiveAstroSeriesCache,
+} from './astro-series-cache.js';
 import type { PrecisionProfile } from './deltat.js';
 import { nutationIau2000a } from './nutation-iau2000a.js';
 
@@ -181,12 +186,22 @@ function normalize(v: Vec): Vec {
 }
 
 /** Precession matrix J2000 mean equator → mean equator of date (Vondrák A.3). */
-export function vondrakPrecessionMatrix(T: number): Mat {
+function vondrakPrecessionMatrixExact(T: number): Mat {
     const peqr = vondrakEquatorPole(T);
     const pecl = vondrakEclipticPole(T);
     const eqx = normalize(cross(peqr, pecl));
     const mid = cross(peqr, eqx);
     return [eqx, mid, peqr];
+}
+
+export function vondrakPrecessionMatrix(T: number): Mat {
+    const cache = getActiveAstroSeriesCache();
+    if (!cache) {
+        return vondrakPrecessionMatrixExact(T);
+    }
+    return cache.get(ASTRO_SERIES_VONDRAK_PRECESSION_MATRIX, T, () =>
+        vondrakPrecessionMatrixExact(T),
+    );
 }
 
 /**
@@ -207,9 +222,19 @@ export function vondrakEquatorPrecessionMatrixSigma(T: number): Mat {
 }
 
 /** Mean obliquity ε_A (degrees), Vondrák eq. (10). */
-export function vondrakMeanObliquityDegrees(T: number): number {
+function vondrakMeanObliquityDegreesExact(T: number): number {
     const [, epsAs] = vondrakPeriodic(T, PE_PER, PE_POL);
     return epsAs / 3600;
+}
+
+export function vondrakMeanObliquityDegrees(T: number): number {
+    const cache = getActiveAstroSeriesCache();
+    if (!cache) {
+        return vondrakMeanObliquityDegreesExact(T);
+    }
+    return cache.get(ASTRO_SERIES_VONDRAK_MEAN_OBLIQUITY, T, () =>
+        vondrakMeanObliquityDegreesExact(T),
+    );
 }
 
 /** TT Julian day bounds for IAU 2006 mean ecliptic (Capitaine et al. 2005). */

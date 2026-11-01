@@ -14,7 +14,12 @@ import {
     meanLunarNodeFaomAtT,
     meanLunarNodeFromJdTTForProfile,
 } from '../../src/engine/mean-lunar-node.js';
-import { setDe441MeanNodeSampler } from '../../src/engine/de441-mean-lunar-node.js';
+import {
+    clearDe441MeanNodeCaches,
+    de441SecularMeanNodeDeg,
+    setDe441MeanNodeSampler,
+    setForceExactVondrakLtecmForTests,
+} from '../../src/engine/de441-mean-lunar-node.js';
 import { createDe441NjceMeanNodeSampler } from '../../src/engine/de441-njce-mean-node.js';
 import { toSpherical } from '../../src/engine/precession.js';
 import { parseEopBin } from '../../../eop/index.mjs';
@@ -270,14 +275,33 @@ describe('truth deep-era (ADR 0029)', () => {
         expect(proc.status).toBe(0);
         const perf = JSON.parse(proc.stdout.trim()) as { coldMs: number; warmMs: number };
         expect(perf.warmMs).toBeLessThan(perf.coldMs);
-        expect(perf.coldMs).toBeLessThanOrEqual(2000);
-        // Target 250 ms; measured cold floor ~1.8 s dominated by ~93k exact Vondrák ltecm + Chebyshev (see breakdown).
+        expect(perf.coldMs).toBeLessThanOrEqual(250);
         // eslint-disable-next-line no-console -- ADR 0029 reports measured timings
         console.log(
             `de441 mean node: cold=${perf.coldMs.toFixed(1)}ms warm=${perf.warmMs.toFixed(2)}ms ` +
                 '(subprocess; Ω/intercept/secular caches empty; NJCE441 in memory)',
         );
     });
+
+    test('DE441 secular node Lagrange ltecm vs exact matrix (≤ 1e-6″)', () => {
+        if (!haveDe441) return;
+        const rows: { id: string; deltaArcsec: number }[] = [];
+        for (const ref of FIXTURE.de441MeanNode) {
+            clearDe441MeanNodeCaches();
+            setForceExactVondrakLtecmForTests(true);
+            const exact = de441SecularMeanNodeDeg(ref.jdTT);
+            clearDe441MeanNodeCaches();
+            setForceExactVondrakLtecmForTests(false);
+            const lagrange = de441SecularMeanNodeDeg(ref.jdTT);
+            expect(exact).not.toBeNull();
+            expect(lagrange).not.toBeNull();
+            const d = Math.abs(signedDeltaArcsec(lagrange!, exact!));
+            rows.push({ id: ref.id, deltaArcsec: d });
+            expect(d).toBeLessThanOrEqual(1e-6);
+        }
+        // eslint-disable-next-line no-console -- PR4 per-epoch report
+        console.log('de441LagrangeMinusExactArcsec', JSON.stringify(rows));
+    }, 900_000);
 });
 
 describe('truth Spica catalogue (step 1)', () => {

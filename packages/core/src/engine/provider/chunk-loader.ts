@@ -196,7 +196,6 @@ export function prefetchNjceForSecularMeanNode(store: De431ChunkStore, jdTT: num
     for (let c = centLo - 1; c <= centHi + 1; c++) {
         if (c < internal.minCentury || c > internal.maxCentury) continue;
         ensureOneSyncOnStore(internal, c, BODY_GROUP_EMB);
-        ensureOneSyncOnStore(internal, c, BODY_GROUP_PLANETS);
     }
 }
 
