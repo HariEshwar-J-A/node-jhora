@@ -6,5 +6,5 @@ export {
     REGRESSION_TOLERANCE,
     runBrowserWorkerFullChartBench,
 } from './budgets.js';
-export { isRegression, median } from './stats.js';
-export type { BenchBaselineFile, BenchResultsArtifact } from './types.js';
+export { isRegression, median, p50, p99, percentile } from './stats.js';
+export type { BenchBaselineFile, BenchCaseResult, BenchResultsArtifact } from './types.js';

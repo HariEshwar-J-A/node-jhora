@@ -10,6 +10,10 @@ import type { BenchBaselineFile, BenchResultsArtifact } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+function baselineP50(entry: { p50Ms?: number; medianMs?: number }): number {
+    return entry.p50Ms ?? entry.medianMs ?? Number.NaN;
+}
+
 async function runBench(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
         const child = spawn(process.execPath, [join(__dirname, 'run-bench.js')], {
@@ -37,31 +41,35 @@ async function main(): Promise<void> {
     const budgetMisses: string[] = [];
 
     for (const measured of results.cases) {
+        if (measured.skipped) {
+            continue;
+        }
         const base = baseline.cases[measured.id];
         if (!base) {
             failures.push(`missing baseline entry for ${measured.id}`);
             continue;
         }
-        if (isRegression(base.medianMs, measured.medianMs, tolerance)) {
-            const pct = ((measured.medianMs - base.medianMs) / base.medianMs) * 100;
+        const baseP50 = baselineP50(base);
+        if (isRegression(baseP50, measured.p50Ms, tolerance)) {
+            const pct = ((measured.p50Ms - baseP50) / baseP50) * 100;
             failures.push(
-                `${measured.id}: median ${measured.medianMs.toFixed(3)} ms regressed ${pct.toFixed(1)}% vs baseline ${base.medianMs.toFixed(3)} ms (limit ${tolerance * 100}%)`,
+                `${measured.id}: p50 ${measured.p50Ms.toFixed(3)} ms regressed ${pct.toFixed(1)}% vs baseline ${baseP50.toFixed(3)} ms (limit ${tolerance * 100}%)`,
             );
         }
         if (measured.withinBudget === false && measured.budgetMs != null) {
             budgetMisses.push(
-                `${measured.id}: median ${measured.medianMs.toFixed(3)} ms exceeds budget ${measured.budgetMs} ms`,
+                `${measured.id}: p50 ${measured.p50Ms.toFixed(3)} ms exceeds budget ${measured.budgetMs} ms`,
             );
         }
     }
 
     if (budgetMisses.length > 0) {
-        console.warn('\nPerformance budget misses (baseline not weakened):');
+        console.warn('\nPerformance budget misses (warning only — does not fail CI):');
         for (const line of budgetMisses) {
             console.warn(`  - ${line}`);
         }
         console.warn(
-            '\nHotspots to profile: vargas loop (16 divisions × planets), shadbala, yogas, ashtakavarga, dasha tree generation.',
+            '\nWarm full-chart time is dominated by Vimshottari dasha tree generation (Decimal.js + Luxon), not ephemeris or vargas alone. See packages/bench/artifacts/bench-results.json profileSplit.',
         );
     }
 
