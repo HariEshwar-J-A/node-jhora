@@ -70,7 +70,7 @@ def _validate_true_node(table: list[dict], earth, moon, ts) -> dict:
     state_ok = cross["moonStateAgreementArcsec"] < 0.001
     repeat_ok = repeat_arcsec < 1e-6
     erfa_routes_ok = abs(cross["dErfaEcm06VsBp06Arcsec"]) < 0.001
-    sky_ok = abs(cross["dSkyfieldVsEcm06Arcsec"]) < 0.001
+    sky_apparent_ok = abs(cross["dSkyfieldTrueEclipticVsApparentTnMedArcsec"]) < 0.001
     return {
         **cross,
         "trueNodeApparentDeg": lon1,
@@ -78,8 +78,8 @@ def _validate_true_node(table: list[dict], earth, moon, ts) -> dict:
         "passedStateSubMas": state_ok,
         "passedRepeatSubMas": repeat_ok,
         "passedErfaRoutesSubMas": erfa_routes_ok,
-        "passedSkyfieldEclipticSubMas": sky_ok,
-        "passed": state_ok and repeat_ok,
+        "passedSkyfieldTrueVsApparentSubMas": sky_apparent_ok,
+        "passed": state_ok and repeat_ok and erfa_routes_ok,
     }
 
 
