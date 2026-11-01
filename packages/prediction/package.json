@@ -1,6 +1,7 @@
 {
     "name": "@node-jhora/prediction",
     "version": "3.1.0",
+    "description": "Vimshottari, Yogini, Narayana and Chara dashas, transit scanning and Jaimini tools for node-jhora.",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

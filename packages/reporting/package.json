@@ -1,6 +1,7 @@
 {
     "name": "@node-jhora/reporting",
     "version": "3.1.0",
+    "description": "PDF birth chart reports (positions, houses, Shadbala, yogas, chart diagrams) for node-jhora.",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

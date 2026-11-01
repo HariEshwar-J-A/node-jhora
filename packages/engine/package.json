@@ -1,6 +1,7 @@
 {
     "name": "@node-jhora/engine",
     "version": "3.1.0",
+    "description": "Lazy, memoised ChartSession facade over node-jhora core, analytics and prediction for servers, browsers and Web Workers.",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
