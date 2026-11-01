@@ -9,6 +9,11 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
+/** @param {string} s */
+function escapeRegExpLiteral(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export const nodeStubPlugin = {
     name: 'node-stub',
     setup(build) {
@@ -31,7 +36,7 @@ export const nodeStubPlugin = {
             'fs/promises',
             'node:fs/promises',
         ]) {
-            build.onResolve({ filter: new RegExp(`^${id.replace(':', ':')}$`) }, () => ({
+            build.onResolve({ filter: new RegExp(`^${escapeRegExpLiteral(id)}$`) }, () => ({
                 path: id,
                 namespace: 'njh-node',
             }));

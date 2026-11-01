@@ -5,7 +5,7 @@
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -19,8 +19,20 @@ function sha256(path) {
         .digest('hex');
 }
 
-function run(cmd) {
-    execSync(cmd, { cwd: root, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '0' } });
+function runArgv(argv) {
+    const [cmd, ...args] = argv;
+    const result = spawnSync(cmd, args, {
+        cwd: root,
+        stdio: 'pipe',
+        env: { ...process.env, FORCE_COLOR: '0' },
+    });
+    if (result.status !== 0) {
+        const err =
+            result.stderr?.toString() ||
+            result.stdout?.toString() ||
+            `${cmd} exited ${result.status}`;
+        throw new Error(err);
+    }
 }
 
 test('core/format .d.ts enum order is stable across clean rebuilds', () => {
@@ -30,7 +42,14 @@ test('core/format .d.ts enum order is stable across clean rebuilds', () => {
         rmSync(join(root, 'packages/format/dist'), { recursive: true, force: true });
         rmSync(join(root, 'packages/core/tsconfig.tsbuildinfo'), { force: true });
         rmSync(join(root, 'packages/format/tsconfig.tsbuildinfo'), { force: true });
-        run('pnpm exec tsc -b packages/core/tsconfig.json packages/format/tsconfig.json');
+        runArgv([
+            'pnpm',
+            'exec',
+            'tsc',
+            '-b',
+            'packages/core/tsconfig.json',
+            'packages/format/tsconfig.json',
+        ]);
         digests.add(
             sha256('packages/format/dist/schema.d.ts') +
                 ':' +
@@ -42,12 +61,21 @@ test('core/format .d.ts enum order is stable across clean rebuilds', () => {
 
 test('api-extractor reports match committed etc after a forced package build', () => {
     rmSync(join(root, 'temp'), { recursive: true, force: true });
-    run('pnpm exec turbo run build --force --filter=@node-jhora/core --filter=@node-jhora/format');
+    runArgv([
+        'pnpm',
+        'exec',
+        'turbo',
+        'run',
+        'build',
+        '--force',
+        '--filter=@node-jhora/core',
+        '--filter=@node-jhora/format',
+    ]);
     for (const pkg of ['core', 'format']) {
         rmSync(join(root, 'temp'), { recursive: true, force: true });
-        run(`pnpm --filter @node-jhora/${pkg} api:report`);
+        runArgv(['pnpm', '--filter', `@node-jhora/${pkg}`, 'api:report']);
         if (pkg === 'format') {
-            run('node tools/normalize-format-api-report.mjs temp/format.api.md');
+            runArgv(['node', 'tools/normalize-format-api-report.mjs', 'temp/format.api.md']);
         }
         const report = `etc/${pkg}.api.md`;
         const temp = `temp/${pkg}.api.md`;
