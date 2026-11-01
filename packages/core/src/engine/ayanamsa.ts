@@ -249,16 +249,6 @@ export const STARS: Record<string, StarData> = {
         parallax: 4.64,
         radVel: -3.0,
     },
-    /** Aldebaran (α Tau) — 15° sidereal Taurus (45° ecliptic); Mercier / §2.8.7 (mode 14). */
-    Aldebaran: {
-        name: 'Aldebaran (α Tau)',
-        ra: hms(4, 35, 55.239),
-        dec: dms(16, 30, 33.49),
-        pmRA: 62.78,
-        pmDec: -189.35,
-        parallax: 48.94,
-        radVel: 54.26,
-    },
     /**
      * Galactic centre (Sgr A*) — ICRS (Reid & Brunthaler 2004; Malkin 2012).
      * RA 17h45m40.036s, Dec −29°00′28.17″; zero proper motion at this precision.
@@ -494,14 +484,44 @@ function propagateMeanEpochAyanamsa(meanAtAnchor: number, anchorJd: number, jd: 
     return mod360(meanAtAnchor - meanEquinoxLongitudeOnEclipticOf(anchorJd, jd));
 }
 
+let aldebaranFrozenMeanCache: number | undefined;
+
+function aldebaranFrozenMeanAtAnchor(jd: number, minusDeg: number): number {
+    if (aldebaranFrozenMeanCache === undefined) {
+        // van Leeuwen 2007, A&A 474, 653 (HIP 21421).
+        const star: StarData = {
+            name: 'HIP 21421',
+            ra: hms(4, 35, 55.23907),
+            dec: dms(16, 30, 33.4885),
+            pmRA: 63.45,
+            pmDec: -188.94,
+            parallax: 48.94,
+            radVel: 54.26,
+        };
+        aldebaranFrozenMeanCache = mod360(starGeometricLongitude(star, jd, 'modern') - minusDeg);
+    }
+    return aldebaranFrozenMeanCache;
+}
+
 function getEpochAyanamsa(
     model: EpochModelDef,
     jd: number,
     profile: PrecisionProfile,
     ayanamsaFlags: number | undefined,
 ): number {
-    const mean0 = meanAtAnchorForProfile(model.meanAtAnchor, profile);
-    const anchorJd = model.jd;
+    let mean0 = meanAtAnchorForProfile(model.meanAtAnchor, profile);
+    let anchorJd = model.jd;
+    if (model.freezeStarLongitudeMinusDeg !== undefined) {
+        mean0 = aldebaranFrozenMeanAtAnchor(anchorJd, model.freezeStarLongitudeMinusDeg);
+    } else if (anchorJd === 0) {
+        const y = -0.106;
+        anchorJd =
+            2451623.80984 +
+            365242.37404 * y +
+            0.05169 * y * y -
+            0.00411 * y * y * y -
+            0.00057 * y * y * y * y;
+    }
     if (hasAyanamsaFlag(ayanamsaFlags, AYANAMSA_FLAGS.ECL_DATE)) {
         return mod360(mean0 + accumulatedPrecession(anchorJd, jd));
     }
