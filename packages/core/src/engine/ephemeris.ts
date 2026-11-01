@@ -800,7 +800,7 @@ export class EphemerisEngine {
             longitude: mod360(rahu.longitude + 180),
             latitude: 0,
             distance: rahu.distance,
-            speed: rahu.speed - nodeAyanRate,
+            speed: rahu.speed,
             declination: -rahu.declination,
         });
 
@@ -1094,17 +1094,16 @@ export class EphemerisEngine {
         const modern = profile === 'modern';
         const siderealFrame = frameArg ?? (modern ? 'se-apparent' : 'jhora');
         const effectiveProfile = profile ?? getDeltaTContext().profile;
-        // Modern sidereal houses: tropical angles use IAU 1980 nutation (jhora profile)
-        // and Hipparcos ayanamsa subtraction — same chain as main before profile Spica;
-        // grahas still use van Leeuwen + nut06a via getPlanets.
-        const houseFrameProfile: PrecisionProfile =
-            sidereal && effectiveProfile === 'modern' ? 'jhora' : effectiveProfile;
-
-        // Angles are built on apparent sidereal time and the true obliquity,
-        // matching the reference oracle's convention. Whole Sign cusps are the sign boundaries of the
-        // sidereal ascendant, not the tropical cusps shifted by ayanamsa.
-        const eps = trueObliquity(jd, houseFrameProfile);
-        const ramc = mod360(getGAST(jd, houseFrameProfile) + lon);
+        const jdTT = jd + deltaT(jd) / 86400.0;
+        const ms = sidereal && siderealFrame === 'se-apparent' && effectiveProfile === 'modern';
+        const mMain =
+            ms &&
+            (jd < 2396758.5 ||
+                jd > 2469807.5 ||
+                jdTT < DE440S_JD_TDB_START + 30 ||
+                jdTT > DE440S_JD_TDB_END);
+        const eps = trueObliquity(jd, mMain ? 'jhora' : 'modern');
+        const ramc = mod360(getGAST(jd, mMain ? 'jhora' : 'modern') + lon);
 
         const tropAsc = computeAscendant(ramc, lat, eps);
         const tropMC = computeMC(ramc, eps);
@@ -1208,31 +1207,31 @@ export class EphemerisEngine {
         }
 
         const mode = ayanamsaMode ?? this.ayanamsaMode;
+        const T = julianCenturies(jdTT);
+        const lr = this.chunkStoreDe441 ?? this.chunkStoreDe431;
+        const ayanOpts = precision?.ayanamsaOptions;
         let ayaEx: number;
         if (siderealFrame === 'se-apparent') {
-            const T = julianCenturies(jd + deltaT(jd) / 86400.0);
-            if (effectiveProfile === 'modern') {
+            if (ms && mMain && (lr || (jdTT >= DE440S_JD_TDB_START && jdTT <= DE440S_JD_TDB_END))) {
                 ayaEx =
-                    this.ayanamsaAt(mode, jd, 'apparent', 'jhora', precision?.ayanamsaOptions) +
+                    this.ayanamsaAt(mode, jd, 'apparent', 'jhora', ayanOpts) +
                     ayanamsaOffset +
                     nutation(T).dpsi;
+            } else if (ms && mMain) {
+                ayaEx = this.ayanamsaAt(mode, jd, 'geometric', 'modern', ayanOpts) + ayanamsaOffset;
+            } else if (ms) {
+                ayaEx =
+                    this.ayanamsaAt(mode, jd, 'apparent', 'modern', ayanOpts) +
+                    ayanamsaOffset +
+                    nutationForProfile(T, 'modern').dpsi;
             } else {
                 ayaEx =
-                    this.ayanamsaAt(
-                        mode,
-                        jd,
-                        'apparent',
-                        effectiveProfile,
-                        precision?.ayanamsaOptions,
-                    ) +
+                    this.ayanamsaAt(mode, jd, 'apparent', effectiveProfile, ayanOpts) +
                     ayanamsaOffset +
                     nutationForProfile(T, effectiveProfile).dpsi;
             }
         } else {
-            const ayanProfile = effectiveProfile === 'modern' ? 'jhora' : effectiveProfile;
-            ayaEx =
-                this.ayanamsaAt(mode, jd, 'geometric', ayanProfile, precision?.ayanamsaOptions) +
-                ayanamsaOffset;
+            ayaEx = this.ayanamsaAt(mode, jd, 'geometric', 'jhora', ayanOpts) + ayanamsaOffset;
         }
         const sub = (d: number) => mod360(d - ayaEx);
         return build(sub);
