@@ -1,0 +1,6 @@
+# Bench-only; not part of the published monorepo graph.
+numpy>=2.0,<3
+skyfield>=1.49
+jplephem>=2.22
+pyswisseph>=2.10.3.2
+pyerfa>=2.0.1

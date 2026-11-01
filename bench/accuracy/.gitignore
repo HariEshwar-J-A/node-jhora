@@ -1,0 +1,9 @@
+.venv/
+node_modules/
+cache/
+*.bsp
+*.bsp.partial
+artifacts/*
+!artifacts/results.json
+__pycache__/
+*.pyc
