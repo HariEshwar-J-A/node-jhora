@@ -50,9 +50,11 @@ import {
 import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
 import { earthGeocenterBarycentricAu } from './earth-geocenter-barycentric.js';
 import { nutation } from './nutation.js';
+import { nutationIau2000a } from './nutation-iau2000a.js';
 import {
     iau2000FrameBias,
     icrfToMeanEclipticOfDate,
+    icrfToMeanEclipticOfDateForProfile,
     julianCenturies,
     matTransposeVec,
     matVec,
@@ -197,6 +199,26 @@ const SPICA_MODERN: StarData = {
     radVel: 1.0,
 };
 
+/** Gaia DR3 astrometry for `'truth'` Pushya / Revati (see ADR / precision profile plan). */
+const TRUTH_GAIA = {
+    DeltaCancri: {
+        ra: 131.1708296667,
+        dec: 18.1543080833,
+        pmRA: -18.435,
+        pmDec: -227.813,
+        parallax: 23.827,
+        radVel: 17.14,
+    },
+    ZetaPiscium: {
+        ra: 18.4329683333,
+        dec: 7.5753599444,
+        pmRA: 142.693,
+        pmDec: -53.051,
+        parallax: 24.459,
+        radVel: 15,
+    },
+} as const;
+
 /**
  * @provenance Star astrometry (J2000 ICRS position, proper motion, parallax):
  *   - Spica jhora record: Hipparcos Catalogue, ESA SP-1200 (1997), VizieR I/239.
@@ -271,7 +293,14 @@ export function spicaForProfile(profile: PrecisionProfile): StarData {
 
 function starDataForModel(starKey: keyof typeof STARS, profile: PrecisionProfile): StarData {
     if (starKey === 'Spica') return spicaForProfile(profile);
-    return STARS[starKey];
+    const base = STARS[starKey];
+    const ov = profile === 'truth' ? TRUTH_GAIA[starKey as keyof typeof TRUTH_GAIA] : undefined;
+    return ov ? { ...base, ...ov } : base;
+}
+
+function truthEquinoxOffsetDeg(jdTT: number, profile: PrecisionProfile): number {
+    if (profile !== 'truth') return 0;
+    return nutationIau2000a(julianCenturies(jdTT)).dpsi;
 }
 
 // ---------------------------------------------------------------------------
@@ -371,6 +400,25 @@ function starIcrfVector(star: StarData, jdUT: number, observerAU?: Vec): Vec {
     return pos;
 }
 
+function starMeanEclipticLongitude(
+    star: StarData,
+    jdUT: number,
+    profile: PrecisionProfile,
+    observerAU?: Vec,
+): number {
+    const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+    const T = julianCenturies(jdTT);
+    const lon = toSpherical(
+        icrfToMeanEclipticOfDateForProfile(
+            starIcrfVector(star, jdUT, observerAU),
+            T,
+            jdTT,
+            profile,
+        ),
+    ).lon;
+    return mod360(lon + truthEquinoxOffsetDeg(jdTT, profile));
+}
+
 function starGeometricLongitude(star: StarData, jd: number, profile: PrecisionProfile): number {
     if (profile === 'modern') {
         const jdTdb = jd + deltaT(jd) / 86400.0;
@@ -385,15 +433,15 @@ function starGeometricLongitude(star: StarData, jd: number, profile: PrecisionPr
                             'Call EphemerisEngine.initialize() first.',
                     );
                 }
-                return starLongitudeOfDate(star, jd, kin.observerAU);
+                return starMeanEclipticLongitude(star, jd, profile, kin.observerAU);
             }
-            return starLongitudeOfDate(star, jd);
+            return starMeanEclipticLongitude(star, jd, profile);
         }
         if (mode === 'continuous') {
-            return starLongitudeOfDate(star, jd, earthGeocenterBarycentricAu(jd));
+            return starMeanEclipticLongitude(star, jd, profile, earthGeocenterBarycentricAu(jd));
         }
     }
-    return starLongitudeOfDate(star, jd);
+    return starMeanEclipticLongitude(star, jd, profile);
 }
 
 function starLongitudeForAyanamsa(
@@ -446,12 +494,14 @@ function starApparentLongitude(star: StarData, jdUT: number, profile: PrecisionP
 
     // IAU 2000 frame bias after aberration, before precession to the mean
     // equator of date (IERS Conventions 2010 eq. 5.21; ERFA bi00/bp00, BSD-3).
-    if (profile === 'modern') {
+    if (profile === 'modern' || profile === 'truth') {
         apparent = iau2000FrameBias(apparent);
     }
 
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
-    return toSpherical(icrfToMeanEclipticOfDate(apparent, julianCenturies(jdTT), jdTT)).lon;
+    const T = julianCenturies(jdTT);
+    const lon = toSpherical(icrfToMeanEclipticOfDateForProfile(apparent, T, jdTT, profile)).lon;
+    return mod360(lon + truthEquinoxOffsetDeg(jdTT, profile));
 }
 
 // ---------------------------------------------------------------------------

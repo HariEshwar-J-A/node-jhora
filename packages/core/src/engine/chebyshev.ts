@@ -115,23 +115,28 @@ export function evalRecord(record: Float64Array | number[], et: number): Vec3 {
     const mid = record[0]; // midpoint of interval (s from J2000)
     const radius = record[1]; // half-interval (s)
     const tau = (et - mid) / radius; // ∈ [-1, +1]
+    return evalRecordAtS(record, tau);
+}
 
+/**
+ * Evaluate an SPK Type 2 record at normalised Chebyshev argument s ∈ [-1, +1].
+ * Velocity uses dF/ds / RADIUS with RADIUS = record[1].
+ */
+export function evalRecordAtS(record: Float64Array | number[], s: number): Vec3 {
+    const radius = record[1];
     const nCoeff = (record.length - 2) / 3;
 
-    // Slice coefficient arrays (offset 2 = skip MID and RADIUS)
     const xC = Array.from({ length: nCoeff }, (_, i) => record[2 + i]);
     const yC = Array.from({ length: nCoeff }, (_, i) => record[2 + nCoeff + i]);
     const zC = Array.from({ length: nCoeff }, (_, i) => record[2 + 2 * nCoeff + i]);
 
-    // Position (km)
-    const x = evalCheby(xC, tau);
-    const y = evalCheby(yC, tau);
-    const z = evalCheby(zC, tau);
+    const x = evalCheby(xC, s);
+    const y = evalCheby(yC, s);
+    const z = evalCheby(zC, s);
 
-    // Velocity (km/s) — dF/dτ × dτ/dt = dF/dτ / radius
-    const vx = evalChebyDeriv(xC, tau) / radius;
-    const vy = evalChebyDeriv(yC, tau) / radius;
-    const vz = evalChebyDeriv(zC, tau) / radius;
+    const vx = evalChebyDeriv(xC, s) / radius;
+    const vy = evalChebyDeriv(yC, s) / radius;
+    const vz = evalChebyDeriv(zC, s) / radius;
 
     return { x, y, z, vx, vy, vz };
 }

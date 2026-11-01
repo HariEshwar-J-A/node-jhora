@@ -212,6 +212,7 @@ export const CalculationSettingsSchema: z.ZodObject<{
     precisionProfile: z.ZodDefault<z.ZodEnum<{
         jhora: "jhora";
         modern: "modern";
+        truth: "truth";
     }>>;
     deltaTForecast: z.ZodOptional<z.ZodEnum<{
         published: "published";
@@ -430,6 +431,8 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
     };
     // Warning: (ae-forgotten-export) The symbol "Vec3" needs to be exported by the entry point index.d.ts
     getBarycentric(naifBody: number, et: number): Vec3;
+    // (undocumented)
+    getBarycentricAtTdb(naifBody: number, D: number, f: number): Vec3;
     getBarycentricForLunarNode(naifBody: number, et: number, profile: PrecisionProfile): Vec3;
     // (undocumented)
     getPolicy(): EphemerisPolicy;
@@ -1267,7 +1270,7 @@ export interface PlanetPosition {
 export type PositionMode = 'geometric' | 'apparent';
 
 // @public
-export const PRECISION_PROFILES: readonly ["jhora", "modern"];
+export const PRECISION_PROFILES: readonly ["jhora", "modern", "truth"];
 
 // @public
 export interface PrecisionOptions {
@@ -1287,7 +1290,7 @@ export interface PrecisionOptions {
 }
 
 // @public
-export type PrecisionProfile = 'jhora' | 'modern';
+export type PrecisionProfile = 'jhora' | 'modern' | 'truth';
 
 // @public (undocumented)
 export type PrecisionProfileId = (typeof PRECISION_PROFILES)[number];

@@ -138,9 +138,61 @@ async function nodeJhoraSample(jdUt, deltaTMode, sharedDeltaT, engine) {
     return out;
 }
 
-function astronomyEngineSample(jdUt, lahiriIaeAyan) {
+async function nodeJhoraTruthSample(jdUt, deltaTMode, sharedDeltaT, engine) {
+    const iso = jdToUtcIso(jdUt);
+    const dt = DateTime.fromISO(iso, { zone: 'utc' });
+    const precisionOpts =
+        deltaTMode === 'shared' && sharedDeltaT !== undefined
+            ? { deltaTOverrideSeconds: sharedDeltaT, precisionProfile: 'truth' }
+            : { precisionProfile: 'truth' };
+
+    const tropPlanets = engine.getPlanets(dt, undefined, {
+        zodiac: 'tropical',
+        positionMode: 'apparent',
+        includeOuterPlanets: true,
+        nodeType: 'true',
+        julianDayUt: jdUt,
+        ...precisionOpts,
+    });
+
+    const out = {};
+    for (const p of tropPlanets) {
+        if (p.name === 'Ketu') continue;
+        const name = p.name === 'Rahu' ? 'TrueNode' : p.name;
+        out[name] = {
+            tropicalTrue: { lon: wrap360(p.longitude), lat: p.latitude },
+            lahiriIae: {
+                lon: lahiriIaeSidereal(p.longitude, jdUt),
+                lat: p.latitude,
+            },
+        };
+    }
+    const meanNode = engine.getPlanets(dt, undefined, {
+        zodiac: 'tropical',
+        positionMode: 'apparent',
+        nodeType: 'mean',
+        includeOuterPlanets: false,
+        julianDayUt: jdUt,
+        ...precisionOpts,
+    });
+    const meanRahu = meanNode.find((p) => p.name === 'Rahu');
+    if (meanRahu) {
+        out.MeanNode = {
+            tropicalTrue: { lon: wrap360(meanRahu.longitude), lat: meanRahu.latitude },
+            lahiriIae: {
+                lon: lahiriIaeSidereal(meanRahu.longitude, jdUt),
+                lat: meanRahu.latitude,
+            },
+        };
+    }
+    return out;
+}
+
+function astronomyEngineSample(jdUt, sharedDeltaT) {
     const Astronomy = require('astronomy-engine');
-    const time = new Astronomy.AstroTime(jdUt);
+    const dtSec = sharedDeltaT ?? deltaT(jdUt);
+    const jdTT = jdUt + dtSec / 86400;
+    const time = Astronomy.AstroTime.FromTerrestrialTime(jdTT - 2451545.0);
     const bodies = [
         ['Sun', Astronomy.Body.Sun],
         ['Moon', Astronomy.Body.Moon],
@@ -238,7 +290,22 @@ async function main() {
         }
 
         try {
-            const ae = astronomyEngineSample(jdUt);
+            const njTruth = await nodeJhoraTruthSample(jdUt, deltaTMode, sharedDeltaT, engine);
+            for (const [body, coords] of Object.entries(njTruth)) {
+                samples.push({
+                    jdUt,
+                    body,
+                    library: 'node-jhora-truth',
+                    deltaTMode,
+                    ...coords,
+                });
+            }
+        } catch (err) {
+            samples.push({ jdUt, library: 'node-jhora-truth', error: String(err) });
+        }
+
+        try {
+            const ae = astronomyEngineSample(jdUt, sharedDeltaT);
             for (const [body, coords] of Object.entries(ae)) {
                 samples.push({ jdUt, body, library: 'astronomy-engine', deltaTMode, ...coords });
             }

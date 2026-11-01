@@ -15,7 +15,8 @@
  *   https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp
  */
 
-import { evalRecord, type Vec3 } from './chebyshev.js';
+import { evalRecord, evalRecordAtS, type Vec3 } from './chebyshev.js';
+import { J2000_JD } from './provider/time.js';
 
 // ---------------------------------------------------------------------------
 // NAIF body IDs used from de440s.bsp
@@ -193,6 +194,38 @@ export class SpkFile {
         return this.evalSegment(seg, et);
     }
 
+    /**
+     * Barycentric state at two-part TDB (jplephem-style Chebyshev offset).
+     * `D` = floor(JD TDB), `f` = fractional day; do not form a single JD before offset.
+     */
+    getBarycentricAtTdb(naifBody: number, D: number, f: number): Vec3 {
+        if (naifBody === NAIF.Moon || naifBody === NAIF.Earth) {
+            const emb = this.getStateAtTdb(NAIF.EMB, NAIF.SSB, D, f);
+            const rel = this.getStateAtTdb(naifBody, NAIF.EMB, D, f);
+            return {
+                x: emb.x + rel.x,
+                y: emb.y + rel.y,
+                z: emb.z + rel.z,
+                vx: emb.vx + rel.vx,
+                vy: emb.vy + rel.vy,
+                vz: emb.vz + rel.vz,
+            };
+        }
+        return this.getStateAtTdb(naifBody, NAIF.SSB, D, f);
+    }
+
+    private getStateAtTdb(target: number, center: number, D: number, f: number): Vec3 {
+        const wholeSec = (D - J2000_JD) * 86400;
+        const etLookup = wholeSec + f * 86400;
+        const seg = this.findSegment(target, center, etLookup);
+        if (!seg) {
+            throw new Error(
+                `SpkFile: no Type-2 segment for target=${target}, center=${center} at TDB D=${D} f=${f}`,
+            );
+        }
+        return this.evalSegmentAtTdb(seg, D, f);
+    }
+
     // ─── Geocentric convenience helpers ────────────────────────────────────
 
     /**
@@ -302,6 +335,36 @@ export class SpkFile {
         return evalRecord(record, et);
     }
 
+    /** jplephem `Segment.generate` split offset → s = 2·offset/INTLEN − 1. */
+    private evalSegmentAtTdb(seg: SpkSegment, D: number, f: number): Vec3 {
+        const metaBase = (seg.finalAddr - 4) * 8;
+        const INIT = this.readF64(metaBase);
+        const INTLEN = this.readF64(metaBase + 8);
+        const RSIZE = Math.round(this.readF64(metaBase + 16));
+        const N = Math.round(this.readF64(metaBase + 24));
+
+        if (RSIZE < 4 || N < 1 || INTLEN <= 0) {
+            throw new Error(`SpkFile: invalid segment metadata (RSIZE=${RSIZE}, N=${N})`);
+        }
+
+        const wholeSec = (D - J2000_JD) * 86400;
+        const fracSec = f * 86400;
+        const [index1, offset1] = divmod(wholeSec - INIT, INTLEN);
+        const [index2, offset2] = divmod(fracSec, INTLEN);
+        const [carry, offset] = divmod(offset1 + offset2, INTLEN);
+        let recordIdx = index1 + index2 + carry;
+        recordIdx = Math.max(0, Math.min(recordIdx, N - 1));
+
+        const recordBase = (seg.initAddr - 1 + recordIdx * RSIZE) * 8;
+        const record = new Array<number>(RSIZE);
+        for (let i = 0; i < RSIZE; i++) {
+            record[i] = this.readF64(recordBase + i * 8);
+        }
+
+        const s = (2 * offset) / INTLEN - 1;
+        return evalRecordAtS(record, s);
+    }
+
     /** Expose segment list for diagnostics. */
     get segmentList(): readonly SpkSegment[] {
         return this.segments;
@@ -332,6 +395,12 @@ export class SpkFile {
         }
         return { target: seg.target, center: seg.center, init, intlen, rsize, n, data };
     }
+}
+
+function divmod(a: number, b: number): [number, number] {
+    const q = Math.floor(a / b);
+    const r = a - q * b;
+    return [q, r];
 }
 
 // ---------------------------------------------------------------------------

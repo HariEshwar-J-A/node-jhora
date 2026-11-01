@@ -9,10 +9,17 @@
  * equator-only matrix used in chart transforms (O4: mean ecliptic = equator of
  * date tilted by ε_A, not the Table 1 ecliptic pole).
  *
- * Both precision profiles use this model at all epochs (see
- * docs/precision-profiles.md). Near J2000 it agrees with IAU 2006 P03 to
- * ~0.1 mas (Vondrák et al. 2011, §4).
+ * Both `'jhora'` and `'modern'` profiles use this model at all epochs (see
+ * docs/precision-profiles.md). The `'truth'` profile uses IAU 2006 inside
+ * 1600–2200 TT with Vondrák mean ecliptic outside that window. Near J2000 Vondrák agrees with IAU
+ * 2006 P03 to ~0.1 mas (Vondrák et al. 2011, §4).
  */
+
+import { icrfToMeanEclipticOfDateForProfile } from '../truth/mean-ecliptic-iau2006.js';
+import type { PrecisionProfile } from './deltat.js';
+import { nutationIau2000a } from './nutation-iau2000a.js';
+
+export { icrfToMeanEclipticOfDateForProfile };
 
 const DEG = Math.PI / 180;
 const AS2R = Math.PI / (180 * 3600);
@@ -283,11 +290,27 @@ export function chartEclipticFromIcrfDirection(
     v: Vec,
     T: number,
     jdTT?: number,
+    profile: PrecisionProfile = 'jhora',
 ): { lon: number; lat: number } {
-    const lon = toSpherical(icrfToMeanEclipticOfDate(v, T, jdTT)).lon;
-    const lat = toSpherical(icrfToMeanEclipticOfDate(iau2000FrameBias(v), T, jdTT)).lat;
+    const jd = jdTT ?? 2451545.0 + T * 36525.0;
+    const toEcl = (vec: Vec) =>
+        toSpherical(icrfToMeanEclipticOfDateForProfile(vec, T, jd, profile));
+    let lon = toEcl(v).lon;
+    const lat = toSpherical(
+        icrfToMeanEclipticOfDateForProfile(
+            profile === 'truth' ? v : iau2000FrameBias(v),
+            T,
+            jd,
+            profile,
+        ),
+    ).lat;
+    if (profile === 'truth') {
+        lon = mod360(lon + nutationIau2000a(T).dpsi);
+    }
     return { lon, lat };
 }
+
+const mod360 = (x: number): number => ((x % 360) + 360) % 360;
 
 /** Spherical (degrees) → cartesian. Longitude is from x toward y; latitude toward z. */
 export function fromSpherical(lonDeg: number, latDeg: number, r = 1): Vec {

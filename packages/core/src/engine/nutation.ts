@@ -112,7 +112,7 @@ import { nutationIau2000a } from './nutation-iau2000a.js';
  * true obliquity, and apparent house subtraction; `'jhora'` keeps IAU 1980.
  */
 export function nutationForProfile(T: number, profile: PrecisionProfile): Nutation {
-    return profile === 'modern' ? nutationIau2000a(T) : nutation(T);
+    return profile === 'jhora' ? nutation(T) : nutationIau2000a(T);
 }
 
 /**

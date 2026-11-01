@@ -13,8 +13,8 @@ sys.path.insert(0, str(BENCH_ROOT / "lib"))
 
 from frame_bridge import lahiri_iae_ayanamsa_deg  # noqa: E402
 
-FLG_ECLIPTIC = 4
 FLG_JPLEPH = 1
+FLG_SPEED = 256
 
 
 def load_deltat(jd_ut: float, table: list[dict]) -> float:
@@ -34,28 +34,32 @@ def swisseph_rows(jd_ut: float, shared_dt: float | None, deltat_table: list[dict
     import swisseph as swe
 
     swe.set_ephe_path(str(BENCH_ROOT / "cache"))
+    de440 = BENCH_ROOT / "cache" / "de440.bsp"
+    if de440.exists():
+        swe.set_jpl_file(str(de440))
     if shared_dt is not None:
         swe.set_delta_t_userdef(shared_dt)
-    flags = FLG_JPLEPH | FLG_ECLIPTIC
+    flags = FLG_JPLEPH | FLG_SPEED
     bodies = [
-        ("Sun", 0),
-        ("Moon", 1),
-        ("Mercury", 2),
-        ("Venus", 3),
-        ("Mars", 4),
-        ("Jupiter", 5),
-        ("Saturn", 6),
-        ("Uranus", 7),
-        ("Neptune", 8),
-        ("Pluto", 9),
-        ("MeanNode", 10),
-        ("TrueNode", 11),
+        ("Sun", swe.SUN),
+        ("Moon", swe.MOON),
+        ("Mercury", swe.MERCURY),
+        ("Venus", swe.VENUS),
+        ("Mars", swe.MARS),
+        ("Jupiter", swe.JUPITER),
+        ("Saturn", swe.SATURN),
+        ("Uranus", swe.URANUS),
+        ("Neptune", swe.NEPTUNE),
+        ("Pluto", swe.PLUTO),
+        ("MeanNode", swe.MEAN_NODE),
+        ("TrueNode", swe.TRUE_NODE),
     ]
     dt_used = shared_dt if shared_dt is not None else load_deltat(jd_ut, deltat_table)
+    jd_tt = jd_ut + dt_used / 86400.0
     ayan = lahiri_iae_ayanamsa_deg(jd_ut)
     rows = []
     for name, bid in bodies:
-        xx, _ = swe.calc_ut(jd_ut, bid, flags)
+        xx, _ = swe.calc(jd_tt, bid, flags)
         trop_lon, trop_lat = xx[0] % 360.0, xx[1]
         rows.append(
             {
@@ -71,10 +75,9 @@ def swisseph_rows(jd_ut: float, shared_dt: float | None, deltat_table: list[dict
 
 
 def skyfield_rows(jd_ut: float, de440, de441_p1, de441_p2, ts, deltat_table) -> list[dict]:
-    from compute_truth import BODY_TARGETS, compute_epoch, ephemeris_for_jd
+    from compute_truth import compute_epoch, ephemeris_for_jd
     import frame_bridge as fb
 
-    dt = load_deltat(jd_ut, deltat_table)
     eph = ephemeris_for_jd(jd_ut, de440, de441_p1, de441_p2)
     earth = eph["earth"]
     rows = []
@@ -119,15 +122,13 @@ def main() -> int:
             rows.extend(swisseph_rows(jd, shared, deltat_table))
         except Exception as exc:  # noqa: BLE001
             rows.append({"jdUt": jd, "library": "pyswisseph", "error": str(exc)})
-        if mode == "shared":
-            try:
-                rows.extend(skyfield_rows(jd, de440, de441_p1, de441_p2, ts, deltat_table))
-            except Exception as exc:  # noqa: BLE001
-                rows.append({"jdUt": jd, "library": "skyfield", "error": str(exc)})
+        try:
+            rows.extend(skyfield_rows(jd, de440, de441_p1, de441_p2, ts, deltat_table))
+        except Exception as exc:  # noqa: BLE001
+            rows.append({"jdUt": jd, "library": "skyfield", "error": str(exc)})
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as f:
-        json.dump({"samples": rows, "deltaTMode": mode}, f, indent=2)
+    out_path.write_text(json.dumps({"deltaTMode": mode, "samples": rows}, indent=2), encoding="utf-8")
     return 0
 
 

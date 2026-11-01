@@ -39,6 +39,8 @@ const SUN_2GM_C2 = (2 * 1.32712440018e11) / (C_KM_S * C_KM_S);
 /** Minimal slice of SpkFile that this module needs. */
 export interface BarycentricSource {
     getBarycentric(naifBody: number, et: number): Vec3;
+    /** Two-part TDB evaluation (truth profile / DE440s); optional. */
+    getBarycentricAtTdb?(naifBody: number, D: number, f: number): Vec3;
 }
 
 export interface ApparentPlace {
@@ -199,18 +201,35 @@ export function computePlace(
     et: number,
     observer: ObserverState,
     corrections: Required<PlaceCorrections> = APPARENT,
+    tdbReception?: { D: number; f: number },
 ): ApparentPlace {
-    // Deflection geometry degenerates for the Sun — it is the deflector.
     const wantDeflection = corrections.deflection && naifBody !== sunNaifId;
+    const useSplit =
+        corrections.lightTime &&
+        tdbReception !== undefined &&
+        spk.getBarycentricAtTdb !== undefined;
 
-    // ── 1. Light-time: iterate to convergence (3 passes reaches < 1 µas) ────
     let tau = 0;
     let rel: Vec = [0, 0, 0];
     let bodyPos: Vec = [0, 0, 0];
 
     const passes = corrections.lightTime ? 3 : 1;
     for (let i = 0; i < passes; i++) {
-        const b = spk.getBarycentric(naifBody, et - tau);
+        const b = useSplit
+            ? (() => {
+                  let fPrime = tdbReception!.f - tau / 86400;
+                  let DPrime = tdbReception!.D;
+                  while (fPrime < 0) {
+                      fPrime += 1;
+                      DPrime -= 1;
+                  }
+                  while (fPrime >= 1) {
+                      fPrime -= 1;
+                      DPrime += 1;
+                  }
+                  return spk.getBarycentricAtTdb!(naifBody, DPrime, fPrime);
+              })()
+            : spk.getBarycentric(naifBody, et - tau);
         bodyPos = [b.x, b.y, b.z];
         rel = [
             bodyPos[0] - observer.position[0],
@@ -223,9 +242,10 @@ export function computePlace(
     const distanceKm = norm(rel);
     let dir = unit(rel);
 
-    // ── 2. Gravitational deflection by the Sun ──────────────────────────────
     if (wantDeflection) {
-        const sun = spk.getBarycentric(sunNaifId, et);
+        const sun = useSplit
+            ? spk.getBarycentricAtTdb!(sunNaifId, tdbReception!.D, tdbReception!.f)
+            : spk.getBarycentric(sunNaifId, et);
         const sunPos: Vec = [sun.x, sun.y, sun.z];
         const sunToObserver: Vec = [
             observer.position[0] - sunPos[0],

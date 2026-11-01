@@ -9,9 +9,20 @@
  */
 
 import { mod360 } from './coordinates.js';
+import type { PrecisionProfile } from './deltat.js';
 import { julianCenturies } from './precession.js';
 
 const J2000_JD = 2451545.0;
+
+/** IERS Conventions (2010) Ω (`faom03`, Simon et al. 1994). */
+function meanLunarNodeFaom(T: number): number {
+    const omAs =
+        (((450160.398036 + T * (-6962890.5431 + T * (7.4722 + T * (0.007702 + T * -0.00005939)))) %
+            1296000) +
+            1296000) %
+        1296000;
+    return mod360(omAs / 3600);
+}
 
 /**
  * Meeus, *Astronomical Algorithms* eq. 47.7 (Chapront-Touzé & Chapront 1991).
@@ -46,10 +57,21 @@ export function meanLunarNodeFromJdTT(jdTT: number): number {
     return meanLunarNodeMeeus(julianCenturies(jdTT));
 }
 
+/** Mean node at TT Julian day for a precision profile. */
+export function meanLunarNodeFromJdTTForProfile(jdTT: number, profile: PrecisionProfile): number {
+    const T = julianCenturies(jdTT);
+    return profile === 'truth' ? meanLunarNodeFaom(T) : meanLunarNodeMeeus(T);
+}
+
 /** Degrees per day (TT) for the mean node at `jdTT`. */
-export function meanLunarNodeSpeedDegPerDay(jdTT: number): number {
+export function meanLunarNodeSpeedDegPerDay(
+    jdTT: number,
+    profile: PrecisionProfile = 'jhora',
+): number {
     const h = 1e-4;
-    let d = meanLunarNodeFromJdTT(jdTT + h) - meanLunarNodeFromJdTT(jdTT - h);
+    let d =
+        meanLunarNodeFromJdTTForProfile(jdTT + h, profile) -
+        meanLunarNodeFromJdTTForProfile(jdTT - h, profile);
     if (d > 180) d -= 360;
     if (d < -180) d += 360;
     return d / (2 * h);
