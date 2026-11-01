@@ -154,7 +154,10 @@ export class CompositeEphemerisProvider implements EphemerisProvider, Barycentri
      */
     getBarycentricForLunarNode(naifBody: number, et: number, profile: PrecisionProfile): Vec3 {
         const jdTdb = etToJdTdb(et);
-        if (profile === 'modern' && (jdTdb < DE440S_JD_TDB_START || jdTdb > DE440S_JD_TDB_END)) {
+        if (
+            (profile === 'modern' || profile === 'truth') &&
+            (jdTdb < DE440S_JD_TDB_START || jdTdb > DE440S_JD_TDB_END)
+        ) {
             const long = this.de441 ?? this.de431;
             if (long) return long.state(jdTdb, naifBody, 'barycentric');
         }

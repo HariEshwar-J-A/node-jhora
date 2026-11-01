@@ -44,6 +44,8 @@ export default tseslint.config(
             '**/jest.config.js',
             'packages/core/node/**/*.d.ts',
             'packages/ephe/*.d.ts',
+            'packages/eop/*.d.ts',
+            'packages/eop/test/**',
         ],
     },
     eslint.configs.recommended,

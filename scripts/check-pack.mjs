@@ -26,7 +26,10 @@ const lint = !args.has('--no-lint');
 const MB = 1_000_000;
 const CODE_BUDGET = 1 * MB;
 /** Data-only packages: may ship pinned ephemeris files. */
-const DATA_PACKAGES = new Map([['@node-jhora/ephe', { budget: 40 * MB, allow: /^de440s\.bsp$/ }]]);
+const DATA_PACKAGES = new Map([
+    ['@node-jhora/ephe', { budget: 40 * MB, allow: /^de440s\.bsp$/ }],
+    ['@node-jhora/eop', { budget: 40 * MB, allow: /^eop\.bin$/ }],
+]);
 
 const FORBIDDEN = [
     [/\.map$/, 'source map'],

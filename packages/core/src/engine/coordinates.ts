@@ -11,7 +11,9 @@
 
 import { assertCalendarMode, type CalendarMode, julianDayUt } from '../time/historical.js';
 import { deltaT, getDeltaTContext, type PrecisionProfile } from './deltat.js';
+import { gast06aDegrees } from './gst-erfa.js';
 import { equationOfOriginsComplementaryDegrees } from './iers-eo-complementary.js';
+import { julianDayUt1 } from './iers-eop.js';
 import { nutation, nutationForProfile } from './nutation.js';
 import {
     julianCenturies,
@@ -79,6 +81,17 @@ export function julday(
  */
 const IAU2006_SIDEREAL_FIRST_JD = 2396758.5;
 const IAU2006_SIDEREAL_LAST_JD = 2469807.5;
+/** TT Julian day bounds for IAU 2006 precession (1600–2200); truth GMST follows this span. */
+const IAU2006_PRECESSION_JD_TT_MIN = 2305448.0;
+const IAU2006_PRECESSION_JD_TT_MAX = 2524594.0;
+
+function useGmstIAU2006(jdUT: number, profile: PrecisionProfile): boolean {
+    if (profile === 'truth') {
+        const jdTT = jdUT + deltaT(jdUT, profile) / 86400.0;
+        return jdTT >= IAU2006_PRECESSION_JD_TT_MIN && jdTT <= IAU2006_PRECESSION_JD_TT_MAX;
+    }
+    return jdUT >= IAU2006_SIDEREAL_FIRST_JD && jdUT <= IAU2006_SIDEREAL_LAST_JD;
+}
 
 /**
  * IAU 2006 GMST (degrees): Earth Rotation Angle (IERS Conventions 2010 eq. 5.14;
@@ -102,7 +115,9 @@ function gmstIAU2006(jdUT: number, dtSeconds: number = deltaT(jdUT)): number {
     return mod360(era + polyAs / 3600 + equationOfOriginsComplementaryDegrees(T));
 }
 
-/** AU / c in days (light-time day fraction). */
+/**
+ * AU / c in days (light-time day fraction).
+ */
 const LIGHT_TIME_DAYS = 149597870700 / 299792458 / 86400;
 
 /**
@@ -192,6 +207,11 @@ export function getGAST(
     jdUT: number,
     profile: PrecisionProfile = getDeltaTContext().profile,
 ): number {
+    if (profile === 'truth' && useGmstIAU2006(jdUT, profile)) {
+        const jdTT = jdUT + deltaT(jdUT) / 86400.0;
+        const jdUt1 = julianDayUt1(jdUT, profile);
+        return mod360(gast06aDegrees(jdUt1, jdTT));
+    }
     const jdTT = jdUT + deltaT(jdUT) / 86400.0;
     const T = julianCenturies(jdTT);
     const { dpsi, deps } = nutationForProfile(T, profile);
