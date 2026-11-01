@@ -15,6 +15,9 @@ describe('formatCanonicalNumber', () => {
     test('decimals drop trailing zeros', () => {
         expect(formatCanonicalNumber(1.5)).toBe('1.5');
         expect(formatCanonicalNumber(1.0)).toBe('1');
+        expect(formatCanonicalNumber(1.23)).toBe('1.23');
+        expect(formatCanonicalNumber(10.5)).toBe('10.5');
+        expect(formatCanonicalNumber(0.0001)).toBe('0.0001');
     });
 
     test('scientific notation expands deterministically', () => {
