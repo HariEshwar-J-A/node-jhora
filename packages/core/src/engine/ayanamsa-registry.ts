@@ -11,8 +11,7 @@ export type ProfileMean = number | { jhora: number; modern: number };
 
 export interface StarModelDef {
     kind: 'star';
-    star:
-        'Spica' | 'DeltaCancri' | 'ZetaPiscium' | 'LambdaScorpii' | 'Aldebaran' | 'GalacticCenter';
+    star: 'Spica' | 'DeltaCancri' | 'ZetaPiscium' | 'LambdaScorpii' | 'GalacticCenter';
     atLongitude: ProfileMean;
     label: string;
 }
@@ -22,6 +21,8 @@ export interface EpochModelDef {
     jd: number;
     meanAtAnchor: ProfileMean;
     label: string;
+    /** van Leeuwen 2007 HIP 21421 freeze at `jd` minus offset (§2.8.2 item 14). */
+    freezeStarLongitudeMinusDeg?: number;
 }
 
 export interface LahiriModelDef {
@@ -57,6 +58,7 @@ export const JD_1900_JAN_1_NOON = 2415020.5;
 export const JD_1950_JAN_1 = 2433282.5;
 export const JD_J2000 = 2451545.0;
 export const JD_B1950 = 2433282.42345905;
+export const JD_YM100_JAN_0 = 1684532.5;
 export const JD_YM100_JAN_1 = 1684533.0;
 export const JD_HIPPARCHOS = 1674484.0;
 export const JD_SASSANIAN = 1927135.8747793;
@@ -67,9 +69,11 @@ export const JD_LAHIRI_VP285 = 1825235.245875;
 export const JD_KP_VP291 = 1827424.75725;
 export const JD_BABYL_ETPSC = 1673941.0;
 export const JD_BRITTON_0 = 1721057.5;
-export const JD_DJWHAL_2117 = 2488129.5;
-export const JD_YUKTESHWAR_1893 = 2412544.0;
-export const JD_SHEORAN_4174BCE = -1515029.5;
+const JD_DJWHAL_2117 = 2494459.5;
+const JD_YUKTESHWAR_1894_EQUINOX = 0;
+
+const PHI = (1 + Math.sqrt(5)) / 2;
+const GIL_BRAND_GC_LONGITUDE_DEG = 210 + 90 / (PHI * PHI);
 export const JD_VALENS_150 = 1776027.0;
 export const JD_MARDYKS_1998 = 2450819.5;
 
@@ -122,12 +126,12 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     6: {
         kind: 'epoch',
         jd: JD_DJWHAL_2117,
-        meanAtAnchor: 0,
+        meanAtAnchor: 30,
         label: 'Djwhal Khul',
     },
     7: {
         kind: 'epoch',
-        jd: JD_YUKTESHWAR_1893,
+        jd: JD_YUKTESHWAR_1894_EQUINOX,
         meanAtAnchor: d(20, 54, 36),
         label: 'Yukteshwar',
     },
@@ -168,9 +172,10 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
         label: 'Babylonian η Piscium',
     },
     14: {
-        kind: 'star',
-        star: 'Aldebaran',
-        atLongitude: d(45, 0),
+        kind: 'epoch',
+        jd: JD_YM100_JAN_0,
+        meanAtAnchor: 0,
+        freezeStarLongitudeMinusDeg: 45,
         label: 'Aldebaran 15° Taurus',
     },
     15: {
@@ -266,7 +271,7 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
     30: {
         kind: 'star',
         star: 'GalacticCenter',
-        atLongitude: d(242, 14, 50),
+        atLongitude: GIL_BRAND_GC_LONGITUDE_DEG,
         label: 'Galactic centre (Gil Brand)',
     },
     31: {
@@ -318,9 +323,9 @@ export const AYANAMSA_MODEL_DEFS: Record<number, AyanamsaModelDef> = {
         label: 'Babylonian Britton',
     },
     39: {
-        kind: 'true_epoch',
-        jd: JD_SHEORAN_4174BCE,
-        trueValue: 300,
+        kind: 'star',
+        star: 'DeltaCancri',
+        atLongitude: d(103, 29, 32.9375),
         label: 'Sheoran Vedic',
     },
     40: {

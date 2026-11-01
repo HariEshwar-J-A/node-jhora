@@ -30,6 +30,7 @@ describe('Epoch-defined ayanamsa modes', () => {
     test('each zero-at-anchor epoch model matches its anchor JD (modern)', () => {
         for (const [mode, model] of Object.entries(AYANAMSA_MODELS)) {
             if (model.kind !== 'epoch') continue;
+            if (model.freezeStarLongitudeMinusDeg !== undefined) continue;
             const mean = meanAtAnchorForProfile(model.meanAtAnchor, 'modern');
             if (Math.abs(mean) > 1e-6 && Math.abs(mean - 360) > 1e-6) continue;
             expect(getAyanamsa(Number(mode), model.jd, 'apparent', 'modern')).toBeCloseTo(0, 8);
