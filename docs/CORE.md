@@ -63,17 +63,17 @@ interface NodeJHoraConfig {
 
 ## 🏛️ Ephemeris Engine
 
-The low-level engine uses **Swiss Ephemeris (WASM)** for all planetary calculations.
+The low-level engine uses a **pure TypeScript JPL DE440s** SPK reader (`EphemerisEngine`). There is no WASM binary in `@node-jhora/core`.
 
 ### Initialization
 
-The WASM binary must be loaded before any calculations:
+Load the BSP kernel before any calculations (once per worker or isolate):
 
 ```typescript
 import { EphemerisEngine } from '@node-jhora/core';
 
-const eph = EphemerisEngine.getInstance(); // Singleton
-await eph.initialize(); // Loads WASM — call once
+const eph = EphemerisEngine.getInstance(); // or `new EphemerisEngine()` per worker
+await eph.initialize(); // Reads de440s.bsp (Node) or pass initialize({ kernel }) on edge
 ```
 
 ### Planetary Positions

@@ -43,3 +43,4 @@ log. The clean-room rule those records must respect is
 | 0030                                                          | Server-grade PR4 nutation/precession cache ([#336](https://github.com/harieshwar-ai/node-jhora/pull/336))                         | proposed |
 | [0031](0031-subpath-exports-and-esm-only.md)                  | Subpath exports (chebyshev, vargas) and ESM-only (server-grade PR6, [#338](https://github.com/harieshwar-ai/node-jhora/pull/338)) | accepted |
 | [0032](0032-server-grade-pr5-edge-long-range.md)              | Edge kernel and windowed NJCE (server-grade PR5, [#339](https://github.com/harieshwar-ai/node-jhora/pull/339))                    | accepted |
+| [0033](0033-server-grade-pr7-server-contract.md)              | Server contract and worker bench (server-grade PR7)                                                                               | accepted |

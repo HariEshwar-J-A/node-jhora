@@ -15,7 +15,8 @@ import { shadbalaRoutes } from './routes/shadbala.js';
 import { transitRoutes } from './routes/transits.js';
 
 // ---------------------------------------------------------------------------
-// Singleton WASM engine — initialized once at startup.
+// Process-scoped ephemeris engine — initialize once at startup via initEngine().
+// Pure TypeScript DE440s reader (no WASM). See docs/guides/server.md.
 // ---------------------------------------------------------------------------
 
 let _engine: EphemerisEngine | null = null;

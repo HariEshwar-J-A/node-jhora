@@ -32,6 +32,7 @@
         "format:check": "prettier --check .",
         "bench": "pnpm --filter @node-jhora/bench run bench",
         "bench:check": "pnpm --filter @node-jhora/bench run bench:check",
+        "bench:workers": "node scripts/bench-workers.mjs",
         "changeset": "changeset",
         "check:pack": "node scripts/check-pack.mjs"
     },
