@@ -8,6 +8,12 @@ import { baselinePath, resultsArtifactPath } from './paths.js';
 import { isRegression } from './stats.js';
 import type { BenchBaselineFile, BenchResultsArtifact } from './types.js';
 
+/** PR1 baseline p50 on the reference host (schemaVersion 2). PR2 must beat this ratio. */
+const SERVER_GRADE_PR1_FULL_CHART_JHORA_P50 = 25.901004;
+const SERVER_GRADE_PR2_FULL_CHART_MAX_P50 = SERVER_GRADE_PR1_FULL_CHART_JHORA_P50 * 0.7;
+const SERVER_GRADE_PR1_PLANETS_JHORA_P50 = 0.5597119999999904;
+const SERVER_GRADE_PR2_PLANETS_MAX_DELTA = 0.15;
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function baselineP50(entry: { p50Ms?: number; medianMs?: number }): number {
@@ -59,6 +65,23 @@ async function main(): Promise<void> {
         if (measured.withinBudget === false && measured.budgetMs != null) {
             budgetMisses.push(
                 `${measured.id}: p50 ${measured.p50Ms.toFixed(3)} ms exceeds budget ${measured.budgetMs} ms`,
+            );
+        }
+    }
+
+    const fullChartJhora = results.cases.find((c) => c.id === 'full-chart-jhora' && !c.skipped);
+    if (fullChartJhora && fullChartJhora.p50Ms > SERVER_GRADE_PR2_FULL_CHART_MAX_P50) {
+        failures.push(
+            `full-chart-jhora: p50 ${fullChartJhora.p50Ms.toFixed(3)} ms exceeds PR2 gate ${SERVER_GRADE_PR2_FULL_CHART_MAX_P50.toFixed(3)} ms (0.70× PR1 ${SERVER_GRADE_PR1_FULL_CHART_JHORA_P50.toFixed(3)} ms)`,
+        );
+    }
+    const planetsJhora = results.cases.find((c) => c.id === 'planets-jhora' && !c.skipped);
+    if (planetsJhora) {
+        const base = SERVER_GRADE_PR1_PLANETS_JHORA_P50;
+        const ratio = Math.abs(planetsJhora.p50Ms - base) / base;
+        if (ratio > SERVER_GRADE_PR2_PLANETS_MAX_DELTA) {
+            failures.push(
+                `planets-jhora: p50 ${planetsJhora.p50Ms.toFixed(3)} ms moved ${(ratio * 100).toFixed(1)}% vs PR1 ${base.toFixed(3)} ms (limit ${SERVER_GRADE_PR2_PLANETS_MAX_DELTA * 100}%)`,
             );
         }
     }

@@ -4,6 +4,15 @@ export {
     hashCanonicalSerialize,
 } from './canonical-serialize.js';
 export {
+    combinedBenchFingerprint,
+    dashaTreeSha256,
+    f64Hex,
+    housesFingerprintHex,
+    type HousesFingerprintInput,
+    type PlanetFingerprintInput,
+    planetsFingerprintHex,
+} from './chart-identity-fingerprint.js';
+export {
     angleDeltaArcsec,
     compareGoldenCase,
     type CompareGoldenOptions,
@@ -29,6 +38,7 @@ export {
     toJhoraGoldenCase,
 } from './convert.js';
 export { formatGoldenJson, formatGoldenJsonl, parseGoldenCorpus } from './corpus.js';
+export { DASHA_IDENTITY_CORPUS } from './dasha-identity-corpus.js';
 export { DETERMINISM_CORPUS, type DeterminismCorpusCase } from './determinism-corpus.js';
 export { expectGolden, installGoldenMatchers } from './jest.js';
 export { buildGoldenCaseJsonSchema, formatJsonSchema } from './json-schema.js';
