@@ -1,153 +1,96 @@
+import { planetShortName } from '../apps/web/src/components/chart/geometry.ts';
 import {
-    NORTH_HOUSE_ANCHORS,
-    NORTH_HOUSE_POLYGONS,
-    SOUTH_SIGN_CELLS,
-    planetShortName,
-    southCellRect,
-} from '../apps/web/src/components/chart/geometry.ts';
-import {
-    CHART_LABEL_PADDING,
     CHART_PLANET_FONT_SIZE,
-    estimateTextHeight,
-    estimateTextWidth,
-    fitCornerLabel,
-    fitLabels,
-    fitSignLabel,
-    pointInsideWithPadding,
-    rectCellPolygon,
-} from '../apps/web/src/components/chart/layoutFit.ts';
+    CHART_PLANET_FONT_MIN,
+    CHART_SIGN_FONT_SIZE,
+    boxesOverlap,
+    boxInsideRect,
+    labelBox,
+    layoutLabelsInRect,
+    NORTH_PLANET_RECTS,
+    NORTH_SIGN_POSITIONS,
+    signLabelBox,
+    southPlanetTextRect,
+    southSignPosition,
+} from '../apps/web/src/components/chart/chartLayout.ts';
+import { SOUTH_SIGN_CELLS, southCellRect } from '../apps/web/src/components/chart/geometry.ts';
 
-function boxesOverlap(
-    a: { x0: number; y0: number; x1: number; y1: number },
-    b: { x0: number; y0: number; x1: number; y1: number },
-): boolean {
-    return !(a.x1 < b.x0 || b.x1 < a.x0 || a.y1 < b.y0 || b.y1 < a.y0);
+const bodies = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+
+function planetLines(count: number, retro = false): { id: string; text: string }[] {
+    return bodies.slice(0, count).map((name, i) => ({
+        id: name,
+        text: `${planetShortName(name)} ${10 + i}°${retro ? ' R' : ''}`,
+    }));
 }
 
-function placementBox(
-    x: number,
-    y: number,
-    text: string,
-    fontSize: number,
-    anchor: 'middle' | 'start',
+function assertLayout(
+    placed: ReturnType<typeof layoutLabelsInRect>,
+    rect: { x0: number; y0: number; x1: number; y1: number },
+    signBox: ReturnType<typeof signLabelBox> | null,
+    maxCount: number,
+    expectFullSize = true,
 ) {
-    const w = estimateTextWidth(text, fontSize);
-    const h = estimateTextHeight(fontSize);
-    const x0 = anchor === 'middle' ? x - w / 2 : x;
-    return { x0, y0: y - h * 0.78, x1: x0 + w, y1: y + h * 0.22 };
+    expect(placed.length).toBe(maxCount);
+    for (const p of placed) {
+        expect(p.text).toContain('°');
+        if (expectFullSize) {
+            expect(p.fontSize).toBeGreaterThanOrEqual(CHART_PLANET_FONT_SIZE - 0.001);
+        }
+        expect(p.fontSize).toBeGreaterThanOrEqual(CHART_PLANET_FONT_MIN - 0.001);
+    }
+    const boxes = placed.map((p) => labelBox(p.x, p.y, p.text, p.fontSize, p.textAnchor));
+    for (const box of boxes) {
+        expect(boxInsideRect(box, rect)).toBe(true);
+    }
+    for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+            expect(boxesOverlap(boxes[i]!, boxes[j]!)).toBe(false);
+        }
+        if (signBox) {
+            expect(boxesOverlap(boxes[i]!, signBox)).toBe(false);
+        }
+    }
 }
 
-describe('fitLabels', () => {
-    const bodies = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu'];
-
-    it('fits nine planets plus Asc reserved space in North house 1', () => {
-        const poly = NORTH_HOUSE_POLYGONS[1]!;
-        const anchor = NORTH_HOUSE_ANCHORS[1]!;
-        const sign = fitSignLabel(poly, { x: 50, y: 14 }, '12', 4.5);
-        const reserved = [
-            {
-                x: sign.x,
-                y: sign.y,
-                w: estimateTextWidth('12', sign.fontSize),
-                h: estimateTextHeight(sign.fontSize),
-                anchor: 'middle' as const,
-            },
-            {
-                x: 50,
-                y: 20,
-                w: estimateTextWidth('Asc', 3),
-                h: estimateTextHeight(3),
-                anchor: 'middle' as const,
-            },
-        ];
-        const labels = bodies.map((name, i) => ({
-            id: name,
-            text: `${planetShortName(name)} ${i}°`,
-            compactText: `${planetShortName(name)}${i}°`,
-            symbolText: planetShortName(name),
-        }));
-        const placed = fitLabels(poly, anchor, labels, {
-            reserved,
-        });
-        expect(placed).toHaveLength(9);
-        for (const p of placed) {
-            expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
-        }
-        const boxes = placed.map((p) => placementBox(p.x, p.y, p.text, p.fontSize, p.textAnchor));
-        for (let i = 0; i < boxes.length; i++) {
-            for (const [x, y] of [
-                [boxes[i]!.x0, boxes[i]!.y0],
-                [boxes[i]!.x1, boxes[i]!.y0],
-                [boxes[i]!.x1, boxes[i]!.y1],
-                [boxes[i]!.x0, boxes[i]!.y1],
-            ] as [number, number][]) {
-                expect(pointInsideWithPadding(x, y, poly, CHART_LABEL_PADDING)).toBe(true);
-            }
-            for (let j = i + 1; j < boxes.length; j++) {
-                expect(boxesOverlap(boxes[i]!, boxes[j]!)).toBe(false);
-            }
-        }
-    });
-
-    it('fits crowded labels in every North house with a synthetic nine-planet stack', () => {
+describe('deterministic chart layout', () => {
+    describe('North houses', () => {
         for (let house = 1; house <= 12; house++) {
-            const poly = NORTH_HOUSE_POLYGONS[house]!;
-            const anchor = NORTH_HOUSE_ANCHORS[house]!;
-            const sign = fitSignLabel(poly, { x: anchor.x, y: anchor.y - 8 }, '9', 4.5);
-            const reserved = [
-                {
-                    x: sign.x,
-                    y: sign.y,
-                    w: estimateTextWidth('9', sign.fontSize),
-                    h: estimateTextHeight(sign.fontSize),
-                    anchor: 'middle' as const,
-                },
-            ];
-            const labels = bodies.map((name, i) => ({
-                id: `${house}-${name}`,
-                text: `${planetShortName(name)} ${20 + i}° R`,
-                compactText: `${planetShortName(name)}${20 + i}°R`,
-                symbolText: planetShortName(name),
-            }));
-            const placed = fitLabels(poly, anchor, labels, {
-                reserved,
-            });
-            expect(placed.length).toBe(9);
-            for (const p of placed) {
-                expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+            for (const count of [1, 4, 6]) {
+                it(`house ${house} with ${count} planets`, () => {
+                    const rect = NORTH_PLANET_RECTS[house]!;
+                    const signPos = NORTH_SIGN_POSITIONS[house]!;
+                    const signBox = signLabelBox(signPos.x, signPos.y, '9', CHART_SIGN_FONT_SIZE);
+                    let items = planetLines(count);
+                    if (house === 1 && count === 6) {
+                        items = [{ id: '__asc__', text: 'Asc' }, ...items];
+                    }
+                    const placed = layoutLabelsInRect(rect, items);
+                    const planetOnly = placed.filter((p) => p.id !== '__asc__');
+                    const expectFullSize = count <= 6 && !(house === 1 && count === 6);
+                    assertLayout(planetOnly, rect, signBox, count, expectFullSize);
+                    if (house === 1) {
+                        const asc = placed.find((p) => p.id === '__asc__');
+                        expect(asc?.text).toBe('Asc');
+                        expect(asc && boxInsideRect(labelBox(asc.x, asc.y, asc.text, asc.fontSize, 'middle'), rect)).toBe(true);
+                        expect(asc && boxesOverlap(labelBox(asc.x, asc.y, asc.text, asc.fontSize, 'middle'), signBox)).toBe(false);
+                    }
+                });
             }
         }
     });
 
-    it('fits nine planets in every South sign cell', () => {
+    describe('South cells', () => {
         for (const { row, col } of SOUTH_SIGN_CELLS) {
-            const rect = southCellRect(row, col);
-            const poly = rectCellPolygon(rect.x, rect.y, rect.size);
-            const sign = fitCornerLabel(poly, rect.x + 3.5, rect.y + 5.5, '12', 4.2);
-            const reserved = [
-                {
-                    x: sign.x,
-                    y: sign.y,
-                    w: estimateTextWidth('12', sign.fontSize),
-                    h: estimateTextHeight(sign.fontSize),
-                    anchor: 'start' as const,
-                },
-            ];
-            const labels = bodies.map((name, i) => ({
-                id: `${row}-${col}-${name}`,
-                text: `${planetShortName(name)} ${i}°`,
-                compactText: `${planetShortName(name)}${i}°`,
-                symbolText: planetShortName(name),
-            }));
-            const placed = fitLabels(
-                poly,
-                { x: rect.x + rect.size / 2, y: rect.y + rect.size * 0.58 },
-                labels,
-                { reserved },
-            );
-            expect(placed.length).toBe(9);
-            for (const p of placed) {
-                expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+            for (const count of [1, 4, 6]) {
+                it(`cell r${row}c${col} with ${count} planets`, () => {
+                    const cell = southCellRect(row, col);
+                    const rect = southPlanetTextRect(cell);
+                    const signPos = southSignPosition(cell);
+                    const signBox = signLabelBox(signPos.x, signPos.y, '12', CHART_SIGN_FONT_SIZE, 'start');
+                    const placed = layoutLabelsInRect(rect, planetLines(count));
+                    assertLayout(placed, rect, signBox, count);
+                });
             }
         }
     });

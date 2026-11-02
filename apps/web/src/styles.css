@@ -1404,6 +1404,30 @@ table.data th.mono {
         max-width: none;
     }
 
+    .landing-sky-hero__canvas,
+    .landing-sky-hero__fallback {
+        opacity: 0.22;
+        mask-image: linear-gradient(
+            105deg,
+            transparent 0%,
+            transparent 38%,
+            rgb(0 0 0 / 0.35) 72%,
+            rgb(0 0 0 / 0.55) 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            105deg,
+            transparent 0%,
+            transparent 38%,
+            rgb(0 0 0 / 0.35) 72%,
+            rgb(0 0 0 / 0.55) 100%
+        );
+    }
+
+    [data-theme='light'] .landing-sky-hero__canvas,
+    [data-theme='light'] .landing-sky-hero__fallback {
+        opacity: 0.15;
+    }
+
     .site-header {
         flex-wrap: wrap;
     }

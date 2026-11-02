@@ -152,8 +152,7 @@ export function LandingPage() {
                 </section>
             </div>
 
-            <Reveal>
-                <section className="section" id="licensing">
+            <section className="section" id="licensing">
                     <h2>Licensing</h2>
                     <p>
                         The library is closed source and proprietary. All rights reserved.
@@ -185,7 +184,6 @@ export function LandingPage() {
                         ))}
                     </div>
                 </section>
-            </Reveal>
 
             <footer className="footer">
                 <p>

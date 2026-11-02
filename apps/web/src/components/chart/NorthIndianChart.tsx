@@ -3,14 +3,10 @@ import { degreeInSignDms, signName } from '../../lib/astro-display';
 import type { ChartPlanet } from './types';
 import {
     NORTH_DIAGONAL_DIAMOND_PATH,
-    NORTH_HOUSE_ANCHORS,
-    NORTH_HOUSE_POLYGONS,
     NORTH_OUTER_SQUARE_PATH,
-    NORTH_SIGN_LABEL_ANCHORS,
     NORTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
-    planetShortName,
     planetSign0,
     signIndex0,
     signLabel,
@@ -18,12 +14,13 @@ import {
 } from './geometry';
 import {
     CHART_PLANET_FONT_SIZE,
-    estimateTextHeight,
-    estimateTextWidth,
-    fitLabels,
-    fitSignLabel,
-    type ReservedBox,
-} from './layoutFit';
+    CHART_SIGN_FONT_SIZE,
+    CHART_SIGN_FONT_SIZE_COMPACT,
+    formatPlanetLabel,
+    layoutLabelsInRect,
+    NORTH_PLANET_RECTS,
+    NORTH_SIGN_POSITIONS,
+} from './chartLayout';
 
 type Props = {
     ascendant: number;
@@ -31,18 +28,6 @@ type Props = {
     chartKey?: string;
     compact?: boolean;
 };
-
-function formatPlanetLine(p: ChartPlanet): string {
-    const d = Math.floor(degreeInSign(p));
-    const retro = isRetrograde(p) ? ' R' : '';
-    return `${planetShortName(p.name)} ${d}°${retro}`;
-}
-
-function compactPlanetLine(p: ChartPlanet): string {
-    const d = Math.floor(degreeInSign(p));
-    const retro = isRetrograde(p) ? 'R' : '';
-    return `${planetShortName(p.name)}${d}°${retro}`;
-}
 
 export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Props) {
     const ascSign0 = signIndex0(ascendant);
@@ -56,6 +41,8 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
     for (const list of byHouse.values()) {
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
+
+    const signFont = compact ? CHART_SIGN_FONT_SIZE_COMPACT : CHART_SIGN_FONT_SIZE;
 
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
@@ -76,65 +63,43 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                 {Array.from({ length: 12 }, (_, i) => {
                     const house = i + 1;
                     const sign0 = (ascSign0 + i) % 12;
-                    const anchor = NORTH_HOUSE_ANCHORS[house]!;
-                    const poly = NORTH_HOUSE_POLYGONS[house]!;
                     const signText = signLabel(sign0);
-                    const signPlaced = fitSignLabel(
-                        poly,
-                        NORTH_SIGN_LABEL_ANCHORS[house]!,
-                        signText,
-                        compact ? 3.8 : 4.5,
-                    );
-                    const reserved: ReservedBox[] = [
-                        {
-                            x: signPlaced.x,
-                            y: signPlaced.y,
-                            w: estimateTextWidth(signText, signPlaced.fontSize),
-                            h: estimateTextHeight(signPlaced.fontSize),
-                            anchor: 'middle',
-                        },
-                    ];
-                    if (house === 1) {
-                        reserved.push({
-                            x: 50,
-                            y: 20,
-                            w: estimateTextWidth('Asc', 3),
-                            h: estimateTextHeight(3),
-                            anchor: 'middle',
-                        });
-                    }
+                    const signPos = NORTH_SIGN_POSITIONS[house]!;
                     const inHouse = byHouse.get(house) ?? [];
-                    const placed = fitLabels(
-                        poly,
-                        anchor,
-                        inHouse.map((p) => ({
-                            id: p.name,
-                            text: formatPlanetLine(p),
-                            compactText: compactPlanetLine(p),
-                            symbolText: planetShortName(p.name),
-                        })),
-                        {
-                            reserved,
-                            maxFontSize: compact ? 2.1 : CHART_PLANET_FONT_SIZE,
-                        },
-                    );
+                    const labelItems = inHouse.map((p) => ({
+                        id: p.name,
+                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p)),
+                    }));
+                    if (house === 1) {
+                        labelItems.unshift({ id: '__asc__', text: 'Asc' });
+                    }
+                    const placed = layoutLabelsInRect(NORTH_PLANET_RECTS[house]!, labelItems);
                     return (
                         <g key={house} className="chart-house">
                             <text
-                                x={signPlaced.x}
-                                y={signPlaced.y}
+                                x={signPos.x}
+                                y={signPos.y}
                                 textAnchor="middle"
                                 className="chart-sign-num"
-                                fontSize={signPlaced.fontSize}
+                                fontSize={signFont}
                             >
                                 {signText}
                             </text>
-                            {house === 1 && (
-                                <text x={50} y={20} textAnchor="middle" className="chart-lagna-tag">
-                                    Asc
-                                </text>
-                            )}
                             {placed.map((slot) => {
+                                if (slot.id === '__asc__') {
+                                    return (
+                                        <text
+                                            key="asc"
+                                            x={slot.x}
+                                            y={slot.y}
+                                            textAnchor="middle"
+                                            className="chart-lagna-tag"
+                                            fontSize={slot.fontSize}
+                                        >
+                                            Asc
+                                        </text>
+                                    );
+                                }
                                 const p = inHouse.find((x) => x.name === slot.id)!;
                                 return (
                                     <g key={slot.id}>
@@ -147,7 +112,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                                         <text
                                             x={slot.x}
                                             y={slot.y}
-                                            textAnchor={slot.textAnchor}
+                                            textAnchor="middle"
                                             className="chart-planet"
                                             fontSize={slot.fontSize}
                                         >

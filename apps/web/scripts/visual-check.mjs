@@ -62,7 +62,7 @@ async function assertNoFilledConstellationPaths(page) {
     if (bad.length) fail(`Filled constellation paths: ${bad.join('; ')}`);
 }
 
-async function assertChartPlanetFontMin(page, minPx = 10, minChartWidth = 480) {
+async function assertChartPlanetFontMin(page, minPx = 11, minChartWidth = 480) {
     const small = await page.evaluate(
         ({ min, minChartW }) => {
             const svg = document.querySelector('.chart-canvas__svg');
@@ -95,6 +95,18 @@ async function assertChartPlanetFontMin(page, minPx = 10, minChartWidth = 480) {
         );
 }
 
+async function assertChartPlanetDegrees(page) {
+    const bad = await page.evaluate(() => {
+        const svg = document.querySelector('.chart-canvas__svg');
+        if (!svg) return [];
+        return Array.from(svg.querySelectorAll('text.chart-planet'))
+            .filter((t) => t.textContent?.trim())
+            .filter((t) => !t.textContent?.includes('\u00b0'))
+            .map((t) => t.textContent);
+    });
+    if (bad.length) fail(`Planet labels missing degrees: ${bad.slice(0, 8).join(', ')}`);
+}
+
 async function assertChartTextNoOverlap(page) {
     const overlaps = await page.evaluate(() => {
         const svg = document.querySelector('.chart-canvas__svg');
@@ -103,12 +115,12 @@ async function assertChartTextNoOverlap(page) {
         const houses = svg.querySelectorAll('g.chart-house');
         const groups = houses.length ? Array.from(houses) : [svg];
         for (const g of groups) {
-            const texts = Array.from(g.querySelectorAll('text.chart-planet')).filter((t) =>
-                t.textContent?.trim(),
-            );
+            const texts = Array.from(
+                g.querySelectorAll('text.chart-planet, text.chart-sign-num, text.chart-lagna-tag'),
+            ).filter((t) => t.textContent?.trim());
             const boxes = texts.map((t) => {
                 const b = t.getBoundingClientRect();
-                return { t: t.textContent, b };
+                return { t: t.textContent, cls: t.className.baseVal, b };
             });
             for (let i = 0; i < boxes.length; i++) {
                 for (let j = i + 1; j < boxes.length; j++) {
@@ -119,15 +131,16 @@ async function assertChartTextNoOverlap(page) {
                         b.left < a.right &&
                         a.top < b.bottom &&
                         b.top < a.bottom &&
-                        Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
-                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
-                    if (overlap) hits.push(`${boxes[i].t} × ${boxes[j].t}`);
+                        Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 &&
+                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5;
+                    if (overlap)
+                        hits.push(`${boxes[i].cls}:${boxes[i].t} × ${boxes[j].cls}:${boxes[j].t}`);
                 }
             }
         }
         return hits;
     });
-    if (overlaps.length) fail(`Overlapping chart labels: ${overlaps.slice(0, 6).join(' | ')}`);
+    if (overlaps.length) fail(`Overlapping chart labels: ${overlaps.slice(0, 8).join(' | ')}`);
 }
 
 async function assertNoHorizontalOverflow(page, label) {
@@ -276,18 +289,44 @@ async function assertLandingSectionsVisible(page, theme, vpName) {
     }
 }
 
-async function assertDocsScroll(page, vpName) {
-    await page.goto(`${BASE}#/docs/dashas`);
-    await page.waitForTimeout(500);
-    const before = await page.evaluate(() => window.scrollY);
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+async function assertLicensingTierCards(page) {
+    await page.evaluate(() => document.querySelector('#licensing')?.scrollIntoView({ block: 'center' }));
     await page.waitForTimeout(300);
+    const bad = await page.evaluate(() => {
+        const cards = Array.from(document.querySelectorAll('#licensing .pricing-grid .card'));
+        return cards
+            .map((card) => {
+                const title = card.querySelector('h3')?.textContent?.trim() ?? '';
+                const note = card.querySelector('p.mono')?.textContent?.trim() ?? '';
+                const detail = card.querySelector('p:not(.mono)')?.textContent?.trim() ?? '';
+                const btn = card.querySelector('a.btn')?.textContent?.trim() ?? '';
+                if (!note || !detail || !btn) return `${title}: missing body (note=${note.length}, detail=${detail.length})`;
+                const r = card.getBoundingClientRect();
+                if (r.height < 80) return `${title}: card too short (${r.height}px)`;
+                return null;
+            })
+            .filter(Boolean);
+    });
+    if (bad.length) fail(`Licensing tier cards: ${bad.join('; ')}`);
+}
+
+async function assertDocsScrollWheel(page, path, vpName) {
+    await page.goto(`${BASE}#${path}`);
+    await page.waitForTimeout(500);
+    const before = await page.evaluate(() => ({
+        y: window.scrollY,
+        tall: document.body.scrollHeight > window.innerHeight + 80,
+    }));
+    if (!before.tall) return;
+    await page.mouse.move(640, 450);
+    for (let i = 0; i < 8; i++) {
+        await page.mouse.wheel(0, 400);
+        await page.waitForTimeout(80);
+    }
     const after = await page.evaluate(() => window.scrollY);
-    const moved = after > before + 40;
-    const tall = await page.evaluate(
-        () => document.body.scrollHeight > window.innerHeight + 80,
-    );
-    if (tall && !moved) fail(`Docs page window scrollY unchanged at ${vpName} (${before} → ${after})`);
+    if (after <= before.y + 40) {
+        fail(`Docs wheel scroll stuck at ${vpName} ${path} (${before.y} → ${after})`);
+    }
 }
 
 async function setTheme(page, light) {
@@ -318,11 +357,13 @@ async function initAppChartTab(page) {
     const table = page.getByTestId('planets-table');
     await table.waitFor({ state: 'visible', timeout: 180_000 });
     await assertChartPlanetFontMin(page);
+    await assertChartPlanetDegrees(page);
     await assertChartTextNoOverlap(page);
     await assertNoTextClipped(page);
     await assertNoHorizontalOverflow(page, 'app chart tab');
     await page.getByTestId('chart-style-south').click();
     await assertChartPlanetFontMin(page);
+    await assertChartPlanetDegrees(page);
     await assertChartTextNoOverlap(page);
     await page.getByTestId('chart-style-north').click();
 }
@@ -332,6 +373,7 @@ async function runVarga(page, varga) {
     const sel = page.locator('.varga-board__picker select');
     await sel.selectOption(String(varga));
     await page.waitForTimeout(350);
+    await assertChartPlanetDegrees(page);
     await assertChartTextNoOverlap(page);
     await page.getByTestId('chart-style-south').click();
     await assertChartTextNoOverlap(page);
@@ -363,12 +405,17 @@ async function main() {
             await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
             await page.waitForTimeout(400);
             await assertLandingSectionsVisible(page, light ? 'light' : 'dark', vp.name);
+            if (light) await assertLicensingTierCards(page);
             await assertNoFilledConstellationPaths(page);
             await snap(page, `landing-why-${light ? 'light' : 'dark'}-${vp.name}`);
             report.push(`landing-why-${light ? 'light' : 'dark'}-${vp.name}`);
         }
 
-        await assertDocsScroll(page, vp.name);
+        if (vp.name === '1280') {
+            await assertDocsScrollWheel(page, '/docs', vp.name);
+            await assertDocsScrollWheel(page, '/docs/dashas', vp.name);
+        }
+
         await page.goto(`${BASE}#/docs/dashas`);
         await page.waitForTimeout(400);
         await assertNoHorizontalOverflow(page, `docs ${vp.name}`);
@@ -381,12 +428,12 @@ async function main() {
         await snap(page, `app-chart-d1-${vp.name}`);
         report.push(`app-chart-d1-${vp.name}`);
         if (vp.name === '1280') {
-            await assertChartPlanetFontMin(page, 10, 480);
+            await assertChartPlanetFontMin(page, 11, 480);
         }
         for (const varga of [9, 60, 150]) {
             await runVarga(page, varga);
             if (vp.name === '1280') {
-                await assertChartPlanetFontMin(page, 10, 480);
+                await assertChartPlanetFontMin(page, 11, 480);
             }
             await snap(page, `app-varga-d${varga}-north-${vp.name}`);
             report.push(`app-varga-d${varga}-${vp.name}`);

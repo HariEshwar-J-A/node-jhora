@@ -8,7 +8,6 @@ import {
     SOUTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
-    planetShortName,
     planetSign0,
     southCellRect,
     southCenterMetaLines,
@@ -16,14 +15,13 @@ import {
     signLabel,
 } from './geometry';
 import {
-    CHART_PLANET_FONT_SIZE,
-    estimateTextHeight,
-    estimateTextWidth,
-    fitLabels,
-    fitCornerLabel,
-    rectCellPolygon,
-    type ReservedBox,
-} from './layoutFit';
+    CHART_SIGN_FONT_SIZE,
+    CHART_SIGN_FONT_SIZE_COMPACT,
+    formatPlanetLabel,
+    layoutLabelsInRect,
+    southPlanetTextRect,
+    southSignPosition,
+} from './chartLayout';
 
 type Props = {
     ascendant: number;
@@ -32,18 +30,6 @@ type Props = {
     chartKey?: string;
     compact?: boolean;
 };
-
-function formatPlanetLine(p: ChartPlanet): string {
-    const d = Math.floor(degreeInSign(p));
-    const retro = isRetrograde(p) ? ' R' : '';
-    return `${planetShortName(p.name)} ${d}°${retro}`;
-}
-
-function compactPlanetLine(p: ChartPlanet): string {
-    const d = Math.floor(degreeInSign(p));
-    const retro = isRetrograde(p) ? 'R' : '';
-    return `${planetShortName(p.name)}${d}°${retro}`;
-}
 
 export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }: Props) {
     const ascSign0 = signIndex0(ascendant);
@@ -57,6 +43,8 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
     for (const list of bySign.values()) {
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
+
+    const signFont = compact ? CHART_SIGN_FONT_SIZE_COMPACT : CHART_SIGN_FONT_SIZE;
 
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
@@ -94,56 +82,18 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                     })()}
                 {SOUTH_SIGN_CELLS.map(({ sign, row, col }) => {
                     const rect = southCellRect(row, col);
-                    const poly = rectCellPolygon(rect.x, rect.y, rect.size);
                     const inSign = bySign.get(sign) ?? [];
                     const isLagna = sign === ascSign0;
                     const signText = signLabel(sign);
-                    const signPreferred = { x: rect.x + 3.5, y: rect.y + 5.5 };
-                    const signPlaced = fitCornerLabel(
-                        poly,
-                        signPreferred.x,
-                        signPreferred.y,
-                        signText,
-                        compact ? 3.6 : 4.2,
-                    );
-                    const reserved: ReservedBox[] = [
-                        {
-                            x: signPlaced.x,
-                            y: signPlaced.y,
-                            w: estimateTextWidth(signText, signPlaced.fontSize),
-                            h: estimateTextHeight(signPlaced.fontSize),
-                            anchor: 'start',
-                        },
-                    ];
-                    if (isLagna) {
-                        reserved.push({
-                            x: rect.x + rect.size * 0.12,
-                            y: rect.y + rect.size * 0.88,
-                            w: rect.size * 0.75,
-                            h: 2,
-                            anchor: 'start',
-                        });
-                    }
-                    const planetAnchor = {
-                        x: rect.x + rect.size / 2,
-                        y: rect.y + rect.size * 0.58,
-                    };
-                    const placed = fitLabels(
-                        poly,
-                        planetAnchor,
-                        inSign.map((p) => ({
-                            id: p.name,
-                            text: formatPlanetLine(p),
-                            compactText: compactPlanetLine(p),
-                            symbolText: planetShortName(p.name),
-                        })),
-                        {
-                            reserved,
-                            maxFontSize: compact ? 2 : CHART_PLANET_FONT_SIZE,
-                        },
-                    );
+                    const signPos = southSignPosition(rect);
+                    const textRect = southPlanetTextRect(rect);
+                    const labelItems = inSign.map((p) => ({
+                        id: p.name,
+                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p)),
+                    }));
+                    const placed = layoutLabelsInRect(textRect, labelItems);
                     return (
-                        <g key={sign}>
+                        <g key={sign} className="chart-house">
                             {isLagna && (
                                 <line
                                     x1={rect.x + 1}
@@ -154,11 +104,11 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                                 />
                             )}
                             <text
-                                x={signPlaced.x}
-                                y={signPlaced.y}
+                                x={signPos.x}
+                                y={signPos.y}
                                 textAnchor="start"
                                 className="chart-sign-num chart-sign-num--south"
-                                fontSize={signPlaced.fontSize}
+                                fontSize={signFont}
                             >
                                 {signText}
                             </text>
@@ -175,7 +125,7 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                                         <text
                                             x={slot.x}
                                             y={slot.y}
-                                            textAnchor="middle"
+                                            textAnchor={slot.textAnchor}
                                             className="chart-planet"
                                             fontSize={slot.fontSize}
                                         >
