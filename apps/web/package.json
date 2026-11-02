@@ -1,0 +1,32 @@
+{
+    "name": "@node-jhora/web",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "prebuild": "node scripts/stage-ephe.mjs",
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview --port 4174 --strictPort"
+    },
+    "dependencies": {
+        "@node-jhora/analytics": "workspace:*",
+        "@node-jhora/core": "workspace:*",
+        "@node-jhora/engine": "workspace:*",
+        "@node-jhora/events": "workspace:*",
+        "@node-jhora/format": "workspace:*",
+        "@node-jhora/match": "workspace:*",
+        "@node-jhora/prediction": "workspace:*",
+        "comlink": "^4.4.2",
+        "luxon": "^3.7.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "react-router-dom": "^7.9.5"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.2",
+        "@vitejs/plugin-react": "^5.1.0",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.12"
+    }
+}
