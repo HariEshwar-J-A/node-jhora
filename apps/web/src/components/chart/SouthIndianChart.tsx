@@ -15,10 +15,12 @@ import {
     signLabel,
 } from './geometry';
 import {
+    CHART_COMPACT_PLANET_FONT,
     CHART_SIGN_FONT_SIZE,
     CHART_SIGN_FONT_SIZE_COMPACT,
     formatPlanetLabel,
     layoutLabelsInRect,
+    southLagnaTick,
     southPlanetTextRect,
     southSignPosition,
 } from './chartLayout';
@@ -29,9 +31,17 @@ type Props = {
     meta?: ChartMeta;
     chartKey?: string;
     compact?: boolean;
+    planetFont?: number;
 };
 
-export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }: Props) {
+export function SouthIndianChart({
+    ascendant,
+    planets,
+    meta,
+    chartKey,
+    compact,
+    planetFont,
+}: Props) {
     const ascSign0 = signIndex0(ascendant);
     const bySign = new Map<number, ChartPlanet[]>();
     for (const p of planets) {
@@ -85,21 +95,30 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                     const inSign = bySign.get(sign) ?? [];
                     const isLagna = sign === ascSign0;
                     const signText = signLabel(sign);
-                    const signPos = southSignPosition(rect);
+                    const signPos = southSignPosition(rect, isLagna);
                     const textRect = southPlanetTextRect(rect);
                     const labelItems = inSign.map((p) => ({
                         id: p.name,
-                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p)),
+                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p), compact),
                     }));
-                    const placed = layoutLabelsInRect(textRect, labelItems);
+                    const placed = layoutLabelsInRect(
+                        textRect,
+                        labelItems,
+                        compact
+                            ? { fontSize: CHART_COMPACT_PLANET_FONT }
+                            : planetFont
+                              ? { fontSize: planetFont }
+                              : undefined,
+                    );
+                    const tick = isLagna ? southLagnaTick(rect) : null;
                     return (
                         <g key={sign} className="chart-house">
-                            {isLagna && (
+                            {tick && (
                                 <line
-                                    x1={rect.x + 1}
-                                    y1={rect.y + rect.size - 1.5}
-                                    x2={rect.x + rect.size - 1.5}
-                                    y2={rect.y + 1}
+                                    x1={tick.x1}
+                                    y1={tick.y1}
+                                    x2={tick.x2}
+                                    y2={tick.y2}
                                     className="chart-lagna-diagonal"
                                 />
                             )}

@@ -105,6 +105,39 @@ export function degreeInSignDms(degree: number): string {
     return `${d}°${m}'${s}"`;
 }
 
+/** Display names for the divisional charts. D1 is Rashi, D9 Navamsa, D10 Dasamsa. */
+export const VARGA_NAMES: Record<number, string> = {
+    1: 'Rashi',
+    2: 'Hora',
+    3: 'Drekkana',
+    4: 'Chaturthamsa',
+    5: 'Panchamsa',
+    6: 'Shashthamsa',
+    7: 'Saptamsa',
+    8: 'Ashtamsa',
+    9: 'Navamsa',
+    10: 'Dasamsa',
+    11: 'Rudramsa',
+    12: 'Dwadasamsa',
+    16: 'Shodasamsa',
+    20: 'Vimsamsa',
+    24: 'Siddhamsa',
+    27: 'Bhamsa',
+    30: 'Trimsamsa',
+    40: 'Khavedamsa',
+    45: 'Akshavedamsa',
+    60: 'Shashtiamsa',
+    81: 'Navanavamsa',
+    108: 'Ashtottaramsa',
+    144: 'Dwadasdwadasamsa',
+    150: 'Nadiamsa',
+};
+
+export function vargaTitle(division: number): string {
+    const name = VARGA_NAMES[division];
+    return name ? `D${division} ${name}` : `D${division}`;
+}
+
 /** Standard divisional charts shown in picker (subset of 1–150). */
 export const VARGA_PICKER_DIVISIONS = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60, 81, 108, 150,

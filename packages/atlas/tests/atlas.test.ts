@@ -107,44 +107,107 @@ describe('normalizeSearchKey', () => {
 });
 
 describe('Gazetteer ranking', () => {
-    it('ranks "chen" with Chennai first and matches "sao paulo" to São Paulo', async () => {
-        const places: PlaceRecord[] = [
-            ['Chennai', 13.08784, 80.27847, 'Asia/Kolkata', 'IN', 'Tamil Nadu', 7_000_000, 1],
-            ['Chengalpattu', 12.69389, 79.97667, 'Asia/Kolkata', 'IN', 'Tamil Nadu', 62_000, 2],
-            [
-                'São Paulo',
-                -23.5475,
-                -46.63611,
-                'America/Sao_Paulo',
-                'BR',
-                'São Paulo',
-                12_000_000,
-                3,
-            ],
+    it('ranks "chen" and "sao paulo" the way the full index does', async () => {
+        const chen = [
+            'Chengdu',
+            'Chennai',
+            'Chengtangcun',
+            'Chenzhou',
+            'Chengde',
+            'Chengzhong',
+            'Chenggu',
+            'Chengqiao',
         ];
+        const sao = [
+            'São Paulo',
+            'São Paulo de Olivença',
+            'São Paulo de Frades',
+            'São Paulo do Potengi',
+            'São Paulo das Missões',
+            'São Paulo Norte',
+            'São Paulo Sul',
+            'São Paulo Leste',
+        ];
+        const places: PlaceRecord[] = [
+            ['Chengdu', 30.67, 104.07, 'Asia/Shanghai', 'CN', 'Sichuan', 20_937_757, 1],
+            ['Chennai', 13.08, 80.27, 'Asia/Kolkata', 'IN', 'Tamil Nadu', 4_681_087, 2],
+            ...chen
+                .slice(2)
+                .map((name, i): PlaceRecord => [
+                    name,
+                    0,
+                    0,
+                    'Asia/Shanghai',
+                    'CN',
+                    '',
+                    900_000 - i * 10_000,
+                    i + 3,
+                ]),
+            ['Zhengzhou', 0, 0, 'Asia/Shanghai', 'CN', 'Henan', 6_650_532, 90],
+            ['São Paulo', -23.55, -46.64, 'America/Sao_Paulo', 'BR', 'São Paulo', 12_400_232, 100],
+            ...sao
+                .slice(1)
+                .map((name, i): PlaceRecord => [
+                    name,
+                    0,
+                    0,
+                    'America/Sao_Paulo',
+                    'BR',
+                    '',
+                    40_000 - i * 1_000,
+                    101 + i,
+                ]),
+            ['Frei Paulo', 0, 0, 'America/Maceio', 'BR', '', 14_530, 200],
+            ['Luanda', 0, 0, 'Africa/Luanda', 'AO', '', 2_776_168, 201],
+            ['Diamante', 0, 0, 'America/Fortaleza', 'BR', '', 6_299, 202],
+            ['Caatiba', 0, 0, 'America/Bahia', 'BR', '', 6_205, 203],
+        ];
+        const zhengzhou = places.findIndex((row) => row[0] === 'Zhengzhou');
+        const saoStart = places.findIndex((row) => row[0] === 'São Paulo');
+        const frei = places.findIndex((row) => row[0] === 'Frei Paulo');
+        const luanda = places.findIndex((row) => row[0] === 'Luanda');
+        const diamante = places.findIndex((row) => row[0] === 'Diamante');
+        const caatiba = places.findIndex((row) => row[0] === 'Caatiba');
+
+        function pack(rows: { key: string; index: number; kind: number }[]): IndexShardPayload {
+            rows.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+            return {
+                keys: rows.map((row) => row.key),
+                placeIndexes: rows.map((row) => row.index),
+                kinds: rows.map((row) => row.kind),
+            };
+        }
+
+        const shards: Record<string, IndexShardPayload> = {
+            'la-ch': pack([
+                ...chen.map((name, index) => ({
+                    key: normalizeSearchKey(name),
+                    index,
+                    kind: 0,
+                })),
+                { key: 'chengchow', index: zhengzhou, kind: 2 },
+            ]),
+            'la-sa': pack([
+                ...sao.map((name, offset) => ({
+                    key: normalizeSearchKey(name),
+                    index: saoStart + offset,
+                    kind: 0,
+                })),
+                { key: 'sao paulo', index: frei, kind: 2 },
+                { key: 'sao paulo da assuncao de luanda', index: luanda, kind: 2 },
+                { key: 'sao paulo', index: diamante, kind: 2 },
+                { key: 'sao paulo', index: caatiba, kind: 2 },
+            ]),
+        };
         const manifest: GazetteerManifest = {
-            version: 1,
+            version: 2,
             attribution: ATTRIBUTION_TEXT,
             license: 'CC-BY-4.0',
             geonamesUrl: 'https://www.geonames.org/',
             builtAt: '2026-01-01T00:00:00.000Z',
             placeCount: places.length,
-            keyCount: 3,
-            places: 'places.json',
-            indexShards: {
-                'la-ch': 'index/la-ch.json',
-                'la-sa': 'index/la-sa.json',
-            },
-        };
-        const shards: Record<string, IndexShardPayload> = {
-            'la-ch': {
-                keys: ['chengalpattu', 'chennai'],
-                placeIndexes: [1, 0],
-            },
-            'la-sa': {
-                keys: ['sao paulo'],
-                placeIndexes: [2],
-            },
+            keyCount: 20,
+            indexShards: { 'la-ch': 'index/la-ch.json', 'la-sa': 'index/la-sa.json' },
         };
         const gazetteer = await Gazetteer.open(
             manifest,
@@ -152,15 +215,23 @@ describe('Gazetteer ranking', () => {
             async (id) => shards[id]!,
             Object.keys(shards),
         );
-        expect(gazetteer.search('chen', { limit: 8 }).map((hit) => hit.name)).toEqual([
-            'Chennai',
-            'Chengalpattu',
-        ]);
-        expect(gazetteer.search('sao paulo', { limit: 8 })[0]?.name).toBe('São Paulo');
-        expect(gazetteer.search('São Paulo', { limit: 8 })[0]?.timezone).toBe('America/Sao_Paulo');
+
+        const chenHits = gazetteer.search('chen', { limit: 8 }).map((hit) => hit.name);
+        expect(chenHits.every((name) => name.startsWith('Chen'))).toBe(true);
+        expect(chenHits[0]).toBe('Chengdu');
+        expect(chenHits).toContain('Chennai');
+        expect(chenHits).not.toContain('Zhengzhou');
+
+        const saoHits = gazetteer.search('sao paulo', { limit: 8 });
+        expect(saoHits[0]?.name).toBe('São Paulo');
+        expect(saoHits[0]?.timezone).toBe('America/Sao_Paulo');
+        expect(saoHits.every((hit) => hit.name.startsWith('São Paulo'))).toBe(true);
+        for (const noise of ['Frei Paulo', 'Luanda', 'Diamante', 'Caatiba']) {
+            expect(saoHits.map((hit) => hit.name)).not.toContain(noise);
+        }
     });
 
-    it('prefers an exact name match over a larger place that only shares the prefix', async () => {
+    it('ranks a larger primary-name prefix ahead of a smaller exact name', async () => {
         const places: PlaceRecord[] = [
             ['Londonderry', 0, 0, 'UTC', 'GB', '', 1_000_000, 1],
             ['London', 0, 0, 'UTC', 'GB', '', 100, 2],
@@ -176,9 +247,13 @@ describe('Gazetteer ranking', () => {
             places: 'places.json',
             indexShards: { 'la-lo': 'index/la-lo.json' },
         };
-        const shard: IndexShardPayload = { keys: ['london', 'londonderry'], placeIndexes: [1, 0] };
+        const shard: IndexShardPayload = {
+            keys: ['london', 'londonderry'],
+            placeIndexes: [1, 0],
+            kinds: [0, 0],
+        };
         const g = await Gazetteer.open(manifest, places, async () => shard);
-        expect(g.resolve('London')?.geonameId).toBe(2);
+        expect(g.search('london').map((h) => h.name)).toEqual(['Londonderry', 'London']);
         expect(g.search('lond').map((h) => h.geonameId)).toEqual([1, 2]);
     });
 });

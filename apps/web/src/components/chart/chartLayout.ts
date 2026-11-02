@@ -3,12 +3,16 @@ import { NORTH_PLANET_RECTS, type NorthTextRect, planetShortName } from './geome
 export const CHART_INSET = 2;
 /** 2.7 user units ≈ 13.5px on a 520px chart (viewBox width 104). */
 export const CHART_PLANET_FONT_SIZE = 2.7;
+/** Narrow charts (≤520px viewport). 2.8 × 373 / 104 ≈ 10.0px. */
+export const CHART_NARROW_PLANET_FONT = 2.8;
 /** Floor stays ≥ 12px at a 480px chart (2.6 × 480 / 104 = 12). */
 export const CHART_PLANET_FONT_MIN = 2.6;
 export const CHART_LINE_HEIGHT = 4;
 /** ~11px on a 520px chart. Secondary to the planet labels. */
 export const CHART_SIGN_FONT_SIZE = 2.2;
 export const CHART_SIGN_FONT_SIZE_COMPACT = 1.8;
+/** Abbreviations on a ≥240px thumbnail: 3.6 × 240 / 104 ≈ 8.3px. */
+export const CHART_COMPACT_PLANET_FONT = 3.6;
 
 export type TextRect = NorthTextRect;
 
@@ -91,21 +95,24 @@ function columnXs(rect: TextRect, cols: number): number[] {
 export function layoutLabelsInRect(
     rect: TextRect,
     items: { id: string; text: string }[],
+    options?: { fontSize?: number },
 ): PlacedLabel[] {
     if (items.length === 0) return [];
+    const primary = options?.fontSize ?? CHART_PLANET_FONT_SIZE;
     const fonts =
-        items.length >= 7
+        items.length >= 7 && options?.fontSize === undefined
             ? Array.from(
                   { length: 11 },
                   (_, i) => Math.round((CHART_PLANET_FONT_SIZE - i * 0.05) * 100) / 100,
               ).filter((fs) => fs >= CHART_PLANET_FONT_MIN - 0.001)
-            : [CHART_PLANET_FONT_SIZE];
+            : [primary];
 
     for (const fs of fonts) {
         for (const cols of [1, 2, 3]) {
             const rows = Math.ceil(items.length / cols);
             const xs = columnXs(rect, cols);
-            const block = (rows - 1) * CHART_LINE_HEIGHT;
+            const line = (fs / CHART_PLANET_FONT_SIZE) * CHART_LINE_HEIGHT;
+            const block = (rows - 1) * line;
             const cy = (rect.y0 + rect.y1) / 2;
             const startY = cy - block / 2;
             const placed: PlacedLabel[] = [];
@@ -115,7 +122,7 @@ export function layoutLabelsInRect(
                 const col = i % cols;
                 const row = Math.floor(i / cols);
                 const x = xs[col]!;
-                const y = startY + row * CHART_LINE_HEIGHT;
+                const y = startY + row * line;
                 const item = items[i]!;
                 const box = labelBox(x, y, item.text, fs, 'middle');
                 if (!boxInsideRect(box, rect, 0) || boxes.some((b) => boxesOverlap(box, b, 0.15))) {
@@ -136,7 +143,9 @@ export function layoutLabelsInRect(
         }
     }
 
-    const fs = items.length >= 7 ? CHART_PLANET_FONT_MIN : CHART_PLANET_FONT_SIZE;
+    const fs =
+        options?.fontSize ?? (items.length >= 7 ? CHART_PLANET_FONT_MIN : CHART_PLANET_FONT_SIZE);
+    const line = (fs / CHART_PLANET_FONT_SIZE) * CHART_LINE_HEIGHT;
     const cols = 3;
     const xs = columnXs(rect, cols);
     const startY = rect.y0 + fs * 0.85;
@@ -147,7 +156,7 @@ export function layoutLabelsInRect(
             id: item.id,
             text: item.text,
             x: xs[col]!,
-            y: startY + row * CHART_LINE_HEIGHT,
+            y: startY + row * line,
             fontSize: fs,
             textAnchor: 'middle' as const,
         };
@@ -172,16 +181,40 @@ export function southPlanetTextRect(cell: { x: number; y: number; size: number }
     };
 }
 
+/** Short diagonal across the top-left corner, about a quarter of the cell. */
+export function southLagnaTick(cell: { x: number; y: number; size: number }): {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+} {
+    const span = cell.size * 0.25;
+    return { x1: cell.x, y1: cell.y + span, x2: cell.x + span, y2: cell.y };
+}
+
 /** Sign number sits in the top-left corner, clear of the centred planet block. */
-export function southSignPosition(cell: { x: number; y: number; size: number }): {
+export function southSignPosition(
+    cell: { x: number; y: number; size: number },
+    lagna = false,
+): {
     x: number;
     y: number;
 } {
+    if (lagna) {
+        const span = cell.size * 0.25;
+        return { x: cell.x + span + 0.7, y: cell.y + 3.2 };
+    }
     return { x: cell.x + 1.8, y: cell.y + 3.4 };
 }
 
-export function formatPlanetLabel(name: string, degree: number, retrograde: boolean): string {
-    const d = Math.floor(degree);
+export function formatPlanetLabel(
+    name: string,
+    degree: number,
+    retrograde: boolean,
+    compact = false,
+): string {
     const retro = retrograde ? ' R' : '';
+    if (compact) return `${planetShortName(name)}${retro}`;
+    const d = Math.floor(degree);
     return `${planetShortName(name)} ${d}°${retro}`;
 }

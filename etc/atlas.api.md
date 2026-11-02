@@ -39,8 +39,7 @@ export interface GazetteerManifest {
     license: string;
     // (undocumented)
     placeCount: number;
-    // (undocumented)
-    places: string;
+    places?: string;
     strings?: string;
     // (undocumented)
     version: number;
@@ -53,12 +52,16 @@ export const GEONAMES_LICENSE = "CC-BY-4.0";
 export type IndexShardPayload = {
     keys: string[];
     placeIndexes: number[];
+    kinds?: number[];
+    places?: PlaceRecord[];
 };
 
 // @public (undocumented)
 export type IndexShardRaw = {
     keys: string[] | number[];
     placeIndexes: number[];
+    kinds?: number[];
+    places?: PlaceRecord[];
 };
 
 // @public

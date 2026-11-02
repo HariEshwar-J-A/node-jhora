@@ -349,27 +349,23 @@ async function snap(page, name) {
     await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
 }
 
-async function assertPlaceCombobox(page, vpName) {
-    const input = page.getByTestId('place-input');
-    await input.click();
-    await input.fill('zzzzqqqq');
-    const empty = page.getByTestId('place-empty');
-    await empty.waitFor({ state: 'visible', timeout: 120_000 });
-    await input.fill('');
-    await input.fill('chen');
-    const chennai = page.getByRole('option', { name: /Chennai,/ });
-    await chennai.waitFor({ state: 'visible', timeout: 30_000 });
+async function assertDropdownInView(page, vpName) {
     const box = await page.evaluate(() => {
         const list = document.querySelector('.place-combo__list');
         if (!list) return { missing: true };
         const r = list.getBoundingClientRect();
+        const style = getComputedStyle(list);
         return {
             missing: false,
             left: r.left,
             right: r.right,
-            width: r.width,
+            top: r.top,
+            bottom: r.bottom,
+            height: r.height,
             inner: window.innerWidth,
+            innerH: window.innerHeight,
             scroll: document.documentElement.scrollWidth,
+            overflowY: style.overflowY,
         };
     });
     if (box.missing) fail(`Place dropdown missing at ${vpName}`);
@@ -377,8 +373,74 @@ async function assertPlaceCombobox(page, vpName) {
         fail(
             `Place dropdown overflow at ${vpName}: left ${box.left?.toFixed?.(1) ?? box.left} right ${box.right?.toFixed?.(1) ?? box.right} viewport ${box.inner} scroll ${box.scroll}`,
         );
+    } else if (box.top < -1 || box.bottom > box.innerH + 1) {
+        fail(
+            `Place dropdown leaves the viewport at ${vpName}: top ${box.top?.toFixed?.(1)} bottom ${box.bottom?.toFixed?.(1)} height ${box.innerH}`,
+        );
+    } else if (box.height > 321) {
+        fail(`Place dropdown is ${box.height?.toFixed?.(1)}px at ${vpName} (cap 320)`);
+    } else if (box.overflowY !== 'auto' && box.overflowY !== 'scroll') {
+        fail(`Place dropdown does not scroll at ${vpName} (${box.overflowY})`);
     }
-    await snap(page, `app-place-dropdown-${vpName}`);
+}
+
+async function assertPlaceCombobox(page, vpName) {
+    const input = page.getByTestId('place-input');
+    const atlasBytes = [];
+    const onResponse = async (res) => {
+        if (!res.url().includes('/atlas/')) return;
+        try {
+            const len = Number(res.headers()['content-length']);
+            const bytes = Number.isFinite(len) && len > 0 ? len : (await res.body()).byteLength;
+            atlasBytes.push({ url: res.url(), bytes });
+        } catch {
+            /* body already consumed */
+        }
+    };
+    page.on('response', onResponse);
+    await input.click();
+    await input.fill('sao paulo');
+    const firstSao = page.getByRole('option').first();
+    await firstSao.waitFor({ state: 'visible', timeout: 120_000 });
+    await page.waitForTimeout(250);
+    page.off('response', onResponse);
+    const total = atlasBytes.reduce((sum, row) => sum + row.bytes, 0);
+    const files = atlasBytes.map((row) => `${row.bytes} ${row.url.split('/').pop()}`).join(', ');
+    console.log(`atlas first query ${vpName}: ${total} bytes (${files})`);
+    if (total <= 0) fail(`First place query recorded no atlas bytes at ${vpName}`);
+    if (total > 300 * 1024) fail(`First place query transferred ${total} bytes at ${vpName}`);
+    if (vpName === '1280') {
+        await writeFile(
+            join(OUT, 'atlas-first-query.json'),
+            JSON.stringify({ total, files: atlasBytes }, null, 2),
+        );
+    }
+    const saoNames = await page.locator('.place-combo__option').allTextContents();
+    if (!saoNames.length || !saoNames[0].startsWith('São Paulo')) {
+        fail(`sao paulo first hit is "${saoNames[0] ?? ''}" at ${vpName}`);
+    }
+    for (const name of saoNames) {
+        if (!name.startsWith('São Paulo')) fail(`sao paulo hit "${name}" at ${vpName}`);
+    }
+    await assertDropdownInView(page, vpName);
+    await page.screenshot({ path: join(OUT, `app-place-sao-${vpName}.png`) });
+
+    await input.fill('chen');
+    const chennai = page.getByRole('option', { name: /Chennai,/ });
+    await chennai.waitFor({ state: 'visible', timeout: 30_000 });
+    const chenNames = await page.locator('.place-combo__option').allTextContents();
+    const fold = (value) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+    for (const name of chenNames) {
+        if (!fold(name).startsWith('chen')) fail(`chen hit "${name}" at ${vpName}`);
+    }
+    await assertDropdownInView(page, vpName);
+    await page.screenshot({ path: join(OUT, `app-place-chen-${vpName}.png`) });
+
+    await input.fill('zzzzqqqq');
+    const empty = page.getByTestId('place-empty');
+    await empty.waitFor({ state: 'visible', timeout: 30_000 });
+    await input.fill('chen');
+    await chennai.waitFor({ state: 'visible', timeout: 30_000 });
     await chennai.click();
     const lat = await page.locator('#lat').inputValue();
     const lon = await page.locator('#lon').inputValue();
@@ -387,6 +449,137 @@ async function assertPlaceCombobox(page, vpName) {
     if (!lon.startsWith('80.')) fail(`Chennai longitude not filled (${lon})`);
     if (tz !== 'Asia/Kolkata') fail(`Chennai timezone not filled (${tz})`);
     await assertNoHorizontalOverflow(page, `place selected ${vpName}`);
+}
+
+async function assertLagnaLineClear(page) {
+    const hits = await page.evaluate(() => {
+        const cross = (px, py, qx, qy, rx, ry) => (qx - px) * (ry - py) - (qy - py) * (rx - px);
+        const segs = (ax, ay, bx, by, cx, cy, dx, dy) => {
+            const d1 = cross(ax, ay, bx, by, cx, cy);
+            const d2 = cross(ax, ay, bx, by, dx, dy);
+            const d3 = cross(cx, cy, dx, dy, ax, ay);
+            const d4 = cross(cx, cy, dx, dy, bx, by);
+            return (
+                ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+                ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+            );
+        };
+        const hitsRect = (x1, y1, x2, y2, r) => {
+            const pad = 0.4;
+            const L = r.left + pad;
+            const R = r.right - pad;
+            const T = r.top + pad;
+            const B = r.bottom - pad;
+            if (R <= L || B <= T) return false;
+            const inside = (x, y) => x >= L && x <= R && y >= T && y <= B;
+            if (inside(x1, y1) || inside(x2, y2)) return true;
+            const edges = [
+                [L, T, R, T],
+                [R, T, R, B],
+                [R, B, L, B],
+                [L, B, L, T],
+            ];
+            return edges.some(([ax, ay, bx, by]) => segs(x1, y1, x2, y2, ax, ay, bx, by));
+        };
+        const root = document.querySelector(
+            '.varga-board__hero .chart-canvas, .chart-panel .chart-canvas',
+        );
+        if (!root || root.classList.contains('chart-canvas--compact')) return [];
+        const line = root.querySelector('.chart-lagna-diagonal');
+        if (!line || line.ownerSVGElement == null) return [];
+        const svg = line.ownerSVGElement;
+        const ctm = line.getScreenCTM();
+        if (!ctm) return ['lagna marker has no screen transform'];
+        const pt = (x, y) => {
+            const p = svg.createSVGPoint();
+            p.x = x;
+            p.y = y;
+            const s = p.matrixTransform(ctm);
+            return { x: s.x, y: s.y };
+        };
+        const a = pt(line.x1.baseVal.value, line.y1.baseVal.value);
+        const b = pt(line.x2.baseVal.value, line.y2.baseVal.value);
+        const found = [];
+        for (const t of root.querySelectorAll('text.chart-planet, text.chart-sign-num')) {
+            if (!t.textContent?.trim()) continue;
+            if (hitsRect(a.x, a.y, b.x, b.y, t.getBoundingClientRect())) {
+                found.push(t.textContent.trim());
+            }
+        }
+        return found;
+    });
+    if (hits.length) fail(`Lagna marker crosses labels: ${hits.slice(0, 8).join(', ')}`);
+}
+
+const VARGA_TITLES = {
+    1: 'Rashi',
+    2: 'Hora',
+    3: 'Drekkana',
+    4: 'Chaturthamsa',
+    5: 'Panchamsa',
+    6: 'Shashthamsa',
+    7: 'Saptamsa',
+    8: 'Ashtamsa',
+    9: 'Navamsa',
+    10: 'Dasamsa',
+    11: 'Rudramsa',
+    12: 'Dwadasamsa',
+    16: 'Shodasamsa',
+    20: 'Vimsamsa',
+    24: 'Siddhamsa',
+    27: 'Bhamsa',
+    30: 'Trimsamsa',
+    40: 'Khavedamsa',
+    45: 'Akshavedamsa',
+    60: 'Shashtiamsa',
+    81: 'Navanavamsa',
+    108: 'Ashtottaramsa',
+    150: 'Nadiamsa',
+};
+
+async function assertVargaTitles(page) {
+    const sel = page.locator('.varga-board__picker select');
+    const divisions = await sel.locator('option').evaluateAll((options) => options.map((o) => o.value));
+    for (const style of ['south', 'north']) {
+        await page.getByTestId(`chart-style-${style}`).click();
+        for (const division of divisions) {
+            const name = VARGA_TITLES[division];
+            if (!name) fail(`No title for varga ${division}`);
+            await sel.selectOption(division);
+            const expected = `D${division} ${name}`;
+            const text =
+                style === 'north'
+                    ? await page.locator('.varga-board__hero .chart-canvas__caption').innerText()
+                    : await page
+                          .locator('.varga-board__hero .chart-center-meta-svg')
+                          .evaluate((el) => el.textContent ?? '');
+            const flat = text.replace(/\s+/g, ' ').trim();
+            if (flat !== expected) fail(`${style} ${expected} rendered as "${flat}"`);
+        }
+    }
+}
+
+async function assertThumbnailLabels(page) {
+    const bad = await page.evaluate(() => {
+        const problems = [];
+        const svgs = document.querySelectorAll('.chart-canvas--compact .chart-canvas__svg');
+        for (const svg of svgs) {
+            const svgRect = svg.getBoundingClientRect();
+            if (svgRect.width < 8) continue;
+            const vb = svg.viewBox.baseVal;
+            const scale = vb.width > 0 ? svgRect.width / vb.width : 1;
+            for (const t of svg.querySelectorAll('text.chart-planet')) {
+                const text = t.textContent?.trim() ?? '';
+                if (!text) continue;
+                if (text.includes('\u00b0')) problems.push(`degree on thumbnail: ${text}`);
+                const attr = parseFloat(t.getAttribute('font-size') ?? '0');
+                const px = attr * scale;
+                if (px < 8) problems.push(`${text}=${px.toFixed(1)}px`);
+            }
+        }
+        return problems;
+    });
+    if (bad.length) fail(`Thumbnail labels: ${bad.slice(0, 8).join('; ')}`);
 }
 
 async function initAppChartTab(page, vpName) {
@@ -404,6 +597,7 @@ async function initAppChartTab(page, vpName) {
     await assertChartPlanetFontMin(page);
     await assertChartPlanetDegrees(page);
     await assertChartTextNoOverlap(page);
+    await assertLagnaLineClear(page);
     await page.getByTestId('chart-style-north').click();
 }
 
@@ -416,7 +610,20 @@ async function runVarga(page, varga) {
     await assertChartTextNoOverlap(page);
     await page.getByTestId('chart-style-south').click();
     await assertChartTextNoOverlap(page);
+    await assertLagnaLineClear(page);
+    const hero = await page
+        .locator('.varga-board__hero .chart-center-meta-svg')
+        .evaluate((el) => el.textContent ?? '');
+    const expected = `D${varga} ${VARGA_TITLES[varga]}`;
+    if (hero.replace(/\s+/g, ' ').trim() !== expected) {
+        fail(`South hero title "${hero}" is not ${expected}`);
+    }
     await page.getByTestId('chart-style-north').click();
+    const caption = await page.locator('.varga-board__hero .chart-canvas__caption').innerText();
+    if (caption.replace(/\s+/g, ' ').trim() !== expected) {
+        fail(`North caption "${caption}" is not ${expected}`);
+    }
+    await assertThumbnailLabels(page);
 }
 
 async function main() {
@@ -472,6 +679,9 @@ async function main() {
         if (vp.name === '1280') {
             await assertChartPlanetFontMin(page, 12, 480);
         }
+        if (vp.name === '390') {
+            await assertChartPlanetFontMin(page, 10, 200);
+        }
         for (const varga of [9, 60, 150]) {
             await runVarga(page, varga);
             if (vp.name === '1280') {
@@ -479,6 +689,13 @@ async function main() {
             }
             await snap(page, `app-varga-d${varga}-north-${vp.name}`);
             report.push(`app-varga-d${varga}-${vp.name}`);
+        }
+        if (vp.name === '1280') {
+            await assertVargaTitles(page);
+            await page.getByTestId('chart-style-south').click();
+            await page.locator('.varga-board__picker select').selectOption('9');
+            await page.waitForTimeout(200);
+            await snap(page, 'app-varga-d9-south-1280');
         }
 
         await context.close();

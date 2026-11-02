@@ -12,10 +12,11 @@ export const CONTACT_EMAIL = 'harieshwar.dev@gmail.com';
 export const EPHE_PATH = `${import.meta.env.BASE_URL}ephe/de440s.bsp`;
 
 export const SAMPLE_CHART = {
-    label: 'Sample (Greenwich, fictional)',
+    label: 'Sample (Chennai, fictional)',
     date: '2000-01-01',
     time: '12:00',
-    timezone: 'UTC',
-    latitude: 51.4769,
-    longitude: -0.0005,
+    timezone: 'Asia/Kolkata',
+    latitude: 13.08,
+    longitude: 80.27,
+    place: 'Chennai, Tamil Nadu, India',
 };

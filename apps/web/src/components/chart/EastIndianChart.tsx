@@ -8,6 +8,7 @@ import {
     wholeSignHouse,
 } from './geometry';
 import { formatDms } from '../../lib/format';
+import { CHART_COMPACT_PLANET_FONT, CHART_PLANET_FONT_SIZE } from './chartLayout';
 import type { ChartMeta, ChartPlanet } from './types';
 
 /** East Indian (Bengali/Odia-style) — rectangular 3×4 house grid, Lagna in house 1. */
@@ -17,6 +18,7 @@ type Props = {
     meta?: ChartMeta;
     chartKey?: string;
     compact?: boolean;
+    planetFont?: number;
 };
 
 const EAST_LAYOUT: { house: number; x: number; y: number; w: number; h: number }[] = [
@@ -34,7 +36,14 @@ const EAST_LAYOUT: { house: number; x: number; y: number; w: number; h: number }
     { house: 12, x: 34, y: 52, w: 32, h: 22 },
 ];
 
-export function EastIndianChart({ ascendant, planets, meta, chartKey, compact }: Props) {
+export function EastIndianChart({
+    ascendant,
+    planets,
+    meta,
+    chartKey,
+    compact,
+    planetFont,
+}: Props) {
     const ascSign0 = signIndex0(ascendant);
     const byHouse = new Map<number, ChartPlanet[]>();
     for (const p of planets) {
@@ -78,12 +87,18 @@ export function EastIndianChart({ ascendant, planets, meta, chartKey, compact }:
                                     x={x + 3}
                                     y={y + 11 + i * 4.5}
                                     className="chart-planet"
+                                    fontSize={
+                                        compact
+                                            ? CHART_COMPACT_PLANET_FONT
+                                            : (planetFont ?? CHART_PLANET_FONT_SIZE)
+                                    }
                                 >
                                     <title>
                                         {p.name} · {formatDms(p.longitude)}
                                     </title>
                                     {planetShortName(p.name)}
-                                    {isRetrograde(p) ? ' R' : ''} {Math.floor(degreeInSign(p))}°
+                                    {isRetrograde(p) ? ' R' : ''}
+                                    {compact ? '' : ` ${Math.floor(degreeInSign(p))}°`}
                                 </text>
                             ))}
                         </g>

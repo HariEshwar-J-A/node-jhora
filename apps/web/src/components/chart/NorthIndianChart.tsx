@@ -1,6 +1,6 @@
 import { formatDms } from '../../lib/format';
 import { degreeInSignDms, signName } from '../../lib/astro-display';
-import type { ChartPlanet } from './types';
+import type { ChartMeta, ChartPlanet } from './types';
 import {
     NORTH_DIAGONAL_DIAMOND_PATH,
     NORTH_OUTER_SQUARE_PATH,
@@ -16,6 +16,7 @@ import {
     wholeSignHouse,
 } from './geometry';
 import {
+    CHART_COMPACT_PLANET_FONT,
     CHART_SIGN_FONT_SIZE,
     CHART_SIGN_FONT_SIZE_COMPACT,
     formatPlanetLabel,
@@ -25,11 +26,20 @@ import {
 type Props = {
     ascendant: number;
     planets: ChartPlanet[];
+    meta?: ChartMeta;
     chartKey?: string;
     compact?: boolean;
+    planetFont?: number;
 };
 
-export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Props) {
+export function NorthIndianChart({
+    ascendant,
+    planets,
+    meta,
+    chartKey,
+    compact,
+    planetFont,
+}: Props) {
     const ascSign0 = signIndex0(ascendant);
     const byHouse = new Map<number, ChartPlanet[]>();
     for (const p of planets) {
@@ -46,6 +56,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
 
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
+            {meta?.title && <p className="chart-canvas__caption">{meta.title}</p>}
             <svg
                 viewBox={NORTH_VIEW_BOX}
                 preserveAspectRatio="xMidYMid meet"
@@ -69,12 +80,20 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                     const inHouse = byHouse.get(house) ?? [];
                     const labelItems = inHouse.map((p) => ({
                         id: p.name,
-                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p)),
+                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p), compact),
                     }));
                     if (house === 1) {
                         labelItems.unshift({ id: '__asc__', text: 'Asc' });
                     }
-                    const placed = layoutLabelsInRect(NORTH_PLANET_RECTS[house]!, labelItems);
+                    const placed = layoutLabelsInRect(
+                        NORTH_PLANET_RECTS[house]!,
+                        labelItems,
+                        compact
+                            ? { fontSize: CHART_COMPACT_PLANET_FONT }
+                            : planetFont
+                              ? { fontSize: planetFont }
+                              : undefined,
+                    );
                     return (
                         <g key={house} className="chart-house">
                             <text

@@ -13,6 +13,7 @@ import { PlanetsPanel } from '../components/results/PlanetsPanel';
 import { StrengthPanel } from '../components/results/StrengthPanel';
 import { TransitsPanel } from '../components/results/TransitsPanel';
 import { PlaceCombobox } from '../components/PlaceCombobox';
+import { vargaTitle } from '../lib/astro-display';
 import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN, SAMPLE_CHART } from '../lib/constants';
 import { formatCoord } from '../lib/place-label';
 import { parseBirthInstant } from '../lib/format';
@@ -133,7 +134,7 @@ export function AppPage() {
 
     const chartMeta: ChartMeta = useMemo(
         () => ({
-            title: 'Rashi',
+            title: vargaTitle(1),
             subtitle: labelAyanamsa(ayanamsa),
             dateLabel: `${date} ${time} (${timezone})`,
             place: `${latitude}°, ${longitude}°`,
@@ -178,6 +179,7 @@ export function AppPage() {
                     <input id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
                 </div>
                 <PlaceCombobox
+                    initialLabel={SAMPLE_CHART.place}
                     onPick={(hit) => {
                         setLatitude(formatCoord(hit.latitude));
                         setLongitude(formatCoord(hit.longitude));
@@ -303,7 +305,7 @@ export function AppPage() {
                             <div className="card">
                                 <p>
                                     Load the ephemeris kernel, enter birth data, and run Calculate.
-                                    Sample: Greenwich noon, 2000-01-01 (fictional reference).
+                                    Sample: fictional Chennai, 2000-01-01 12:00 Asia/Kolkata.
                                 </p>
                             </div>
                         )}

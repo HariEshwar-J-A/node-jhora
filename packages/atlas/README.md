@@ -1,16 +1,17 @@
 # @node-jhora/atlas
 
-Offline city gazetteer built from GeoNames (`cities1000`, admin codes, timezones, and alternate names). Supports prefix search with diacritic folding (Latin, Greek, Cyrillic accents; Hebrew and Arabic vowel points) and resolves aliases such as Chennai, Madras, and `चेन्नई` to the same record. Indic vowel signs and viramas, Thai vowels, and kana voicing marks are kept, so `बैरूत` (Beirut) and `बेरात` (Berat) or `ながの` (Nagano) and `なかの` (Nakano) stay distinct.
+Offline city gazetteer built from GeoNames (`cities5000`, admin codes, timezones, and alternate names). Supports prefix search with diacritic folding (Latin, Greek, Cyrillic accents; Hebrew and Arabic vowel points) and resolves aliases such as Chennai, Madras, and `चेन्नई` to the same record. Indic vowel signs and viramas, Thai vowels, and kana voicing marks are kept, so `बैरूत` (Beirut) and `बेरात` (Berat) or `ながの` (Nagano) and `なかの` (Nakano) stay distinct.
 
-Results are ranked exact match first, then by population (descending), then by GeoNames id, so `resolve('london')` returns London, GB and `resolve('paris')` returns Paris, FR.
+Results are ranked in tiers: a primary or ASCII name prefix, then a later word of that name, then an alternate name only when fewer than eight hits came from the first two tiers. Within a tier, higher population wins, then the lower GeoNames id. `resolve('london')` returns London, GB. `resolve('bombay')` returns Mumbai, because no primary name is Bombay. A town named Madras outranks Chennai's historic alias.
 
 ## Data
 
 - **Source:** GeoNames (CC-BY 4.0). See [ATTRIBUTION.md](./ATTRIBUTION.md).
-- **Build:** `pnpm --filter @node-jhora/atlas atlas:build` downloads upstream dumps into `.cache/` (not committed) and writes sharded JSON under `data/`.
+- **Build:** `pnpm --filter @node-jhora/atlas atlas:build` downloads upstream dumps into `.cache/` (not committed) and writes `data/`.
+- **Layout:** each `index/la-xx.json.gz` file is one 2-letter prefix and holds the place records that prefix needs. There is no global `places.json`. The built tree is at most 10 MB, and each shard is at most 300 KB.
 - **Tests** use a tiny fixture under `tests/fixtures/gazetteer-mini/` so CI does not download GeoNames.
 
-Generated `data/` is **not** committed (a full build is ~31 MB with population-tiered aliases; raw GeoNames downloads stay in `.cache/`). CI uses `tests/fixtures/gazetteer-mini/`. For production, run `atlas:build` in your pipeline or ship the `data/` directory as a static asset (optionally gzip the JSON shards for transfer).
+Generated `data/` is **not** committed. CI uses `tests/fixtures/gazetteer-mini/`. For production, run `atlas:build` in your pipeline or ship the `data/` directory as a static asset.
 
 ## Usage
 
@@ -19,9 +20,9 @@ import { loadGazetteerFromDirectory } from '@node-jhora/atlas/node';
 
 const gazetteer = await loadGazetteerFromDirectory(new URL('./data', import.meta.url));
 const hits = gazetteer.search('chennai', { limit: 5 });
-const best = gazetteer.resolve('madras'); // Chennai, IN
+const best = gazetteer.resolve('bombay'); // Mumbai, IN
 ```
 
-`loadGazetteerFromDirectory` accepts a path or a `file:` URL. Browser and worker apps use `openGazetteerFromUrls(manifestUrl, placesUrl)`, or `Gazetteer.open(manifest, places, createFetchShardLoader(manifest, baseUrl))` for custom loading.
+`loadGazetteerFromDirectory` accepts a path or a `file:` URL and reads plain or gzip JSON shards. Browser and worker apps use `Gazetteer.open(manifest, places, createFetchShardLoader(manifest, baseUrl))`. Pass an empty `places` array when `manifest.places` is omitted. `openGazetteerFromUrls(manifestUrl, placesUrl)` still loads a global place table for older builds.
 
 Any product that displays atlas results must show the GeoNames attribution (`ATTRIBUTION_TEXT`, or `manifest.attribution`).

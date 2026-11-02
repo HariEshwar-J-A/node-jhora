@@ -23,7 +23,11 @@ export interface GazetteerManifest {
     builtAt: string;
     placeCount: number;
     keyCount: number;
-    places: string;
+    /**
+     * Global place table. Omitted when each index shard carries the place
+     * records it needs, so a query fetches only that shard.
+     */
+    places?: string;
     /** Intern table for compact index shards (optional in tiny fixtures). */
     strings?: string;
     indexShards: Record<string, string>;
@@ -45,14 +49,25 @@ export interface SearchOptions {
     limit?: number;
 }
 
+/**
+ * Match quality stored beside each key.
+ * 0 = primary or ascii name, 1 = a later word of that name, 2 = alternate name.
+ */
+export type MatchKind = 0 | 1 | 2;
+
 export type IndexShardRaw = {
     keys: string[] | number[];
     placeIndexes: number[];
+    kinds?: number[];
+    /** Local place table. `placeIndexes` point here when this is present. */
+    places?: PlaceRecord[];
 };
 
 export type IndexShardPayload = {
     keys: string[];
     placeIndexes: number[];
+    kinds?: number[];
+    places?: PlaceRecord[];
 };
 
 export type ShardLoader = (shardId: string) => Promise<IndexShardPayload>;

@@ -1,6 +1,6 @@
 import { calculateVarga } from '@node-jhora/core';
 import { useMemo, useState } from 'react';
-import { VARGA_PICKER_DIVISIONS } from '../../lib/astro-display';
+import { VARGA_PICKER_DIVISIONS, vargaTitle } from '../../lib/astro-display';
 import { ChartToggle } from './ChartToggle';
 import { ChartView } from './ChartView';
 import type { ChartMeta, ChartPlanet } from './types';
@@ -87,7 +87,7 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
                     style={style}
                     ascendant={calculateVarga(ascendant, pickerDiv).longitude}
                     planets={pointsForDivision(pickerDiv, d1Planets, vargas)}
-                    meta={{ ...meta, title: meta.title, subtitle: `D${pickerDiv}` }}
+                    meta={{ ...meta, title: vargaTitle(pickerDiv), subtitle: undefined }}
                     chartKey={`D${pickerDiv}-${style}`}
                 />
             </div>
@@ -109,12 +109,12 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
             <div className="varga-board__grid">
                 {gridDivisions.map((d) => (
                     <figure key={d} className="varga-thumb">
-                        <figcaption>D{d}</figcaption>
+                        <figcaption>{vargaTitle(d)}</figcaption>
                         <ChartView
                             style={style}
                             ascendant={calculateVarga(ascendant, d).longitude}
                             planets={pointsForDivision(d, d1Planets, vargas)}
-                            meta={{ ...meta, title: `D${d}`, subtitle: meta.subtitle }}
+                            meta={{ ...meta, title: vargaTitle(d), subtitle: undefined }}
                             compact
                             chartKey={`grid-D${d}-${style}`}
                         />

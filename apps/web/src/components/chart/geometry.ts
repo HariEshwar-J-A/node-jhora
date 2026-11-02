@@ -404,6 +404,7 @@ export function southCenterMetaLines(meta: { title: string; subtitle?: string })
     const lines = [meta.title];
     if (meta.subtitle) lines.push(meta.subtitle);
     const longest = Math.max(...lines.map((l) => l.length));
-    const fontSize = longest > 10 ? 2.85 : longest > 7 ? 3.15 : 3.45;
+    const fontSize =
+        longest > 22 ? 2.35 : longest > 16 ? 2.55 : longest > 10 ? 2.85 : longest > 7 ? 3.15 : 3.45;
     return { lines: lines.slice(0, 2), fontSize };
 }

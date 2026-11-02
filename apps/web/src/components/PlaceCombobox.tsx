@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlaceHit } from '@node-jhora/atlas';
 import { formatPlaceLabel } from '../lib/place-label';
 import type { PlaceSearchResponse } from '../worker/place-worker';
@@ -44,19 +44,22 @@ function searchPlaces(query: string): Promise<PlaceSearchResponse> {
 }
 
 type Props = {
+    initialLabel?: string;
     onPick: (hit: PlaceHit) => void;
 };
 
-export function PlaceCombobox({ onPick }: Props) {
+export function PlaceCombobox({ initialLabel = '', onPick }: Props) {
     const listId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
-    const [query, setQuery] = useState('');
+    const fieldRef = useRef<HTMLDivElement>(null);
+    const [query, setQuery] = useState(initialLabel);
+    const [dropUp, setDropUp] = useState(false);
     const [hits, setHits] = useState<PlaceHit[]>([]);
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(0);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | undefined>();
-    const picked = useRef(false);
+    const picked = useRef(initialLabel.length > 0);
     const request = useRef(0);
 
     useEffect(() => {
@@ -125,13 +128,22 @@ export function PlaceCombobox({ onPick }: Props) {
     }
 
     const showList = open && query.trim().length >= MIN_QUERY;
+
+    useLayoutEffect(() => {
+        if (!showList || !fieldRef.current) return;
+        const rect = fieldRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const cap = Math.min(320, window.innerHeight * 0.5);
+        setDropUp(spaceBelow < cap && spaceAbove > spaceBelow);
+    }, [showList, hits]);
     const activeId = showList && hits[active] ? `${listId}-opt-${active}` : undefined;
     const empty = showList && !busy && !error && hits.length === 0;
 
     return (
         <div className="place-combo">
             <label htmlFor="place">Birth place</label>
-            <div className="place-combo__field">
+            <div className="place-combo__field" ref={fieldRef}>
                 <input
                     id="place"
                     ref={inputRef}
@@ -151,8 +163,8 @@ export function PlaceCombobox({ onPick }: Props) {
                         setQuery(event.target.value);
                     }}
                     onFocus={() => {
-                        // The gazetteer is fetched once, inside the worker, the first time
-                        // this field is focused. Later queries reuse that copy.
+                        // Open the worker once. The manifest is fetched here; each query
+                        // then fetches only its 2-letter shard.
                         void searchPlaces('');
                         if (!picked.current && query.trim().length >= MIN_QUERY) setOpen(true);
                     }}
@@ -162,7 +174,7 @@ export function PlaceCombobox({ onPick }: Props) {
                     <ul
                         id={listId}
                         role="listbox"
-                        className="place-combo__list"
+                        className={`place-combo__list${dropUp ? ' place-combo__list--up' : ''}`}
                         data-testid="place-list"
                         aria-label="Matching places"
                     >

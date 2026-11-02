@@ -37,12 +37,15 @@ function openGazetteer(manifestUrl: string): Promise<Gazetteer> {
                 throw new Error(`Place index manifest HTTP ${manifestRes.status}`);
             }
             const manifest = (await manifestRes.json()) as GazetteerManifest;
-            const placesRes = await fetch(new URL(manifest.places, manifestUrl));
-            if (!placesRes.ok) {
-                throw new Error(`Place index HTTP ${placesRes.status}`);
-            }
-            const places = (await placesRes.json()) as PlaceRecord[];
             const base = new URL('.', manifestUrl);
+            let places: PlaceRecord[] = [];
+            if (manifest.places) {
+                const placesRes = await fetch(new URL(manifest.places, manifestUrl));
+                if (!placesRes.ok) {
+                    throw new Error(`Place index HTTP ${placesRes.status}`);
+                }
+                places = (await placesRes.json()) as PlaceRecord[];
+            }
             const opened = await Gazetteer.open(
                 manifest,
                 places,
