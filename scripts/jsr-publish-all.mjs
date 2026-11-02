@@ -10,10 +10,17 @@ import { JSR_PUBLISHABLE } from './jsr-manifest.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
+/**
+ * Per-package extra flags. format's public API exports zod schemas whose
+ * inferred types JSR treats as slow types; publishing still works, only
+ * JSR's .d.ts generation and score are affected.
+ */
+const EXTRA_ARGS = { format: ['--allow-slow-types'] };
+
 for (const dir of JSR_PUBLISHABLE) {
     const cwd = join(root, 'packages', dir);
     console.log(`\n=== jsr publish: @node-jhora/${dir} ===\n`);
-    const r = spawnCliSync('npx', ['--yes', 'jsr@latest', 'publish'], {
+    const r = spawnCliSync('npx', ['--yes', 'jsr@latest', 'publish', ...(EXTRA_ARGS[dir] ?? [])], {
         cwd,
         stdio: 'inherit',
     });
