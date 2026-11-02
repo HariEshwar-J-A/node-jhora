@@ -107,6 +107,59 @@ describe('normalizeSearchKey', () => {
 });
 
 describe('Gazetteer ranking', () => {
+    it('ranks "chen" with Chennai first and matches "sao paulo" to São Paulo', async () => {
+        const places: PlaceRecord[] = [
+            ['Chennai', 13.08784, 80.27847, 'Asia/Kolkata', 'IN', 'Tamil Nadu', 7_000_000, 1],
+            ['Chengalpattu', 12.69389, 79.97667, 'Asia/Kolkata', 'IN', 'Tamil Nadu', 62_000, 2],
+            [
+                'São Paulo',
+                -23.5475,
+                -46.63611,
+                'America/Sao_Paulo',
+                'BR',
+                'São Paulo',
+                12_000_000,
+                3,
+            ],
+        ];
+        const manifest: GazetteerManifest = {
+            version: 1,
+            attribution: ATTRIBUTION_TEXT,
+            license: 'CC-BY-4.0',
+            geonamesUrl: 'https://www.geonames.org/',
+            builtAt: '2026-01-01T00:00:00.000Z',
+            placeCount: places.length,
+            keyCount: 3,
+            places: 'places.json',
+            indexShards: {
+                'la-ch': 'index/la-ch.json',
+                'la-sa': 'index/la-sa.json',
+            },
+        };
+        const shards: Record<string, IndexShardPayload> = {
+            'la-ch': {
+                keys: ['chengalpattu', 'chennai'],
+                placeIndexes: [1, 0],
+            },
+            'la-sa': {
+                keys: ['sao paulo'],
+                placeIndexes: [2],
+            },
+        };
+        const gazetteer = await Gazetteer.open(
+            manifest,
+            places,
+            async (id) => shards[id]!,
+            Object.keys(shards),
+        );
+        expect(gazetteer.search('chen', { limit: 8 }).map((hit) => hit.name)).toEqual([
+            'Chennai',
+            'Chengalpattu',
+        ]);
+        expect(gazetteer.search('sao paulo', { limit: 8 })[0]?.name).toBe('São Paulo');
+        expect(gazetteer.search('São Paulo', { limit: 8 })[0]?.timezone).toBe('America/Sao_Paulo');
+    });
+
     it('prefers an exact name match over a larger place that only shares the prefix', async () => {
         const places: PlaceRecord[] = [
             ['Londonderry', 0, 0, 'UTC', 'GB', '', 1_000_000, 1],

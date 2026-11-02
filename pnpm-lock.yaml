@@ -303,6 +303,9 @@ importers:
       '@node-jhora/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
+      '@node-jhora/atlas':
+        specifier: workspace:*
+        version: link:../../packages/atlas
       '@node-jhora/core':
         specifier: workspace:*
         version: link:../../packages/core

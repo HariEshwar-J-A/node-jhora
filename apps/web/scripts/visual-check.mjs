@@ -349,8 +349,49 @@ async function snap(page, name) {
     await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
 }
 
-async function initAppChartTab(page) {
+async function assertPlaceCombobox(page, vpName) {
+    const input = page.getByTestId('place-input');
+    await input.click();
+    await input.fill('zzzzqqqq');
+    const empty = page.getByTestId('place-empty');
+    await empty.waitFor({ state: 'visible', timeout: 120_000 });
+    await input.fill('');
+    await input.fill('chen');
+    const chennai = page.getByRole('option', { name: /Chennai,/ });
+    await chennai.waitFor({ state: 'visible', timeout: 30_000 });
+    const box = await page.evaluate(() => {
+        const list = document.querySelector('.place-combo__list');
+        if (!list) return { missing: true };
+        const r = list.getBoundingClientRect();
+        return {
+            missing: false,
+            left: r.left,
+            right: r.right,
+            width: r.width,
+            inner: window.innerWidth,
+            scroll: document.documentElement.scrollWidth,
+        };
+    });
+    if (box.missing) fail(`Place dropdown missing at ${vpName}`);
+    else if (box.left < -1 || box.right > box.inner + 1 || box.scroll > box.inner + 1) {
+        fail(
+            `Place dropdown overflow at ${vpName}: left ${box.left?.toFixed?.(1) ?? box.left} right ${box.right?.toFixed?.(1) ?? box.right} viewport ${box.inner} scroll ${box.scroll}`,
+        );
+    }
+    await snap(page, `app-place-dropdown-${vpName}`);
+    await chennai.click();
+    const lat = await page.locator('#lat').inputValue();
+    const lon = await page.locator('#lon').inputValue();
+    const tz = await page.locator('#tz').inputValue();
+    if (!lat.startsWith('13.')) fail(`Chennai latitude not filled (${lat})`);
+    if (!lon.startsWith('80.')) fail(`Chennai longitude not filled (${lon})`);
+    if (tz !== 'Asia/Kolkata') fail(`Chennai timezone not filled (${tz})`);
+    await assertNoHorizontalOverflow(page, `place selected ${vpName}`);
+}
+
+async function initAppChartTab(page, vpName) {
     await page.goto(`${BASE}#/app`);
+    await assertPlaceCombobox(page, vpName);
     await page.getByTestId('calculate-btn').click({ timeout: 180_000 });
     const table = page.getByTestId('planets-table');
     await table.waitFor({ state: 'visible', timeout: 180_000 });
@@ -425,7 +466,7 @@ async function main() {
         await snap(page, `docs-dashas-${vp.name}`);
         report.push(`docs-dashas-${vp.name}`);
 
-        await initAppChartTab(page);
+        await initAppChartTab(page, vp.name);
         await snap(page, `app-chart-d1-${vp.name}`);
         report.push(`app-chart-d1-${vp.name}`);
         if (vp.name === '1280') {

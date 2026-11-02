@@ -12,7 +12,9 @@ import { PanchangaPanel } from '../components/results/PanchangaPanel';
 import { PlanetsPanel } from '../components/results/PlanetsPanel';
 import { StrengthPanel } from '../components/results/StrengthPanel';
 import { TransitsPanel } from '../components/results/TransitsPanel';
+import { PlaceCombobox } from '../components/PlaceCombobox';
 import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN, SAMPLE_CHART } from '../lib/constants';
+import { formatCoord } from '../lib/place-label';
 import { parseBirthInstant } from '../lib/format';
 import type { ChartMeta } from '../components/chart/types';
 import type { InitProgress } from '../lib/worker-types';
@@ -175,6 +177,13 @@ export function AppPage() {
                     </label>
                     <input id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
                 </div>
+                <PlaceCombobox
+                    onPick={(hit) => {
+                        setLatitude(formatCoord(hit.latitude));
+                        setLongitude(formatCoord(hit.longitude));
+                        setTimezone(hit.timezone);
+                    }}
+                />
                 <div className="field-row">
                     <label htmlFor="lat">Latitude</label>
                     <input

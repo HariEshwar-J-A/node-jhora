@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "prebuild": "node scripts/stage-ephe.mjs",
+        "prebuild": "node scripts/stage-ephe.mjs && node scripts/stage-atlas.mjs",
         "optimize:textures": "node scripts/optimize-earth-textures.mjs",
         "dev": "vite",
         "build": "tsc --noEmit --pretty false && vite build",
@@ -13,6 +13,7 @@
     },
     "dependencies": {
         "@node-jhora/analytics": "workspace:*",
+        "@node-jhora/atlas": "workspace:*",
         "@node-jhora/core": "workspace:*",
         "@node-jhora/engine": "workspace:*",
         "@node-jhora/events": "workspace:*",

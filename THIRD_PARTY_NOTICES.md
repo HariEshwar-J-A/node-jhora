@@ -86,8 +86,11 @@ in `packages/core/src/vedic/ayanamsa.ts` (see `@provenance` comments and ADR 002
 
 ## GeoNames (atlas)
 
-City gazetteer data in `@node-jhora/atlas` is © GeoNames, used under **CC-BY 4.0**
-(see `packages/atlas/README.md`).
+City gazetteer data in `@node-jhora/atlas`, including the birth-place index served
+by the website, is © GeoNames, used under **CC-BY 4.0**
+(see `packages/atlas/README.md` and `packages/atlas/ATTRIBUTION.md`). The site
+builds that index at prebuild time from the GeoNames dumps and does not call the
+GeoNames web service.
 
 ## `@node-jhora/web` demo site (npm runtime)
 

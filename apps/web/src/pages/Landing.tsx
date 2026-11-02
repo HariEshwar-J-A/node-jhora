@@ -160,6 +160,13 @@ export function LandingPage() {
                     <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or{' '}
                     <a href={CONTACT_URL}>the portfolio contact form</a>.
                 </p>
+                <p>
+                    Birth-place search uses the GeoNames gazetteer (city names, coordinates, and
+                    IANA time zones), © <a href="https://www.geonames.org/">GeoNames</a>, licensed
+                    under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. The
+                    index is built offline and served with this site. No place query leaves the
+                    browser.
+                </p>
                 <div className="pricing-grid">
                     {tiers.map((t) => (
                         <article className="card" key={t.name}>
@@ -188,8 +195,8 @@ export function LandingPage() {
             <footer className="footer">
                 <p>
                     © {new Date().getFullYear()} Harieshwar Jagan Abirami. node-jhora is not open
-                    source. Ephemeris data: NASA/JPL DE440s (public domain). No analytics on this
-                    demo.
+                    source. Ephemeris data: NASA/JPL DE440s (public domain). Place names: GeoNames
+                    (CC BY 4.0). No analytics on this demo.
                 </p>
             </footer>
         </>
