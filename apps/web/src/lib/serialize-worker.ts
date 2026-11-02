@@ -25,8 +25,18 @@ function walk(value: unknown, seen = new WeakMap<object, unknown>()): unknown {
         if ('toJSON' in value && typeof value.toJSON === 'function') {
             return walk(value.toJSON(), seen);
         }
+        if (value instanceof Map) {
+            const obj: Record<string, unknown> = {};
+            for (const [k, v] of value.entries()) {
+                obj[String(k)] = walk(v, seen);
+            }
+            return obj;
+        }
         if (Array.isArray(value)) {
             return value.map((item) => walk(item, seen));
+        }
+        if (typeof (value as Promise<unknown>).then === 'function') {
+            throw new Error('Cannot serialize unresolved Promise in worker output');
         }
         if (seen.has(value)) return seen.get(value);
         const out: Record<string, unknown> = {};

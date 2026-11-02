@@ -14,7 +14,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem('njh-theme');
         if (stored === 'light' || stored === 'dark') return stored;
         if (stored === 'daylight') return 'light';
-        return 'dark';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     });
 
     useEffect(() => {

@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "prebuild": "node scripts/stage-ephe.mjs && node scripts/optimize-earth-textures.mjs",
+        "prebuild": "node scripts/stage-ephe.mjs",
+        "optimize:textures": "node scripts/optimize-earth-textures.mjs",
         "dev": "vite",
         "build": "tsc --noEmit --pretty false && vite build",
         "preview": "vite preview",

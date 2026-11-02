@@ -30,17 +30,20 @@ export default defineConfig({
             external: [],
             output: {
                 manualChunks(id) {
-                    if (
-                        id.includes('node_modules/react') ||
-                        id.includes('node_modules/react-dom')
-                    ) {
+                    if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
                         return 'react';
                     }
-                    if (id.includes('node_modules/three')) return 'three';
-                    if (id.includes('node_modules/luxon')) return 'luxon';
+                    if (id.includes('node_modules/react-router')) return 'router';
+                    if (id.includes('node_modules/framer-motion')) return 'motion';
+                    if (id.includes('node_modules/three') || id.includes('runSpaceScene')) {
+                        return 'three';
+                    }
                     if (id.includes('packages/core/dist')) return 'njh-core';
                     if (id.includes('packages/prediction/dist')) return 'njh-prediction';
                     if (id.includes('packages/analytics/dist')) return 'njh-analytics';
+                    if (id.includes('packages/engine/dist')) return 'njh-engine';
+                    if (id.includes('packages/match/dist')) return 'njh-match';
+                    if (id.includes('packages/events/dist')) return 'njh-events';
                     return undefined;
                 },
             },

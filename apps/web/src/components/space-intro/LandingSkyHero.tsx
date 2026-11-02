@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { ConstellationOverlay } from './ConstellationOverlay';
-import { detectWebGL, INTRO_SESSION_KEY } from './session';
+import { detectWebGL } from './session';
 import type { SpaceSceneHandle } from './runSpaceScene';
 
 const FALLBACK = `${import.meta.env.BASE_URL}textures/night-sky-fallback.webp`;
@@ -47,12 +47,9 @@ export function LandingSkyHero({ children }: Props) {
     const mobile = useMobile();
 
     const [staticMode] = useState(() => prefersReduced || !detectWebGL());
-    const [skipIntro] = useState(
-        () => !staticMode && sessionStorage.getItem(INTRO_SESSION_KEY) === '1',
-    );
-    const [contentVisible, setContentVisible] = useState(staticMode || skipIntro);
-    const [skyReady, setSkyReady] = useState(staticMode || skipIntro);
-    const [showSkip, setShowSkip] = useState(!staticMode && !skipIntro);
+    const [contentVisible, setContentVisible] = useState(staticMode);
+    const [skyReady, setSkyReady] = useState(staticMode);
+    const [showSkip, setShowSkip] = useState(!staticMode);
 
     useEffect(() => {
         if (staticMode) return;
@@ -64,10 +61,9 @@ export function LandingSkyHero({ children }: Props) {
             if (!mounted || !canvasRef.current) return;
             mountSpaceScene(canvasRef.current, {
                 mobile,
-                skipIntro,
+                skipIntro: false,
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
-                    sessionStorage.setItem(INTRO_SESSION_KEY, '1');
                     setSkyReady(true);
                     setContentVisible(true);
                     setShowSkip(false);
@@ -81,10 +77,6 @@ export function LandingSkyHero({ children }: Props) {
                     return;
                 }
                 sceneRef.current = handle;
-                if (skipIntro) {
-                    setContentVisible(true);
-                    setShowSkip(false);
-                }
             });
         });
 
@@ -93,10 +85,9 @@ export function LandingSkyHero({ children }: Props) {
             sceneRef.current?.dispose();
             sceneRef.current = null;
         };
-    }, [staticMode, mobile, skipIntro]);
+    }, [staticMode, mobile]);
 
     const onSkip = useCallback(() => {
-        sessionStorage.setItem(INTRO_SESSION_KEY, '1');
         sceneRef.current?.skipIntro();
         setContentVisible(true);
         setSkyReady(true);

@@ -47,6 +47,8 @@ function createNebulaTexture(THREE: typeof import('three')): Texture {
 
 function buildStars(THREE: typeof import('three'), count: number, radius: number) {
     const positions = new Float32Array(count * 3);
+    const magnitudes = new Float32Array(count);
+    const phases = new Float32Array(count);
     for (let i = 0; i < count; i++) {
         const u = Math.random();
         const v = Math.random();
@@ -56,16 +58,53 @@ function buildStars(THREE: typeof import('three'), count: number, radius: number
         positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
         positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
         positions[i * 3 + 2] = r * Math.cos(phi);
+        magnitudes[i] = 0.35 + Math.random() * 0.65;
+        phases[i] = Math.random() * Math.PI * 2;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({
-        size: 0.35,
-        sizeAttenuation: true,
+    geo.setAttribute('magnitude', new THREE.BufferAttribute(magnitudes, 1));
+    geo.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
+
+    const mat = new THREE.ShaderMaterial({
         transparent: true,
-        opacity: 0.85,
-        color: 0xdde4ff,
         depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+            uTime: { value: 0 },
+            uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        },
+        vertexShader: `
+          attribute float magnitude;
+          attribute float phase;
+          uniform float uTime;
+          uniform float uPixelRatio;
+          varying float vMag;
+          varying float vTwinkle;
+          void main() {
+            vMag = magnitude;
+            vTwinkle = 0.65 + 0.35 * sin(uTime * 2.2 + phase * 6.0);
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            float size = (1.2 + magnitude * 2.8) * uPixelRatio * (220.0 / -mv.z);
+            gl_PointSize = clamp(size, 0.6, 4.5);
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: `
+          varying float vMag;
+          varying float vTwinkle;
+          void main() {
+            vec2 c = gl_PointCoord - vec2(0.5);
+            float r = length(c);
+            if (r > 0.5) discard;
+            float core = smoothstep(0.22, 0.0, r);
+            float glow = exp(-r * 7.0) * 0.55;
+            float sparkle = smoothstep(0.48, 0.02, abs(c.x) * abs(c.y) * 12.0) * step(0.82, vMag);
+            float alpha = (core + glow + sparkle * 0.35) * vTwinkle * (0.5 + vMag * 0.7);
+            vec3 col = mix(vec3(0.82, 0.88, 1.0), vec3(1.0), vMag);
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
     });
     return new THREE.Points(geo, mat);
 }
@@ -259,6 +298,11 @@ export async function mountSpaceScene(
             starFar.rotation.y = e * 0.05;
             starMid.rotation.y = e * 0.08;
             starNear.rotation.y = e * 0.12;
+            const introT = elapsedIntro * 0.001;
+            for (const p of points) {
+                const u = (p.material as import('three').ShaderMaterial).uniforms;
+                if (u.uTime) u.uTime.value = introT;
+            }
             (nebulaMat as import('three').SpriteMaterial).opacity = 0.25 + e * 0.15;
             renderer.toneMappingExposure = 0.85 + e * 0.35;
             travelFog.density = 0.001 + e * 0.004;
@@ -269,34 +313,72 @@ export async function mountSpaceScene(
             }
         } else {
             shootingT += 0.016;
-            const tw = 0.5 + Math.sin(shootingT * 1.7) * 0.12;
-            (starNear.material as import('three').PointsMaterial).opacity = tw;
-            starMid.rotation.z = Math.sin(shootingT * 0.05) * 0.02;
+            const t = shootingT;
+            for (const p of points) {
+                const u = (p.material as import('three').ShaderMaterial).uniforms;
+                if (u.uTime) u.uTime.value = t;
+            }
+            starMid.rotation.z = Math.sin(t * 0.05) * 0.02;
             starFar.rotation.y += 0.00008;
-            if (Math.random() < 0.004) {
-                const streak = new THREE.Line(
-                    new THREE.BufferGeometry().setFromPoints([
-                        new THREE.Vector3((Math.random() - 0.5) * 40, 20 + Math.random() * 20, -30),
-                        new THREE.Vector3(
-                            (Math.random() - 0.5) * 40 + 4,
-                            10 + Math.random() * 10,
-                            -28,
-                        ),
-                    ]),
-                    new THREE.LineBasicMaterial({
+            if (Math.random() < 0.006) {
+                const x0 = (Math.random() - 0.5) * 50;
+                const y0 = 25 + Math.random() * 25;
+                const z0 = -35 - Math.random() * 15;
+                const len = 8 + Math.random() * 10;
+                const ang = -0.6 - Math.random() * 0.4;
+                const head = new THREE.Vector3(x0, y0, z0);
+                const tail = new THREE.Vector3(
+                    x0 + Math.cos(ang) * len,
+                    y0 + Math.sin(ang) * len,
+                    z0,
+                );
+                const streakGeo = new THREE.BufferGeometry().setFromPoints([tail, head]);
+                const streakMat = new THREE.LineBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.95,
+                    blending: THREE.AdditiveBlending,
+                });
+                const streak = new THREE.Line(streakGeo, streakMat);
+                scene.add(streak);
+                const headSprite = new THREE.Points(
+                    new THREE.BufferGeometry().setAttribute(
+                        'position',
+                        new THREE.Float32BufferAttribute([head.x, head.y, head.z], 3),
+                    ),
+                    new THREE.PointsMaterial({
+                        size: 3,
+                        sizeAttenuation: true,
                         color: 0xffffff,
                         transparent: true,
-                        opacity: 0.7,
+                        opacity: 1,
+                        blending: THREE.AdditiveBlending,
+                        depthWrite: false,
                     }),
                 );
-                scene.add(streak);
-                setTimeout(() => {
-                    scene.remove(streak);
-                    streak.geometry.dispose();
-                    (streak.material as Material).dispose();
-                }, 420);
+                scene.add(headSprite);
+                let life = 0;
+                const fade = () => {
+                    life += 1;
+                    streakMat.opacity = Math.max(0, 0.95 - life * 0.08);
+                    (headSprite.material as import('three').PointsMaterial).opacity = Math.max(
+                        0,
+                        1 - life * 0.12,
+                    );
+                    if (life > 14) {
+                        scene.remove(streak);
+                        scene.remove(headSprite);
+                        streakGeo.dispose();
+                        streakMat.dispose();
+                        headSprite.geometry.dispose();
+                        (headSprite.material as Material).dispose();
+                        return;
+                    }
+                    requestAnimationFrame(fade);
+                };
+                requestAnimationFrame(fade);
             }
-            renderer.toneMappingExposure = 0.55;
+            renderer.toneMappingExposure = 0.62;
         }
 
         renderer.render(scene, camera);

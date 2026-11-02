@@ -93,6 +93,15 @@ async function fetchKernelWithProgress(url: string): Promise<Uint8Array> {
     return out;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+            setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
+        ),
+    ]);
+}
+
 async function ensureEngine(url: string): Promise<EphemerisEngine> {
     if (booted && engine && ephemerisUrl === url) return engine;
     ephemerisUrl = url;
@@ -100,7 +109,11 @@ async function ensureEngine(url: string): Promise<EphemerisEngine> {
     try {
         let bytes: Uint8Array;
         try {
-            bytes = await ensureEphemerisBytes({ urls: [url], offlineOnly: true });
+            bytes = await withTimeout(
+                ensureEphemerisBytes({ urls: [url], offlineOnly: true }),
+                12_000,
+                'Reading cached ephemeris',
+            );
             setProgress({
                 phase: 'ready',
                 loadedBytes: bytes.byteLength,
@@ -108,8 +121,20 @@ async function ensureEngine(url: string): Promise<EphemerisEngine> {
             });
         } catch {
             setProgress({ phase: 'downloading', loadedBytes: 0, totalBytes: DE440S_BYTES });
-            bytes = await fetchKernelWithProgress(url);
-            await ensureEphemerisBytes({ urls: [url] });
+            bytes = await withTimeout(
+                fetchKernelWithProgress(url),
+                120_000,
+                'Downloading ephemeris',
+            );
+            try {
+                await withTimeout(
+                    ensureEphemerisBytes({ urls: [url] }),
+                    15_000,
+                    'Persisting ephemeris cache',
+                );
+            } catch {
+                /* init proceeds with in-memory bytes even if persist fails */
+            }
             setProgress({
                 phase: 'ready',
                 loadedBytes: bytes.byteLength,
@@ -122,6 +147,8 @@ async function ensureEngine(url: string): Promise<EphemerisEngine> {
         return engine;
     } catch (err) {
         setProgress({ phase: 'error', message: String(err) });
+        booted = false;
+        engine = undefined;
         throw err;
     }
 }
@@ -188,10 +215,7 @@ const api = {
         const extraVargas: { division: number; points: unknown[] }[] = [];
         const divisions = [...NAMED_VARGA_DIVISIONS];
         const vargaDivisors: number[] = [...divisions];
-        if (
-            input.customVarga &&
-            !vargaDivisors.includes(input.customVarga)
-        ) {
+        if (input.customVarga && !vargaDivisors.includes(input.customVarga)) {
             vargaDivisors.push(input.customVarga);
         }
         const sessionDivs = new Set([1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]);
@@ -266,16 +290,31 @@ const api = {
 
         const kp = {
             planets: KPEngine.getAllPlanetSignificators(planetPositions),
-            houses: housesForMatch
-                ? KPEngine.getAllHouseSignificators(housesForMatch)
-                : [],
+            houses: housesForMatch ? KPEngine.getAllHouseSignificators(housesForMatch) : [],
         };
 
         const transitEngine = new TransitEngine(eph);
         const scanEnd = birthLocal.plus({ days: 30 });
-        const mercuryTransits = transitEngine.findTransits(2, birthLocal, scanEnd, 6);
+        const mercuryRaw = await transitEngine.findTransits(2, birthLocal, scanEnd, 6);
+        const mercuryTransits = mercuryRaw.map((e) => ({
+            planetId: e.planetId,
+            type: e.type,
+            prevSign: e.prevValue,
+            newSign: e.newValue,
+            instant: e.time.toUTC().toISO(),
+        }));
         const scanner = new TransitScanner(eph);
         const marsIngress = await scanner.findIngress(4, 0, birthLocal, scanEnd);
+        const transits = {
+            mercuryTransits,
+            marsIngress: marsIngress
+                ? {
+                      planetId: 4,
+                      targetSign: 0,
+                      instant: marsIngress.toUTC().toISO(),
+                  }
+                : null,
+        };
 
         const boyStar = nakshatraIndex(moonLon);
         const boySign = sign1(moonLon);
@@ -302,7 +341,7 @@ const api = {
             karakas,
             dashas,
             kp,
-            transits: { mercuryTransits, marsIngress },
+            transits,
             matching,
             kernelMeta: { sha256: DE440S_SHA256, bytes: DE440S_BYTES },
             meta: { resolvedZone: tz.zone, localIso: birthLocal.toISO() },

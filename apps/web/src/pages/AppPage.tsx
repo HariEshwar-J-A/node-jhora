@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AYANAMSA_IDS, getPreset, HOUSE_SYSTEM_IDS, type SettingsInput } from '@node-jhora/core';
-import { ChartWheel } from '../components/ChartWheel';
+import { VargaBoard } from '../components/chart/VargaBoard';
+import { labelAyanamsa, labelHouseSystem } from '../lib/chart-labels';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AnimatedTabPanel } from '../components/AnimatedTabPanel';
+import { DashasPanel } from '../components/results/DashasPanel';
+import { ImportExportPanel } from '../components/results/ImportExportPanel';
+import { KpPanel } from '../components/results/KpPanel';
+import { MatchingPanel } from '../components/results/MatchingPanel';
+import { PanchangaPanel } from '../components/results/PanchangaPanel';
+import { PlanetsPanel } from '../components/results/PlanetsPanel';
+import { StrengthPanel } from '../components/results/StrengthPanel';
+import { TransitsPanel } from '../components/results/TransitsPanel';
 import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN, SAMPLE_CHART } from '../lib/constants';
-import { formatDms, parseBirthInstant, SIGN_NAMES } from '../lib/format';
+import { parseBirthInstant } from '../lib/format';
+import type { ChartMeta } from '../components/chart/types';
 import type { InitProgress } from '../lib/worker-types';
-import { getWorker, initEphemeris } from '../lib/worker-client';
+import { getWorker, initEphemeris, resetWorker } from '../lib/worker-client';
 
 type TabId =
     | 'chart'
@@ -41,19 +52,20 @@ export function AppPage() {
     const [houseSystem, setHouseSystem] = useState<(typeof HOUSE_SYSTEM_IDS)[number]>('whole_sign');
     const [customVarga, setCustomVarga] = useState('');
     const [dashaDepth, setDashaDepth] = useState(3);
-    const [chartStyle, setChartStyle] = useState<'north' | 'south'>('north');
     const [kernelReady, setKernelReady] = useState(false);
     const [progress, setProgress] = useState<InitProgress>({ phase: 'checking-cache' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const [result, setResult] = useState<any>();
-    const [jhdText, setJhdText] = useState('');
-    const [njhText, setNjhText] = useState('');
+
+    const [initAttempt, setInitAttempt] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
         (async () => {
             try {
+                setError(undefined);
+                setKernelReady(false);
                 await initEphemeris(new URL(EPHE_PATH, window.location.href).href, (p) => {
                     if (!cancelled) setProgress(p);
                 });
@@ -67,7 +79,7 @@ export function AppPage() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [initAttempt]);
 
     const settings: SettingsInput = useMemo(() => {
         const base = getPreset('node-jhora-default');
@@ -116,6 +128,16 @@ export function AppPage() {
 
     const planets = result?.snapshot?.planets ?? [];
     const houses = result?.snapshot?.houses;
+
+    const chartMeta: ChartMeta = useMemo(
+        () => ({
+            title: 'Rashi',
+            subtitle: labelAyanamsa(ayanamsa),
+            dateLabel: `${date} ${time} (${timezone})`,
+            place: `${latitude}°, ${longitude}°`,
+        }),
+        [ayanamsa, date, time, timezone, latitude, longitude],
+    );
     const progressPct =
         progress.totalBytes && progress.loadedBytes
             ? Math.min(100, (100 * progress.loadedBytes) / progress.totalBytes)
@@ -178,7 +200,7 @@ export function AppPage() {
                     >
                         {AYANAMSA_IDS.map((id) => (
                             <option key={id} value={id}>
-                                {id}
+                                {labelAyanamsa(id)}
                             </option>
                         ))}
                     </select>
@@ -192,7 +214,7 @@ export function AppPage() {
                     >
                         {HOUSE_SYSTEM_IDS.map((id) => (
                             <option key={id} value={id}>
-                                {id}
+                                {labelHouseSystem(id)}
                             </option>
                         ))}
                     </select>
@@ -221,7 +243,7 @@ export function AppPage() {
                     type="button"
                     className="btn btn-default"
                     data-testid="calculate-btn"
-                    disabled={loading}
+                    disabled={loading || !kernelReady}
                     onClick={compute}
                 >
                     {loading
@@ -233,6 +255,19 @@ export function AppPage() {
                 {error && (
                     <p role="alert" className="form-error">
                         {error}
+                        {!kernelReady && (
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                style={{ display: 'block', marginTop: '0.5rem' }}
+                                onClick={() => {
+                                    resetWorker();
+                                    setInitAttempt((n) => n + 1);
+                                }}
+                            >
+                                Retry ephemeris load
+                            </button>
+                        )}
                     </p>
                 )}
             </aside>
@@ -253,229 +288,73 @@ export function AppPage() {
                     ))}
                 </div>
 
-                <AnimatedTabPanel tabKey={tab}>
-                    {!result && tab !== 'import' && (
-                        <div className="card">
-                            <p>
-                                Load the ephemeris kernel, enter birth data, and run Calculate.
-                                Sample: Greenwich noon, 2000-01-01 (fictional reference).
-                            </p>
-                        </div>
-                    )}
-
-                    {result && tab === 'chart' && (
-                        <div className="grid-2" data-testid="panel-chart">
+                <ErrorBoundary title="This panel failed to render">
+                    <AnimatedTabPanel tabKey={tab}>
+                        {!result && tab !== 'import' && (
                             <div className="card">
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        gap: '0.5rem',
-                                        marginBottom: '0.75rem',
-                                    }}
-                                >
-                                    <button
-                                        type="button"
-                                        className={`tab ${chartStyle === 'north' ? 'active' : ''}`}
-                                        onClick={() => setChartStyle('north')}
-                                    >
-                                        North Indian
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`tab ${chartStyle === 'south' ? 'active' : ''}`}
-                                        onClick={() => setChartStyle('south')}
-                                    >
-                                        South Indian
-                                    </button>
-                                </div>
-                                <ChartWheel
-                                    style={chartStyle}
+                                <p>
+                                    Load the ephemeris kernel, enter birth data, and run Calculate.
+                                    Sample: Greenwich noon, 2000-01-01 (fictional reference).
+                                </p>
+                            </div>
+                        )}
+
+                        {result && tab === 'chart' && (
+                            <PlanetsPanel
+                                ascendant={houses?.ascendant ?? 0}
+                                planets={planets}
+                                meta={chartMeta}
+                            />
+                        )}
+
+                        {result && tab === 'vargas' && (
+                            <div className="card">
+                                <VargaBoard
                                     ascendant={houses?.ascendant ?? 0}
-                                    planets={planets}
+                                    d1Planets={planets}
+                                    vargas={result.snapshot.vargas ?? {}}
+                                    meta={chartMeta}
                                 />
                             </div>
-                            <div className="card">
-                                <h3>Planets (sidereal)</h3>
-                                <table className="data" data-testid="planets-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Body</th>
-                                            <th>Sign</th>
-                                            <th>Longitude</th>
-                                            <th>Speed</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {planets.map((p: any) => (
-                                            <tr key={p.name}>
-                                                <td>{p.name}</td>
-                                                <td>{SIGN_NAMES[p.sign - 1]}</td>
-                                                <td className="mono">{formatDms(p.longitude)}</td>
-                                                <td className="mono">{p.speed.toFixed(4)}°/d</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    {result && tab === 'vargas' && (
-                        <div className="card" data-testid="panel-vargas">
-                            <h3>Divisional charts</h3>
-                            <p className="mono">
-                                Session batch: D1–D60 (16 charts). Extra named divisors below.
-                            </p>
-                            <pre style={{ overflow: 'auto', fontSize: '0.75rem', maxHeight: 420 }}>
-                                {JSON.stringify(result.snapshot.vargas, null, 2)}
-                            </pre>
-                            {result.extraVargas?.length > 0 && (
-                                <>
-                                    <h4>Additional divisors</h4>
-                                    <pre
-                                        style={{
-                                            overflow: 'auto',
-                                            fontSize: '0.75rem',
-                                            maxHeight: 280,
-                                        }}
-                                    >
-                                        {JSON.stringify(result.extraVargas, null, 2)}
-                                    </pre>
-                                </>
-                            )}
-                        </div>
-                    )}
+                        {result && tab === 'dashas' && (
+                            <DashasPanel
+                                vimshottari={result.dashas?.vimshottari ?? []}
+                                others={result.dashas ?? {}}
+                                depth={dashaDepth}
+                                karakas={result.karakas}
+                            />
+                        )}
 
-                    {result && tab === 'dashas' && (
-                        <div className="card" data-testid="panel-dashas">
-                            <h3>Dasha systems</h3>
-                            <details open>
-                                <summary>Vimshottari (depth {dashaDepth})</summary>
-                                <pre
-                                    style={{ overflow: 'auto', fontSize: '0.7rem', maxHeight: 240 }}
-                                >
-                                    {JSON.stringify(result.dashas.vimshottari, null, 2)}
-                                </pre>
-                            </details>
-                            {Object.entries(result.dashas)
-                                .filter(([k]) => k !== 'vimshottari')
-                                .map(([name, tree]) => (
-                                    <details key={name}>
-                                        <summary>{name}</summary>
-                                        <pre
-                                            style={{
-                                                overflow: 'auto',
-                                                fontSize: '0.7rem',
-                                                maxHeight: 180,
-                                            }}
-                                        >
-                                            {JSON.stringify(tree, null, 2)}
-                                        </pre>
-                                    </details>
-                                ))}
-                            <h4>Jaimini chara karakas</h4>
-                            <pre style={{ fontSize: '0.75rem' }}>
-                                {JSON.stringify(result.karakas, null, 2)}
-                            </pre>
-                        </div>
-                    )}
+                        {result && tab === 'panchanga' && (
+                            <PanchangaPanel
+                                panchanga={result.snapshot.panchanga ?? {}}
+                                sunRiseSet={result.sunRiseSet}
+                            />
+                        )}
 
-                    {result && tab === 'panchanga' && (
-                        <div className="card" data-testid="panel-panchanga">
-                            <h3>Panchanga</h3>
-                            <pre>{JSON.stringify(result.snapshot.panchanga, null, 2)}</pre>
-                            <h4>Sun rise / set (DE440s)</h4>
-                            <pre>{JSON.stringify(result.sunRiseSet, null, 2)}</pre>
-                        </div>
-                    )}
+                        {result && tab === 'strength' && (
+                            <StrengthPanel
+                                shadbala={result.snapshot.shadbala}
+                                ashtakavarga={result.snapshot.ashtakavarga}
+                                yogas={result.snapshot.yogas}
+                            />
+                        )}
 
-                    {result && tab === 'strength' && (
-                        <div className="card" data-testid="panel-strength">
-                            <h3>Shadbala</h3>
-                            <pre style={{ fontSize: '0.8rem' }}>
-                                {JSON.stringify(result.snapshot.shadbala, null, 2)}
-                            </pre>
-                            <h3>Ashtakavarga</h3>
-                            <pre style={{ fontSize: '0.8rem' }}>
-                                {JSON.stringify(result.snapshot.ashtakavarga, null, 2)}
-                            </pre>
-                            <h3>Yogas (engine library)</h3>
-                            <pre style={{ fontSize: '0.8rem' }}>
-                                {JSON.stringify(result.snapshot.yogas, null, 2)}
-                            </pre>
-                        </div>
-                    )}
+                        {result && tab === 'kp' && <KpPanel kp={result.kp ?? {}} />}
 
-                    {result && tab === 'kp' && (
-                        <div className="card" data-testid="panel-kp">
-                            <pre style={{ fontSize: '0.8rem' }}>
-                                {JSON.stringify(result.kp, null, 2)}
-                            </pre>
-                        </div>
-                    )}
+                        {result && tab === 'matching' && (
+                            <MatchingPanel matching={result.matching ?? {}} />
+                        )}
 
-                    {result && tab === 'matching' && (
-                        <div className="card" data-testid="panel-matching">
-                            <p>{result.matching.sampleNote}</p>
-                            <pre>{JSON.stringify(result.matching, null, 2)}</pre>
-                        </div>
-                    )}
+                        {result && tab === 'transits' && (
+                            <TransitsPanel transits={result.transits ?? {}} />
+                        )}
 
-                    {result && tab === 'transits' && (
-                        <div className="card" data-testid="panel-transits">
-                            <pre>{JSON.stringify(result.transits, null, 2)}</pre>
-                        </div>
-                    )}
-
-                    {tab === 'import' && (
-                        <div className="card grid-2" data-testid="panel-import">
-                            <div>
-                                <h3>JHD</h3>
-                                <textarea
-                                    rows={8}
-                                    value={jhdText}
-                                    onChange={(e) => setJhdText(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="btn btn-outline"
-                                    onClick={async () => {
-                                        try {
-                                            const parsed = await getWorker().parseJhdText(jhdText);
-                                            setJhdText(await getWorker().writeJhdText(parsed));
-                                        } catch (e) {
-                                            setError(String(e));
-                                        }
-                                    }}
-                                >
-                                    Parse & round-trip
-                                </button>
-                            </div>
-                            <div>
-                                <h3>NJH</h3>
-                                <textarea
-                                    rows={8}
-                                    value={njhText}
-                                    onChange={(e) => setNjhText(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="btn btn-outline"
-                                    onClick={async () => {
-                                        try {
-                                            const parsed = await getWorker().parseNjhText(njhText);
-                                            setNjhText(await getWorker().serializeNjhText(parsed));
-                                        } catch (e) {
-                                            setError(String(e));
-                                        }
-                                    }}
-                                >
-                                    Parse & serialize
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </AnimatedTabPanel>
+                        {tab === 'import' && <ImportExportPanel />}
+                    </AnimatedTabPanel>
+                </ErrorBoundary>
             </main>
         </div>
     );
