@@ -39,7 +39,8 @@
         "bench:check": "pnpm --filter @node-jhora/bench run bench:check",
         "bench:workers": "node scripts/bench-workers.mjs",
         "changeset": "changeset",
-        "check:pack": "node scripts/check-pack.mjs"
+        "check:pack": "node scripts/check-pack.mjs",
+        "version-packages": "changeset version && node packages/core/scripts/write-build-constants.mjs && pnpm api:report"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.5",

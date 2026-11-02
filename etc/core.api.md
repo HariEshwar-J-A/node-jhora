@@ -553,7 +553,7 @@ export function describeCalculation(input?: SettingsInput, base?: CalculationSet
 export function dmsToDecimal(d: number, m: number, s: number): number;
 
 // @public
-export const ENGINE_VERSION = "3.1.0";
+export const ENGINE_VERSION = "4.0.0";
 
 // @public
 export const EPHEMERIS_ASTRO_YEAR_MAX = 10000;
