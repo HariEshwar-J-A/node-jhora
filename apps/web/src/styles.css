@@ -315,6 +315,28 @@ a {
     animation: wheel-spin 120s linear infinite;
 }
 
+.hero-bg__constellations {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.16;
+    pointer-events: none;
+}
+
+.hero-bg__constellation-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 0.65;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.35;
+}
+
+.hero-bg__star-node {
+    fill: currentColor;
+    opacity: 0.45;
+}
+
 .hero-bg__stars {
     position: absolute;
     inset: 0;
@@ -555,14 +577,58 @@ table.data th {
     -webkit-overflow-scrolling: touch;
 }
 
-.data-table-wrap table.data {
-    min-width: 36rem;
+@media (max-width: 1400px) {
+    .grid-2--chart-table {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 1401px) {
+    .grid-2--chart-table {
+        grid-template-columns: minmax(280px, 520px) minmax(0, 1fr);
+    }
+}
+
+.grid-2--chart-table .data-table-wrap {
+    overflow-x: visible;
+}
+
+.grid-2--chart-table table.data {
+    min-width: 0;
+    width: 100%;
+    font-size: 0.72rem;
+    table-layout: auto;
+}
+
+.grid-2--chart-table table.data th,
+.grid-2--chart-table table.data td {
+    padding: 0.4rem 0.35rem;
+    vertical-align: top;
+}
+
+.grid-2--chart-table table.data col.col-nak {
+    width: 22%;
+}
+
+.grid-2--chart-table table.data td.col-nak {
+    white-space: normal;
+    line-height: 1.25;
+    word-break: normal;
+}
+
+.grid-2--chart-table table.data td.mono,
+.grid-2--chart-table table.data th.mono {
+    white-space: nowrap;
 }
 
 table.data td.mono,
 table.data th.mono {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+}
+
+.chart-canvas .chart-sign-num--south {
+    text-anchor: start;
 }
 
 .chart-canvas .chart-lagna-diagonal {
@@ -573,10 +639,27 @@ table.data th.mono {
 
 .chart-canvas {
     width: 100%;
-    max-width: min(560px, 100%);
+    max-width: min(520px, 100%);
     margin: 0 auto;
     aspect-ratio: 1;
     overflow: visible;
+}
+
+.chart-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.chart-panel .chart-canvas {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 520px;
+    align-self: center;
+}
+
+.chart-panel .chart-canvas__svg {
+    max-height: min(520px, 85vw);
 }
 
 .chart-canvas__svg {
@@ -639,17 +722,25 @@ table.data th.mono {
     vector-effect: non-scaling-stroke;
 }
 
-.chart-wheel .chart-sign-num,
-.chart-canvas .chart-sign-num {
+.chart-wheel .chart-sign-num {
     fill: hsl(var(--muted-foreground));
     font-size: 4.5px;
     font-weight: 600;
 }
 
-.chart-wheel .chart-planet,
-.chart-canvas .chart-planet {
+.chart-canvas .chart-sign-num {
+    fill: hsl(var(--muted-foreground));
+    font-weight: 600;
+}
+
+.chart-wheel .chart-planet {
     fill: hsl(var(--foreground));
     font-size: 4.25px;
+    font-weight: 500;
+}
+
+.chart-canvas .chart-planet {
+    fill: hsl(var(--foreground));
     font-weight: 500;
 }
 
@@ -865,6 +956,12 @@ table.data th.mono {
     max-width: 1100px;
     margin: 0 auto;
     padding: 1rem 1.25rem 2rem;
+    align-items: start;
+}
+
+.docs-main {
+    min-width: 0;
+    padding-bottom: 2rem;
 }
 
 @media (max-width: 800px) {
@@ -1067,6 +1164,22 @@ table.data th.mono {
         transparent 72%
     );
     border-radius: 0;
+    opacity: 1;
+    transform: none;
+    color: hsl(var(--foreground));
+}
+
+[data-theme='light'] .landing-sky-hero__content .hero h1 {
+    color: hsl(var(--foreground));
+}
+
+[data-theme='light'] .landing-sky-hero__content .hero p {
+    color: hsl(var(--muted-foreground));
+}
+
+[data-theme='light'] .landing-sky-hero .btn-default {
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
 }
 
 .constellation-overlay--light {
@@ -1233,7 +1346,7 @@ table.data th.mono {
 
 .section-motif__inner {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .form-error {

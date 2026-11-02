@@ -10,13 +10,19 @@ import {
     isRetrograde,
     planetShortName,
     planetSign0,
-    southCellPlanetLayout,
     southCellRect,
     southCenterMetaLines,
-    southSignLabelAnchor,
     signIndex0,
     signLabel,
 } from './geometry';
+import {
+    estimateTextHeight,
+    estimateTextWidth,
+    fitLabels,
+    fitCornerLabel,
+    rectCellPolygon,
+    type ReservedBox,
+} from './layoutFit';
 
 type Props = {
     ascendant: number;
@@ -30,6 +36,12 @@ function formatPlanetLine(p: ChartPlanet): string {
     const d = Math.floor(degreeInSign(p));
     const retro = isRetrograde(p) ? ' R' : '';
     return `${planetShortName(p.name)} ${d}°${retro}`;
+}
+
+function compactPlanetLine(p: ChartPlanet): string {
+    const d = Math.floor(degreeInSign(p));
+    const retro = isRetrograde(p) ? 'R' : '';
+    return `${planetShortName(p.name)}${d}°${retro}`;
 }
 
 export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }: Props) {
@@ -81,10 +93,54 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                     })()}
                 {SOUTH_SIGN_CELLS.map(({ sign, row, col }) => {
                     const rect = southCellRect(row, col);
+                    const poly = rectCellPolygon(rect.x, rect.y, rect.size);
                     const inSign = bySign.get(sign) ?? [];
                     const isLagna = sign === ascSign0;
-                    const signPos = southSignLabelAnchor(row, col);
-                    const slots = southCellPlanetLayout(inSign.length, rect);
+                    const signText = signLabel(sign);
+                    const signPreferred = { x: rect.x + 3.5, y: rect.y + 5.5 };
+                    const signPlaced = fitCornerLabel(
+                        poly,
+                        signPreferred.x,
+                        signPreferred.y,
+                        signText,
+                        compact ? 3.6 : 4.2,
+                    );
+                    const reserved: ReservedBox[] = [
+                        {
+                            x: signPlaced.x,
+                            y: signPlaced.y,
+                            w: estimateTextWidth(signText, signPlaced.fontSize),
+                            h: estimateTextHeight(signPlaced.fontSize),
+                            anchor: 'start',
+                        },
+                    ];
+                    if (isLagna) {
+                        reserved.push({
+                            x: rect.x + rect.size * 0.12,
+                            y: rect.y + rect.size * 0.88,
+                            w: rect.size * 0.75,
+                            h: 2,
+                            anchor: 'start',
+                        });
+                    }
+                    const planetAnchor = {
+                        x: rect.x + rect.size / 2,
+                        y: rect.y + rect.size * 0.58,
+                    };
+                    const placed = fitLabels(
+                        poly,
+                        planetAnchor,
+                        inSign.map((p) => ({
+                            id: p.name,
+                            text: formatPlanetLine(p),
+                            compactText: compactPlanetLine(p),
+                        })),
+                        {
+                            reserved,
+                            maxFontSize: compact ? 2.65 : 3.15,
+                            minFontSize: compact ? 1.7 : 1.85,
+                        },
+                    );
                     return (
                         <g key={sign}>
                             {isLagna && (
@@ -96,26 +152,37 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                                     className="chart-lagna-diagonal"
                                 />
                             )}
-                            <text x={signPos.x} y={signPos.y} className="chart-sign-num">
-                                {signLabel(sign)}
+                            <text
+                                x={signPlaced.x}
+                                y={signPlaced.y}
+                                textAnchor="start"
+                                className="chart-sign-num chart-sign-num--south"
+                                fontSize={signPlaced.fontSize}
+                            >
+                                {signText}
                             </text>
-                            {inSign.map((p, idx) => (
-                                <text
-                                    key={p.name}
-                                    x={slots[idx]?.x ?? rect.x + 3}
-                                    y={slots[idx]?.y ?? rect.y + 11}
-                                    textAnchor="middle"
-                                    className="chart-planet"
-                                    fontSize={slots[idx]?.fontSize ?? 3.1}
-                                >
-                                    <title>
-                                        {p.name} · {signName(sign + 1)} ·{' '}
-                                        {degreeInSignDms(degreeInSign(p))} ({formatDms(p.longitude)}
-                                        ){isRetrograde(p) ? ' · Retrograde' : ''}
-                                    </title>
-                                    {formatPlanetLine(p)}
-                                </text>
-                            ))}
+                            {placed.map((slot) => {
+                                const p = inSign.find((x) => x.name === slot.id)!;
+                                return (
+                                    <g key={slot.id}>
+                                        <title>
+                                            {p.name} · {signName(sign + 1)} ·{' '}
+                                            {degreeInSignDms(degreeInSign(p))} (
+                                            {formatDms(p.longitude)})
+                                            {isRetrograde(p) ? ' · Retrograde' : ''}
+                                        </title>
+                                        <text
+                                            x={slot.x}
+                                            y={slot.y}
+                                            textAnchor="middle"
+                                            className="chart-planet"
+                                            fontSize={slot.fontSize}
+                                        >
+                                            {slot.text}
+                                        </text>
+                                    </g>
+                                );
+                            })}
                         </g>
                     );
                 })}

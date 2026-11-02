@@ -72,7 +72,10 @@ export function LandingSkyHero({ children }: Props) {
                     setShowSkip(false);
                 },
                 onPhaseChange: (phase) => {
-                    if (phase === 'sky') setSkyReady(true);
+                    if (phase === 'sky') {
+                        setSkyReady(true);
+                        setContentVisible(true);
+                    }
                 },
             }).then((handle) => {
                 if (!mounted) {

@@ -46,6 +46,7 @@ export function PlanetsPanel({ ascendant, planets, meta }: Props) {
         {
             key: 'nak',
             header: 'Nakshatra',
+            className: 'col-nak',
             render: (p) => {
                 const n = nakshatraForLongitude(p.longitude);
                 return `${n.name} P${n.pada}`;
@@ -78,7 +79,7 @@ export function PlanetsPanel({ ascendant, planets, meta }: Props) {
     }));
 
     return (
-        <div className="grid-2" data-testid="panel-chart">
+        <div className="grid-2 grid-2--chart-table" data-testid="panel-chart">
             <div className="card chart-panel">
                 <ChartToggle value={style} onChange={setStyle} className="chart-panel__toggle" />
                 <ErrorBoundary title="Chart could not be rendered">

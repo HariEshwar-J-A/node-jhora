@@ -114,6 +114,9 @@ export function AnimatedHeroBackground() {
                     <path
                         key={i}
                         d={d}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="0.65"
                         className="hero-bg__constellation-line"
                         style={{
                             animationDelay: `${i * 0.35}s`,

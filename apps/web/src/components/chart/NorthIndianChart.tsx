@@ -4,6 +4,7 @@ import type { ChartPlanet } from './types';
 import {
     NORTH_DIAGONAL_DIAMOND_PATH,
     NORTH_HOUSE_ANCHORS,
+    NORTH_HOUSE_POLYGONS,
     NORTH_OUTER_SQUARE_PATH,
     NORTH_SIGN_LABEL_ANCHORS,
     NORTH_VIEW_BOX,
@@ -11,11 +12,17 @@ import {
     isRetrograde,
     planetShortName,
     planetSign0,
-    northHousePlanetLayout,
     signIndex0,
     signLabel,
     wholeSignHouse,
 } from './geometry';
+import {
+    estimateTextHeight,
+    estimateTextWidth,
+    fitLabels,
+    fitSignLabel,
+    type ReservedBox,
+} from './layoutFit';
 
 type Props = {
     ascendant: number;
@@ -28,6 +35,12 @@ function formatPlanetLine(p: ChartPlanet): string {
     const d = Math.floor(degreeInSign(p));
     const retro = isRetrograde(p) ? ' R' : '';
     return `${planetShortName(p.name)} ${d}°${retro}`;
+}
+
+function compactPlanetLine(p: ChartPlanet): string {
+    const d = Math.floor(degreeInSign(p));
+    const retro = isRetrograde(p) ? 'R' : '';
+    return `${planetShortName(p.name)}${d}°${retro}`;
 }
 
 export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Props) {
@@ -63,43 +76,83 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                     const house = i + 1;
                     const sign0 = (ascSign0 + i) % 12;
                     const anchor = NORTH_HOUSE_ANCHORS[house]!;
-                    const signPos = NORTH_SIGN_LABEL_ANCHORS[house]!;
+                    const poly = NORTH_HOUSE_POLYGONS[house]!;
+                    const signText = signLabel(sign0);
+                    const signPlaced = fitSignLabel(
+                        poly,
+                        NORTH_SIGN_LABEL_ANCHORS[house]!,
+                        signText,
+                        compact ? 3.8 : 4.5,
+                    );
+                    const reserved: ReservedBox[] = [
+                        {
+                            x: signPlaced.x,
+                            y: signPlaced.y,
+                            w: estimateTextWidth(signText, signPlaced.fontSize),
+                            h: estimateTextHeight(signPlaced.fontSize),
+                            anchor: 'middle',
+                        },
+                    ];
+                    if (house === 1) {
+                        reserved.push({
+                            x: 50,
+                            y: 20,
+                            w: estimateTextWidth('Asc', 3),
+                            h: estimateTextHeight(3),
+                            anchor: 'middle',
+                        });
+                    }
                     const inHouse = byHouse.get(house) ?? [];
-                    const slots = northHousePlanetLayout(inHouse.length, anchor);
+                    const placed = fitLabels(
+                        poly,
+                        anchor,
+                        inHouse.map((p) => ({
+                            id: p.name,
+                            text: formatPlanetLine(p),
+                            compactText: compactPlanetLine(p),
+                        })),
+                        {
+                            reserved,
+                            maxFontSize: compact ? 2.8 : 3.55,
+                            minFontSize: compact ? 1.75 : 1.9,
+                        },
+                    );
                     return (
                         <g key={house} className="chart-house">
                             <text
-                                x={signPos.x}
-                                y={signPos.y}
+                                x={signPlaced.x}
+                                y={signPlaced.y}
                                 textAnchor="middle"
                                 className="chart-sign-num"
+                                fontSize={signPlaced.fontSize}
                             >
-                                {signLabel(sign0)}
+                                {signText}
                             </text>
                             {house === 1 && (
                                 <text x={50} y={20} textAnchor="middle" className="chart-lagna-tag">
                                     Asc
                                 </text>
                             )}
-                            {inHouse.map((p, idx) => {
-                                const fs = slots[idx]?.fontSize ?? 3.6;
+                            {placed.map((slot) => {
+                                const p = inHouse.find((x) => x.name === slot.id)!;
                                 return (
-                                    <text
-                                        key={p.name}
-                                        x={slots[idx]?.x ?? anchor.x}
-                                        y={slots[idx]?.y ?? anchor.y}
-                                        textAnchor="middle"
-                                        className="chart-planet"
-                                        fontSize={fs}
-                                    >
+                                    <g key={slot.id}>
                                         <title>
                                             {p.name} · {signName(planetSign0(p) + 1)} ·{' '}
                                             {degreeInSignDms(degreeInSign(p))} (
                                             {formatDms(p.longitude)})
                                             {isRetrograde(p) ? ' · Retrograde' : ''}
                                         </title>
-                                        {formatPlanetLine(p)}
-                                    </text>
+                                        <text
+                                            x={slot.x}
+                                            y={slot.y}
+                                            textAnchor={slot.textAnchor}
+                                            className="chart-planet"
+                                            fontSize={slot.fontSize}
+                                        >
+                                            {slot.text}
+                                        </text>
+                                    </g>
                                 );
                             })}
                         </g>
