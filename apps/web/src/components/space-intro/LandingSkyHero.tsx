@@ -49,19 +49,13 @@ export function LandingSkyHero({ children }: Props) {
     const mobile = useMobile();
 
     const [staticMode] = useState(() => prefersReduced || !detectWebGL());
-    const [contentVisible, setContentVisible] = useState(
-        () =>
-            staticMode ||
-            (typeof window !== 'undefined' &&
-                window.matchMedia('(max-width: 768px)').matches),
-    );
+    const [contentVisible] = useState(true);
     const [skyReady, setSkyReady] = useState(staticMode);
     const [showSkip, setShowSkip] = useState(!staticMode);
 
     useEffect(() => {
         if (staticMode) return;
         if (mobile || prefersReduced) {
-            setContentVisible(true);
             setSkyReady(true);
             setShowSkip(false);
         }
@@ -70,7 +64,6 @@ export function LandingSkyHero({ children }: Props) {
     useEffect(() => {
         if (staticMode) return;
         const fallback = window.setTimeout(() => {
-            setContentVisible(true);
             setSkyReady(true);
             setShowSkip(false);
         }, 8000);
@@ -92,13 +85,11 @@ export function LandingSkyHero({ children }: Props) {
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
                     setSkyReady(true);
-                    setContentVisible(true);
                     setShowSkip(false);
                 },
                 onPhaseChange: (phase) => {
                     if (phase === 'sky') {
                         setSkyReady(true);
-                        setContentVisible(true);
                     }
                 },
             }).then((handle) => {
@@ -119,7 +110,6 @@ export function LandingSkyHero({ children }: Props) {
 
     const onSkip = useCallback(() => {
         sceneRef.current?.skipIntro();
-        setContentVisible(true);
         setSkyReady(true);
         setShowSkip(false);
     }, []);

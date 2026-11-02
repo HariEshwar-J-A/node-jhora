@@ -4,22 +4,22 @@ import type { ChartPlanet } from './types';
 import {
     NORTH_DIAGONAL_DIAMOND_PATH,
     NORTH_OUTER_SQUARE_PATH,
+    NORTH_PLANET_RECTS,
+    NORTH_SIGN_POSITIONS,
     NORTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
     planetSign0,
+    northHouseSignNumber,
     signIndex0,
     signLabel,
     wholeSignHouse,
 } from './geometry';
 import {
-    CHART_PLANET_FONT_SIZE,
     CHART_SIGN_FONT_SIZE,
     CHART_SIGN_FONT_SIZE_COMPACT,
     formatPlanetLabel,
     layoutLabelsInRect,
-    NORTH_PLANET_RECTS,
-    NORTH_SIGN_POSITIONS,
 } from './chartLayout';
 
 type Props = {
@@ -62,8 +62,9 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                 />
                 {Array.from({ length: 12 }, (_, i) => {
                     const house = i + 1;
-                    const sign0 = (ascSign0 + i) % 12;
-                    const signText = signLabel(sign0);
+                    const signText = signLabel(
+                        (northHouseSignNumber(ascSign0, house) - 1 + 12) % 12,
+                    );
                     const signPos = NORTH_SIGN_POSITIONS[house]!;
                     const inHouse = byHouse.get(house) ?? [];
                     const labelItems = inHouse.map((p) => ({

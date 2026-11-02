@@ -56,9 +56,9 @@ export function isRetrograde(p: ChartPlanet): boolean {
     return p.speed != null && p.speed < 0;
 }
 
-/** Chart lives in 0–100 user units; viewBox adds margin for strokes. */
+/** Chart lives in 0–100 user units. ViewBox width 104 keeps a 2.4-unit glyph ≥ 11px at 480px. */
 export const NORTH_CHART_SIZE = 100;
-export const NORTH_VIEW_BOX = '-5 -5 110 110';
+export const NORTH_VIEW_BOX = '-2 -2 104 104';
 
 /** Outer square, both diagonals, inner diamond (mid-edge points). */
 export const NORTH_OUTER_SQUARE_PATH = 'M 0 0 H 100 V 100 H 0 Z';
@@ -66,105 +66,170 @@ export const NORTH_DIAGONAL_DIAMOND_PATH =
     'M 0 0 L 100 100 M 100 0 L 0 100 M 50 0 L 100 50 L 50 100 L 0 50 Z';
 export const NORTH_FRAME_PATH = `${NORTH_OUTER_SQUARE_PATH} ${NORTH_DIAGONAL_DIAMOND_PATH}`;
 
-/** House centroids for planet stacks (counter-clockwise from top centre). */
-export const NORTH_HOUSE_ANCHORS: Record<number, { x: number; y: number }> = {
-    1: { x: 50, y: 25 },
-    2: { x: 25, y: 8 },
-    3: { x: 8, y: 25 },
-    4: { x: 25, y: 50 },
-    5: { x: 8, y: 75 },
-    6: { x: 25, y: 92 },
-    7: { x: 50, y: 75 },
-    8: { x: 75, y: 92 },
-    9: { x: 92, y: 75 },
-    10: { x: 75, y: 50 },
-    11: { x: 92, y: 25 },
-    12: { x: 75, y: 8 },
-};
+export type NorthTextRect = { x0: number; y0: number; x1: number; y1: number };
 
-/** Sign digit near inner vertex, shifted toward chart centre (50, 50). */
-export const NORTH_SIGN_LABEL_ANCHORS: Record<number, { x: number; y: number }> = {
-    1: { x: 50, y: 14 },
-    2: { x: 32, y: 14 },
-    3: { x: 14, y: 32 },
-    4: { x: 14, y: 50 },
-    5: { x: 14, y: 68 },
-    6: { x: 32, y: 86 },
-    7: { x: 50, y: 86 },
-    8: { x: 68, y: 86 },
-    9: { x: 86, y: 68 },
-    10: { x: 86, y: 50 },
-    11: { x: 86, y: 32 },
-    12: { x: 68, y: 14 },
-};
+/**
+ * Single source for the North Indian chart in 0–100 space.
+ * Outer square, both diagonals, inner diamond (50,0)(100,50)(50,100)(0,50).
+ * Houses run counter-clockwise from the top diamond.
+ */
+export const NORTH_HOUSES: {
+    house: number;
+    poly: [number, number][];
+    text: NorthTextRect;
+    sign: { x: number; y: number };
+}[] = [
+    {
+        house: 1,
+        poly: [
+            [50, 0],
+            [75, 25],
+            [50, 50],
+            [25, 25],
+        ],
+        text: { x0: 39, y0: 14, x1: 61, y1: 36 },
+        sign: { x: 50, y: 42 },
+    },
+    {
+        house: 2,
+        poly: [
+            [0, 0],
+            [50, 0],
+            [25, 25],
+        ],
+        text: { x0: 14, y0: 1.5, x1: 36, y1: 11 },
+        sign: { x: 25, y: 17 },
+    },
+    {
+        house: 3,
+        poly: [
+            [0, 0],
+            [25, 25],
+            [0, 50],
+        ],
+        text: { x0: 1.5, y0: 14, x1: 11, y1: 36 },
+        sign: { x: 17, y: 25 },
+    },
+    {
+        house: 4,
+        poly: [
+            [0, 50],
+            [25, 25],
+            [50, 50],
+            [25, 75],
+        ],
+        text: { x0: 14, y0: 39, x1: 36, y1: 61 },
+        sign: { x: 42, y: 50 },
+    },
+    {
+        house: 5,
+        poly: [
+            [0, 50],
+            [25, 75],
+            [0, 100],
+        ],
+        text: { x0: 1.5, y0: 64, x1: 11, y1: 86 },
+        sign: { x: 17, y: 75 },
+    },
+    {
+        house: 6,
+        poly: [
+            [0, 100],
+            [25, 75],
+            [50, 100],
+        ],
+        text: { x0: 14, y0: 89, x1: 36, y1: 98.5 },
+        sign: { x: 25, y: 83 },
+    },
+    {
+        house: 7,
+        poly: [
+            [50, 100],
+            [25, 75],
+            [50, 50],
+            [75, 75],
+        ],
+        text: { x0: 39, y0: 64, x1: 61, y1: 86 },
+        sign: { x: 50, y: 58 },
+    },
+    {
+        house: 8,
+        poly: [
+            [50, 100],
+            [75, 75],
+            [100, 100],
+        ],
+        text: { x0: 64, y0: 89, x1: 86, y1: 98.5 },
+        sign: { x: 75, y: 83 },
+    },
+    {
+        house: 9,
+        poly: [
+            [100, 100],
+            [75, 75],
+            [100, 50],
+        ],
+        text: { x0: 89, y0: 64, x1: 98.5, y1: 86 },
+        sign: { x: 83, y: 75 },
+    },
+    {
+        house: 10,
+        poly: [
+            [100, 50],
+            [75, 75],
+            [50, 50],
+            [75, 25],
+        ],
+        text: { x0: 64, y0: 39, x1: 86, y1: 61 },
+        sign: { x: 58, y: 50 },
+    },
+    {
+        house: 11,
+        poly: [
+            [100, 50],
+            [75, 25],
+            [100, 0],
+        ],
+        text: { x0: 89, y0: 14, x1: 98.5, y1: 36 },
+        sign: { x: 83, y: 25 },
+    },
+    {
+        house: 12,
+        poly: [
+            [100, 0],
+            [75, 25],
+            [50, 0],
+        ],
+        text: { x0: 64, y0: 1.5, x1: 86, y1: 11 },
+        sign: { x: 75, y: 17 },
+    },
+];
 
-/** House polygons in 0–100 space (for layout tests). */
-export const NORTH_HOUSE_POLYGONS: Record<number, [number, number][]> = {
-    1: [
-        [50, 0],
-        [100, 50],
-        [50, 50],
-        [0, 50],
-    ],
-    2: [
-        [0, 0],
-        [50, 0],
-        [0, 50],
-    ],
-    3: [
-        [0, 0],
-        [0, 50],
-        [50, 50],
-    ],
-    4: [
-        [0, 50],
-        [50, 50],
-        [50, 100],
-        [0, 100],
-    ],
-    5: [
-        [0, 50],
-        [0, 100],
-        [50, 50],
-    ],
-    6: [
-        [0, 100],
-        [50, 100],
-        [50, 50],
-    ],
-    7: [
-        [50, 100],
-        [100, 50],
-        [50, 50],
-        [0, 50],
-    ],
-    8: [
-        [100, 100],
-        [50, 100],
-        [50, 50],
-    ],
-    9: [
-        [100, 50],
-        [100, 100],
-        [50, 50],
-    ],
-    10: [
-        [100, 50],
-        [50, 50],
-        [50, 0],
-        [100, 0],
-    ],
-    11: [
-        [100, 0],
-        [100, 50],
-        [50, 50],
-    ],
-    12: [
-        [50, 0],
-        [100, 0],
-        [100, 50],
-    ],
-};
+function polygonCentroid(poly: [number, number][]): { x: number; y: number } {
+    const x = poly.reduce((s, p) => s + p[0], 0) / poly.length;
+    const y = poly.reduce((s, p) => s + p[1], 0) / poly.length;
+    return { x, y };
+}
+
+export const NORTH_HOUSE_POLYGONS: Record<number, [number, number][]> = Object.fromEntries(
+    NORTH_HOUSES.map((h) => [h.house, h.poly]),
+);
+
+export const NORTH_PLANET_RECTS: Record<number, NorthTextRect> = Object.fromEntries(
+    NORTH_HOUSES.map((h) => [h.house, h.text]),
+);
+
+export const NORTH_SIGN_POSITIONS: Record<number, { x: number; y: number }> = Object.fromEntries(
+    NORTH_HOUSES.map((h) => [h.house, h.sign]),
+);
+
+/** House centroids (derived). */
+export const NORTH_HOUSE_ANCHORS: Record<number, { x: number; y: number }> = Object.fromEntries(
+    NORTH_HOUSES.map((h) => [h.house, polygonCentroid(h.poly)]),
+);
+
+/** @deprecated use NORTH_SIGN_POSITIONS */
+export const NORTH_SIGN_LABEL_ANCHORS = NORTH_SIGN_POSITIONS;
 
 /** Closed outer square only (for tests). */
 
@@ -259,6 +324,11 @@ export function southSignLabelAnchor(row: number, col: number): { x: number; y: 
         }
     }
     return best;
+}
+
+/** 1-based sign number in house h. ascSign0 is 0-based (Aries = 0). */
+export function northHouseSignNumber(ascSign0: number, house: number): number {
+    return ((ascSign0 + house - 1) % 12) + 1;
 }
 
 export function signLabel(sign0: number): string {

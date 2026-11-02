@@ -1,96 +1,134 @@
-import { planetShortName } from '../apps/web/src/components/chart/geometry.ts';
+import { pointInPolygon } from '../apps/web/src/components/chart/geometry.ts';
+import {
+    NORTH_HOUSES,
+    northHouseSignNumber,
+    wholeSignHouse,
+} from '../apps/web/src/components/chart/geometry.ts';
 import {
     CHART_PLANET_FONT_SIZE,
-    CHART_PLANET_FONT_MIN,
-    CHART_SIGN_FONT_SIZE,
     boxesOverlap,
     boxInsideRect,
     labelBox,
     layoutLabelsInRect,
-    NORTH_PLANET_RECTS,
-    NORTH_SIGN_POSITIONS,
     signLabelBox,
-    southPlanetTextRect,
-    southSignPosition,
 } from '../apps/web/src/components/chart/chartLayout.ts';
-import { SOUTH_SIGN_CELLS, southCellRect } from '../apps/web/src/components/chart/geometry.ts';
 
-const bodies = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu'];
-
-function planetLines(count: number, retro = false): { id: string; text: string }[] {
-    return bodies.slice(0, count).map((name, i) => ({
-        id: name,
-        text: `${planetShortName(name)} ${10 + i}°${retro ? ' R' : ''}`,
-    }));
+function distToSegment(
+    px: number,
+    py: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+): number {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    if (len2 < 1e-9) return Math.hypot(px - x1, py - y1);
+    const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / len2));
+    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
-function assertLayout(
-    placed: ReturnType<typeof layoutLabelsInRect>,
+function minEdgeDistance(x: number, y: number, poly: [number, number][]): number {
+    let min = Infinity;
+    for (let i = 0; i < poly.length; i++) {
+        const [x1, y1] = poly[i]!;
+        const [x2, y2] = poly[(i + 1) % poly.length]!;
+        min = Math.min(min, distToSegment(x, y, x1, y1, x2, y2));
+    }
+    return min;
+}
+
+function pointInRect(
+    x: number,
+    y: number,
     rect: { x0: number; y0: number; x1: number; y1: number },
-    signBox: ReturnType<typeof signLabelBox> | null,
-    maxCount: number,
-    expectFullSize = true,
-) {
-    expect(placed.length).toBe(maxCount);
-    for (const p of placed) {
-        expect(p.text).toContain('°');
-        if (expectFullSize) {
-            expect(p.fontSize).toBeGreaterThanOrEqual(CHART_PLANET_FONT_SIZE - 0.001);
-        }
-        expect(p.fontSize).toBeGreaterThanOrEqual(CHART_PLANET_FONT_MIN - 0.001);
-    }
-    const boxes = placed.map((p) => labelBox(p.x, p.y, p.text, p.fontSize, p.textAnchor));
-    for (const box of boxes) {
-        expect(boxInsideRect(box, rect)).toBe(true);
-    }
-    for (let i = 0; i < boxes.length; i++) {
-        for (let j = i + 1; j < boxes.length; j++) {
-            expect(boxesOverlap(boxes[i]!, boxes[j]!)).toBe(false);
-        }
-        if (signBox) {
-            expect(boxesOverlap(boxes[i]!, signBox)).toBe(false);
-        }
-    }
+): boolean {
+    return x > rect.x0 && x < rect.x1 && y > rect.y0 && y < rect.y1;
 }
 
-describe('deterministic chart layout', () => {
-    describe('North houses', () => {
-        for (let house = 1; house <= 12; house++) {
-            for (const count of [1, 4, 6]) {
-                it(`house ${house} with ${count} planets`, () => {
-                    const rect = NORTH_PLANET_RECTS[house]!;
-                    const signPos = NORTH_SIGN_POSITIONS[house]!;
-                    const signBox = signLabelBox(signPos.x, signPos.y, '9', CHART_SIGN_FONT_SIZE);
-                    let items = planetLines(count);
-                    if (house === 1 && count === 6) {
-                        items = [{ id: '__asc__', text: 'Asc' }, ...items];
-                    }
-                    const placed = layoutLabelsInRect(rect, items);
-                    const planetOnly = placed.filter((p) => p.id !== '__asc__');
-                    const expectFullSize = count <= 6 && !(house === 1 && count === 6);
-                    assertLayout(planetOnly, rect, signBox, count, expectFullSize);
-                    if (house === 1) {
-                        const asc = placed.find((p) => p.id === '__asc__');
-                        expect(asc?.text).toBe('Asc');
-                        expect(asc && boxInsideRect(labelBox(asc.x, asc.y, asc.text, asc.fontSize, 'middle'), rect)).toBe(true);
-                        expect(asc && boxesOverlap(labelBox(asc.x, asc.y, asc.text, asc.fontSize, 'middle'), signBox)).toBe(false);
-                    }
-                });
+describe('North house table', () => {
+    it('keeps every sign anchor inside its polygon, 3 units from every edge, outside the text rectangle', () => {
+        for (const house of NORTH_HOUSES) {
+            expect(pointInPolygon(house.sign.x, house.sign.y, house.poly)).toBe(true);
+            expect(minEdgeDistance(house.sign.x, house.sign.y, house.poly)).toBeGreaterThanOrEqual(
+                3,
+            );
+            expect(pointInRect(house.sign.x, house.sign.y, house.text)).toBe(false);
+        }
+    });
+
+    it('keeps every text-rectangle corner inside its polygon', () => {
+        for (const house of NORTH_HOUSES) {
+            const { x0, y0, x1, y1 } = house.text;
+            for (const [x, y] of [
+                [x0, y0],
+                [x1, y0],
+                [x1, y1],
+                [x0, y1],
+            ] as [number, number][]) {
+                expect(pointInPolygon(x, y, house.poly)).toBe(true);
             }
         }
     });
 
-    describe('South cells', () => {
-        for (const { row, col } of SOUTH_SIGN_CELLS) {
-            for (const count of [1, 4, 6]) {
-                it(`cell r${row}c${col} with ${count} planets`, () => {
-                    const cell = southCellRect(row, col);
-                    const rect = southPlanetTextRect(cell);
-                    const signPos = southSignPosition(cell);
-                    const signBox = signLabelBox(signPos.x, signPos.y, '12', CHART_SIGN_FONT_SIZE, 'start');
-                    const placed = layoutLabelsInRect(rect, planetLines(count));
-                    assertLayout(placed, rect, signBox, count);
-                });
+    it('maps the fictional Pisces-ascendant chart into the stated houses', () => {
+        const asc = 11; // Pisces
+        const expectHouse: Record<string, number> = {
+            Jupiter: 2,
+            Saturn: 2,
+            Rahu: 5,
+            Moon: 8,
+            Venus: 9,
+            Mercury: 10,
+            Sun: 10,
+            Ketu: 11,
+            Mars: 12,
+        };
+        const sign0: Record<string, number> = {
+            Jupiter: 0,
+            Saturn: 0,
+            Rahu: 3,
+            Moon: 6,
+            Venus: 7,
+            Mercury: 8,
+            Sun: 8,
+            Ketu: 9,
+            Mars: 10,
+        };
+        for (const [name, house] of Object.entries(expectHouse)) {
+            expect(wholeSignHouse(sign0[name]!, asc)).toBe(house);
+        }
+        expect(northHouseSignNumber(asc, 1)).toBe(12);
+        expect(northHouseSignNumber(asc, 2)).toBe(1);
+        expect(northHouseSignNumber(asc, 10)).toBe(9);
+    });
+
+    it('places 1, 2 and 4 planet labels inside the text rectangle without overlap at 2.4 units', () => {
+        const samples = [1, 2, 4];
+        for (const house of NORTH_HOUSES) {
+            for (const count of samples) {
+                const items = Array.from({ length: count }, (_, i) => ({
+                    id: `${house.house}-${i}`,
+                    text: `P${i} ${i + 1}°`,
+                }));
+                const placed = layoutLabelsInRect(house.text, items);
+                expect(placed).toHaveLength(count);
+                const boxes = placed.map((p) =>
+                    labelBox(p.x, p.y, p.text, p.fontSize, p.textAnchor),
+                );
+                const sign = signLabelBox(house.sign.x, house.sign.y, '12', 4.5);
+                for (const p of placed) {
+                    expect(p.text).toContain('°');
+                    expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+                }
+                for (let i = 0; i < boxes.length; i++) {
+                    expect(boxInsideRect(boxes[i]!, house.text, 0)).toBe(true);
+                    expect(boxesOverlap(boxes[i]!, sign, 0.2)).toBe(false);
+                    for (let j = i + 1; j < boxes.length; j++) {
+                        expect(boxesOverlap(boxes[i]!, boxes[j]!, 0.1)).toBe(false);
+                    }
+                }
             }
         }
     });

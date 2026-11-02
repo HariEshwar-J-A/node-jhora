@@ -12,9 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const BASE = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/node-jhora/';
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const OUT =
-    process.env.VISUAL_CHECK_OUT ??
-    join(SCRIPT_DIR, '..', '.visual-check');
+const OUT = process.env.VISUAL_CHECK_OUT ?? join(SCRIPT_DIR, '..', '.visual-check');
 
 const VIEWPORTS = [
     { name: '1280', width: 1280, height: 900 },
@@ -203,10 +201,7 @@ async function assertHeroClearsHeader(page, vpName) {
         const hb = header.getBoundingClientRect();
         const rb = h1.getBoundingClientRect();
         const intersects =
-            rb.top < hb.bottom &&
-            rb.bottom > hb.top &&
-            rb.left < hb.right &&
-            rb.right > hb.left;
+            rb.top < hb.bottom && rb.bottom > hb.top && rb.left < hb.right && rb.right > hb.left;
         return intersects ? `h1 top ${rb.top} under header bottom ${hb.bottom}` : null;
     });
     if (bad) fail(`Hero H1 intersects sticky header at ${vpName}: ${bad}`);
@@ -290,7 +285,9 @@ async function assertLandingSectionsVisible(page, theme, vpName) {
 }
 
 async function assertLicensingTierCards(page) {
-    await page.evaluate(() => document.querySelector('#licensing')?.scrollIntoView({ block: 'center' }));
+    await page.evaluate(() =>
+        document.querySelector('#licensing')?.scrollIntoView({ block: 'center' }),
+    );
     await page.waitForTimeout(300);
     const bad = await page.evaluate(() => {
         const cards = Array.from(document.querySelectorAll('#licensing .pricing-grid .card'));
@@ -300,7 +297,8 @@ async function assertLicensingTierCards(page) {
                 const note = card.querySelector('p.mono')?.textContent?.trim() ?? '';
                 const detail = card.querySelector('p:not(.mono)')?.textContent?.trim() ?? '';
                 const btn = card.querySelector('a.btn')?.textContent?.trim() ?? '';
-                if (!note || !detail || !btn) return `${title}: missing body (note=${note.length}, detail=${detail.length})`;
+                if (!note || !detail || !btn)
+                    return `${title}: missing body (note=${note.length}, detail=${detail.length})`;
                 const r = card.getBoundingClientRect();
                 if (r.height < 80) return `${title}: card too short (${r.height}px)`;
                 return null;
@@ -397,7 +395,10 @@ async function main() {
             await skipLandingIntro(page);
             await assertHeroVisible(page);
             await assertHeroClearsHeader(page, vp.name);
-            await assertNoHorizontalOverflow(page, `landing ${light ? 'light' : 'dark'} ${vp.name}`);
+            await assertNoHorizontalOverflow(
+                page,
+                `landing ${light ? 'light' : 'dark'} ${vp.name}`,
+            );
             await assertNoFilledConstellationPaths(page);
             await snap(page, `landing-hero-${light ? 'light' : 'dark'}-${vp.name}`);
             report.push(`landing-hero-${light ? 'light' : 'dark'}-${vp.name}`);

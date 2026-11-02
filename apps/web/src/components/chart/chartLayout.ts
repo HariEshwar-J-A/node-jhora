@@ -1,4 +1,4 @@
-import { planetShortName } from './geometry.js';
+import { NORTH_PLANET_RECTS, type NorthTextRect, planetShortName } from './geometry.js';
 
 export const CHART_INSET = 1.5;
 export const CHART_PLANET_FONT_SIZE = 2.4;
@@ -7,39 +7,7 @@ export const CHART_LINE_HEIGHT = 3.2;
 export const CHART_SIGN_FONT_SIZE = 4.5;
 export const CHART_SIGN_FONT_SIZE_COMPACT = 3.8;
 
-export type TextRect = { x0: number; y0: number; x1: number; y1: number };
-
-/** Planet text area inside each North house (0–100), inset 1.5 from spec rectangles. */
-export const NORTH_PLANET_RECTS: Record<number, TextRect> = {
-    1: { x0: 39, y0: 14, x1: 61, y1: 35.5 },
-    2: { x0: 14, y0: 2, x1: 36, y1: 11 },
-    3: { x0: 2, y0: 14, x1: 11, y1: 36 },
-    4: { x0: 14, y0: 64, x1: 36, y1: 86 },
-    5: { x0: 2, y0: 64, x1: 11, y1: 86 },
-    6: { x0: 14, y0: 89, x1: 36, y1: 98 },
-    7: { x0: 39, y0: 64.5, x1: 61, y1: 86 },
-    8: { x0: 64, y0: 89, x1: 86, y1: 98 },
-    9: { x0: 89, y0: 64, x1: 98, y1: 86 },
-    10: { x0: 64, y0: 14, x1: 86, y1: 35.5 },
-    11: { x0: 89, y0: 14, x1: 98, y1: 36 },
-    12: { x0: 64, y0: 2, x1: 86, y1: 11 },
-};
-
-/** Sign digit outside the planet rectangle, near inner vertex toward chart centre. */
-export const NORTH_SIGN_POSITIONS: Record<number, { x: number; y: number }> = {
-    1: { x: 50, y: 45 },
-    2: { x: 25, y: 20 },
-    3: { x: 20, y: 25 },
-    4: { x: 25, y: 55 },
-    5: { x: 20, y: 75 },
-    6: { x: 25, y: 80 },
-    7: { x: 50, y: 55 },
-    8: { x: 75, y: 80 },
-    9: { x: 80, y: 75 },
-    10: { x: 88, y: 11 },
-    11: { x: 80, y: 25 },
-    12: { x: 75, y: 20 },
-};
+export type TextRect = NorthTextRect;
 
 export type PlacedLabel = {
     id: string;
@@ -106,77 +74,48 @@ export function signLabelBox(
     return labelBox(x, y, text, fontSize, anchor);
 }
 
-function maxRowWidth(items: { text: string }[], cols: number, fontSize: number): number {
-    const rows = Math.ceil(items.length / cols);
-    let max = 0;
-    for (let row = 0; row < rows; row++) {
-        let w = 0;
-        for (let col = 0; col < cols; col++) {
-            const i = row * cols + col;
-            if (i >= items.length) break;
-            w += estimateTextWidth(items[i]!.text, fontSize);
-            if (col < cols - 1) w += fontSize * 0.5;
-        }
-        max = Math.max(max, w);
-    }
-    return max;
+function columnXs(rect: TextRect, cols: number): number[] {
+    const width = rect.x1 - rect.x0;
+    const slot = width / cols;
+    return Array.from({ length: cols }, (_, col) => rect.x0 + slot * (col + 0.5));
 }
 
 /**
- * Deterministic planet rows inside a fixed rectangle: 1 column, 2 when height overflows;
- * font 2.4 down to 1.9 only when 2 columns still overflow.
+ * Rows top to bottom, centred in the rectangle.
+ * 1 column, then 2, then 3. Font stays at 2.4 unless there are 7 or more labels,
+ * in which case it may drop to 1.9. Degrees are never removed.
  */
 export function layoutLabelsInRect(
     rect: TextRect,
     items: { id: string; text: string }[],
 ): PlacedLabel[] {
     if (items.length === 0) return [];
-    const rectW = rect.x1 - rect.x0;
-    const rectH = rect.y1 - rect.y0;
-    const cx = (rect.x0 + rect.x1) / 2;
+    const fonts =
+        items.length >= 7
+            ? Array.from(
+                  { length: 11 },
+                  (_, i) => Math.round((CHART_PLANET_FONT_SIZE - i * 0.05) * 100) / 100,
+              ).filter((fs) => fs >= CHART_PLANET_FONT_MIN - 0.001)
+            : [CHART_PLANET_FONT_SIZE];
 
-    for (let fs = CHART_PLANET_FONT_SIZE; fs >= CHART_PLANET_FONT_MIN - 0.001; fs -= 0.05) {
-        const colOrder = items.length >= 3 ? [2, 1] : [1, 2];
-        for (const cols of colOrder) {
+    for (const fs of fonts) {
+        for (const cols of [1, 2, 3]) {
             const rows = Math.ceil(items.length / cols);
-            const rowSpan = (rows - 1) * CHART_LINE_HEIGHT;
-            if (rowSpan + fs * 0.92 > rectH + 0.05) continue;
-            if (cols === 2) {
-                /* two columns pinned to rect edges, text grows inward */
-            } else {
-                const maxW = maxRowWidth(items, cols, fs);
-                if (maxW > rectW + 0.5) continue;
-            }
-
+            const xs = columnXs(rect, cols);
+            const block = (rows - 1) * CHART_LINE_HEIGHT;
             const cy = (rect.y0 + rect.y1) / 2;
-            const blockH = (rows - 1) * CHART_LINE_HEIGHT;
-            const startY =
-                rectH < 12
-                    ? rect.y0 + fs * 0.82
-                    : cy - blockH / 2;
-            if (startY + blockH + fs * 0.28 > rect.y1 - 0.05) continue;
-            const colAnchors: { x: number; anchor: 'middle' | 'start' | 'end' }[] =
-                cols === 1
-                    ? [{ x: cx, anchor: 'middle' }]
-                    : [
-                          { x: rect.x0 + 0.35, anchor: 'start' },
-                          { x: rect.x1 - 0.35, anchor: 'end' },
-                      ];
+            const startY = cy - block / 2;
             const placed: PlacedLabel[] = [];
             const boxes: LabelBox[] = [];
             let ok = true;
-
             for (let i = 0; i < items.length; i++) {
                 const col = i % cols;
                 const row = Math.floor(i / cols);
-                const { x, anchor } = colAnchors[col]!;
+                const x = xs[col]!;
                 const y = startY + row * CHART_LINE_HEIGHT;
                 const item = items[i]!;
-                const box = labelBox(x, y, item.text, fs, anchor);
-                if (
-                    !boxInsideRect(box, rect) ||
-                    boxes.some((b) => boxesOverlap(box, b))
-                ) {
+                const box = labelBox(x, y, item.text, fs, 'middle');
+                if (!boxInsideRect(box, rect, 0) || boxes.some((b) => boxesOverlap(box, b, 0.15))) {
                     ok = false;
                     break;
                 }
@@ -187,32 +126,27 @@ export function layoutLabelsInRect(
                     x,
                     y,
                     fontSize: fs,
-                    textAnchor: anchor,
+                    textAnchor: 'middle',
                 });
             }
             if (ok) return placed;
         }
     }
 
-    const fs = CHART_PLANET_FONT_MIN;
-    const cy = (rect.y0 + rect.y1) / 2;
-    const cols = 2;
-    const rows = Math.ceil(items.length / cols);
-    const startY = cy - ((rows - 1) * CHART_LINE_HEIGHT) / 2;
-    const colStep = Math.min(rectW * 0.48, 14);
+    const fs = items.length >= 7 ? CHART_PLANET_FONT_MIN : CHART_PLANET_FONT_SIZE;
+    const cols = 3;
+    const xs = columnXs(rect, cols);
+    const startY = rect.y0 + fs * 0.85;
     return items.map((item, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
-        const anchor = col === 0 ? ('start' as const) : ('end' as const);
-        const x = col === 0 ? rect.x0 + 0.35 : rect.x1 - 0.35;
-        const y = startY + row * CHART_LINE_HEIGHT;
         return {
             id: item.id,
             text: item.text,
-            x,
-            y,
+            x: xs[col]!,
+            y: startY + row * CHART_LINE_HEIGHT,
             fontSize: fs,
-            textAnchor: anchor,
+            textAnchor: 'middle' as const,
         };
     });
 }

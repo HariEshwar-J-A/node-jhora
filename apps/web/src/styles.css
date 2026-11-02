@@ -38,7 +38,6 @@
 
 html {
     scrollbar-gutter: stable;
-    overflow-x: clip;
 }
 
 html,
@@ -46,6 +45,7 @@ body,
 #root {
     margin: 0;
     min-height: 100%;
+    height: auto;
 }
 
 body {
@@ -977,15 +977,20 @@ table.data th.mono {
     gap: 1.25rem;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 1rem 1.25rem 2rem;
+    padding: 1rem 1.25rem 4rem;
     align-items: start;
     min-width: 0;
     width: 100%;
+    overflow: visible;
+    height: auto;
 }
 
 .docs-main {
     min-width: 0;
-    padding-bottom: 2rem;
+    padding-bottom: 4rem;
+    overflow: visible;
+    height: auto;
+    max-height: none;
 }
 
 @media (max-width: 800px) {
@@ -1032,6 +1037,11 @@ table.data th.mono {
     background: hsl(var(--muted));
     color: hsl(var(--foreground));
     font-weight: 500;
+}
+
+.doc-article {
+    overflow: visible;
+    padding-bottom: 45vh;
 }
 
 .doc-article h1 {
@@ -1269,11 +1279,8 @@ table.data th.mono {
 .landing-sky-hero__content {
     position: relative;
     z-index: 4;
-    opacity: 0;
-    transform: translateY(12px);
-    transition:
-        opacity 0.9s ease,
-        transform 0.9s ease;
+    opacity: 1;
+    transform: none;
     padding: clamp(1.25rem, 4vw, 2rem);
     padding-top: calc(var(--site-header-offset) + 0.75rem);
     max-width: 42rem;
@@ -1285,6 +1292,7 @@ table.data th.mono {
     );
     border-radius: 0.5rem;
     margin: clamp(0.5rem, 3vw, 2rem);
+    color: #f4f7ff;
 }
 
 .landing-sky-hero__content--visible {
@@ -1383,6 +1391,8 @@ table.data th.mono {
 
 .route-shell {
     min-height: 0;
+    height: auto;
+    overflow: visible;
 }
 
 ::view-transition-old(root),
@@ -1396,36 +1406,34 @@ table.data th.mono {
     }
 
     .hero-wrap--cinema {
-        min-height: min(100dvh, 900px);
+        min-height: auto;
+    }
+
+    .hero {
+        padding: 0.25rem 0 1rem;
     }
 
     .landing-sky-hero__content {
-        margin-inline: 0.65rem;
+        margin: 0.65rem;
         max-width: none;
+        padding-top: 0.75rem;
+        background: hsl(var(--background) / 0.94);
+        color: hsl(var(--foreground));
+    }
+
+    .landing-sky-hero__content .hero h1 {
+        color: hsl(var(--foreground));
+    }
+
+    .landing-sky-hero__content .hero p {
+        color: hsl(var(--muted-foreground));
     }
 
     .landing-sky-hero__canvas,
     .landing-sky-hero__fallback {
-        opacity: 0.22;
-        mask-image: linear-gradient(
-            105deg,
-            transparent 0%,
-            transparent 38%,
-            rgb(0 0 0 / 0.35) 72%,
-            rgb(0 0 0 / 0.55) 100%
-        );
-        -webkit-mask-image: linear-gradient(
-            105deg,
-            transparent 0%,
-            transparent 38%,
-            rgb(0 0 0 / 0.35) 72%,
-            rgb(0 0 0 / 0.55) 100%
-        );
-    }
-
-    [data-theme='light'] .landing-sky-hero__canvas,
-    [data-theme='light'] .landing-sky-hero__fallback {
-        opacity: 0.15;
+        opacity: 0.18;
+        mask-image: linear-gradient(90deg, transparent 0 58%, rgb(0 0 0 / 0.85) 100%);
+        -webkit-mask-image: linear-gradient(90deg, transparent 0 58%, rgb(0 0 0 / 0.85) 100%);
     }
 
     .site-header {
