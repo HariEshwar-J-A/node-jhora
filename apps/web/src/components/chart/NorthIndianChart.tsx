@@ -1,9 +1,11 @@
 import { formatDms } from '../../lib/format';
 import { degreeInSignDms, signName } from '../../lib/astro-display';
-import type { ChartMeta, ChartPlanet } from './types';
+import type { ChartPlanet } from './types';
 import {
-    NORTH_FRAME_PATH,
+    NORTH_DIAGONAL_DIAMOND_PATH,
     NORTH_HOUSE_ANCHORS,
+    NORTH_OUTER_SQUARE_PATH,
+    NORTH_SIGN_LABEL_ANCHORS,
     NORTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
@@ -51,40 +53,41 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                 className="chart-canvas__svg"
                 key={chartKey}
             >
-                <path className="chart-frame" d={NORTH_FRAME_PATH} pathLength={1} />
+                <path className="chart-frame chart-frame--border" d={NORTH_OUTER_SQUARE_PATH} />
+                <path
+                    className="chart-frame chart-frame--inner"
+                    d={NORTH_DIAGONAL_DIAMOND_PATH}
+                    pathLength={1}
+                />
                 {Array.from({ length: 12 }, (_, i) => {
                     const house = i + 1;
                     const sign0 = (ascSign0 + i) % 12;
                     const anchor = NORTH_HOUSE_ANCHORS[house]!;
+                    const signPos = NORTH_SIGN_LABEL_ANCHORS[house]!;
                     const inHouse = byHouse.get(house) ?? [];
-                    const slots = northHousePlanetLayout(inHouse.length, anchor, house);
+                    const slots = northHousePlanetLayout(inHouse.length, anchor);
                     return (
                         <g key={house} className="chart-house">
                             <text
-                                x={anchor.x}
-                                y={anchor.y - 4}
+                                x={signPos.x}
+                                y={signPos.y}
                                 textAnchor="middle"
                                 className="chart-sign-num"
                             >
                                 {signLabel(sign0)}
                             </text>
                             {house === 1 && (
-                                <text
-                                    x={anchor.x}
-                                    y={anchor.y - 8}
-                                    textAnchor="middle"
-                                    className="chart-lagna-tag"
-                                >
+                                <text x={50} y={20} textAnchor="middle" className="chart-lagna-tag">
                                     Asc
                                 </text>
                             )}
                             {inHouse.map((p, idx) => {
-                                const fs = slots[idx]?.fontSize ?? 4.25;
+                                const fs = slots[idx]?.fontSize ?? 3.6;
                                 return (
                                     <text
                                         key={p.name}
                                         x={slots[idx]?.x ?? anchor.x}
-                                        y={slots[idx]?.y ?? anchor.y + 6}
+                                        y={slots[idx]?.y ?? anchor.y}
                                         textAnchor="middle"
                                         className="chart-planet"
                                         fontSize={fs}

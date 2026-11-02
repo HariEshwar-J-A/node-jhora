@@ -1,15 +1,17 @@
 import { SKY_CONSTELLATIONS } from './constellations';
+import { LIGHT_INK_STARS } from './lightInkStars';
 
 type Props = {
     visible: boolean;
     sparse?: boolean;
+    light?: boolean;
     className?: string;
 };
 
-export function ConstellationOverlay({ visible, sparse, className }: Props) {
+export function ConstellationOverlay({ visible, sparse, light, className }: Props) {
     return (
         <svg
-            className={`constellation-overlay${sparse ? ' constellation-overlay--sparse' : ''}${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
+            className={`constellation-overlay${sparse ? ' constellation-overlay--sparse' : ''}${light ? ' constellation-overlay--light' : ''}${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
             viewBox="0 0 1 1"
             preserveAspectRatio="xMidYMid slice"
             aria-hidden="true"
@@ -28,33 +30,49 @@ export function ConstellationOverlay({ visible, sparse, className }: Props) {
                     </feMerge>
                 </filter>
             </defs>
-            {SKY_CONSTELLATIONS.map((c) => (
-                <g key={c.name} className="constellation-group">
-                    {c.segments.map(([x1, y1, x2, y2], i) => (
-                        <line
-                            key={i}
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            className="constellation-line"
-                            style={{ animationDelay: `${i * 0.15}s` }}
+            {light &&
+                LIGHT_INK_STARS.map((s, i) => (
+                    <g
+                        key={`ink-${i}`}
+                        transform={`translate(${s.x} ${s.y}) rotate(${(s.rot * 180) / Math.PI})`}
+                        className="ink-star"
+                        style={{ animationDelay: `${s.delay}s` }}
+                    >
+                        <path
+                            d={`M 0 ${-s.r * 2.2} L 0 ${s.r * 2.2} M ${-s.r * 2.2} 0 L ${s.r * 2.2} 0`}
+                            className="ink-star__glint"
                         />
-                    ))}
-                    {c.stars.map(([cx, cy], i) => (
-                        <circle
-                            key={i}
-                            cx={cx}
-                            cy={cy}
-                            r={0.0028}
-                            className="constellation-star"
-                            fill="url(#star-glow)"
-                            filter="url(#star-bloom)"
-                            style={{ animationDelay: `${0.8 + i * 0.05}s` }}
-                        />
-                    ))}
-                </g>
-            ))}
+                        <circle cx={0} cy={0} r={s.r * 0.85} className="ink-star__core" />
+                    </g>
+                ))}
+            {!light &&
+                SKY_CONSTELLATIONS.map((c) => (
+                    <g key={c.name} className="constellation-group">
+                        {c.segments.map(([x1, y1, x2, y2], i) => (
+                            <line
+                                key={i}
+                                x1={x1}
+                                y1={y1}
+                                x2={x2}
+                                y2={y2}
+                                className="constellation-line"
+                                style={{ animationDelay: `${i * 0.15}s` }}
+                            />
+                        ))}
+                        {c.stars.map(([cx, cy], i) => (
+                            <circle
+                                key={i}
+                                cx={cx}
+                                cy={cy}
+                                r={0.0028}
+                                className="constellation-star"
+                                fill="url(#star-glow)"
+                                filter="url(#star-bloom)"
+                                style={{ animationDelay: `${0.8 + i * 0.05}s` }}
+                            />
+                        ))}
+                    </g>
+                ))}
         </svg>
     );
 }

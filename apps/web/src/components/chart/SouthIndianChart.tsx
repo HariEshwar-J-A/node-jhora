@@ -5,12 +5,15 @@ import {
     SOUTH_CENTER,
     SOUTH_FRAME_PATH,
     SOUTH_SIGN_CELLS,
+    SOUTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
     planetShortName,
     planetSign0,
     southCellPlanetLayout,
+    southCellRect,
     southCenterMetaLines,
+    southSignLabelAnchor,
     signIndex0,
     signLabel,
 } from './geometry';
@@ -22,6 +25,12 @@ type Props = {
     chartKey?: string;
     compact?: boolean;
 };
+
+function formatPlanetLine(p: ChartPlanet): string {
+    const d = Math.floor(degreeInSign(p));
+    const retro = isRetrograde(p) ? ' R' : '';
+    return `${planetShortName(p.name)} ${d}°${retro}`;
+}
 
 export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }: Props) {
     const ascSign0 = signIndex0(ascendant);
@@ -36,13 +45,11 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    const cell = 21;
-    const origin = 7;
-
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
             <svg
-                viewBox="0 0 100 100"
+                viewBox={SOUTH_VIEW_BOX}
+                preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label="South Indian chart"
                 className="chart-canvas__svg"
@@ -73,44 +80,40 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                         );
                     })()}
                 {SOUTH_SIGN_CELLS.map(({ sign, row, col }) => {
-                    const x = origin + col * cell;
-                    const y = origin + row * cell;
+                    const rect = southCellRect(row, col);
                     const inSign = bySign.get(sign) ?? [];
                     const isLagna = sign === ascSign0;
-                    const slots = southCellPlanetLayout(inSign.length, {
-                        x,
-                        y,
-                        size: cell,
-                    });
+                    const signPos = southSignLabelAnchor(row, col);
+                    const slots = southCellPlanetLayout(inSign.length, rect);
                     return (
                         <g key={sign}>
                             {isLagna && (
                                 <line
-                                    x1={x + 1}
-                                    y1={y + cell - 2}
-                                    x2={x + cell - 2}
-                                    y2={y + 1}
+                                    x1={rect.x + 1}
+                                    y1={rect.y + rect.size - 1.5}
+                                    x2={rect.x + rect.size - 1.5}
+                                    y2={rect.y + 1}
                                     className="chart-lagna-diagonal"
                                 />
                             )}
-                            <text x={x + 2.5} y={y + 5.5} className="chart-sign-num">
+                            <text x={signPos.x} y={signPos.y} className="chart-sign-num">
                                 {signLabel(sign)}
                             </text>
                             {inSign.map((p, idx) => (
                                 <text
                                     key={p.name}
-                                    x={slots[idx]?.x ?? x + 2.5}
-                                    y={slots[idx]?.y ?? y + 10}
+                                    x={slots[idx]?.x ?? rect.x + 3}
+                                    y={slots[idx]?.y ?? rect.y + 11}
+                                    textAnchor="middle"
                                     className="chart-planet"
-                                    fontSize={slots[idx]?.fontSize ?? 3.55}
+                                    fontSize={slots[idx]?.fontSize ?? 3.1}
                                 >
                                     <title>
                                         {p.name} · {signName(sign + 1)} ·{' '}
                                         {degreeInSignDms(degreeInSign(p))} ({formatDms(p.longitude)}
                                         ){isRetrograde(p) ? ' · Retrograde' : ''}
                                     </title>
-                                    {planetShortName(p.name)}
-                                    {isRetrograde(p) ? ' R' : ''}
+                                    {formatPlanetLine(p)}
                                 </text>
                             ))}
                         </g>

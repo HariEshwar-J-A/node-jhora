@@ -76,7 +76,7 @@ function buildStars(
     const mat = new THREE.ShaderMaterial({
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending,
+        blending: lightSky ? THREE.NormalBlending : THREE.AdditiveBlending,
         uniforms: {
             uTime: { value: 0 },
             uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
@@ -111,9 +111,12 @@ function buildStars(
             float glow = exp(-r * 7.0) * 0.55;
             float sparkle = smoothstep(0.48, 0.02, abs(c.x) * abs(c.y) * 12.0) * step(0.82, vMag);
             float alpha = (core + glow + sparkle * 0.35) * vTwinkle * (0.5 + vMag * 0.7);
-            vec3 darkCol = mix(vec3(0.12, 0.16, 0.28), vec3(0.05, 0.08, 0.14), vMag);
-            vec3 lightCol = mix(vec3(0.82, 0.88, 1.0), vec3(1.0), vMag);
+            vec3 darkCol = mix(vec3(0.08, 0.1, 0.16), vec3(0.02, 0.04, 0.08), vMag);
+            vec3 lightCol = mix(vec3(0.95, 0.97, 1.0), vec3(1.0), vMag);
             vec3 col = mix(lightCol, darkCol, uLightSky);
+            if (uLightSky > 0.5) {
+              alpha = (core * 1.15 + sparkle * 0.5) * vTwinkle * (0.55 + vMag * 0.55);
+            }
             gl_FragColor = vec4(col, alpha);
           }
         `,
@@ -322,6 +325,10 @@ export async function mountSpaceScene(
             camera.position.set(Math.sin(e * 0.8) * 8, y, z);
             camera.lookAt(earth.position);
             earth.rotation.y = e * 1.2;
+            const earthFade = t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45;
+            earthMat.opacity = earthFade;
+            earthMat.transparent = earthFade < 1;
+            atmoMat.opacity = earthFade * 0.85;
             starFar.rotation.y = e * 0.05;
             starMid.rotation.y = e * 0.08;
             starNear.rotation.y = e * 0.12;

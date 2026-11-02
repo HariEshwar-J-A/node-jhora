@@ -91,7 +91,7 @@ export function PlanetsPanel({ ascendant, planets, meta }: Props) {
                     />
                 </ErrorBoundary>
             </div>
-            <div className="card">
+            <div className="card card--table-scroll">
                 <h3>Planets (sidereal)</h3>
                 <DataTable
                     columns={columns}

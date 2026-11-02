@@ -515,10 +515,19 @@ a {
     transition: width 0.2s ease;
 }
 
+.card--table-scroll {
+    min-width: 0;
+}
+
+.card--table-scroll .data-table-wrap {
+    margin-inline: -0.15rem;
+    padding-bottom: 0.15rem;
+}
+
 .grid-2 {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
 }
 
 table.data {
@@ -539,16 +548,49 @@ table.data th {
     font-weight: 500;
 }
 
+.data-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table-wrap table.data {
+    min-width: 36rem;
+}
+
+table.data td.mono,
+table.data th.mono {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.chart-canvas .chart-lagna-diagonal {
+    stroke: hsl(var(--foreground));
+    stroke-width: 0.35;
+    opacity: 0.65;
+}
+
 .chart-canvas {
     width: 100%;
     max-width: min(560px, 100%);
     margin: 0 auto;
     aspect-ratio: 1;
+    overflow: visible;
+}
+
+.chart-canvas__svg {
+    overflow: visible;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: min(560px, 100vw);
+    display: block;
+    margin: 0 auto;
 }
 
 .chart-wheel svg,
-.chart-wheel__svg,
-.chart-canvas__svg {
+.chart-wheel__svg {
     width: 100%;
     height: 100%;
     max-width: 100%;
@@ -569,8 +611,19 @@ table.data th {
 .chart-canvas .chart-frame {
     fill: none;
     stroke: hsl(var(--foreground));
-    stroke-width: 0.55;
-    vector-effect: non-scaling-stroke;
+    stroke-width: 0.45;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+}
+
+.chart-canvas .chart-frame--border {
+    stroke-width: 0.5;
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+}
+
+.chart-canvas .chart-frame--inner {
     pathlength: 1;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
@@ -620,7 +673,7 @@ table.data th {
 
 @media (prefers-reduced-motion: reduce) {
     .chart-wheel .chart-frame,
-    .chart-canvas .chart-frame {
+    .chart-canvas .chart-frame--inner {
         animation: none;
         stroke-dashoffset: 0;
     }
@@ -979,9 +1032,9 @@ table.data th {
 
 [data-theme='light'] .landing-sky-hero .btn-outline,
 [data-theme='light'] .landing-sky-hero .intro-skip.btn-outline {
-    border-color: hsl(var(--border));
+    border: 1.5px solid hsl(var(--foreground) / 0.35);
     color: hsl(var(--foreground));
-    background: hsl(var(--background));
+    background: hsl(var(--background) / 0.85);
 }
 
 [data-theme='light'] .landing-sky-hero .btn-ghost {
@@ -1003,11 +1056,48 @@ table.data th {
 }
 
 [data-theme='light'] .landing-sky-hero__canvas {
-    filter: saturate(0.85) contrast(1.05) brightness(1.15);
+    filter: saturate(0.95) contrast(1.08) brightness(1.05);
 }
 
-[data-theme='light'] .constellation-overlay {
-    color: rgb(30 41 59 / 0.72);
+[data-theme='light'] .landing-sky-hero__content {
+    background: radial-gradient(
+        ellipse 130% 120% at 12% 42%,
+        rgb(248 250 252 / 0.92) 0%,
+        rgb(248 250 252 / 0.45) 42%,
+        transparent 72%
+    );
+    border-radius: 0;
+}
+
+.constellation-overlay--light {
+    color: rgb(15 23 42 / 0.82);
+}
+
+.ink-star__core {
+    fill: currentColor;
+}
+
+.ink-star__glint {
+    stroke: currentColor;
+    stroke-width: 0.00055;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.85;
+}
+
+.ink-star {
+    opacity: 0.72;
+    animation: ink-star-twinkle 3.6s ease-in-out infinite;
+}
+
+@keyframes ink-star-twinkle {
+    0%,
+    100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 0.95;
+    }
 }
 
 .landing-sky-hero__canvas,
@@ -1056,15 +1146,6 @@ table.data th {
     );
     border-radius: 0.5rem;
     margin: clamp(1rem, 5vw, 2.5rem);
-}
-
-[data-theme='light'] .landing-sky-hero__content {
-    background: linear-gradient(
-        105deg,
-        rgb(248 250 252 / 0.94) 0%,
-        rgb(248 250 252 / 0.78) 55%,
-        rgb(248 250 252 / 0.35) 100%
-    );
 }
 
 .landing-sky-hero__content--visible {
