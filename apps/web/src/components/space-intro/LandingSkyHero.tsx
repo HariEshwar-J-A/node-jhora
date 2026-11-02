@@ -6,11 +6,9 @@ import {
     useState,
     useSyncExternalStore,
 } from 'react';
-import { useReducedMotion } from 'framer-motion';
 import { ConstellationOverlay } from './ConstellationOverlay';
 import { detectWebGL } from './session';
 import type { SpaceSceneHandle } from './runSpaceScene';
-import { useTheme } from '../../lib/theme';
 
 const FALLBACK = `${import.meta.env.BASE_URL}textures/night-sky-fallback.webp`;
 
@@ -41,32 +39,24 @@ type Props = {
 };
 
 export function LandingSkyHero({ children }: Props) {
-    const { mode } = useTheme();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const sceneRef = useRef<SpaceSceneHandle | null>(null);
-    const reduceMotion = useReducedMotion();
+    const skipRequested = useRef(false);
     const prefersReduced = useSyncExternalStore(subscribeMotion, getMotionSnapshot, () => false);
     const mobile = useMobile();
 
-    const [staticMode] = useState(() => prefersReduced || !detectWebGL());
-    const [contentVisible] = useState(true);
+    const [staticMode] = useState(() => !detectWebGL());
+    const [contentVisible, setContentVisible] = useState(staticMode);
     const [skyReady, setSkyReady] = useState(staticMode);
     const [showSkip, setShowSkip] = useState(!staticMode);
 
     useEffect(() => {
         if (staticMode) return;
-        if (mobile || prefersReduced) {
-            setSkyReady(true);
-            setShowSkip(false);
-        }
-    }, [staticMode, mobile, prefersReduced]);
-
-    useEffect(() => {
-        if (staticMode) return;
         const fallback = window.setTimeout(() => {
             setSkyReady(true);
+            setContentVisible(true);
             setShowSkip(false);
-        }, 8000);
+        }, 14000);
         return () => clearTimeout(fallback);
     }, [staticMode]);
 
@@ -80,17 +70,15 @@ export function LandingSkyHero({ children }: Props) {
             if (!mounted || !canvasRef.current) return;
             mountSpaceScene(canvasRef.current, {
                 mobile,
-                skipIntro: false,
-                lightSky: mode === 'light',
+                skipIntro: skipRequested.current,
+                reducedMotion: prefersReduced,
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
-                    setSkyReady(true);
+                    setContentVisible(true);
                     setShowSkip(false);
                 },
                 onPhaseChange: (phase) => {
-                    if (phase === 'sky') {
-                        setSkyReady(true);
-                    }
+                    if (phase === 'sky') setSkyReady(true);
                 },
             }).then((handle) => {
                 if (!mounted) {
@@ -98,6 +86,7 @@ export function LandingSkyHero({ children }: Props) {
                     return;
                 }
                 sceneRef.current = handle;
+                if (skipRequested.current) handle.skipIntro();
             });
         });
 
@@ -106,10 +95,12 @@ export function LandingSkyHero({ children }: Props) {
             sceneRef.current?.dispose();
             sceneRef.current = null;
         };
-    }, [staticMode, mobile, mode]);
+    }, [staticMode, mobile, prefersReduced]);
 
     const onSkip = useCallback(() => {
+        skipRequested.current = true;
         sceneRef.current?.skipIntro();
+        setContentVisible(true);
         setSkyReady(true);
         setShowSkip(false);
     }, []);
@@ -126,19 +117,16 @@ export function LandingSkyHero({ children }: Props) {
             ) : (
                 <canvas ref={canvasRef} className="landing-sky-hero__canvas" aria-hidden="true" />
             )}
-            <ConstellationOverlay
-                visible={skyReady || staticMode}
-                sparse={mobile}
-                light={mode === 'light'}
-            />
+            <ConstellationOverlay visible={skyReady || staticMode} sparse={mobile} />
             <div className="landing-sky-hero__vignette" aria-hidden="true" />
-            {showSkip && !reduceMotion && (
+            {showSkip && (
                 <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>
                     Skip intro
                 </button>
             )}
             <div
                 className={`landing-sky-hero__content${contentVisible ? ' landing-sky-hero__content--visible' : ''}`}
+                aria-hidden={contentVisible ? undefined : true}
             >
                 {children}
             </div>

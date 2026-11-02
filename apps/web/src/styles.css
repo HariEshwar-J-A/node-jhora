@@ -1278,8 +1278,8 @@ table.data th.mono {
 }
 
 [data-theme='light'] .landing-sky-hero {
-    background: #f8fafc;
-    color: hsl(var(--foreground));
+    background: #02040c;
+    color: #e8eeff;
 }
 
 .landing-sky-hero .btn-outline,
@@ -1311,29 +1311,14 @@ table.data th.mono {
     color: hsl(var(--muted-foreground));
 }
 
-[data-theme='light'] .landing-sky-hero__vignette {
-    background: linear-gradient(
-        to bottom,
-        rgb(248 250 252 / 0.55) 0%,
-        transparent 38%,
-        rgb(248 250 252 / 0.75) 100%
-    );
-}
-
-[data-theme='light'] .landing-sky-hero__canvas {
-    filter: saturate(0.95) contrast(1.08) brightness(1.05);
-}
-
 [data-theme='light'] .landing-sky-hero__content {
     background: radial-gradient(
         ellipse 130% 120% at 12% 42%,
-        rgb(248 250 252 / 0.92) 0%,
-        rgb(248 250 252 / 0.45) 42%,
-        transparent 72%
+        rgb(248 250 252 / 0.94) 0%,
+        rgb(248 250 252 / 0.55) 46%,
+        transparent 74%
     );
     border-radius: 0;
-    opacity: 1;
-    transform: none;
     color: hsl(var(--foreground));
 }
 
@@ -1401,19 +1386,18 @@ table.data th.mono {
     position: absolute;
     inset: 0;
     z-index: 2;
-    background: linear-gradient(
-        to bottom,
-        rgb(2 4 12 / 0.45) 0%,
-        transparent 38%,
-        rgb(2 4 12 / 0.65) 100%
-    );
+    background: radial-gradient(ellipse at 50% 46%, transparent 46%, rgb(2 4 12 / 0.42) 100%);
 }
 
 .landing-sky-hero__content {
     position: relative;
     z-index: 4;
-    opacity: 1;
-    transform: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+        opacity 0.7s ease,
+        transform 0.7s ease;
+    pointer-events: none;
     padding: clamp(1.25rem, 4vw, 2rem);
     padding-top: calc(var(--site-header-offset) + 0.75rem);
     max-width: 42rem;
@@ -1431,6 +1415,13 @@ table.data th.mono {
 .landing-sky-hero__content--visible {
     opacity: 1;
     transform: none;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .landing-sky-hero__content {
+        transition: none;
+    }
 }
 
 .intro-skip {
@@ -1539,7 +1530,7 @@ table.data th.mono {
     }
 
     .hero-wrap--cinema {
-        min-height: auto;
+        min-height: 100svh;
     }
 
     .hero {
@@ -1560,13 +1551,6 @@ table.data th.mono {
 
     .landing-sky-hero__content .hero p {
         color: hsl(var(--muted-foreground));
-    }
-
-    .landing-sky-hero__canvas,
-    .landing-sky-hero__fallback {
-        opacity: 0.18;
-        mask-image: linear-gradient(90deg, transparent 0 58%, rgb(0 0 0 / 0.85) 100%);
-        -webkit-mask-image: linear-gradient(90deg, transparent 0 58%, rgb(0 0 0 / 0.85) 100%);
     }
 
     .site-header {

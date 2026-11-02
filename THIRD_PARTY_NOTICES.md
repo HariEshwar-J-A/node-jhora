@@ -107,8 +107,15 @@ GeoNames web service.
 
 ### Bundled imagery (`apps/web/public/textures/`)
 
-NASA Visible Earth **Blue Marble** day surface and **Black Marble 2012** night lights
-(WebP derivatives). U.S. Government public domain — see `apps/web/public/textures/README.md`.
+NASA imagery, self-hosted as WebP (no KTX2 encoder in this repo). U.S. Government
+public domain — see `apps/web/public/textures/README.md`.
+
+- **Blue Marble Next Generation**, December 2004, topography and bathymetry
+  (`world.topo.bathy.200412.3x5400x2700.jpg`) — day surface. Specular and normal
+  maps are derived in-repo from this image.
+- **Black Marble 2012** (`dnb_land_ocean_ice.2012.3600x1800.jpg`) — city lights.
+- **Blue Marble cloud composite** (`cloud_combined_2048.jpg`) — cloud layer.
+- **LRO wide-angle color mosaic** (`lroc_color_poles_1k.jpg`, NASA/GSFC) — Moon.
 
 Owner-provided monochrome hero motif (`apps/web/assets/v2_astro_bg_frame_mono.png`) is
 proprietary to the copyright holder and used with permission in section backgrounds only.
