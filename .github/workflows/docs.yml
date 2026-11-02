@@ -21,6 +21,7 @@ on:
 
 jobs:
     build:
+        if: github.event_name == 'push' || vars.FULL_CI == 'true' || contains(github.event.pull_request.labels.*.name, 'full-ci')
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
