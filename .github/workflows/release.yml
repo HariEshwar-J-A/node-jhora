@@ -61,7 +61,7 @@ jobs:
               id: changesets
               uses: changesets/action@06245a4e0a36c064a573d4150030f5ec548e4fcc # v1.4.10
               with:
-                  version: pnpm changeset version
+                  version: pnpm version-packages
                   publish: pnpm changeset publish
                   commit: 'chore(release): version packages'
                   title: Version Packages
