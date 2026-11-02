@@ -1,11 +1,12 @@
 import * as Comlink from 'comlink';
 import { KPEngine } from '@node-jhora/analytics';
+import { computeRiseSetTable, calculateVarga, EphemerisEngine } from '@node-jhora/core';
 import {
-    computeRiseSetTable,
-    calculateVarga,
-    EphemerisEngine,
-} from '@node-jhora/core';
-import { DE440S_BYTES, DE440S_SHA256, ensureEphemerisBytes, resetSpkCache } from '@node-jhora/core/browser';
+    DE440S_BYTES,
+    DE440S_SHA256,
+    ensureEphemerisBytes,
+    resetSpkCache,
+} from '@node-jhora/core/browser';
 import { ChartSession } from '@node-jhora/engine';
 import { TransitScanner } from '@node-jhora/events';
 import { parseNjh, serializeNjh } from '@node-jhora/format';
@@ -42,6 +43,8 @@ import { DateTime } from 'luxon';
 
 import { NAMED_VARGA_DIVISIONS } from '../lib/constants';
 import type { BirthInput, InitProgress } from '../lib/worker-types';
+import { resolveTimezone } from '../lib/format';
+import { toWorkerPlain } from '../lib/serialize-worker';
 
 let engine: EphemerisEngine | undefined;
 let booted = false;
@@ -83,7 +86,9 @@ async function fetchKernelWithProgress(url: string): Promise<Uint8Array> {
         offset += c.byteLength;
     }
     if (out.byteLength !== DE440S_BYTES) {
-        throw new Error(`de440s.bsp size mismatch: expected ${DE440S_BYTES}, got ${out.byteLength}`);
+        throw new Error(
+            `de440s.bsp size mismatch: expected ${DE440S_BYTES}, got ${out.byteLength}`,
+        );
     }
     return out;
 }
@@ -142,8 +147,12 @@ const api = {
 
     async computeFull(input: BirthInput) {
         const eph = await ensureEngine(input.ephemerisUrl);
+        const tz = resolveTimezone(input.timezone);
+        if (!tz.ok) {
+            throw new Error(tz.message);
+        }
         const instant = DateTime.fromISO(input.instantIso, { zone: 'utc' });
-        const birthLocal = instant.setZone(input.timezone);
+        const birthLocal = instant.setZone(tz.zone);
 
         const session = new ChartSession({
             instant,
@@ -178,7 +187,10 @@ const api = {
 
         const extraVargas: { division: number; points: unknown[] }[] = [];
         const divisions = [...NAMED_VARGA_DIVISIONS];
-        if (input.customVarga && !divisions.includes(input.customVarga as (typeof divisions)[number])) {
+        if (
+            input.customVarga &&
+            !divisions.includes(input.customVarga as (typeof divisions)[number])
+        ) {
             divisions.push(input.customVarga);
         }
         const sessionDivs = new Set([1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]);
@@ -276,7 +288,7 @@ const api = {
                 'Demonstration scores only: girl chart uses offset nakshatra/sign, not a second birth time.',
         };
 
-        return {
+        return toWorkerPlain({
             snapshot,
             extraVargas,
             sunRiseSet,
@@ -286,17 +298,18 @@ const api = {
             transits: { mercuryTransits, marsIngress },
             matching,
             kernelMeta: { sha256: DE440S_SHA256, bytes: DE440S_BYTES },
-        };
+            meta: { resolvedZone: tz.zone, localIso: birthLocal.toISO() },
+        });
     },
 
     parseJhdText(text: string) {
-        return parseJhd(text);
+        return toWorkerPlain(parseJhd(text));
     },
     writeJhdText(chart: Parameters<typeof writeJhd>[0]) {
         return writeJhd(chart);
     },
     parseNjhText(text: string) {
-        return parseNjh(text);
+        return toWorkerPlain(parseNjh(text));
     },
     serializeNjhText(doc: Parameters<typeof serializeNjh>[0]) {
         return serializeNjh(doc);

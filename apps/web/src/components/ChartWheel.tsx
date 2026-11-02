@@ -24,8 +24,7 @@ export function ChartWheel({ style, ascendant, planets }: Props) {
                     <polygon
                         points="100,10 190,100 100,190 10,100"
                         fill="none"
-                        stroke="var(--primary)"
-                        strokeWidth="1"
+                        stroke="currentColor"
                     />
                     {[0, 1, 2, 3].map((q) => {
                         const houses = [
@@ -36,14 +35,15 @@ export function ChartWheel({ style, ascendant, planets }: Props) {
                         const cx = q === 0 || q === 2 ? 100 : q === 1 ? 145 : 55;
                         const cy = q === 1 || q === 3 ? 100 : q === 0 ? 55 : 145;
                         return (
-                            <g key={q}>
+                            <g key={q} opacity={0.85}>
                                 {houses.map((h, i) => (
                                     <text
                                         key={h}
                                         x={cx + (i - 1) * 18}
                                         y={cy + (i - 1) * 6}
                                         fontSize="6"
-                                        fill="var(--muted)"
+                                        fill="currentColor"
+                                        opacity={0.55}
                                     >
                                         {SIGN_NAMES[h].slice(0, 3)}
                                     </text>
@@ -57,7 +57,8 @@ export function ChartWheel({ style, ascendant, planets }: Props) {
                             x={20 + (idx % 4) * 42}
                             y={175 + Math.floor(idx / 4) * 8}
                             fontSize="5.5"
-                            fill="var(--text)"
+                            fill="currentColor"
+                            fontWeight={idx === 0 ? 600 : 400}
                         >
                             {p.name.slice(0, 2)} {formatDms(p.longitude)}
                         </text>
@@ -85,13 +86,26 @@ export function ChartWheel({ style, ascendant, planets }: Props) {
                                     width={50}
                                     height={50}
                                     fill="none"
-                                    stroke="var(--card-border)"
+                                    stroke="currentColor"
                                 />
-                                <text x={x + 4} y={y + 10} fontSize="6" fill="var(--muted)">
+                                <text
+                                    x={x + 4}
+                                    y={y + 10}
+                                    fontSize="6"
+                                    fill="currentColor"
+                                    opacity={0.55}
+                                >
                                     {SIGN_NAMES[sign].slice(0, 3)}
                                 </text>
                                 {inSign.slice(0, 3).map((p, i) => (
-                                    <text key={p.name} x={x + 4} y={y + 18 + i * 8} fontSize="5.5">
+                                    <text
+                                        key={p.name}
+                                        x={x + 4}
+                                        y={y + 18 + i * 8}
+                                        fontSize="5.5"
+                                        fill="currentColor"
+                                        fontWeight={i === 0 ? 600 : 400}
+                                    >
                                         {p.name.slice(0, 2)}
                                     </text>
                                 ))}

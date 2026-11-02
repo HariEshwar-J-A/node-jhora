@@ -1,17 +1,20 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-export type ThemeMode = 'aurora' | 'daylight';
+export type ThemeMode = 'dark' | 'light';
 
 const ThemeContext = createContext<{
     mode: ThemeMode;
     setMode: (m: ThemeMode) => void;
+    toggle: () => void;
 } | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
     const [mode, setMode] = useState<ThemeMode>(() => {
-        if (typeof window === 'undefined') return 'aurora';
+        if (typeof window === 'undefined') return 'dark';
         const stored = localStorage.getItem('njh-theme');
-        return stored === 'daylight' ? 'daylight' : 'aurora';
+        if (stored === 'light' || stored === 'dark') return stored;
+        if (stored === 'daylight') return 'light';
+        return 'dark';
     });
 
     useEffect(() => {
@@ -19,7 +22,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('njh-theme', mode);
     }, [mode]);
 
-    const value = useMemo(() => ({ mode, setMode }), [mode]);
+    const value = useMemo(
+        () => ({
+            mode,
+            setMode,
+            toggle: () => setMode((m) => (m === 'dark' ? 'light' : 'dark')),
+        }),
+        [mode],
+    );
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 

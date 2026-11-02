@@ -234,3 +234,20 @@ jobs:
             - run: pnpm install --frozen-lockfile
             - run: pnpm exec turbo run build --force --filter=./packages/*
             - run: pnpm run api:check
+
+    web-e2e:
+        name: web-e2e
+        needs: install
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22.23.4'
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: npx playwright install chromium --with-deps
+            - run: pnpm --filter @node-jhora/web test:e2e
+              env:
+                  CI: 'true'

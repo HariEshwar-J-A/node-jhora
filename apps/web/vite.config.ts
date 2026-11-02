@@ -30,9 +30,13 @@ export default defineConfig({
             external: [],
             output: {
                 manualChunks(id) {
-                    if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+                    if (
+                        id.includes('node_modules/react') ||
+                        id.includes('node_modules/react-dom')
+                    ) {
                         return 'react';
                     }
+                    if (id.includes('node_modules/three')) return 'three';
                     if (id.includes('node_modules/luxon')) return 'luxon';
                     if (id.includes('packages/core/dist')) return 'njh-core';
                     if (id.includes('packages/prediction/dist')) return 'njh-prediction';
@@ -49,7 +53,7 @@ export default defineConfig({
                 sourcemap: false,
             },
         },
-        plugins: [forceNodeShimsPlugin(), nodeStubPlugin()],
+        plugins: () => [forceNodeShimsPlugin(), nodeStubPlugin()],
     },
     server: {
         port: 5180,
@@ -57,8 +61,9 @@ export default defineConfig({
         fs: { allow: [repoRoot] },
     },
     preview: {
-        port: 4174,
-        strictPort: true,
+        host: '127.0.0.1',
+        port: Number(process.env.PORT) || 4173,
+        strictPort: false,
     },
     optimizeDeps: {
         exclude: [

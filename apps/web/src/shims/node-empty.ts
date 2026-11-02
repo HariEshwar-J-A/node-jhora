@@ -11,5 +11,9 @@ export function dirname(): string {
     return '';
 }
 export function createRequire(): { resolve: () => never } {
-    return { resolve: () => { throw new Error('no require in browser'); } };
+    return {
+        resolve: () => {
+            throw new Error('no require in browser');
+        },
+    };
 }

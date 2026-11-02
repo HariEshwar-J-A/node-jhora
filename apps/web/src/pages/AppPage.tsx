@@ -1,17 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-    AYANAMSA_IDS,
-    getPreset,
-    HOUSE_SYSTEM_IDS,
-    type SettingsInput,
-} from '@node-jhora/core';
+import { AYANAMSA_IDS, getPreset, HOUSE_SYSTEM_IDS, type SettingsInput } from '@node-jhora/core';
 import { ChartWheel } from '../components/ChartWheel';
-import {
-    EPHE_PATH,
-    KERNEL_DATE_MAX,
-    KERNEL_DATE_MIN,
-    SAMPLE_CHART,
-} from '../lib/constants';
+import { AnimatedTabPanel } from '../components/AnimatedTabPanel';
+import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN, SAMPLE_CHART } from '../lib/constants';
 import { formatDms, parseBirthInstant, SIGN_NAMES } from '../lib/format';
 import type { InitProgress } from '../lib/worker-types';
 import { getWorker, initEphemeris } from '../lib/worker-client';
@@ -111,7 +102,7 @@ export function AppPage() {
                 settings,
                 houseSystem,
                 ephemerisUrl: new URL(EPHE_PATH, window.location.href).href,
-                timezone,
+                timezone: parsed.zone,
                 customVarga: custom,
                 dashaDepth,
             });
@@ -136,8 +127,9 @@ export function AppPage() {
         <div className="app-layout">
             <aside className="card">
                 <h2>Birth data</h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                    Stored locally in this tab only. Supported range: {KERNEL_DATE_MIN} – {KERNEL_DATE_MAX}.
+                <p style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>
+                    Stored locally in this tab only. Supported range: {KERNEL_DATE_MIN} –{' '}
+                    {KERNEL_DATE_MAX}.
                 </p>
                 {!kernelReady && (
                     <div style={{ margin: '1rem 0' }}>
@@ -156,20 +148,34 @@ export function AppPage() {
                     <input id="time" value={time} onChange={(e) => setTime(e.target.value)} />
                 </div>
                 <div className="field-row">
-                    <label htmlFor="tz">Time zone (IANA)</label>
+                    <label htmlFor="tz">
+                        Time zone (IANA or offset, e.g. Asia/Kolkata or +05:30)
+                    </label>
                     <input id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
                 </div>
                 <div className="field-row">
                     <label htmlFor="lat">Latitude</label>
-                    <input id="lat" value={latitude} onChange={(e) => setLatitude(e.target.value)} />
+                    <input
+                        id="lat"
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                    />
                 </div>
                 <div className="field-row">
                     <label htmlFor="lon">Longitude</label>
-                    <input id="lon" value={longitude} onChange={(e) => setLongitude(e.target.value)} />
+                    <input
+                        id="lon"
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                    />
                 </div>
                 <div className="field-row">
                     <label htmlFor="ayan">Ayanamsa</label>
-                    <select id="ayan" value={ayanamsa} onChange={(e) => setAyanamsa(e.target.value as typeof ayanamsa)}>
+                    <select
+                        id="ayan"
+                        value={ayanamsa}
+                        onChange={(e) => setAyanamsa(e.target.value as typeof ayanamsa)}
+                    >
                         {AYANAMSA_IDS.map((id) => (
                             <option key={id} value={id}>
                                 {id}
@@ -193,7 +199,12 @@ export function AppPage() {
                 </div>
                 <div className="field-row">
                     <label htmlFor="cv">Custom varga divisor (optional)</label>
-                    <input id="cv" value={customVarga} onChange={(e) => setCustomVarga(e.target.value)} placeholder="e.g. 300" />
+                    <input
+                        id="cv"
+                        value={customVarga}
+                        onChange={(e) => setCustomVarga(e.target.value)}
+                        placeholder="e.g. 300"
+                    />
                 </div>
                 <div className="field-row">
                     <label htmlFor="depth">Vimshottari depth (1–5)</label>
@@ -206,11 +217,21 @@ export function AppPage() {
                         onChange={(e) => setDashaDepth(Number(e.target.value))}
                     />
                 </div>
-                <button type="button" className="btn btn-primary" disabled={loading} onClick={compute}>
-                    {loading ? 'Calculating…' : kernelReady ? 'Calculate' : 'Calculate (loads ephemeris)'}
+                <button
+                    type="button"
+                    className="btn btn-default"
+                    data-testid="calculate-btn"
+                    disabled={loading}
+                    onClick={compute}
+                >
+                    {loading
+                        ? 'Calculating…'
+                        : kernelReady
+                          ? 'Calculate'
+                          : 'Calculate (loads ephemeris)'}
                 </button>
                 {error && (
-                    <p role="alert" style={{ color: 'var(--accent)', marginTop: '0.75rem' }}>
+                    <p role="alert" className="form-error">
                         {error}
                     </p>
                 )}
@@ -223,6 +244,7 @@ export function AppPage() {
                             key={t.id}
                             type="button"
                             role="tab"
+                            data-testid={`tab-${t.id}`}
                             className={`tab ${tab === t.id ? 'active' : ''}`}
                             onClick={() => setTab(t.id)}
                         >
@@ -231,176 +253,229 @@ export function AppPage() {
                     ))}
                 </div>
 
-                {!result && (
-                    <div className="card">
-                        <p>Load the ephemeris kernel, enter birth data, and run Calculate. Sample: Greenwich noon, 2000-01-01 (fictional reference).</p>
-                    </div>
-                )}
-
-                {result && tab === 'chart' && (
-                    <div className="grid-2">
+                <AnimatedTabPanel tabKey={tab}>
+                    {!result && tab !== 'import' && (
                         <div className="card">
-                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                                <button type="button" className={`tab ${chartStyle === 'north' ? 'active' : ''}`} onClick={() => setChartStyle('north')}>
-                                    North Indian
-                                </button>
-                                <button type="button" className={`tab ${chartStyle === 'south' ? 'active' : ''}`} onClick={() => setChartStyle('south')}>
-                                    South Indian
+                            <p>
+                                Load the ephemeris kernel, enter birth data, and run Calculate.
+                                Sample: Greenwich noon, 2000-01-01 (fictional reference).
+                            </p>
+                        </div>
+                    )}
+
+                    {result && tab === 'chart' && (
+                        <div className="grid-2" data-testid="panel-chart">
+                            <div className="card">
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: '0.5rem',
+                                        marginBottom: '0.75rem',
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        className={`tab ${chartStyle === 'north' ? 'active' : ''}`}
+                                        onClick={() => setChartStyle('north')}
+                                    >
+                                        North Indian
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`tab ${chartStyle === 'south' ? 'active' : ''}`}
+                                        onClick={() => setChartStyle('south')}
+                                    >
+                                        South Indian
+                                    </button>
+                                </div>
+                                <ChartWheel
+                                    style={chartStyle}
+                                    ascendant={houses?.ascendant ?? 0}
+                                    planets={planets}
+                                />
+                            </div>
+                            <div className="card">
+                                <h3>Planets (sidereal)</h3>
+                                <table className="data" data-testid="planets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Body</th>
+                                            <th>Sign</th>
+                                            <th>Longitude</th>
+                                            <th>Speed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {planets.map((p: any) => (
+                                            <tr key={p.name}>
+                                                <td>{p.name}</td>
+                                                <td>{SIGN_NAMES[p.sign - 1]}</td>
+                                                <td className="mono">{formatDms(p.longitude)}</td>
+                                                <td className="mono">{p.speed.toFixed(4)}°/d</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {result && tab === 'vargas' && (
+                        <div className="card" data-testid="panel-vargas">
+                            <h3>Divisional charts</h3>
+                            <p className="mono">
+                                Session batch: D1–D60 (16 charts). Extra named divisors below.
+                            </p>
+                            <pre style={{ overflow: 'auto', fontSize: '0.75rem', maxHeight: 420 }}>
+                                {JSON.stringify(result.snapshot.vargas, null, 2)}
+                            </pre>
+                            {result.extraVargas?.length > 0 && (
+                                <>
+                                    <h4>Additional divisors</h4>
+                                    <pre
+                                        style={{
+                                            overflow: 'auto',
+                                            fontSize: '0.75rem',
+                                            maxHeight: 280,
+                                        }}
+                                    >
+                                        {JSON.stringify(result.extraVargas, null, 2)}
+                                    </pre>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {result && tab === 'dashas' && (
+                        <div className="card" data-testid="panel-dashas">
+                            <h3>Dasha systems</h3>
+                            <details open>
+                                <summary>Vimshottari (depth {dashaDepth})</summary>
+                                <pre
+                                    style={{ overflow: 'auto', fontSize: '0.7rem', maxHeight: 240 }}
+                                >
+                                    {JSON.stringify(result.dashas.vimshottari, null, 2)}
+                                </pre>
+                            </details>
+                            {Object.entries(result.dashas)
+                                .filter(([k]) => k !== 'vimshottari')
+                                .map(([name, tree]) => (
+                                    <details key={name}>
+                                        <summary>{name}</summary>
+                                        <pre
+                                            style={{
+                                                overflow: 'auto',
+                                                fontSize: '0.7rem',
+                                                maxHeight: 180,
+                                            }}
+                                        >
+                                            {JSON.stringify(tree, null, 2)}
+                                        </pre>
+                                    </details>
+                                ))}
+                            <h4>Jaimini chara karakas</h4>
+                            <pre style={{ fontSize: '0.75rem' }}>
+                                {JSON.stringify(result.karakas, null, 2)}
+                            </pre>
+                        </div>
+                    )}
+
+                    {result && tab === 'panchanga' && (
+                        <div className="card" data-testid="panel-panchanga">
+                            <h3>Panchanga</h3>
+                            <pre>{JSON.stringify(result.snapshot.panchanga, null, 2)}</pre>
+                            <h4>Sun rise / set (DE440s)</h4>
+                            <pre>{JSON.stringify(result.sunRiseSet, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {result && tab === 'strength' && (
+                        <div className="card" data-testid="panel-strength">
+                            <h3>Shadbala</h3>
+                            <pre style={{ fontSize: '0.8rem' }}>
+                                {JSON.stringify(result.snapshot.shadbala, null, 2)}
+                            </pre>
+                            <h3>Ashtakavarga</h3>
+                            <pre style={{ fontSize: '0.8rem' }}>
+                                {JSON.stringify(result.snapshot.ashtakavarga, null, 2)}
+                            </pre>
+                            <h3>Yogas (engine library)</h3>
+                            <pre style={{ fontSize: '0.8rem' }}>
+                                {JSON.stringify(result.snapshot.yogas, null, 2)}
+                            </pre>
+                        </div>
+                    )}
+
+                    {result && tab === 'kp' && (
+                        <div className="card" data-testid="panel-kp">
+                            <pre style={{ fontSize: '0.8rem' }}>
+                                {JSON.stringify(result.kp, null, 2)}
+                            </pre>
+                        </div>
+                    )}
+
+                    {result && tab === 'matching' && (
+                        <div className="card" data-testid="panel-matching">
+                            <p>{result.matching.sampleNote}</p>
+                            <pre>{JSON.stringify(result.matching, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {result && tab === 'transits' && (
+                        <div className="card" data-testid="panel-transits">
+                            <pre>{JSON.stringify(result.transits, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {tab === 'import' && (
+                        <div className="card grid-2" data-testid="panel-import">
+                            <div>
+                                <h3>JHD</h3>
+                                <textarea
+                                    rows={8}
+                                    value={jhdText}
+                                    onChange={(e) => setJhdText(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    onClick={async () => {
+                                        try {
+                                            const parsed = await getWorker().parseJhdText(jhdText);
+                                            setJhdText(await getWorker().writeJhdText(parsed));
+                                        } catch (e) {
+                                            setError(String(e));
+                                        }
+                                    }}
+                                >
+                                    Parse & round-trip
                                 </button>
                             </div>
-                            <ChartWheel
-                                style={chartStyle}
-                                ascendant={houses?.ascendant ?? 0}
-                                planets={planets}
-                            />
+                            <div>
+                                <h3>NJH</h3>
+                                <textarea
+                                    rows={8}
+                                    value={njhText}
+                                    onChange={(e) => setNjhText(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    onClick={async () => {
+                                        try {
+                                            const parsed = await getWorker().parseNjhText(njhText);
+                                            setNjhText(await getWorker().serializeNjhText(parsed));
+                                        } catch (e) {
+                                            setError(String(e));
+                                        }
+                                    }}
+                                >
+                                    Parse & serialize
+                                </button>
+                            </div>
                         </div>
-                        <div className="card">
-                            <h3>Planets (sidereal)</h3>
-                            <table className="data">
-                                <thead>
-                                    <tr>
-                                        <th>Body</th>
-                                        <th>Sign</th>
-                                        <th>Longitude</th>
-                                        <th>Speed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {planets.map((p: any) => (
-                                        <tr key={p.name}>
-                                            <td>{p.name}</td>
-                                            <td>{SIGN_NAMES[p.sign - 1]}</td>
-                                            <td className="mono">{formatDms(p.longitude)}</td>
-                                            <td className="mono">{p.speed.toFixed(4)}°/d</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {result && tab === 'vargas' && (
-                    <div className="card">
-                        <h3>Divisional charts</h3>
-                        <p className="mono">Session batch: D1–D60 (16 charts). Extra named divisors below.</p>
-                        <pre style={{ overflow: 'auto', fontSize: '0.75rem', maxHeight: 420 }}>
-                            {JSON.stringify(result.snapshot.vargas, null, 2)}
-                        </pre>
-                        {result.extraVargas?.length > 0 && (
-                            <>
-                                <h4>Additional divisors</h4>
-                                <pre style={{ overflow: 'auto', fontSize: '0.75rem', maxHeight: 280 }}>
-                                    {JSON.stringify(result.extraVargas, null, 2)}
-                                </pre>
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {result && tab === 'dashas' && (
-                    <div className="card">
-                        <h3>Dasha systems</h3>
-                        <details open>
-                            <summary>Vimshottari (depth {dashaDepth})</summary>
-                            <pre style={{ overflow: 'auto', fontSize: '0.7rem', maxHeight: 240 }}>
-                                {JSON.stringify(result.dashas.vimshottari, null, 2)}
-                            </pre>
-                        </details>
-                        {Object.entries(result.dashas)
-                            .filter(([k]) => k !== 'vimshottari')
-                            .map(([name, tree]) => (
-                                <details key={name}>
-                                    <summary>{name}</summary>
-                                    <pre style={{ overflow: 'auto', fontSize: '0.7rem', maxHeight: 180 }}>
-                                        {JSON.stringify(tree, null, 2)}
-                                    </pre>
-                                </details>
-                            ))}
-                        <h4>Jaimini chara karakas</h4>
-                        <pre style={{ fontSize: '0.75rem' }}>{JSON.stringify(result.karakas, null, 2)}</pre>
-                    </div>
-                )}
-
-                {result && tab === 'panchanga' && (
-                    <div className="card">
-                        <h3>Panchanga</h3>
-                        <pre>{JSON.stringify(result.snapshot.panchanga, null, 2)}</pre>
-                        <h4>Sun rise / set (DE440s)</h4>
-                        <pre>{JSON.stringify(result.sunRiseSet, null, 2)}</pre>
-                    </div>
-                )}
-
-                {result && tab === 'strength' && (
-                    <div className="card">
-                        <h3>Shadbala</h3>
-                        <pre style={{ fontSize: '0.8rem' }}>{JSON.stringify(result.snapshot.shadbala, null, 2)}</pre>
-                        <h3>Ashtakavarga</h3>
-                        <pre style={{ fontSize: '0.8rem' }}>{JSON.stringify(result.snapshot.ashtakavarga, null, 2)}</pre>
-                        <h3>Yogas (engine library)</h3>
-                        <pre style={{ fontSize: '0.8rem' }}>{JSON.stringify(result.snapshot.yogas, null, 2)}</pre>
-                    </div>
-                )}
-
-                {result && tab === 'kp' && (
-                    <div className="card">
-                        <pre style={{ fontSize: '0.8rem' }}>{JSON.stringify(result.kp, null, 2)}</pre>
-                    </div>
-                )}
-
-                {result && tab === 'matching' && (
-                    <div className="card">
-                        <p>{result.matching.sampleNote}</p>
-                        <pre>{JSON.stringify(result.matching, null, 2)}</pre>
-                    </div>
-                )}
-
-                {result && tab === 'transits' && (
-                    <div className="card">
-                        <pre>{JSON.stringify(result.transits, null, 2)}</pre>
-                    </div>
-                )}
-
-                {tab === 'import' && (
-                    <div className="card grid-2">
-                        <div>
-                            <h3>JHD</h3>
-                            <textarea rows={8} value={jhdText} onChange={(e) => setJhdText(e.target.value)} />
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={async () => {
-                                    try {
-                                        const parsed = await getWorker().parseJhdText(jhdText);
-                                        setJhdText(await getWorker().writeJhdText(parsed));
-                                    } catch (e) {
-                                        setError(String(e));
-                                    }
-                                }}
-                            >
-                                Parse & round-trip
-                            </button>
-                        </div>
-                        <div>
-                            <h3>NJH</h3>
-                            <textarea rows={8} value={njhText} onChange={(e) => setNjhText(e.target.value)} />
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={async () => {
-                                    try {
-                                        const parsed = await getWorker().parseNjhText(njhText);
-                                        setNjhText(await getWorker().serializeNjhText(parsed));
-                                    } catch (e) {
-                                        setError(String(e));
-                                    }
-                                }}
-                            >
-                                Parse & serialize
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    )}
+                </AnimatedTabPanel>
             </main>
         </div>
     );
