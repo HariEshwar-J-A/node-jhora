@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/match",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "Vedic marriage compatibility: Ashta Kuta (36 points), Dasha Kuta (10 Poruthams) and Mangal Dosha for node-jhora.",
     "type": "module",
     "main": "dist/index.js",

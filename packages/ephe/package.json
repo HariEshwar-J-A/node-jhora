@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/ephe",
-    "version": "440.2.0",
+    "version": "440.3.0",
     "description": "JPL DE440s ephemeris data for node-jhora (public domain, NASA/JPL)",
     "type": "module",
     "license": "SEE LICENSE IN LICENSE",

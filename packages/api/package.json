@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/api",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "Fastify REST API server exposing the node-jhora Vedic astrology engine as JSON endpoints.",
     "type": "module",
     "main": "dist/index.js",

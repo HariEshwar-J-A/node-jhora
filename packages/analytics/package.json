@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/analytics",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "Shadbala, Ashtakavarga, yoga detection and KP significators for the node-jhora Vedic astrology engine.",
     "type": "module",
     "main": "dist/index.js",

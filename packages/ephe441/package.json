@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/ephe441",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Build tool for node-jhora long-range JPL DE441 ephemeris chunks (the chunk data ships in separate packages)",
     "type": "module",
     "license": "SEE LICENSE IN LICENSE",

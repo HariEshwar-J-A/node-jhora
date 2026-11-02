@@ -1,6 +1,6 @@
 {
     "name": "@node-jhora/eop",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "IERS Earth orientation parameters (UT1−UTC, polar motion) and IANA leap-second metadata for the truth precision profile",
     "type": "module",
     "license": "SEE LICENSE IN LICENSE",
