@@ -752,7 +752,7 @@ table.data th.mono {
 
 .chart-canvas .chart-sign-num {
     fill: hsl(var(--muted-foreground));
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .chart-wheel .chart-planet {
@@ -766,11 +766,15 @@ table.data th.mono {
     font-weight: 500;
 }
 
-.chart-wheel .chart-lagna-mark,
-.chart-canvas .chart-lagna-tag {
+.chart-wheel .chart-lagna-mark {
     fill: hsl(var(--foreground));
     font-size: 3px;
     font-weight: 700;
+}
+
+.chart-canvas .chart-lagna-tag {
+    fill: hsl(var(--foreground));
+    font-weight: 500;
 }
 
 .chart-canvas .chart-center-meta-svg {
@@ -912,7 +916,7 @@ table.data th.mono {
 
 .varga-board__hero {
     width: 100%;
-    max-width: min(420px, 100%);
+    max-width: min(520px, 100%);
     margin: 0 auto 0.75rem;
 }
 

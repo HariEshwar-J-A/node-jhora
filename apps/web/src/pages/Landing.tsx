@@ -153,37 +153,37 @@ export function LandingPage() {
             </div>
 
             <section className="section" id="licensing">
-                    <h2>Licensing</h2>
-                    <p>
-                        The library is closed source and proprietary. All rights reserved.
-                        Commercial use requires a paid license. Questions:{' '}
-                        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or{' '}
-                        <a href={CONTACT_URL}>the portfolio contact form</a>.
-                    </p>
-                    <div className="pricing-grid">
-                        {tiers.map((t) => (
-                            <article className="card" key={t.name}>
-                                <h3>{t.name}</h3>
-                                <p className="mono">{t.note}</p>
-                                <p
-                                    style={{
-                                        color: 'hsl(var(--muted-foreground))',
-                                        fontSize: '0.875rem',
-                                    }}
-                                >
-                                    {t.detail}
-                                </p>
-                                <a
-                                    className="btn btn-outline"
-                                    href={CONTACT_URL}
-                                    style={{ marginTop: '0.75rem' }}
-                                >
-                                    Contact for pricing
-                                </a>
-                            </article>
-                        ))}
-                    </div>
-                </section>
+                <h2>Licensing</h2>
+                <p>
+                    The library is closed source and proprietary. All rights reserved. Commercial
+                    use requires a paid license. Questions:{' '}
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or{' '}
+                    <a href={CONTACT_URL}>the portfolio contact form</a>.
+                </p>
+                <div className="pricing-grid">
+                    {tiers.map((t) => (
+                        <article className="card" key={t.name}>
+                            <h3>{t.name}</h3>
+                            <p className="mono">{t.note}</p>
+                            <p
+                                style={{
+                                    color: 'hsl(var(--muted-foreground))',
+                                    fontSize: '0.875rem',
+                                }}
+                            >
+                                {t.detail}
+                            </p>
+                            <a
+                                className="btn btn-outline"
+                                href={CONTACT_URL}
+                                style={{ marginTop: '0.75rem' }}
+                            >
+                                Contact for pricing
+                            </a>
+                        </article>
+                    ))}
+                </div>
+            </section>
 
             <footer className="footer">
                 <p>

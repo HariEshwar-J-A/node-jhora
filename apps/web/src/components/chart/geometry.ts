@@ -56,7 +56,7 @@ export function isRetrograde(p: ChartPlanet): boolean {
     return p.speed != null && p.speed < 0;
 }
 
-/** Chart lives in 0–100 user units. ViewBox width 104 keeps a 2.4-unit glyph ≥ 11px at 480px. */
+/** Chart lives in 0–100 user units. ViewBox width 104 keeps a 2.6-unit glyph ≥ 12px at 480px. */
 export const NORTH_CHART_SIZE = 100;
 export const NORTH_VIEW_BOX = '-2 -2 104 104';
 
@@ -87,7 +87,7 @@ export const NORTH_HOUSES: {
             [50, 50],
             [25, 25],
         ],
-        text: { x0: 39, y0: 14, x1: 61, y1: 36 },
+        text: { x0: 36, y0: 17, x1: 64, y1: 33 },
         sign: { x: 50, y: 42 },
     },
     {
@@ -97,7 +97,7 @@ export const NORTH_HOUSES: {
             [50, 0],
             [25, 25],
         ],
-        text: { x0: 14, y0: 1.5, x1: 36, y1: 11 },
+        text: { x0: 14.85, y0: 2.8, x1: 35.15, y1: 12 },
         sign: { x: 25, y: 17 },
     },
     {
@@ -107,7 +107,7 @@ export const NORTH_HOUSES: {
             [25, 25],
             [0, 50],
         ],
-        text: { x0: 1.5, y0: 14, x1: 11, y1: 36 },
+        text: { x0: 2.5, y0: 16.4, x1: 13.45, y1: 33.6 },
         sign: { x: 17, y: 25 },
     },
     {
@@ -118,7 +118,7 @@ export const NORTH_HOUSES: {
             [50, 50],
             [25, 75],
         ],
-        text: { x0: 14, y0: 39, x1: 36, y1: 61 },
+        text: { x0: 17, y0: 36, x1: 33, y1: 64 },
         sign: { x: 42, y: 50 },
     },
     {
@@ -128,7 +128,7 @@ export const NORTH_HOUSES: {
             [25, 75],
             [0, 100],
         ],
-        text: { x0: 1.5, y0: 64, x1: 11, y1: 86 },
+        text: { x0: 2.5, y0: 66.4, x1: 13.45, y1: 83.6 },
         sign: { x: 17, y: 75 },
     },
     {
@@ -138,7 +138,7 @@ export const NORTH_HOUSES: {
             [25, 75],
             [50, 100],
         ],
-        text: { x0: 14, y0: 89, x1: 36, y1: 98.5 },
+        text: { x0: 14.85, y0: 88, x1: 35.15, y1: 97.2 },
         sign: { x: 25, y: 83 },
     },
     {
@@ -149,7 +149,7 @@ export const NORTH_HOUSES: {
             [50, 50],
             [75, 75],
         ],
-        text: { x0: 39, y0: 64, x1: 61, y1: 86 },
+        text: { x0: 36, y0: 67, x1: 64, y1: 83 },
         sign: { x: 50, y: 58 },
     },
     {
@@ -159,7 +159,7 @@ export const NORTH_HOUSES: {
             [75, 75],
             [100, 100],
         ],
-        text: { x0: 64, y0: 89, x1: 86, y1: 98.5 },
+        text: { x0: 64.85, y0: 88, x1: 85.15, y1: 97.2 },
         sign: { x: 75, y: 83 },
     },
     {
@@ -169,7 +169,7 @@ export const NORTH_HOUSES: {
             [75, 75],
             [100, 50],
         ],
-        text: { x0: 89, y0: 64, x1: 98.5, y1: 86 },
+        text: { x0: 86.55, y0: 66.4, x1: 97.5, y1: 83.6 },
         sign: { x: 83, y: 75 },
     },
     {
@@ -180,7 +180,7 @@ export const NORTH_HOUSES: {
             [50, 50],
             [75, 25],
         ],
-        text: { x0: 64, y0: 39, x1: 86, y1: 61 },
+        text: { x0: 67, y0: 36, x1: 83, y1: 64 },
         sign: { x: 58, y: 50 },
     },
     {
@@ -190,7 +190,7 @@ export const NORTH_HOUSES: {
             [75, 25],
             [100, 0],
         ],
-        text: { x0: 89, y0: 14, x1: 98.5, y1: 36 },
+        text: { x0: 86.55, y0: 16.4, x1: 97.5, y1: 33.6 },
         sign: { x: 83, y: 25 },
     },
     {
@@ -200,7 +200,7 @@ export const NORTH_HOUSES: {
             [75, 25],
             [50, 0],
         ],
-        text: { x0: 64, y0: 1.5, x1: 86, y1: 11 },
+        text: { x0: 64.85, y0: 2.8, x1: 85.15, y1: 12 },
         sign: { x: 75, y: 17 },
     },
 ];

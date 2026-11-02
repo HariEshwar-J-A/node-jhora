@@ -60,7 +60,7 @@ async function assertNoFilledConstellationPaths(page) {
     if (bad.length) fail(`Filled constellation paths: ${bad.join('; ')}`);
 }
 
-async function assertChartPlanetFontMin(page, minPx = 11, minChartWidth = 480) {
+async function assertChartPlanetFontMin(page, minPx = 12, minChartWidth = 480) {
     const small = await page.evaluate(
         ({ min, minChartW }) => {
             const svg = document.querySelector('.chart-canvas__svg');
@@ -429,12 +429,12 @@ async function main() {
         await snap(page, `app-chart-d1-${vp.name}`);
         report.push(`app-chart-d1-${vp.name}`);
         if (vp.name === '1280') {
-            await assertChartPlanetFontMin(page, 11, 480);
+            await assertChartPlanetFontMin(page, 12, 480);
         }
         for (const varga of [9, 60, 150]) {
             await runVarga(page, varga);
             if (vp.name === '1280') {
-                await assertChartPlanetFontMin(page, 11, 480);
+                await assertChartPlanetFontMin(page, 12, 480);
             }
             await snap(page, `app-varga-d${varga}-north-${vp.name}`);
             report.push(`app-varga-d${varga}-${vp.name}`);

@@ -1,17 +1,20 @@
-import { pointInPolygon } from '../apps/web/src/components/chart/geometry.ts';
 import {
-    NORTH_HOUSES,
-    northHouseSignNumber,
-    wholeSignHouse,
-} from '../apps/web/src/components/chart/geometry.ts';
-import {
-    CHART_PLANET_FONT_SIZE,
     boxesOverlap,
     boxInsideRect,
+    CHART_PLANET_FONT_SIZE,
+    CHART_SIGN_FONT_SIZE,
     labelBox,
     layoutLabelsInRect,
     signLabelBox,
+    southPlanetTextRect,
 } from '../apps/web/src/components/chart/chartLayout.ts';
+import {
+    NORTH_HOUSES,
+    northHouseSignNumber,
+    pointInPolygon,
+    southCellRect,
+    wholeSignHouse,
+} from '../apps/web/src/components/chart/geometry.ts';
 
 function distToSegment(
     px: number,
@@ -58,9 +61,20 @@ describe('North house table', () => {
         }
     });
 
-    it('keeps every text-rectangle corner inside its polygon', () => {
+    it('keeps every text-rectangle corner inside its polygon and 2 units from every edge', () => {
         for (const house of NORTH_HOUSES) {
             const { x0, y0, x1, y1 } = house.text;
+            const cx = (x0 + x1) / 2;
+            const cy = (y0 + y1) / 2;
+            let ax = 0;
+            let ay = 0;
+            for (const [px, py] of house.poly) {
+                ax += px;
+                ay += py;
+            }
+            ax /= house.poly.length;
+            ay /= house.poly.length;
+            expect(Math.hypot(cx - ax, cy - ay)).toBeLessThan(1.5);
             for (const [x, y] of [
                 [x0, y0],
                 [x1, y0],
@@ -68,6 +82,7 @@ describe('North house table', () => {
                 [x0, y1],
             ] as [number, number][]) {
                 expect(pointInPolygon(x, y, house.poly)).toBe(true);
+                expect(minEdgeDistance(x, y, house.poly)).toBeGreaterThanOrEqual(2);
             }
         }
     });
@@ -104,20 +119,20 @@ describe('North house table', () => {
         expect(northHouseSignNumber(asc, 10)).toBe(9);
     });
 
-    it('places 1, 2 and 4 planet labels inside the text rectangle without overlap at 2.4 units', () => {
+    it('places 1, 2 and 4 planet labels inside the text rectangle at the primary size', () => {
         const samples = [1, 2, 4];
         for (const house of NORTH_HOUSES) {
             for (const count of samples) {
                 const items = Array.from({ length: count }, (_, i) => ({
                     id: `${house.house}-${i}`,
-                    text: `P${i} ${i + 1}°`,
+                    text: count === 4 ? `Ma ${20 + i}°` : `P${i} ${i + 1}°`,
                 }));
                 const placed = layoutLabelsInRect(house.text, items);
                 expect(placed).toHaveLength(count);
                 const boxes = placed.map((p) =>
                     labelBox(p.x, p.y, p.text, p.fontSize, p.textAnchor),
                 );
-                const sign = signLabelBox(house.sign.x, house.sign.y, '12', 4.5);
+                const sign = signLabelBox(house.sign.x, house.sign.y, '12', CHART_SIGN_FONT_SIZE);
                 for (const p of placed) {
                     expect(p.text).toContain('°');
                     expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
@@ -131,5 +146,24 @@ describe('North house table', () => {
                 }
             }
         }
+    });
+
+    it('centres the South planet block on the cell', () => {
+        const cell = southCellRect(0, 0);
+        const rect = southPlanetTextRect(cell);
+        const cellCx = cell.x + cell.size / 2;
+        const cellCy = cell.y + cell.size / 2;
+        expect((rect.x0 + rect.x1) / 2).toBeCloseTo(cellCx, 5);
+        expect((rect.y0 + rect.y1) / 2).toBeCloseTo(cellCy, 5);
+        expect(rect.x0 - cell.x).toBeGreaterThanOrEqual(2);
+        expect(cell.x + cell.size - rect.x1).toBeGreaterThanOrEqual(2);
+        const placed = layoutLabelsInRect(
+            rect,
+            [0, 1, 2, 3].map((i) => ({ id: String(i), text: `Ma ${20 + i}°` })),
+        );
+        expect(placed.every((p) => p.fontSize === CHART_PLANET_FONT_SIZE)).toBe(true);
+        const ys = placed.map((p) => p.y);
+        const mid = (Math.min(...ys) + Math.max(...ys)) / 2;
+        expect(Math.abs(mid - cellCy)).toBeLessThan(1.5);
     });
 });

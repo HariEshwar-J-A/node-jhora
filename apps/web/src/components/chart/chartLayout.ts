@@ -1,11 +1,14 @@
 import { NORTH_PLANET_RECTS, type NorthTextRect, planetShortName } from './geometry.js';
 
-export const CHART_INSET = 1.5;
-export const CHART_PLANET_FONT_SIZE = 2.4;
-export const CHART_PLANET_FONT_MIN = 1.9;
-export const CHART_LINE_HEIGHT = 3.2;
-export const CHART_SIGN_FONT_SIZE = 4.5;
-export const CHART_SIGN_FONT_SIZE_COMPACT = 3.8;
+export const CHART_INSET = 2;
+/** 2.7 user units ≈ 13.5px on a 520px chart (viewBox width 104). */
+export const CHART_PLANET_FONT_SIZE = 2.7;
+/** Floor stays ≥ 12px at a 480px chart (2.6 × 480 / 104 = 12). */
+export const CHART_PLANET_FONT_MIN = 2.6;
+export const CHART_LINE_HEIGHT = 4;
+/** ~11px on a 520px chart. Secondary to the planet labels. */
+export const CHART_SIGN_FONT_SIZE = 2.2;
+export const CHART_SIGN_FONT_SIZE_COMPACT = 1.8;
 
 export type TextRect = NorthTextRect;
 
@@ -82,8 +85,8 @@ function columnXs(rect: TextRect, cols: number): number[] {
 
 /**
  * Rows top to bottom, centred in the rectangle.
- * 1 column, then 2, then 3. Font stays at 2.4 unless there are 7 or more labels,
- * in which case it may drop to 1.9. Degrees are never removed.
+ * 1 column, then 2, then 3. Font stays at the primary size unless there are 7 or
+ * more labels, in which case it may drop to the floor. Degrees are never removed.
  */
 export function layoutLabelsInRect(
     rect: TextRect,
@@ -158,22 +161,23 @@ export function layoutNorthHousePlanets(
     return layoutLabelsInRect(NORTH_PLANET_RECTS[house]!, planetLines);
 }
 
+/** Full cell interior, inset equally, so the label block centres on the cell. */
 export function southPlanetTextRect(cell: { x: number; y: number; size: number }): TextRect {
     const { x, y, size } = cell;
-    const signStrip = 7;
     return {
         x0: x + CHART_INSET,
-        y0: y + CHART_INSET + signStrip,
+        y0: y + CHART_INSET,
         x1: x + size - CHART_INSET,
         y1: y + size - CHART_INSET,
     };
 }
 
+/** Sign number sits in the top-left corner, clear of the centred planet block. */
 export function southSignPosition(cell: { x: number; y: number; size: number }): {
     x: number;
     y: number;
 } {
-    return { x: cell.x + 3.5, y: cell.y + 5.5 };
+    return { x: cell.x + 1.8, y: cell.y + 3.4 };
 }
 
 export function formatPlanetLabel(name: string, degree: number, retrograde: boolean): string {
