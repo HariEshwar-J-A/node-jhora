@@ -1,10 +1,8 @@
 name: Pack check
 
-# Gates what each publishable package would put in its npm tarball:
-# size budgets, no source maps/tests/data in code packages, README and
-# LICENSE/NOTICE present, publint and attw (esm-only) clean.
-# Dry run only: nothing is published. See
-# docs/decisions/0006-npm-packaging-and-ephemeris-data-distribution.md.
+# Gates what each publishable package would put in its npm tarball. Runs only when FULL CI
+# is enabled (repository variable FULL_CI=true, PR label `full-ci`, or CI workflow_dispatch
+# with full_ci). Release still runs check:pack before publish.
 
 on:
     pull_request:
@@ -16,6 +14,7 @@ permissions:
 
 jobs:
     pack:
+        if: vars.FULL_CI == 'true' || contains(github.event.pull_request.labels.*.name, 'full-ci')
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4

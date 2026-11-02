@@ -1,0 +1,42 @@
+{
+    "name": "@node-jhora/web",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "prebuild": "node scripts/stage-ephe.mjs",
+        "optimize:textures": "node scripts/optimize-earth-textures.mjs",
+        "dev": "vite",
+        "build": "tsc --noEmit --pretty false && vite build",
+        "preview": "vite preview",
+        "test:e2e": "playwright test tests/e2e/smoke.spec.ts",
+        "test:e2e:install": "playwright install --with-deps chromium"
+    },
+    "dependencies": {
+        "@node-jhora/analytics": "workspace:*",
+        "@node-jhora/core": "workspace:*",
+        "@node-jhora/engine": "workspace:*",
+        "@node-jhora/events": "workspace:*",
+        "@node-jhora/format": "workspace:*",
+        "@node-jhora/match": "workspace:*",
+        "@node-jhora/prediction": "workspace:*",
+        "comlink": "^4.4.2",
+        "luxon": "^3.7.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "react-router-dom": "^7.9.5",
+        "three": "^0.187.0"
+    },
+    "devDependencies": {
+        "@fontsource/inter": "^5.3.0",
+        "@fontsource/jetbrains-mono": "^5.3.0",
+        "@playwright/test": "^1.64.1",
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.2",
+        "@types/three": "^0.187.0",
+        "@vitejs/plugin-react": "^5.1.0",
+        "framer-motion": "^14.9.0",
+        "sharp": "^0.35.5",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.12"
+    }
+}

@@ -88,3 +88,27 @@ in `packages/core/src/vedic/ayanamsa.ts` (see `@provenance` comments and ADR 002
 
 City gazetteer data in `@node-jhora/atlas` is © GeoNames, used under **CC-BY 4.0**
 (see `packages/atlas/README.md`).
+
+## `@node-jhora/web` demo site (npm runtime)
+
+| Package                                                                   | Licence    | Use                                                                      |
+| ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
+| [three](https://github.com/mrdoob/three.js/)                              | MIT        | Lazy-loaded WebGL landing intro (`apps/web/src/components/space-intro/`) |
+| [framer-motion](https://www.framer.com/motion/)                           | MIT        | Route transitions, scroll reveal, tab panels                             |
+| [@fontsource/inter](https://fontsource.org/fonts/inter)                   | OFL-1.1    | Self-hosted UI sans                                                      |
+| [@fontsource/jetbrains-mono](https://fontsource.org/fonts/jetbrains-mono) | OFL-1.1    | Self-hosted code mono                                                    |
+| [react](https://react.dev/) / [react-dom](https://react.dev/)             | MIT        | UI                                                                       |
+| [react-router-dom](https://reactrouter.com/)                              | MIT        | Hash routing                                                             |
+| [comlink](https://github.com/GoogleChromeLabs/comlink)                    | Apache-2.0 | Web Worker RPC                                                           |
+| [luxon](https://github.com/moment/luxon)                                  | MIT        | Time zones in the chart app                                              |
+
+### Bundled imagery (`apps/web/public/textures/`)
+
+NASA Visible Earth **Blue Marble** day surface and **Black Marble 2012** night lights
+(WebP derivatives). U.S. Government public domain — see `apps/web/public/textures/README.md`.
+
+Owner-provided monochrome hero motif (`apps/web/assets/v2_astro_bg_frame_mono.png`) is
+proprietary to the copyright holder and used with permission in section backgrounds only.
+
+Constellation line overlays on the landing sky are hand-authored in
+`apps/web/src/components/space-intro/constellations.ts` (not GPL catalogue artwork).
