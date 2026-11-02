@@ -8,6 +8,8 @@ name: Release
 on:
     push:
         branches: [main]
+    # Manual re-run of the JSR publish (for example after a failed JSR job).
+    workflow_dispatch:
 
 concurrency:
     group: release-${{ github.workflow }}-${{ github.ref }}
@@ -73,7 +75,7 @@ jobs:
         needs: release
         if: >-
             github.repository == 'HariEshwar-J-A/node-jhora' &&
-            needs.release.outputs.published == 'true'
+            (needs.release.outputs.published == 'true' || github.event_name == 'workflow_dispatch')
         runs-on: ubuntu-latest
         permissions:
             id-token: write
@@ -88,6 +90,11 @@ jobs:
                   cache: pnpm
 
             - run: pnpm install --frozen-lockfile
+
+            # JSR resolves workspace deps through node_modules, which point at each
+            # package's built dist/, so build before publishing.
+            - name: Build packages
+              run: pnpm build
 
             - name: Publish JSR packages (OIDC)
               run: node scripts/jsr-publish-all.mjs
