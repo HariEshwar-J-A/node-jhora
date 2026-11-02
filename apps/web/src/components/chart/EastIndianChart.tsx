@@ -110,7 +110,7 @@ export function EastIndianChart({
                                     y1={cell.lagnaTick.y1}
                                     x2={cell.lagnaTick.x2}
                                     y2={cell.lagnaTick.y2}
-                                    className="chart-lagna-diagonal"
+                                    className="chart-lagna-diagonal chart-lagna-diagonal--east"
                                 />
                             )}
                             <text

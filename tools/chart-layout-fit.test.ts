@@ -9,6 +9,7 @@ import {
     southPlanetTextRect,
 } from '../apps/web/src/components/chart/chartLayout.ts';
 import {
+    EAST_GRID,
     EAST_SIGNS,
     NORTH_HOUSES,
     northHouseSignNumber,
@@ -182,8 +183,49 @@ describe('East Indian sign chart', () => {
         expect(ariesCy).toBeLessThan(30);
         const taurusCx = taurus.poly.reduce((s, p) => s + p[0], 0) / taurus.poly.length;
         const piscesCx = pisces.poly.reduce((s, p) => s + p[0], 0) / pisces.poly.length;
-        expect(taurusCx).toBeGreaterThan(ariesCx);
-        expect(piscesCx).toBeLessThan(ariesCx);
+        expect(taurusCx).toBeLessThan(ariesCx);
+        expect(piscesCx).toBeGreaterThan(ariesCx);
+        const centroid = (sign: number) => {
+            const cell = EAST_SIGNS[sign]!;
+            const n = cell.poly.length;
+            return {
+                x: cell.poly.reduce((s, p) => s + p[0], 0) / n,
+                y: cell.poly.reduce((s, p) => s + p[1], 0) / n,
+            };
+        };
+        const c = (sign: number) => centroid(sign);
+        expect(c(1).y).toBeLessThan(c(2).y);
+        expect(c(1).x).toBeLessThan(40);
+        expect(c(2).x).toBeLessThan(40);
+        expect(c(3).x).toBeLessThan(30);
+        expect(c(3).y).toBeGreaterThan(40);
+        expect(c(3).y).toBeLessThan(62);
+        expect(c(4).y).toBeLessThan(c(5).y);
+        expect(c(4).x).toBeLessThan(40);
+        expect(c(5).x).toBeLessThan(40);
+        expect(c(6).y).toBeGreaterThan(70);
+        expect(c(6).x).toBeGreaterThan(40);
+        expect(c(6).x).toBeLessThan(62);
+        expect(c(7).y).toBeGreaterThan(c(8).y);
+        expect(c(7).x).toBeGreaterThan(70);
+        expect(c(8).x).toBeGreaterThan(70);
+        expect(c(9).x).toBeGreaterThan(70);
+        expect(c(9).y).toBeGreaterThan(40);
+        expect(c(9).y).toBeLessThan(62);
+        expect(c(10).y).toBeGreaterThan(c(11).y);
+        expect(c(10).x).toBeGreaterThan(70);
+        expect(c(11).x).toBeGreaterThan(70);
+        const [g0, g1, g2, g3] = EAST_GRID;
+        const shares = (sign: number, x: number, y: number) =>
+            EAST_SIGNS[sign]!.poly.some((p) => p[0] === x && p[1] === y);
+        expect(shares(1, g0, g0) && shares(1, g1, g1)).toBe(true);
+        expect(shares(2, g0, g0) && shares(2, g1, g1)).toBe(true);
+        expect(shares(4, g0, g3) && shares(4, g1, g2)).toBe(true);
+        expect(shares(5, g0, g3) && shares(5, g1, g2)).toBe(true);
+        expect(shares(7, g3, g3) && shares(7, g2, g2)).toBe(true);
+        expect(shares(8, g3, g3) && shares(8, g2, g2)).toBe(true);
+        expect(shares(10, g3, g0) && shares(10, g2, g1)).toBe(true);
+        expect(shares(11, g3, g0) && shares(11, g2, g1)).toBe(true);
         for (const cell of EAST_SIGNS) {
             expect(cell.poly.length === 3 || cell.poly.length === 4).toBe(true);
         }

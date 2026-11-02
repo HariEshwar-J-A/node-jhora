@@ -55,11 +55,12 @@ function buildStars(THREE: typeof import('three'), count: number) {
     for (let i = 0; i < count; i++) {
         const theta = 2 * Math.PI * Math.random();
         const phi = Math.acos(2 * Math.random() - 1);
-        const radius = 110 + Math.random() * 90;
+        const radius = 90 + Math.random() * 70;
         positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
         positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         positions[i * 3 + 2] = radius * Math.cos(phi);
-        magnitudes[i] = Math.pow(Math.random(), 2.2);
+        const roll = Math.random();
+        magnitudes[i] = roll > 0.992 ? 0.88 + Math.random() * 0.12 : Math.pow(roll, 1.05) * 0.62;
         phases[i] = Math.random() * Math.PI * 2;
     }
     const geo = new THREE.BufferGeometry();
@@ -70,7 +71,8 @@ function buildStars(THREE: typeof import('three'), count: number) {
     const mat = new THREE.ShaderMaterial({
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending,
+        toneMapped: false,
+        blending: THREE.NormalBlending,
         uniforms: {
             uTime: { value: 0 },
             uPixelRatio: { value: 1 },
@@ -81,41 +83,30 @@ function buildStars(THREE: typeof import('three'), count: number) {
           uniform float uTime;
           uniform float uPixelRatio;
           varying float vMag;
-          varying float vTwinkle;
-          varying float vPhase;
           void main() {
             vMag = magnitude;
-            vPhase = phase;
-            float tw = sin(uTime * (1.4 + magnitude * 3.2) + phase);
-            vTwinkle = 0.72 + 0.28 * tw * tw;
+            float tw = 0.9 + 0.1 * sin(uTime * (0.8 + magnitude * 2.4) + phase);
             vec4 mv = modelViewMatrix * vec4(position, 1.0);
-            float size = (0.7 + pow(magnitude, 1.4) * 1.35) * uPixelRatio;
-            size *= clamp(70.0 / max(1.0, -mv.z), 0.5, 1.1);
-            gl_PointSize = clamp(size, 1.0, 2.4);
+            float dist = clamp(78.0 / max(1.0, -mv.z), 0.75, 1.15);
+            float size = mix(3.6, 10.0, smoothstep(0.55, 0.96, magnitude)) * tw * dist;
+            gl_PointSize = clamp(size * uPixelRatio, 3.2, 12.0);
             gl_Position = projectionMatrix * mv;
           }
         `,
         fragmentShader: `
           varying float vMag;
-          varying float vTwinkle;
-          varying float vPhase;
           void main() {
             vec2 c = gl_PointCoord - vec2(0.5);
             float r = length(c);
             if (r > 0.5) discard;
-            float core = smoothstep(0.16, 0.0, r);
-            float spikes = 0.0;
-            if (vMag > 0.72) {
-              float sx = smoothstep(0.045, 0.0, abs(c.y)) * smoothstep(0.5, 0.12, abs(c.x));
-              float sy = smoothstep(0.045, 0.0, abs(c.x)) * smoothstep(0.5, 0.12, abs(c.y));
-              spikes = (sx + sy) * smoothstep(0.72, 0.95, vMag);
+            if (r < 0.28) {
+              gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+              return;
             }
-            float alpha = (core + spikes * 0.85) * vTwinkle;
-            if (alpha < 0.02) discard;
-            float warm = step(0.62, fract(vPhase * 1.7));
-            vec3 col = mix(vec3(0.94, 0.94, 0.96), vec3(1.0, 0.95, 0.88), warm);
-            col = mix(col, vec3(1.0), core * 0.65);
-            gl_FragColor = vec4(col, alpha);
+            float edge = smoothstep(0.28, 0.48, r);
+            float halo = (1.0 - edge) * smoothstep(0.84, 0.98, vMag);
+            if (halo < 0.4) discard;
+            gl_FragColor = vec4(1.0, 1.0, 1.0, mix(1.0, 0.82, edge));
           }
         `,
     });
@@ -148,7 +139,11 @@ function configureMap(THREE: typeof import('three'), tex: Texture, color: boolea
     tex.flipY = true;
 }
 
-const SKY_CLEAR = 0x090909;
+const SKY_CLEAR = 0x060606;
+
+function starCount(mobile: boolean): number {
+    return mobile ? 1100 : 1700;
+}
 
 async function mountSkyBackdrop(
     canvas: HTMLCanvasElement,
@@ -170,8 +165,8 @@ async function mountSkyBackdrop(
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = opts.mobile ? 1.02 : 1.08;
+    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.toneMappingExposure = 1;
     renderer.setClearColor(SKY_CLEAR, 1);
 
     const scene = new THREE.Scene();
@@ -183,38 +178,13 @@ async function mountSkyBackdrop(
     const skyPos = skyRig.position.clone();
     const skyQuat = skyRig.quaternion.clone();
 
-    const starCounts = opts.mobile ? [720, 380, 160] : [2600, 1500, 640];
-    const starGroups = starCounts.map((count) => {
+    const starGroups = [starCount(opts.mobile)].map((count) => {
         const pts = buildStars(THREE, count);
         scene.add(pts);
         track(pts.geometry);
         track(pts.material as Material);
         return pts;
     });
-
-    const [{ EffectComposer }, { RenderPass }, { OutputPass }] = await Promise.all([
-        import('three/addons/postprocessing/EffectComposer.js'),
-        import('three/addons/postprocessing/RenderPass.js'),
-        import('three/addons/postprocessing/OutputPass.js'),
-    ]);
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    if (!opts.mobile) {
-        const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
-        composer.addPass(
-            new UnrealBloomPass(
-                new THREE.Vector2(
-                    Math.max(1, canvas.clientWidth / 2),
-                    Math.max(1, canvas.clientHeight / 2),
-                ),
-                0.22,
-                0.32,
-                0.86,
-            ),
-        );
-    }
-    composer.addPass(new OutputPass());
-    track(composer);
 
     const streaks: { line: import('three').Line; head: Points; life: number }[] = [];
     const spawnStreak = () => {
@@ -290,7 +260,6 @@ async function mountSkyBackdrop(
         camera.updateProjectionMatrix();
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
         renderer.setSize(w, h, false);
-        composer.setSize(w, h);
         const pr = renderer.getPixelRatio();
         for (const pts of starGroups) {
             (pts.material as import('three').ShaderMaterial).uniforms.uPixelRatio.value = pr;
@@ -326,7 +295,7 @@ async function mountSkyBackdrop(
         for (const pts of starGroups) {
             (pts.material as import('three').ShaderMaterial).uniforms.uTime.value = elapsed;
         }
-        composer.render();
+        renderer.render(scene, camera);
     };
     raf = requestAnimationFrame(tick);
 
@@ -347,7 +316,6 @@ async function mountSkyBackdrop(
                 streak.head.geometry.dispose();
                 (streak.head.material as Material).dispose();
             }
-            composer.passes.forEach((pass) => pass.dispose());
             renderer.dispose();
             for (const item of disposables) item.dispose();
         },
@@ -387,8 +355,7 @@ export async function mountSpaceScene(
     scene.add(camera);
 
     const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    const starCounts = opts.mobile ? [720, 380, 160] : [2600, 1500, 640];
-    const starGroups = starCounts.map((count) => {
+    const starGroups = [starCount(opts.mobile)].map((count) => {
         const pts = buildStars(THREE, count);
         scene.add(pts);
         track(pts.geometry);
@@ -406,8 +373,17 @@ export async function mountSpaceScene(
         if (pendingTextures <= 0) texturesReady = true;
     };
     const loadMap = (url: string, color: boolean, anisoLevel: number) => {
-        const tex = loader.load(url, markTex, undefined, markTex);
-        configureMap(THREE, tex, color, anisoLevel);
+        const tex = loader.load(
+            url,
+            (loaded) => {
+                if (loaded.image) configureMap(THREE, loaded, color, anisoLevel);
+                markTex();
+            },
+            undefined,
+            () => {
+                markTex();
+            },
+        );
         track(tex);
         return tex;
     };
@@ -595,10 +571,9 @@ export async function mountSpaceScene(
     const moon = new THREE.Mesh(
         track(new THREE.SphereGeometry(1.15, opts.mobile ? 24 : 40, opts.mobile ? 16 : 28)),
         track(
-            new THREE.MeshStandardMaterial({
+            new THREE.MeshBasicMaterial({
                 map: moonMap,
-                roughness: 0.96,
-                metalness: 0,
+                color: 0xc8c8c8,
             }),
         ),
     );
@@ -836,6 +811,15 @@ export async function mountSpaceScene(
             bloomPass.dispose();
             bloomPass = null;
         }
+        renderer.toneMapping = THREE.NoToneMapping;
+        renderer.toneMappingExposure = 1;
+        renderer.setClearColor(SKY_CLEAR, 1);
+        if (composer) {
+            const index = disposables.indexOf(composer);
+            if (index >= 0) disposables.splice(index, 1);
+            composer.dispose();
+            composer = null;
+        }
     }
 
     const streaks: { line: import('three').Line; head: Points; life: number }[] = [];
@@ -971,7 +955,6 @@ export async function mountSpaceScene(
         if (!texturesReady) {
             canvas.dataset.intro = '-1';
             placeFlight(0);
-            renderFrame();
             return;
         }
         if (!clockStarted) {

@@ -285,7 +285,7 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                                         type="button"
                                         onClick={() => setPath(path.slice(0, index + 1))}
                                     >
-                                        {planetShortName(period.planet)}
+                                        {LEVEL_NAME[period.level]} {planetShortName(period.planet)}
                                     </button>
                                 </span>
                             ))}

@@ -50,7 +50,6 @@ export function LandingSkyHero({ children }: Props) {
     const mobile = useMobile();
 
     const [staticMode] = useState(() => !detectWebGL());
-    const [contentVisible, setContentVisible] = useState(staticMode || skyOnly);
     const [skyReady, setSkyReady] = useState(staticMode || skyOnly);
     const [showSkip, setShowSkip] = useState(!staticMode && !skyOnly);
 
@@ -58,7 +57,6 @@ export function LandingSkyHero({ children }: Props) {
         if (staticMode || skyOnly) return;
         const fallback = window.setTimeout(() => {
             setSkyReady(true);
-            setContentVisible(true);
             setShowSkip(false);
         }, 14000);
         return () => clearTimeout(fallback);
@@ -78,7 +76,6 @@ export function LandingSkyHero({ children }: Props) {
         const canvas = canvasRef.current;
         if (!canvas) return;
         let mounted = true;
-        setContentVisible(skyOnly);
         setSkyReady(skyOnly);
         setShowSkip(!skyOnly && !skipRequested.current);
 
@@ -91,7 +88,6 @@ export function LandingSkyHero({ children }: Props) {
                 reducedMotion: prefersReduced,
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
-                    setContentVisible(true);
                     setShowSkip(false);
                 },
                 onPhaseChange: (phase) => {
@@ -118,7 +114,6 @@ export function LandingSkyHero({ children }: Props) {
     const onSkip = useCallback(() => {
         skipRequested.current = true;
         sceneRef.current?.skipIntro();
-        setContentVisible(true);
         setSkyReady(true);
         setShowSkip(false);
     }, []);
@@ -142,10 +137,7 @@ export function LandingSkyHero({ children }: Props) {
                     Skip intro
                 </button>
             )}
-            <div
-                className={`landing-sky-hero__content${contentVisible ? ' landing-sky-hero__content--visible' : ''}`}
-                aria-hidden={contentVisible ? undefined : true}
-            >
+            <div className="landing-sky-hero__content landing-sky-hero__content--visible">
                 {children}
             </div>
         </div>

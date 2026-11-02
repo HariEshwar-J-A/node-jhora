@@ -410,12 +410,14 @@ export function southCenterMetaLines(meta: { title: string; subtitle?: string })
 }
 
 /**
- * East Indian (Bengali) rashi chart.
+ * East Indian rashi chart.
  * Equal 3×3 grid. The centre cell is the title. Each corner cell is split
- * by a diagonal into two triangles, giving 12 fixed sign areas.
- * Aries is the top-middle cell. Signs then run Taurus, Gemini, … around the
- * square — the order classical texts call anti-clockwise (Taurus sits on the
- * upper right). Signs do not rotate with the lagna; the lagna is marked.
+ * by the diagonal from that cell's outer corner to the inner-square corner.
+ * Aries is the top-middle cell. Signs then run counter-clockwise: Taurus is
+ * the upper triangle of the top-left corner, Gemini the lower triangle of
+ * that corner, Cancer the left-middle cell, and so on around to Pisces in
+ * the upper triangle of the top-right corner. Signs do not rotate with the
+ * lagna; the lagna is marked inside its own region.
  */
 export const EAST_VIEW_BOX = '-2 -2 104 104';
 
@@ -459,63 +461,63 @@ export const EAST_SIGNS: EastSignCell[] = [
         ],
         text: eastQuadText(e1, e0, e2, e1),
         signLabel: { x: (e1 + e2) / 2, y: e0 + 4.6 },
-        lagnaTick: { x1: e1, y1: e0 + 6.2, x2: e1 + 6.2, y2: e0 },
+        lagnaTick: { x1: e1, y1: e0 + 8, x2: e1 + 8, y2: e0 },
     },
     {
         sign: 1,
         poly: [
-            [e2, e0],
-            [e3, e0],
-            [e2, e1],
+            [e0, e0],
+            [e1, e0],
+            [e1, e1],
         ],
-        text: eastTriText(e2, e0, 1, 1),
-        signLabel: { x: e2 + 16.8, y: e0 + 4.6 },
-        lagnaTick: { x1: e3 - 5.5, y1: e0, x2: e3, y2: e0 + 5.5 },
+        text: eastTriText(e1, e0, -1, 1),
+        signLabel: { x: e1 - 16.8, y: e0 + 4.6 },
+        lagnaTick: { x1: e1, y1: e0 + 7.2, x2: e1 - 7.2, y2: e0 },
     },
     {
         sign: 2,
         poly: [
-            [e3, e0],
-            [e3, e1],
-            [e2, e1],
+            [e0, e0],
+            [e1, e1],
+            [e0, e1],
         ],
-        text: eastTriText(e3, e1, -1, -1),
-        signLabel: { x: e3 - 16.8, y: e1 - 4.6 },
-        lagnaTick: { x1: e3, y1: e1 - 5.5, x2: e3 - 5.5, y2: e1 },
+        text: eastTriText(e0, e1, 1, -1),
+        signLabel: { x: e0 + 16.8, y: e1 - 4.6 },
+        lagnaTick: { x1: e0, y1: e1 - 7.2, x2: e0 + 7.2, y2: e1 },
     },
     {
         sign: 3,
         poly: [
-            [e2, e1],
-            [e3, e1],
-            [e3, e2],
-            [e2, e2],
+            [e0, e1],
+            [e1, e1],
+            [e1, e2],
+            [e0, e2],
         ],
-        text: eastQuadText(e2, e1, e3, e2),
-        signLabel: { x: e3 - 4.4, y: (e1 + e2) / 2 },
-        lagnaTick: { x1: e3, y1: e1 + 6.2, x2: e3 - 6.2, y2: e1 },
+        text: eastQuadText(e0, e1, e1, e2),
+        signLabel: { x: e0 + 4.6, y: (e1 + e2) / 2 },
+        lagnaTick: { x1: e0, y1: e2 - 8, x2: e0 + 8, y2: e2 },
     },
     {
         sign: 4,
         poly: [
-            [e2, e2],
-            [e3, e2],
-            [e3, e3],
+            [e0, e2],
+            [e1, e2],
+            [e0, e3],
         ],
-        text: eastTriText(e3, e2, -1, 1),
-        signLabel: { x: e3 - 16.8, y: e2 + 4.6 },
-        lagnaTick: { x1: e3, y1: e2 + 5.5, x2: e3 - 5.5, y2: e2 },
+        text: eastTriText(e0, e2, 1, 1),
+        signLabel: { x: e0 + 16.8, y: e2 + 4.6 },
+        lagnaTick: { x1: e0 + 7.2, y1: e2, x2: e0, y2: e2 + 7.2 },
     },
     {
         sign: 5,
         poly: [
-            [e2, e2],
-            [e3, e3],
-            [e2, e3],
+            [e1, e2],
+            [e1, e3],
+            [e0, e3],
         ],
-        text: eastTriText(e2, e3, 1, -1),
-        signLabel: { x: e2 + 16.8, y: e3 - 4.6 },
-        lagnaTick: { x1: e2 + 5.5, y1: e3, x2: e2, y2: e3 - 5.5 },
+        text: eastTriText(e1, e3, -1, -1),
+        signLabel: { x: e1 - 16.8, y: e3 - 4.6 },
+        lagnaTick: { x1: e1 - 7.2, y1: e3, x2: e1, y2: e3 - 7.2 },
     },
     {
         sign: 6,
@@ -527,63 +529,63 @@ export const EAST_SIGNS: EastSignCell[] = [
         ],
         text: eastQuadText(e1, e2, e2, e3),
         signLabel: { x: (e1 + e2) / 2, y: e3 - 2.8 },
-        lagnaTick: { x1: e2, y1: e3 - 6.2, x2: e2 - 6.2, y2: e3 },
+        lagnaTick: { x1: e2, y1: e3 - 8, x2: e2 - 8, y2: e3 },
     },
     {
         sign: 7,
         poly: [
-            [e1, e2],
-            [e1, e3],
-            [e0, e3],
+            [e2, e2],
+            [e2, e3],
+            [e3, e3],
         ],
-        text: eastTriText(e1, e3, -1, -1),
-        signLabel: { x: e1 - 16.8, y: e3 - 4.6 },
-        lagnaTick: { x1: e1 - 5.5, y1: e3, x2: e1, y2: e3 - 5.5 },
+        text: eastTriText(e2, e3, 1, -1),
+        signLabel: { x: e2 + 16.8, y: e3 - 4.6 },
+        lagnaTick: { x1: e2 + 7.2, y1: e3, x2: e2, y2: e3 - 7.2 },
     },
     {
         sign: 8,
         poly: [
-            [e0, e2],
-            [e1, e2],
-            [e0, e3],
+            [e2, e2],
+            [e3, e2],
+            [e3, e3],
         ],
-        text: eastTriText(e0, e2, 1, 1),
-        signLabel: { x: e0 + 16.8, y: e2 + 4.6 },
-        lagnaTick: { x1: e0 + 5.5, y1: e2, x2: e0, y2: e2 + 5.5 },
+        text: eastTriText(e3, e2, -1, 1),
+        signLabel: { x: e3 - 16.8, y: e2 + 4.6 },
+        lagnaTick: { x1: e3, y1: e2 + 7.2, x2: e3 - 7.2, y2: e2 },
     },
     {
         sign: 9,
         poly: [
-            [e0, e1],
-            [e1, e1],
-            [e1, e2],
-            [e0, e2],
+            [e2, e1],
+            [e3, e1],
+            [e3, e2],
+            [e2, e2],
         ],
-        text: eastQuadText(e0, e1, e1, e2),
-        signLabel: { x: e0 + 4.6, y: (e1 + e2) / 2 },
-        lagnaTick: { x1: e0, y1: e2 - 6.2, x2: e0 + 6.2, y2: e2 },
+        text: eastQuadText(e2, e1, e3, e2),
+        signLabel: { x: e3 - 4.4, y: (e1 + e2) / 2 },
+        lagnaTick: { x1: e3, y1: e1 + 8, x2: e3 - 8, y2: e1 },
     },
     {
         sign: 10,
         poly: [
-            [e0, e1],
-            [e1, e1],
-            [e0, e0],
+            [e3, e0],
+            [e3, e1],
+            [e2, e1],
         ],
-        text: eastTriText(e0, e1, 1, -1),
-        signLabel: { x: e0 + 16.8, y: e1 - 4.6 },
-        lagnaTick: { x1: e0, y1: e1 - 5.5, x2: e0 + 5.5, y2: e1 },
+        text: eastTriText(e3, e1, -1, -1),
+        signLabel: { x: e3 - 16.8, y: e1 - 4.6 },
+        lagnaTick: { x1: e3, y1: e1 - 7.2, x2: e3 - 7.2, y2: e1 },
     },
     {
         sign: 11,
         poly: [
-            [e0, e0],
-            [e1, e0],
-            [e1, e1],
+            [e2, e0],
+            [e3, e0],
+            [e2, e1],
         ],
-        text: eastTriText(e1, e0, -1, 1),
-        signLabel: { x: e1 - 16.8, y: e0 + 4.6 },
-        lagnaTick: { x1: e1, y1: e0 + 5.5, x2: e1 - 5.5, y2: e0 },
+        text: eastTriText(e2, e0, 1, 1),
+        signLabel: { x: e2 + 16.8, y: e0 + 4.6 },
+        lagnaTick: { x1: e3 - 7.2, y1: e0, x2: e3, y2: e0 + 7.2 },
     },
 ];
 

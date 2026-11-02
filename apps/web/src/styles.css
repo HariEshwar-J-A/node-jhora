@@ -775,6 +775,11 @@ table.data th.mono {
     opacity: 0.65;
 }
 
+.chart-canvas .chart-lagna-diagonal--east {
+    stroke-width: 0.9;
+    opacity: 0.95;
+}
+
 .chart-canvas {
     width: 100%;
     max-width: min(520px, 100%);
@@ -1270,13 +1275,13 @@ table.data th.mono {
 }
 
 .landing-page--sky {
-    background: #090909;
+    background: #060606;
     color: #f4f4f5;
     min-height: 100%;
 }
 
 [data-theme='dark'] body:has(.landing-page--sky) {
-    background: #090909;
+    background: #060606;
 }
 
 .landing-page--sky > .hero-wrap {
@@ -1296,14 +1301,14 @@ table.data th.mono {
 }
 
 .landing-page--sky .card {
-    background: rgb(9 9 9 / 0.78);
+    background: rgb(6 6 6 / 0.78);
 }
 
 .landing-sky-hero {
     position: relative;
     min-height: inherit;
     overflow: hidden;
-    background: #090909;
+    background: #060606;
     color: #f4f4f5;
 }
 
@@ -1313,7 +1318,7 @@ table.data th.mono {
 }
 
 [data-theme='light'] .landing-sky-hero {
-    background: #090909;
+    background: #060606;
     color: #f4f4f5;
 }
 
@@ -1321,7 +1326,7 @@ table.data th.mono {
 .landing-sky-hero .intro-skip.btn-outline {
     border-color: rgb(232 238 255 / 0.55);
     color: #f4f7ff;
-    background: rgb(9 9 9 / 0.35);
+    background: rgb(6 6 6 / 0.35);
 }
 
 .landing-sky-hero .btn-outline:hover:not(:disabled),
@@ -1330,44 +1335,28 @@ table.data th.mono {
     border-color: rgb(232 238 255 / 0.85);
 }
 
-[data-theme='light'] .landing-sky-hero .btn-outline,
-[data-theme='light'] .landing-sky-hero .intro-skip.btn-outline {
-    border: 1.5px solid hsl(var(--foreground) / 0.35);
-    color: hsl(var(--foreground));
-    background: hsl(var(--background) / 0.85);
+.landing-sky-hero .btn-ghost {
+    color: #f4f7ff;
 }
 
-[data-theme='light'] .landing-sky-hero .btn-ghost {
-    color: hsl(var(--foreground));
+.landing-sky-hero .btn-ghost:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.1);
 }
 
-[data-theme='light'] .landing-sky-hero .badge {
-    border-color: hsl(var(--border));
-    color: hsl(var(--muted-foreground));
+.landing-sky-hero .badge {
+    border-color: rgb(244 247 255 / 0.45);
+    color: #f4f7ff;
+    background: rgb(6 6 6 / 0.4);
 }
 
-[data-theme='light'] .landing-sky-hero__content {
-    background: radial-gradient(
-        ellipse 120% 110% at 8% 40%,
-        rgb(248 250 252 / 0.9) 0%,
-        rgb(248 250 252 / 0.45) 40%,
-        transparent 68%
-    );
-    border-radius: 0;
-    color: hsl(var(--foreground));
+.landing-sky-hero .hero h1,
+.landing-sky-hero .hero p {
+    color: #f4f7ff;
 }
 
-[data-theme='light'] .landing-sky-hero__content .hero h1 {
-    color: hsl(var(--foreground));
-}
-
-[data-theme='light'] .landing-sky-hero__content .hero p {
-    color: hsl(var(--muted-foreground));
-}
-
-[data-theme='light'] .landing-sky-hero .btn-default {
-    background: hsl(var(--foreground));
-    color: hsl(var(--background));
+.landing-sky-hero .btn-default {
+    background: #f4f7ff;
+    color: #060606;
 }
 
 .constellation-overlay--light {
@@ -1412,16 +1401,12 @@ table.data th.mono {
     z-index: 0;
 }
 
-.landing-sky-hero__canvas {
-    filter: saturate(1.05) contrast(1.08);
-}
-
 .landing-sky-hero__vignette {
     pointer-events: none;
     position: absolute;
     inset: 0;
     z-index: 2;
-    background: radial-gradient(ellipse at 50% 46%, transparent 46%, rgb(9 9 9 / 0.45) 100%);
+    background: radial-gradient(ellipse at 50% 42%, transparent 58%, rgb(0 0 0 / 0.28) 100%);
 }
 
 .landing-sky-hero--persistent .landing-sky-hero__canvas,
@@ -1436,7 +1421,7 @@ table.data th.mono {
 }
 
 .landing-sky-hero--persistent .landing-sky-hero__vignette {
-    background: linear-gradient(to bottom, rgb(9 9 9 / 0.55), transparent 7rem);
+    background: linear-gradient(to bottom, rgb(6 6 6 / 0.55), transparent 7rem);
 }
 
 .landing-sky-hero__content {
@@ -1451,13 +1436,7 @@ table.data th.mono {
     padding: clamp(1.25rem, 4vw, 2rem);
     padding-top: calc(var(--site-header-offset) + 0.75rem);
     max-width: 42rem;
-    background: linear-gradient(
-        105deg,
-        rgb(9 9 9 / 0.82) 0%,
-        rgb(9 9 9 / 0.5) 48%,
-        rgb(9 9 9 / 0.05) 100%
-    );
-    border-radius: 0.5rem;
+    background: transparent;
     margin: clamp(0.5rem, 3vw, 2rem);
     color: #f4f7ff;
 }
@@ -1601,25 +1580,7 @@ table.data th.mono {
     .landing-sky-hero__content {
         margin: 0.65rem;
         max-width: none;
-        padding-top: 0.75rem;
-    }
-
-    [data-theme='light'] .landing-sky-hero__content {
-        background: linear-gradient(
-            to bottom,
-            rgb(248 250 252 / 0.9) 0%,
-            rgb(248 250 252 / 0.7) 62%,
-            rgb(248 250 252 / 0.12) 100%
-        );
-        color: hsl(var(--foreground));
-    }
-
-    [data-theme='light'] .landing-sky-hero__content .hero h1 {
-        color: hsl(var(--foreground));
-    }
-
-    [data-theme='light'] .landing-sky-hero__content .hero p {
-        color: hsl(var(--muted-foreground));
+        padding-top: calc(var(--site-header-offset) + 0.75rem);
     }
 
     .site-header {
@@ -1715,8 +1676,14 @@ table.data th.mono {
 
 .birth-form__when {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.5rem;
+}
+
+.birth-form__when > .field-row,
+.birth-form__when input {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .birth-form__advanced {
