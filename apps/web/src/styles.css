@@ -38,6 +38,7 @@
 
 html {
     scrollbar-gutter: stable;
+    overflow-x: clip;
 }
 
 html,
@@ -48,6 +49,7 @@ body,
 }
 
 body {
+    overflow-x: clip;
     font-family: Inter, system-ui, sans-serif;
     background: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -110,6 +112,10 @@ a {
     border-bottom: 1px solid hsl(var(--border));
     background: hsl(var(--background) / 0.92);
     backdrop-filter: blur(8px);
+}
+
+:root {
+    --site-header-offset: 3.75rem;
 }
 
 .wordmark {
@@ -447,11 +453,17 @@ a {
 /* App */
 .app-layout {
     display: grid;
-    grid-template-columns: minmax(260px, 300px) 1fr;
+    grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
     gap: 1rem;
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem 1.25rem 2rem;
+    min-width: 0;
+    width: 100%;
+}
+
+.app-layout > * {
+    min-width: 0;
 }
 
 @media (max-width: 900px) {
@@ -589,8 +601,18 @@ table.data th {
     }
 }
 
+.grid-2--chart-table {
+    min-width: 0;
+    width: 100%;
+}
+
+.grid-2--chart-table > * {
+    min-width: 0;
+}
+
 .grid-2--chart-table .data-table-wrap {
-    overflow-x: visible;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 .grid-2--chart-table table.data {
@@ -951,12 +973,14 @@ table.data th.mono {
 /* Docs */
 .docs-layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 240px minmax(0, 1fr);
     gap: 1.25rem;
     max-width: 1100px;
     margin: 0 auto;
     padding: 1rem 1.25rem 2rem;
     align-items: start;
+    min-width: 0;
+    width: 100%;
 }
 
 .docs-main {
@@ -1099,6 +1123,7 @@ table.data th.mono {
 .hero-wrap--cinema {
     min-height: min(92vh, 820px);
     border-bottom: 1px solid hsl(var(--border));
+    scroll-margin-top: var(--site-header-offset);
 }
 
 .landing-sky-hero {
@@ -1250,6 +1275,7 @@ table.data th.mono {
         opacity 0.9s ease,
         transform 0.9s ease;
     padding: clamp(1.25rem, 4vw, 2rem);
+    padding-top: calc(var(--site-header-offset) + 0.75rem);
     max-width: 42rem;
     background: linear-gradient(
         105deg,
@@ -1258,7 +1284,7 @@ table.data th.mono {
         rgb(2 4 12 / 0.08) 100%
     );
     border-radius: 0.5rem;
-    margin: clamp(1rem, 5vw, 2.5rem);
+    margin: clamp(0.5rem, 3vw, 2rem);
 }
 
 .landing-sky-hero__content--visible {
@@ -1365,6 +1391,19 @@ table.data th.mono {
 }
 
 @media (max-width: 720px) {
+    :root {
+        --site-header-offset: 7.25rem;
+    }
+
+    .hero-wrap--cinema {
+        min-height: min(100dvh, 900px);
+    }
+
+    .landing-sky-hero__content {
+        margin-inline: 0.65rem;
+        max-width: none;
+    }
+
     .site-header {
         flex-wrap: wrap;
     }

@@ -7,6 +7,7 @@ import {
 } from '../apps/web/src/components/chart/geometry.ts';
 import {
     CHART_LABEL_PADDING,
+    CHART_PLANET_FONT_SIZE,
     estimateTextHeight,
     estimateTextWidth,
     fitCornerLabel,
@@ -63,13 +64,15 @@ describe('fitLabels', () => {
             id: name,
             text: `${planetShortName(name)} ${i}°`,
             compactText: `${planetShortName(name)}${i}°`,
+            symbolText: planetShortName(name),
         }));
         const placed = fitLabels(poly, anchor, labels, {
             reserved,
-            maxFontSize: 3.55,
-            minFontSize: 1.9,
         });
         expect(placed).toHaveLength(9);
+        for (const p of placed) {
+            expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+        }
         const boxes = placed.map((p) => placementBox(p.x, p.y, p.text, p.fontSize, p.textAnchor));
         for (let i = 0; i < boxes.length; i++) {
             for (const [x, y] of [
@@ -104,13 +107,15 @@ describe('fitLabels', () => {
                 id: `${house}-${name}`,
                 text: `${planetShortName(name)} ${20 + i}° R`,
                 compactText: `${planetShortName(name)}${20 + i}°R`,
+                symbolText: planetShortName(name),
             }));
             const placed = fitLabels(poly, anchor, labels, {
                 reserved,
-                maxFontSize: 3.4,
-                minFontSize: 1.85,
             });
             expect(placed.length).toBe(9);
+            for (const p of placed) {
+                expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+            }
         }
     });
 
@@ -132,14 +137,18 @@ describe('fitLabels', () => {
                 id: `${row}-${col}-${name}`,
                 text: `${planetShortName(name)} ${i}°`,
                 compactText: `${planetShortName(name)}${i}°`,
+                symbolText: planetShortName(name),
             }));
             const placed = fitLabels(
                 poly,
                 { x: rect.x + rect.size / 2, y: rect.y + rect.size * 0.58 },
                 labels,
-                { reserved, maxFontSize: 3.1, minFontSize: 1.75 },
+                { reserved },
             );
             expect(placed.length).toBe(9);
+            for (const p of placed) {
+                expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+            }
         }
     });
 });

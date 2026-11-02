@@ -17,6 +17,7 @@ import {
     wholeSignHouse,
 } from './geometry';
 import {
+    CHART_PLANET_FONT_SIZE,
     estimateTextHeight,
     estimateTextWidth,
     fitLabels,
@@ -110,11 +111,11 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                             id: p.name,
                             text: formatPlanetLine(p),
                             compactText: compactPlanetLine(p),
+                            symbolText: planetShortName(p.name),
                         })),
                         {
                             reserved,
-                            maxFontSize: compact ? 2.8 : 3.55,
-                            minFontSize: compact ? 1.75 : 1.9,
+                            maxFontSize: compact ? 2.1 : CHART_PLANET_FONT_SIZE,
                         },
                     );
                     return (

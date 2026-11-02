@@ -2,11 +2,17 @@ import { pointInPolygon } from './geometry.js';
 
 export const CHART_LABEL_PADDING = 2;
 
+/** Planet label size in SVG user units (~11 CSS px at 520px chart width, viewBox 110 wide). */
+export const CHART_PLANET_FONT_SIZE = 2.33;
+export const CHART_PLANET_FONT_SIZE_COMPACT = 2.33;
+
 export type LabelInput = {
     id: string;
     text: string;
     /** Shorter text if layout is tight (e.g. drop spaces / abbreviate). */
     compactText?: string;
+    /** Symbol only — last resort when the house is crowded. */
+    symbolText?: string;
 };
 
 export type PlacedLabel = {
@@ -123,8 +129,77 @@ function boxFitsPoly(
     return boxCorners(box).every(([x, y]) => pointInsideWithPadding(x, y, poly, padding));
 }
 
+function polygonCentroid(poly: [number, number][]): { x: number; y: number } {
+    let x = 0;
+    let y = 0;
+    for (const p of poly) {
+        x += p[0];
+        y += p[1];
+    }
+    return { x: x / poly.length, y: y / poly.length };
+}
+
+type TextTier = 'full' | 'compact' | 'symbol';
+
+function textForLabel(label: LabelInput, tier: TextTier): string {
+    if (tier === 'symbol' && label.symbolText) return label.symbolText;
+    if (tier === 'compact' && label.compactText) return label.compactText;
+    if (tier === 'symbol') return label.compactText ?? label.text.slice(0, 2);
+    return label.text;
+}
+
+function tryPlaceGrid(
+    poly: [number, number][],
+    centroid: { x: number; y: number },
+    labels: LabelInput[],
+    tier: TextTier,
+    fs: number,
+    textAnchor: 'middle' | 'start',
+    padding: number,
+    reserved: ReservedBox[],
+): PlacedLabel[] | null {
+    const colOptions =
+        labels.length >= 6 ? [3, 2, 1] : labels.length >= 3 ? [2, 1] : [1, 2];
+    for (const cols of colOptions) {
+        const rows = Math.ceil(labels.length / cols);
+        const rowStep = fs * 1.38;
+        const colStep = fs * (cols >= 3 ? 2.65 : 3.15);
+        for (let pull = 0; pull <= 0.35; pull += 0.05) {
+            const cx = centroid.x + (50 - centroid.x) * pull * 0.15;
+            const cy = centroid.y + (50 - centroid.y) * pull * 0.15;
+            const placed: PlacedLabel[] = [];
+            const boxes: ReturnType<typeof labelBox>[] = [];
+            let ok = true;
+            for (let i = 0; i < labels.length; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const xOff = cols === 1 ? 0 : (col - (cols - 1) / 2) * colStep;
+                const blockH = (rows - 1) * rowStep;
+                const x = cx + xOff;
+                const y = cy - blockH / 2 + row * rowStep;
+                const label = labels[i]!;
+                const text = textForLabel(label, tier);
+                const box = labelBox(x, y, text, fs, textAnchor);
+                if (
+                    !boxFitsPoly(box, poly, padding) ||
+                    reservedOverlaps(box, reserved) ||
+                    boxes.some((b) => boxesOverlap(box, b, 0.75))
+                ) {
+                    ok = false;
+                    break;
+                }
+                boxes.push(box);
+                placed.push({ id: label.id, text, x, y, fontSize: fs, textAnchor });
+            }
+            if (ok) return placed;
+        }
+    }
+    return null;
+}
+
 /**
- * Place labels inside a house/cell polygon without overlapping each other, reserved zones, or edges.
+ * Place labels inside a house/cell polygon at a fixed font size; crowded houses use a 2-column grid
+ * centered on the polygon centroid, then shorter strings, then symbol-only as a last resort.
  */
 export function fitLabels(
     poly: [number, number][],
@@ -142,68 +217,34 @@ export function fitLabels(
     const padding = options?.padding ?? CHART_LABEL_PADDING;
     const reserved = options?.reserved ?? [];
     const textAnchor = options?.textAnchor ?? 'middle';
-    let maxFs = options?.maxFontSize ?? 3.6;
-    const minFs = options?.minFontSize ?? 1.85;
+    const fs = options?.maxFontSize ?? CHART_PLANET_FONT_SIZE;
+    const centroid = polygonCentroid(poly);
+    const blend = { x: anchor.x * 0.35 + centroid.x * 0.65, y: anchor.y * 0.35 + centroid.y * 0.65 };
 
-    for (let fs = maxFs; fs >= minFs; fs -= 0.08) {
-        for (const cols of [1, 2, 3]) {
-            const rows = Math.ceil(labels.length / cols);
-            const rowStep = fs * 1.42;
-            const colStep = Math.max(fs * 2.05, 7.5);
-            for (let pull = 0; pull <= 0.22; pull += 0.04) {
-                const cx = anchor.x + (50 - anchor.x) * pull;
-                const cy = anchor.y + (50 - anchor.y) * pull;
-                const placed: PlacedLabel[] = [];
-                const boxes: ReturnType<typeof labelBox>[] = [];
-                let ok = true;
-                for (let i = 0; i < labels.length; i++) {
-                    const col = i % cols;
-                    const row = Math.floor(i / cols);
-                    const xOff = cols === 1 ? 0 : (col - (cols - 1) / 2) * colStep;
-                    const blockH = (rows - 1) * rowStep;
-                    const x = cx + xOff;
-                    const y = cy - blockH / 2 + row * rowStep;
-                    const label = labels[i]!;
-                    const text =
-                        fs <= minFs + 0.1 && label.compactText ? label.compactText : label.text;
-                    const box = labelBox(x, y, text, fs, textAnchor);
-                    if (
-                        !boxFitsPoly(box, poly, padding) ||
-                        reservedOverlaps(box, reserved) ||
-                        boxes.some((b) => boxesOverlap(box, b, 0.65))
-                    ) {
-                        ok = false;
-                        break;
-                    }
-                    boxes.push(box);
-                    placed.push({ id: label.id, text, x, y, fontSize: fs, textAnchor });
-                }
-                if (ok) return placed;
-            }
-        }
+    const tiers: TextTier[] = ['full', 'compact', 'symbol'];
+    for (const tier of tiers) {
+        const placed = tryPlaceGrid(poly, blend, labels, tier, fs, textAnchor, padding, reserved);
+        if (placed) return placed;
     }
 
-    // Last resort: single column, minimum font, compact strings — still avoid overlaps
-    const fs = minFs;
-    const rowStep = fs * 1.35;
-    const cx = anchor.x + (50 - anchor.x) * 0.18;
-    const cy = anchor.y + (50 - anchor.y) * 0.18;
+    // Last resort: fixed font, single column at centroid, nudge until boxes fit
     const placed: PlacedLabel[] = [];
     const boxes: ReturnType<typeof labelBox>[] = [];
-    let y = cy - ((labels.length - 1) * rowStep) / 2;
+    const rowStep = fs * 1.32;
+    let y = blend.y - ((labels.length - 1) * rowStep) / 2;
     for (const label of labels) {
-        const text = label.compactText ?? label.text;
-        let x = cx;
+        const text = textForLabel(label, 'symbol');
+        let x = blend.x;
         let box = labelBox(x, y, text, fs, textAnchor);
         let tries = 0;
         while (
-            tries < 8 &&
+            tries < 12 &&
             (!boxFitsPoly(box, poly, padding) ||
                 reservedOverlaps(box, reserved) ||
-                boxes.some((b) => boxesOverlap(box, b, 0.5)))
+                boxes.some((b) => boxesOverlap(box, b, 0.45)))
         ) {
-            x += textAnchor === 'middle' ? 0 : 0.8;
-            y += 0.35;
+            x += tries % 2 === 0 ? 0.6 : -0.6;
+            y += 0.4;
             box = labelBox(x, y, text, fs, textAnchor);
             tries++;
         }

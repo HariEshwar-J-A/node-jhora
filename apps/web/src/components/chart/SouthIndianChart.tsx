@@ -16,6 +16,7 @@ import {
     signLabel,
 } from './geometry';
 import {
+    CHART_PLANET_FONT_SIZE,
     estimateTextHeight,
     estimateTextWidth,
     fitLabels,
@@ -134,11 +135,11 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                             id: p.name,
                             text: formatPlanetLine(p),
                             compactText: compactPlanetLine(p),
+                            symbolText: planetShortName(p.name),
                         })),
                         {
                             reserved,
-                            maxFontSize: compact ? 2.65 : 3.15,
-                            minFontSize: compact ? 1.7 : 1.85,
+                            maxFontSize: compact ? 2 : CHART_PLANET_FONT_SIZE,
                         },
                     );
                     return (

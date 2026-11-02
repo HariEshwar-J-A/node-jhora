@@ -49,9 +49,33 @@ export function LandingSkyHero({ children }: Props) {
     const mobile = useMobile();
 
     const [staticMode] = useState(() => prefersReduced || !detectWebGL());
-    const [contentVisible, setContentVisible] = useState(staticMode);
+    const [contentVisible, setContentVisible] = useState(
+        () =>
+            staticMode ||
+            (typeof window !== 'undefined' &&
+                window.matchMedia('(max-width: 768px)').matches),
+    );
     const [skyReady, setSkyReady] = useState(staticMode);
     const [showSkip, setShowSkip] = useState(!staticMode);
+
+    useEffect(() => {
+        if (staticMode) return;
+        if (mobile || prefersReduced) {
+            setContentVisible(true);
+            setSkyReady(true);
+            setShowSkip(false);
+        }
+    }, [staticMode, mobile, prefersReduced]);
+
+    useEffect(() => {
+        if (staticMode) return;
+        const fallback = window.setTimeout(() => {
+            setContentVisible(true);
+            setSkyReady(true);
+            setShowSkip(false);
+        }, 8000);
+        return () => clearTimeout(fallback);
+    }, [staticMode]);
 
     useEffect(() => {
         if (staticMode) return;
