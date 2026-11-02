@@ -42,20 +42,26 @@ export function isRetrograde(p: ChartPlanet): boolean {
     return p.speed != null && p.speed < 0;
 }
 
-/** North Indian house anchors (viewBox 0–100). */
+export const NORTH_VIEW_BOX = '-4 -4 108 108';
+
+/** Inset frame so non-scaling strokes stay inside the viewBox. */
+export const NORTH_FRAME_PATH =
+    'M 8 8 H 92 V 92 H 8 Z M 8 8 L 92 92 M 92 8 L 8 92 M 50 8 L 92 50 L 50 92 L 8 50 Z';
+
+/** North Indian house anchors (viewBox −4…108, frame 8–92). */
 export const NORTH_HOUSE_ANCHORS: Record<number, { x: number; y: number }> = {
-    1: { x: 50, y: 15 },
-    2: { x: 13, y: 13 },
-    3: { x: 13, y: 35 },
-    4: { x: 13, y: 65 },
-    5: { x: 13, y: 87 },
-    6: { x: 35, y: 87 },
-    7: { x: 50, y: 87 },
-    8: { x: 65, y: 87 },
-    9: { x: 87, y: 87 },
-    10: { x: 87, y: 65 },
-    11: { x: 87, y: 35 },
-    12: { x: 87, y: 13 },
+    1: { x: 50, y: 17 },
+    2: { x: 16, y: 16 },
+    3: { x: 16, y: 38 },
+    4: { x: 16, y: 62 },
+    5: { x: 16, y: 84 },
+    6: { x: 38, y: 84 },
+    7: { x: 50, y: 84 },
+    8: { x: 62, y: 84 },
+    9: { x: 84, y: 84 },
+    10: { x: 84, y: 62 },
+    11: { x: 84, y: 38 },
+    12: { x: 84, y: 16 },
 };
 
 export const SOUTH_SIGN_CELLS: { sign: number; row: number; col: number }[] = [
@@ -72,9 +78,6 @@ export const SOUTH_SIGN_CELLS: { sign: number; row: number; col: number }[] = [
     { sign: 1, row: 3, col: 2 },
     { sign: 0, row: 3, col: 3 },
 ];
-
-export const NORTH_FRAME_PATH =
-    'M 5 5 H 95 V 95 H 5 Z M 5 5 L 95 95 M 95 5 L 5 95 M 50 5 L 95 50 L 50 95 L 5 50 Z';
 
 const SOUTH_CELL = 21;
 const SOUTH_ORIGIN = 7;
@@ -110,24 +113,30 @@ export function planetStackLayout(count: number, baseY: number, maxRows = 6): nu
 
 export type PlanetLabelSlot = { x: number; y: number; fontSize: number };
 
-/** North Indian: wrap into two columns when crowded; shrink type to stay inside the house. */
+/** North Indian: fit labels inside each house polygon; stack on narrow corners. */
 export function northHousePlanetLayout(
     count: number,
     anchor: { x: number; y: number },
+    house?: number,
 ): PlanetLabelSlot[] {
     if (count === 0) return [];
-    const cols = count > 3 ? 2 : 1;
+    const narrowHouses = new Set([2, 3, 5, 6, 8, 9, 11, 12]);
+    const narrow = house != null && narrowHouses.has(house);
+    const cols = count > 3 && !narrow ? 2 : 1;
     const rows = Math.ceil(count / cols);
-    const fontSize = count > 4 ? 3.05 : count > 3 ? 3.35 : 4.1;
-    const rowStep = fontSize * 1.18;
-    const colStep = 10.5;
+    let fontSize = 4;
+    if (count > 2) fontSize = narrow ? 2.85 : 3.25;
+    if (count > 3) fontSize = narrow ? 2.65 : 2.95;
+    if (count > 4) fontSize = narrow ? 2.45 : 2.75;
+    const rowStep = fontSize * 1.25;
+    const colStep = narrow ? 0 : 8.5;
     const slots: PlanetLabelSlot[] = [];
     for (let i = 0; i < count; i++) {
         const col = i % cols;
         const row = Math.floor(i / cols);
         const xOff = cols === 1 ? 0 : (col - (cols - 1) / 2) * colStep;
         const blockH = (rows - 1) * rowStep;
-        const y = anchor.y + 6 - blockH / 2 + row * rowStep;
+        const y = anchor.y + 5 - blockH / 2 + row * rowStep;
         slots.push({ x: anchor.x + xOff, y, fontSize });
     }
     return slots;

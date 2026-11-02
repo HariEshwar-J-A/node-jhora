@@ -109,7 +109,7 @@ export function LandingSkyHero({ children }: Props) {
             ) : (
                 <canvas ref={canvasRef} className="landing-sky-hero__canvas" aria-hidden="true" />
             )}
-            <ConstellationOverlay visible={skyReady || staticMode} />
+            <ConstellationOverlay visible={skyReady || staticMode} sparse={mobile} />
             <div className="landing-sky-hero__vignette" aria-hidden="true" />
             {showSkip && !reduceMotion && (
                 <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>

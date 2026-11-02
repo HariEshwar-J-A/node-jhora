@@ -539,25 +539,37 @@ table.data th {
     font-weight: 500;
 }
 
+.chart-canvas {
+    width: 100%;
+    max-width: min(560px, 100%);
+    margin: 0 auto;
+    aspect-ratio: 1;
+}
+
 .chart-wheel svg,
 .chart-wheel__svg,
 .chart-canvas__svg {
     width: 100%;
-    max-width: min(560px, 100%);
-    height: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: min(560px, 100vw);
     display: block;
     margin: 0 auto;
 }
 
-.chart-canvas--compact .chart-canvas__svg {
+.chart-canvas--compact {
     max-width: 148px;
+}
+
+.chart-canvas--compact .chart-canvas__svg {
+    max-height: 148px;
 }
 
 .chart-wheel .chart-frame,
 .chart-canvas .chart-frame {
     fill: none;
     stroke: hsl(var(--foreground));
-    stroke-width: 0.65;
+    stroke-width: 0.55;
     vector-effect: non-scaling-stroke;
     pathlength: 1;
     stroke-dasharray: 1;
@@ -730,6 +742,19 @@ table.data th {
     font-weight: 600;
     font-size: 0.82rem;
     line-height: 1.1;
+}
+
+.varga-board__hero {
+    width: 100%;
+    max-width: min(420px, 100%);
+    margin: 0 auto 0.75rem;
+}
+
+.panel-footnote {
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.45;
 }
 
 .varga-board__toolbar {
@@ -993,6 +1018,7 @@ table.data th {
     height: 100%;
     display: block;
     object-fit: cover;
+    z-index: 0;
 }
 
 .landing-sky-hero__canvas {
@@ -1003,6 +1029,7 @@ table.data th {
     pointer-events: none;
     position: absolute;
     inset: 0;
+    z-index: 2;
     background: linear-gradient(
         to bottom,
         rgb(2 4 12 / 0.45) 0%,
@@ -1013,12 +1040,31 @@ table.data th {
 
 .landing-sky-hero__content {
     position: relative;
-    z-index: 2;
+    z-index: 4;
     opacity: 0;
     transform: translateY(12px);
     transition:
         opacity 0.9s ease,
         transform 0.9s ease;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    max-width: 42rem;
+    background: linear-gradient(
+        105deg,
+        rgb(2 4 12 / 0.82) 0%,
+        rgb(2 4 12 / 0.55) 52%,
+        rgb(2 4 12 / 0.08) 100%
+    );
+    border-radius: 0.5rem;
+    margin: clamp(1rem, 5vw, 2.5rem);
+}
+
+[data-theme='light'] .landing-sky-hero__content {
+    background: linear-gradient(
+        105deg,
+        rgb(248 250 252 / 0.94) 0%,
+        rgb(248 250 252 / 0.78) 55%,
+        rgb(248 250 252 / 0.35) 100%
+    );
 }
 
 .landing-sky-hero__content--visible {
@@ -1028,7 +1074,7 @@ table.data th {
 
 .intro-skip {
     position: absolute;
-    z-index: 3;
+    z-index: 5;
     right: 1rem;
     bottom: 1rem;
 }
@@ -1041,6 +1087,24 @@ table.data th {
     opacity: 0;
     transition: opacity 1.2s ease 0.4s;
     color: rgb(200 220 255 / 0.75);
+}
+
+.constellation-overlay--sparse .constellation-group:nth-child(n + 4) {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .constellation-overlay {
+        opacity: 0;
+    }
+
+    .constellation-overlay--visible {
+        opacity: 0.45;
+    }
+
+    .constellation-star {
+        r: 0.0018;
+    }
 }
 
 .constellation-overlay--visible {

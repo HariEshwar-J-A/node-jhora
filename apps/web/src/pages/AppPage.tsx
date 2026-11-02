@@ -331,6 +331,7 @@ export function AppPage() {
                             <PanchangaPanel
                                 panchanga={result.snapshot.panchanga ?? {}}
                                 sunRiseSet={result.sunRiseSet}
+                                riseSetNote="Sunrise and sunset for the birth date (local civil day), using the JHora default: geometric disc centre on the horizon without refraction. USNO and NOAA tables use the upper limb with refraction, typically about 4–6 minutes earlier."
                             />
                         )}
 
@@ -349,7 +350,10 @@ export function AppPage() {
                         )}
 
                         {result && tab === 'transits' && (
-                            <TransitsPanel transits={result.transits ?? {}} />
+                            <TransitsPanel
+                                transits={result.transits ?? {}}
+                                timeZone={result.meta?.resolvedZone ?? timezone}
+                            />
                         )}
 
                         {tab === 'import' && <ImportExportPanel />}

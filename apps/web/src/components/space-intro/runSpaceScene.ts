@@ -157,9 +157,9 @@ export async function mountSpaceScene(
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 800);
     camera.position.set(0, 0, -120);
 
-    const starFar = buildStars(THREE, opts.mobile ? 1200 : 3200, 180, lightSky);
-    const starMid = buildStars(THREE, opts.mobile ? 800 : 2000, 120, lightSky);
-    const starNear = buildStars(THREE, opts.mobile ? 400 : 900, 70, lightSky);
+    const starFar = buildStars(THREE, opts.mobile ? 650 : 3200, 180, lightSky);
+    const starMid = buildStars(THREE, opts.mobile ? 420 : 2000, 120, lightSky);
+    const starNear = buildStars(THREE, opts.mobile ? 180 : 900, 70, lightSky);
     [starFar, starMid, starNear].forEach((p) => {
         points.push(p);
         scene.add(p);

@@ -1,6 +1,11 @@
 import * as Comlink from 'comlink';
 import { KPEngine } from '@node-jhora/analytics';
-import { computeRiseSetTable, calculateVarga, EphemerisEngine } from '@node-jhora/core';
+import {
+    computeRiseSetTable,
+    calculateVarga,
+    EphemerisEngine,
+    jdUtFromDateTime,
+} from '@node-jhora/core';
 import {
     DE440S_BYTES,
     DE440S_SHA256,
@@ -231,7 +236,7 @@ const api = {
             });
         }
 
-        const jdStart = instant.toUTC().toMillis() / 86400000 + 2440587.5;
+        const jdStart = jdUtFromDateTime(birthLocal.startOf('day').toUTC());
         const riseSetTable = computeRiseSetTable(eph, 0, jdStart, {
             latitude: input.latitude,
             longitude: input.longitude,

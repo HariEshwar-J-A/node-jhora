@@ -2,13 +2,14 @@ import { SKY_CONSTELLATIONS } from './constellations';
 
 type Props = {
     visible: boolean;
+    sparse?: boolean;
     className?: string;
 };
 
-export function ConstellationOverlay({ visible, className }: Props) {
+export function ConstellationOverlay({ visible, sparse, className }: Props) {
     return (
         <svg
-            className={`constellation-overlay${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
+            className={`constellation-overlay${sparse ? ' constellation-overlay--sparse' : ''}${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
             viewBox="0 0 1 1"
             preserveAspectRatio="xMidYMid slice"
             aria-hidden="true"

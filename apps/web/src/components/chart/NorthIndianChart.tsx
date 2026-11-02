@@ -4,6 +4,7 @@ import type { ChartMeta, ChartPlanet } from './types';
 import {
     NORTH_FRAME_PATH,
     NORTH_HOUSE_ANCHORS,
+    NORTH_VIEW_BOX,
     degreeInSign,
     isRetrograde,
     planetShortName,
@@ -21,9 +22,12 @@ type Props = {
     compact?: boolean;
 };
 
-function formatPlanetLine(p: ChartPlanet): string {
+function formatPlanetLine(p: ChartPlanet, compact: boolean): string {
     const d = Math.floor(degreeInSign(p));
     const retro = isRetrograde(p) ? ' R' : '';
+    if (compact) {
+        return `${planetShortName(p.name)}${d}${retro}`;
+    }
     return `${planetShortName(p.name)} ${d}°${retro}`;
 }
 
@@ -43,7 +47,8 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
             <svg
-                viewBox="0 0 100 100"
+                viewBox={NORTH_VIEW_BOX}
+                preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label="North Indian chart"
                 className="chart-canvas__svg"
@@ -55,7 +60,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                     const sign0 = (ascSign0 + i) % 12;
                     const anchor = NORTH_HOUSE_ANCHORS[house]!;
                     const inHouse = byHouse.get(house) ?? [];
-                    const slots = northHousePlanetLayout(inHouse.length, anchor);
+                    const slots = northHousePlanetLayout(inHouse.length, anchor, house);
                     return (
                         <g key={house} className="chart-house">
                             <text
@@ -76,23 +81,27 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                                     Asc
                                 </text>
                             )}
-                            {inHouse.map((p, idx) => (
-                                <text
-                                    key={p.name}
-                                    x={slots[idx]?.x ?? anchor.x}
-                                    y={slots[idx]?.y ?? anchor.y + 6}
-                                    textAnchor="middle"
-                                    className="chart-planet"
-                                    fontSize={slots[idx]?.fontSize ?? 4.25}
-                                >
-                                    <title>
-                                        {p.name} · {signName(planetSign0(p) + 1)} ·{' '}
-                                        {degreeInSignDms(degreeInSign(p))} ({formatDms(p.longitude)}
-                                        ){isRetrograde(p) ? ' · Retrograde' : ''}
-                                    </title>
-                                    {formatPlanetLine(p)}
-                                </text>
-                            ))}
+                            {inHouse.map((p, idx) => {
+                                const fs = slots[idx]?.fontSize ?? 4.25;
+                                return (
+                                    <text
+                                        key={p.name}
+                                        x={slots[idx]?.x ?? anchor.x}
+                                        y={slots[idx]?.y ?? anchor.y + 6}
+                                        textAnchor="middle"
+                                        className="chart-planet"
+                                        fontSize={fs}
+                                    >
+                                        <title>
+                                            {p.name} · {signName(planetSign0(p) + 1)} ·{' '}
+                                            {degreeInSignDms(degreeInSign(p))} (
+                                            {formatDms(p.longitude)})
+                                            {isRetrograde(p) ? ' · Retrograde' : ''}
+                                        </title>
+                                        {formatPlanetLine(p, fs < 3.2)}
+                                    </text>
+                                );
+                            })}
                         </g>
                     );
                 })}

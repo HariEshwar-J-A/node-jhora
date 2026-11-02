@@ -11,9 +11,10 @@ type Panchanga = {
 type Props = {
     panchanga: Panchanga;
     sunRiseSet?: { rise?: string; set?: string };
+    riseSetNote?: string;
 };
 
-export function PanchangaPanel({ panchanga, sunRiseSet }: Props) {
+export function PanchangaPanel({ panchanga, sunRiseSet, riseSetNote }: Props) {
     return (
         <div className="panchanga-panel" data-testid="panel-panchanga">
             <div className="stat-grid">
@@ -34,6 +35,7 @@ export function PanchangaPanel({ panchanga, sunRiseSet }: Props) {
                         <StatCard label="Sunrise" value={String(sunRiseSet.rise ?? '—')} />
                         <StatCard label="Sunset" value={String(sunRiseSet.set ?? '—')} />
                     </div>
+                    {riseSetNote ? <p className="panel-footnote">{riseSetNote}</p> : null}
                 </div>
             )}
         </div>
