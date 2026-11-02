@@ -2,7 +2,7 @@
 
 Place data in this package is derived from [GeoNames](https://www.geonames.org/) export files:
 
-- `cities5000.zip` — cities with population ≥ 5,000, plus seats of administrative divisions
+- `cities1000.zip` — cities with population ≥ 1,000, plus seats of administrative divisions (no further population cut)
 - `admin1CodesASCII.txt` — first-level administrative divisions
 - `alternateNamesV2.zip` — alternate and historic names (including Indic scripts)
 - `timeZones.txt` — IANA timezone reference

@@ -1,6 +1,6 @@
 # Atlas (`@node-jhora/atlas`)
 
-`@node-jhora/atlas` is an offline city gazetteer for birth-place lookup. It is built from the GeoNames `cities5000`, `admin1CodesASCII`, `alternateNamesV2`, and `timeZones` dumps and returns latitude, longitude, IANA timezone, country, admin-1 region, and population for each place.
+`@node-jhora/atlas` is an offline city gazetteer for birth-place lookup. It is built from the GeoNames `cities1000`, `admin1CodesASCII`, `alternateNamesV2`, and `timeZones` dumps and returns latitude, longitude, IANA timezone, country, admin-1 region, and population for each place. Every cities1000 record is kept; the build does not apply a further population cut.
 
 ## Attribution (CC-BY 4.0)
 
@@ -10,7 +10,7 @@ The compiled gazetteer shards are a derivative work of the GeoNames dumps. Any a
 
 ## Data distribution
 
-The npm package ships compiled code only (`dist/`, `README.md`, `ATTRIBUTION.md`, `LICENSE`), in line with [ADR-0006](../decisions/0006-npm-packaging-and-ephemeris-data-distribution.md). The generated data is not committed and not published. A full build is gzip-compressed JSON, at most 10 MB, with one shard per 2-letter prefix (each shard at most 300 KB, and each shard contains the place records that prefix needs). Build it with:
+The npm package ships compiled code only (`dist/`, `README.md`, `ATTRIBUTION.md`, `LICENSE`), in line with [ADR-0006](../decisions/0006-npm-packaging-and-ephemeris-data-distribution.md). The generated data is not committed and not published. A full build is gzip-compressed JSON, one shard per 2-letter prefix, and each shard contains the place records that prefix needs. `shardBytes` on the manifest is the file size used as a load-progress denominator. Individual files stay at or under 100 MB and the tree stays well under 1 GB so the site can be published on GitHub Pages. The atlas is exhaustive and is expected to exceed 25 MB; the build does not warn for that. Build it with:
 
 ```bash
 pnpm --filter @node-jhora/atlas atlas:build
@@ -35,4 +35,4 @@ const hits = gazetteer.search('chen', { limit: 5 });
 const chennai = gazetteer.resolve('चेन्नई');
 ```
 
-In a browser or worker, load `manifest.json` and pass `createFetchShardLoader` to `Gazetteer.open`. The loader fetches one gzip shard for the query prefix and inflates it. Pass an empty place array when the manifest has no `places` file.
+In a browser or worker, load `manifest.json` and pass `createFetchShardLoader` to `Gazetteer.open` with an empty preload list. The loader fetches one gzip shard for the query prefix and inflates it. Pass an empty place array when the manifest has no `places` file. The web client streams that response with a `ReadableStream` reader, reports percent from `shardBytes` or `Content-Length`, and prefetches the other shards at idle priority into the Cache API (`node-jhora-atlas-<builtAt>`).

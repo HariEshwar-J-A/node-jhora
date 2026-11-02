@@ -59,25 +59,35 @@ describe('@node-jhora/atlas full build', () => {
         }
     }, 120_000);
 
-    it('keeps the built index within the web budget', () => {
+    it('keeps the exhaustive cities1000 index within GitHub Pages limits', () => {
+        const manifest = JSON.parse(readFileSync(join(DATA_DIR, 'manifest.json'), 'utf8')) as {
+            placeCount: number;
+            places?: string;
+            shardBytes?: Record<string, number>;
+            indexShards: Record<string, string>;
+        };
+        expect(manifest.placeCount).toBeGreaterThan(100_000);
+        expect(manifest.places).toBeUndefined();
+        expect(existsSync(join(DATA_DIR, 'places.json'))).toBe(false);
+        expect(manifest.shardBytes).toBeTruthy();
+        const fileLimit = 100 * 1024 * 1024;
+        const atlasLimit = 900 * 1024 * 1024;
         const walk = (dir: string): number => {
             let total = 0;
             for (const name of readdirSync(dir)) {
                 const path = join(dir, name);
                 const st = statSync(path);
                 if (st.isDirectory()) total += walk(path);
-                else total += st.size;
+                else {
+                    expect(st.size).toBeLessThanOrEqual(fileLimit);
+                    total += st.size;
+                }
             }
             return total;
         };
-        expect(walk(DATA_DIR)).toBeLessThanOrEqual(10 * 1024 * 1024);
-        const manifest = JSON.parse(readFileSync(join(DATA_DIR, 'manifest.json'), 'utf8')) as {
-            indexShards: Record<string, string>;
-        };
-        for (const id of ['la-ch', 'la-sa']) {
-            const rel = manifest.indexShards[id];
-            expect(rel).toBeTruthy();
-            expect(statSync(join(DATA_DIR, rel!)).size).toBeLessThanOrEqual(300 * 1024);
+        expect(walk(DATA_DIR)).toBeLessThanOrEqual(atlasLimit);
+        for (const [id, rel] of Object.entries(manifest.indexShards)) {
+            expect(manifest.shardBytes?.[id]).toBe(statSync(join(DATA_DIR, rel)).size);
         }
     });
 });

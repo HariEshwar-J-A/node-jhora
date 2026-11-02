@@ -31,6 +31,11 @@ export interface GazetteerManifest {
     /** Intern table for compact index shards (optional in tiny fixtures). */
     strings?: string;
     indexShards: Record<string, string>;
+    /**
+     * On-disk byte size of each shard file, keyed by shard id. A progressive
+     * loader uses this as the progress denominator when Content-Length is absent.
+     */
+    shardBytes?: Record<string, number>;
 }
 
 export interface PlaceHit {

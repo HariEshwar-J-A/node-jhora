@@ -404,15 +404,17 @@ async function assertPlaceCombobox(page, vpName) {
     await firstSao.waitFor({ state: 'visible', timeout: 120_000 });
     await page.waitForTimeout(250);
     page.off('response', onResponse);
-    const total = atlasBytes.reduce((sum, row) => sum + row.bytes, 0);
-    const files = atlasBytes.map((row) => `${row.bytes} ${row.url.split('/').pop()}`).join(', ');
+    const queryRows = atlasBytes.filter((row) =>
+        /\/(?:manifest\.json|la-sa\.json\.gz)(?:\?|$)/.test(row.url),
+    );
+    const total = queryRows.reduce((sum, row) => sum + row.bytes, 0);
+    const files = queryRows.map((row) => `${row.bytes} ${row.url.split('/').pop()}`).join(', ');
     console.log(`atlas first query ${vpName}: ${total} bytes (${files})`);
     if (total <= 0) fail(`First place query recorded no atlas bytes at ${vpName}`);
-    if (total > 300 * 1024) fail(`First place query transferred ${total} bytes at ${vpName}`);
     if (vpName === '1280') {
         await writeFile(
             join(OUT, 'atlas-first-query.json'),
-            JSON.stringify({ total, files: atlasBytes }, null, 2),
+            JSON.stringify({ total, files: queryRows }, null, 2),
         );
     }
     const saoNames = await page.locator('.place-combo__option').allTextContents();
@@ -539,7 +541,9 @@ const VARGA_TITLES = {
 
 async function assertVargaTitles(page) {
     const sel = page.locator('.varga-board__picker select');
-    const divisions = await sel.locator('option').evaluateAll((options) => options.map((o) => o.value));
+    const divisions = await sel
+        .locator('option')
+        .evaluateAll((options) => options.map((o) => o.value));
     for (const style of ['south', 'north']) {
         await page.getByTestId(`chart-style-${style}`).click();
         for (const division of divisions) {

@@ -40,6 +40,7 @@ export interface GazetteerManifest {
     // (undocumented)
     placeCount: number;
     places?: string;
+    shardBytes?: Record<string, number>;
     strings?: string;
     // (undocumented)
     version: number;

@@ -1,92 +1,103 @@
-import type { GazetteerManifest, PlaceHit, PlaceRecord } from '@node-jhora/atlas';
-import {
-    createFetchShardLoader,
-    Gazetteer,
-    normalizeSearchKey,
-    shardIdForKey,
+import type {
+    GazetteerManifest,
+    IndexShardPayload,
+    PlaceHit,
+    PlaceRecord,
 } from '@node-jhora/atlas';
+import { Gazetteer, normalizeSearchKey, shardIdForKey } from '@node-jhora/atlas';
 
-export type PlaceSearchRequest = {
-    id: number;
-    manifestUrl: string;
-    query: string;
-};
+export type PlaceWorkerRequest =
+    | { type: 'open'; id: number; manifest: GazetteerManifest }
+    | { type: 'ingest'; id: number; shardId: string; bytes: ArrayBuffer }
+    | { type: 'search'; id: number; query: string };
 
-export type PlaceSearchResponse = {
+export type PlaceWorkerResponse = {
+    type: 'open' | 'ingest' | 'search';
     id: number;
-    hits: PlaceHit[];
+    shardId?: string;
+    hits?: PlaceHit[];
     error?: string;
 };
 
 type PlaceWorkerScope = {
-    onmessage: ((event: MessageEvent<PlaceSearchRequest>) => void) | null;
-    postMessage: (message: PlaceSearchResponse) => void;
+    onmessage: ((event: MessageEvent<PlaceWorkerRequest>) => void) | null;
+    postMessage: (message: PlaceWorkerResponse) => void;
 };
 
 const scope = self as unknown as PlaceWorkerScope;
 
 let gazetteer: Gazetteer | null = null;
-let opening: Promise<Gazetteer> | null = null;
+const ready = new Map<string, IndexShardPayload>();
 
-function openGazetteer(manifestUrl: string): Promise<Gazetteer> {
-    if (gazetteer) return Promise.resolve(gazetteer);
-    if (!opening) {
-        opening = (async () => {
-            const manifestRes = await fetch(manifestUrl);
-            if (!manifestRes.ok) {
-                throw new Error(`Place index manifest HTTP ${manifestRes.status}`);
-            }
-            const manifest = (await manifestRes.json()) as GazetteerManifest;
-            const base = new URL('.', manifestUrl);
-            let places: PlaceRecord[] = [];
-            if (manifest.places) {
-                const placesRes = await fetch(new URL(manifest.places, manifestUrl));
-                if (!placesRes.ok) {
-                    throw new Error(`Place index HTTP ${placesRes.status}`);
-                }
-                places = (await placesRes.json()) as PlaceRecord[];
-            }
-            const opened = await Gazetteer.open(
-                manifest,
-                places,
-                createFetchShardLoader(manifest, base),
-                [],
-            );
-            gazetteer = opened;
-            return opened;
-        })().catch((err: unknown) => {
-            opening = null;
-            throw err;
-        });
+const loader = (shardId: string): Promise<IndexShardPayload> => {
+    const payload = ready.get(shardId);
+    if (!payload) return Promise.reject(new Error(`Place shard ${shardId} is not loaded`));
+    return Promise.resolve(payload);
+};
+
+async function decodeShard(bytes: ArrayBuffer): Promise<IndexShardPayload> {
+    const view = new Uint8Array(bytes);
+    let payload = view;
+    if (view.byteLength >= 2 && view[0] === 0x1f && view[1] === 0x8b) {
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+        payload = new Uint8Array(await new Response(stream).arrayBuffer());
     }
-    return opening;
+    const raw = JSON.parse(new TextDecoder().decode(payload)) as {
+        keys: string[] | number[];
+        placeIndexes: number[];
+        kinds?: number[];
+        places?: PlaceRecord[];
+    };
+    if (typeof raw.keys[0] === 'number') {
+        throw new Error('Interned place shards are not loaded in the browser');
+    }
+    return {
+        keys: raw.keys as string[],
+        placeIndexes: raw.placeIndexes,
+        kinds: raw.kinds,
+        places: raw.places,
+    };
 }
 
-scope.onmessage = (event: MessageEvent<PlaceSearchRequest>) => {
-    const { id, manifestUrl, query } = event.data;
+function reply(message: PlaceWorkerResponse): void {
+    scope.postMessage(message);
+}
+
+scope.onmessage = (event: MessageEvent<PlaceWorkerRequest>) => {
+    const message = event.data;
     void (async () => {
         try {
-            const index = await openGazetteer(manifestUrl);
-            const prefix = normalizeSearchKey(query);
+            if (message.type === 'open') {
+                gazetteer = await Gazetteer.open(message.manifest, [], loader, []);
+                reply({ type: 'open', id: message.id });
+                return;
+            }
+            if (message.type === 'ingest') {
+                if (!ready.has(message.shardId)) {
+                    ready.set(message.shardId, await decodeShard(message.bytes));
+                }
+                reply({ type: 'ingest', id: message.id, shardId: message.shardId });
+                return;
+            }
+            if (!gazetteer) throw new Error('Place index is not open');
+            const prefix = normalizeSearchKey(message.query);
             if (prefix.length < 2) {
-                const empty: PlaceSearchResponse = { id, hits: [] };
-                scope.postMessage(empty);
+                reply({ type: 'search', id: message.id, hits: [] });
                 return;
             }
             const shardId = shardIdForKey(prefix);
-            if (index.manifest.indexShards[shardId]) {
-                await index.ensureShard(shardId);
+            if (gazetteer.manifest.indexShards[shardId]) {
+                await gazetteer.ensureShard(shardId);
             }
-            const hits = index.search(query, { limit: 8 });
-            const response: PlaceSearchResponse = { id, hits };
-            scope.postMessage(response);
+            const hits = gazetteer.search(message.query, { limit: 8 });
+            reply({ type: 'search', id: message.id, hits });
         } catch (err) {
-            const response: PlaceSearchResponse = {
-                id,
+            reply({
+                type: message.type === 'search' ? 'search' : message.type,
+                id: message.id,
                 hits: [],
                 error: err instanceof Error ? err.message : String(err),
-            };
-            scope.postMessage(response);
+            });
         }
     })();
 };

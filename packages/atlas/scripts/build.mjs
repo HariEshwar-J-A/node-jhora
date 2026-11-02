@@ -7,7 +7,7 @@
  *   node scripts/build.mjs [--out data] [--fixture tests/fixtures/gazetteer-mini]
  */
 
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import {
     createWriteStream,
     existsSync,
@@ -42,7 +42,7 @@ const PKG_ROOT = join(__dirname, '..');
 const CACHE = join(PKG_ROOT, '.cache');
 
 const GEONAMES = {
-    cities5000: 'https://download.geonames.org/export/dump/cities5000.zip',
+    cities1000: 'https://download.geonames.org/export/dump/cities1000.zip',
     admin1: 'https://download.geonames.org/export/dump/admin1CodesASCII.txt',
     alternateNames: 'https://download.geonames.org/export/dump/alternateNamesV2.zip',
     timeZones: 'https://download.geonames.org/export/dump/timeZones.txt',
@@ -235,7 +235,12 @@ async function streamAlternateNames(zipPath, geonameIds, onName) {
         });
     }
     const rl = createInterface({ input: createReadStream(txtPath), crlfDelay: Infinity });
+    let scanned = 0;
     for await (const line of rl) {
+        scanned++;
+        if (scanned % 2_000_000 === 0) {
+            console.log(`[atlas:build] Scanned ${scanned} alternate-name rows…`);
+        }
         if (!line) continue;
         const cols = line.split('\t');
         if (cols.length < 4) continue;
@@ -246,15 +251,35 @@ async function streamAlternateNames(zipPath, geonameIds, onName) {
     }
 }
 
-async function readCities5000(zipPath) {
-    const buf = execSync(`unzip -p "${zipPath}" cities5000.txt`, { maxBuffer: 64 * 1024 * 1024 });
+function readCities1000(zipPath) {
+    const child = spawn('unzip', ['-p', zipPath, 'cities1000.txt'], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+    });
     const cities = [];
-    for (const line of buf.toString('utf8').split('\n')) {
-        if (!line) continue;
-        const row = parseCitiesLine(line);
-        if (row) cities.push(row);
-    }
-    return cities;
+    const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
+    const done = new Promise((resolve, reject) => {
+        let stderr = '';
+        child.stderr.on('data', (chunk) => {
+            stderr += String(chunk);
+        });
+        child.on('error', reject);
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`unzip cities1000.txt exited ${code}: ${stderr.slice(0, 500)}`));
+                return;
+            }
+            resolve();
+        });
+    });
+    return (async () => {
+        for await (const line of rl) {
+            if (!line) continue;
+            const row = parseCitiesLine(line);
+            if (row) cities.push(row);
+        }
+        await done;
+        return cities;
+    })();
 }
 
 function writeShards(outDir, places, keyMap) {
@@ -262,6 +287,7 @@ function writeShards(outDir, places, keyMap) {
     mkdirSync(join(outDir, 'index'), { recursive: true });
 
     const indexShards = {};
+    const shardBytes = {};
     let keyCount = 0;
     let largest = 0;
     let largestId = '';
@@ -290,6 +316,7 @@ function writeShards(outDir, places, keyMap) {
         const json = JSON.stringify({ keys, placeIndexes, kinds, places: localPlaces });
         writeFileSync(filePath, gzipSync(Buffer.from(json), { level: 9 }));
         const size = statSync(filePath).size;
+        shardBytes[shardId] = size;
         if (size > largest) {
             largest = size;
             largestId = shardId;
@@ -305,6 +332,7 @@ function writeShards(outDir, places, keyMap) {
         placeCount: places.length,
         keyCount,
         indexShards,
+        shardBytes,
     };
     writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest));
     return { keyCount, largest, largestId };
@@ -335,17 +363,17 @@ function copyFixture(fixturePath, outDir) {
 
 async function buildFull(outDir) {
     mkdirSync(CACHE, { recursive: true });
-    const citiesZip = join(CACHE, 'cities5000.zip');
+    const citiesZip = join(CACHE, 'cities1000.zip');
     const adminPath = join(CACHE, 'admin1CodesASCII.txt');
     const altZip = join(CACHE, 'alternateNamesV2.zip');
 
-    await ensureDownload(GEONAMES.cities5000, citiesZip);
+    await ensureDownload(GEONAMES.cities1000, citiesZip);
     await ensureDownload(GEONAMES.admin1, adminPath);
     await ensureDownload(GEONAMES.alternateNames, altZip);
     await ensureDownload(GEONAMES.timeZones, join(CACHE, 'timeZones.txt'));
 
     const admin1 = loadAdmin1(adminPath);
-    const cities = await readCities5000(citiesZip);
+    const cities = await readCities1000(citiesZip);
     const geonameIds = new Set(cities.map((c) => c.geonameId));
 
     const places = [];
@@ -377,7 +405,7 @@ async function buildFull(outDir) {
         }
     }
 
-    console.log('[atlas:build] Streaming alternate names for cities5000…');
+    console.log(`[atlas:build] Streaming alternate names for ${cities.length} cities1000 places…`);
     await streamAlternateNames(altZip, geonameIds, (geonameId, altName, cols) => {
         const placeIndex = placeIndexByGeoname.get(geonameId);
         if (placeIndex === undefined) return;
@@ -416,21 +444,31 @@ async function main() {
     const bytes = dirSizeBytes(outDir);
     const mb = (bytes / (1024 * 1024)).toFixed(2);
     console.log(`[atlas:build] Total data size: ${sanitizeLogLine(mb)} MB`);
-    const shardBudget = 300 * 1024;
+    // cities1000 is exhaustive. Passing 25 MB is expected and is not a warning.
+    console.log(
+        '[atlas:build] Passing 25 MB is expected for an exhaustive cities1000 atlas and is not a warning. GitHub Pages allows 100 MB per file and the site must stay well under 1 GB.',
+    );
+    const fileLimit = 100 * 1024 * 1024;
+    const atlasLimit = 900 * 1024 * 1024;
     let oversized = false;
-    for (const [shardId, rel] of Object.entries(
-        JSON.parse(readFileSync(join(outDir, 'manifest.json'), 'utf8')).indexShards,
-    )) {
+    const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.json'), 'utf8'));
+    for (const [shardId, rel] of Object.entries(manifest.indexShards)) {
         const size = statSync(join(outDir, rel)).size;
-        if (size > shardBudget) {
+        if (size > fileLimit) {
             console.error(
-                `[atlas:build] Shard ${sanitizeLogLine(shardId)} is ${(size / 1024).toFixed(1)} KB (budget 300 KB)`,
+                `[atlas:build] Shard ${sanitizeLogLine(shardId)} is ${(size / (1024 * 1024)).toFixed(1)} MB (limit 100 MB)`,
             );
             oversized = true;
         }
     }
-    if (oversized || bytes > 10 * 1024 * 1024) {
-        console.error('[atlas:build] Output exceeds the atlas budget');
+    if (bytes > atlasLimit) {
+        console.error(
+            `[atlas:build] Atlas is ${sanitizeLogLine(mb)} MB, above the 900 MB cap (site must stay well under 1 GB)`,
+        );
+        oversized = true;
+    }
+    if (oversized) {
+        console.error('[atlas:build] Output exceeds GitHub Pages limits');
         process.exit(1);
     }
 }
