@@ -6,6 +6,12 @@ const webRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(webRoot, '../..');
 
 export default async function globalSetup() {
-    execSync('pnpm build', { cwd: repoRoot, stdio: 'inherit' });
+    if (process.env.SKIP_WEB_GLOBAL_BUILD === '1') {
+        return;
+    }
+    execSync('pnpm exec turbo run build --filter=./packages/*', {
+        cwd: repoRoot,
+        stdio: 'inherit',
+    });
     execSync('pnpm --filter @node-jhora/web build', { cwd: repoRoot, stdio: 'inherit' });
 }

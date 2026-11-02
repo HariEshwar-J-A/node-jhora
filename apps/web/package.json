@@ -5,9 +5,10 @@
     "scripts": {
         "prebuild": "node scripts/stage-ephe.mjs && node scripts/optimize-earth-textures.mjs",
         "dev": "vite",
-        "build": "vite build",
+        "build": "tsc --noEmit --pretty false && vite build",
         "preview": "vite preview",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test tests/e2e/smoke.spec.ts",
+        "test:e2e:install": "playwright install --with-deps chromium"
     },
     "dependencies": {
         "@node-jhora/analytics": "workspace:*",

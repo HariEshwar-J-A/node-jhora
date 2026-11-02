@@ -18,18 +18,16 @@ function walk(value: unknown, seen = new WeakMap<object, unknown>()): unknown {
     if (value instanceof Date) {
         return value.toISOString();
     }
-    if (
-        typeof value === 'object' &&
-        value !== null &&
-        'toJSON' in value &&
-        typeof value.toJSON === 'function'
-    ) {
-        return walk(value.toJSON(), seen);
-    }
-    if (Array.isArray(value)) {
-        return value.map((item) => walk(item, seen));
-    }
     if (typeof value === 'object') {
+        if (value === null) {
+            return null;
+        }
+        if ('toJSON' in value && typeof value.toJSON === 'function') {
+            return walk(value.toJSON(), seen);
+        }
+        if (Array.isArray(value)) {
+            return value.map((item) => walk(item, seen));
+        }
         if (seen.has(value)) return seen.get(value);
         const out: Record<string, unknown> = {};
         seen.set(value, out);

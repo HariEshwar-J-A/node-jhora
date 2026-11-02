@@ -187,14 +187,15 @@ const api = {
 
         const extraVargas: { division: number; points: unknown[] }[] = [];
         const divisions = [...NAMED_VARGA_DIVISIONS];
+        const vargaDivisors: number[] = [...divisions];
         if (
             input.customVarga &&
-            !divisions.includes(input.customVarga as (typeof divisions)[number])
+            !vargaDivisors.includes(input.customVarga)
         ) {
-            divisions.push(input.customVarga);
+            vargaDivisors.push(input.customVarga);
         }
         const sessionDivs = new Set([1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]);
-        for (const div of divisions) {
+        for (const div of vargaDivisors) {
             if (sessionDivs.has(div)) continue;
             extraVargas.push({
                 division: div,
@@ -228,6 +229,7 @@ const api = {
         const chartForRasi = {
             ascendant: asc,
             planets: planetPositions,
+            cusps: snapshot.houses?.cusps ?? [],
         };
 
         const dashaDepth = Math.min(input.dashaDepth ?? 3, 5);
@@ -252,15 +254,20 @@ const api = {
             chara: charaDasha,
         };
 
+        const housesForMatch = snapshot.houses
+            ? {
+                  ascendant: snapshot.houses.ascendant,
+                  mc: snapshot.houses.mc,
+                  cusps: snapshot.houses.cusps,
+                  armc: snapshot.houses.armc ?? snapshot.houses.mc,
+                  vertex: snapshot.houses.vertex ?? snapshot.houses.ascendant,
+              }
+            : undefined;
+
         const kp = {
             planets: KPEngine.getAllPlanetSignificators(planetPositions),
-            houses: snapshot.houses
-                ? KPEngine.getAllHouseSignificators({
-                      ascendant: snapshot.houses.ascendant,
-                      mc: snapshot.houses.mc,
-                      cusps: snapshot.houses.cusps,
-                      system: snapshot.houses.system,
-                  })
+            houses: housesForMatch
+                ? KPEngine.getAllHouseSignificators(housesForMatch)
                 : [],
         };
 
@@ -278,10 +285,10 @@ const api = {
             ashtaKuta: calculateAshtaKuta(boyStar, girlStar, boySign, girlSign),
             dashaKuta: calculateDashaKuta(boyStar, girlStar, boySign, girlSign),
             porutham: PoruthamMatch.match(boyStar, girlStar, boySign, girlSign),
-            mangalDosha: snapshot.houses
+            mangalDosha: housesForMatch
                 ? checkMangalDosha(
-                      { planets: planetPositions, houses: snapshot.houses },
-                      { planets: planetPositions, houses: snapshot.houses },
+                      { planets: planetPositions, houses: housesForMatch },
+                      { planets: planetPositions, houses: housesForMatch },
                   )
                 : null,
             sampleNote:

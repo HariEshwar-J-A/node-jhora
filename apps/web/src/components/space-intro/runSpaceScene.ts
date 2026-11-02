@@ -93,7 +93,8 @@ export async function mountSpaceScene(
     renderer.toneMappingExposure = opts.mobile ? 0.95 : 1.05;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x03050a, 0.0012);
+    const travelFog = new THREE.FogExp2(0x03050a, 0.0012);
+    scene.fog = travelFog;
 
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 800);
     camera.position.set(0, 0, -120);
@@ -260,7 +261,7 @@ export async function mountSpaceScene(
             starNear.rotation.y = e * 0.12;
             (nebulaMat as import('three').SpriteMaterial).opacity = 0.25 + e * 0.15;
             renderer.toneMappingExposure = 0.85 + e * 0.35;
-            scene.fog!.density = 0.001 + e * 0.004;
+            travelFog.density = 0.001 + e * 0.004;
 
             if (t >= 1) {
                 finishIntro();

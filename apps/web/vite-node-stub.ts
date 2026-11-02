@@ -1,10 +1,5 @@
 import type { Plugin } from 'vite';
 
-/** @param {string} s */
-function escapeRegExpLiteral(s: string) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 const NODE_STUB_IDS = [
     'fs',
     'path',

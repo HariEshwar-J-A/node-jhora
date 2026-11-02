@@ -1,10 +1,10 @@
 # Earth textures (NASA Visible Earth)
 
-| File | Source | License |
-| --- | --- | --- |
-| `earth-day-*.webp` | [NASA Blue Marble / land shallow topo 2048](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_2048.jpg) | U.S. Government public domain (NASA Earth Observatory) |
-| `earth-night-*.webp` | [NASA Black Marble 2012 (3600×1800)](https://eoimages.gsfc.nasa.gov/images/imagerecords/79000/79765/dnb_land_ocean_ice.2012.3600x1800.jpg) | U.S. Government public domain (NASA Earth Observatory) |
-| `night-sky-fallback.webp` | Generated in-repo (`scripts/optimize-earth-textures.mjs`) | Same as site (proprietary UI asset) |
+| File                      | Source                                                                                                                                     | License                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `earth-day-*.webp`        | [NASA Blue Marble / land shallow topo 2048](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_2048.jpg)     | U.S. Government public domain (NASA Earth Observatory) |
+| `earth-night-*.webp`      | [NASA Black Marble 2012 (3600×1800)](https://eoimages.gsfc.nasa.gov/images/imagerecords/79000/79765/dnb_land_ocean_ice.2012.3600x1800.jpg) | U.S. Government public domain (NASA Earth Observatory) |
+| `night-sky-fallback.webp` | Generated in-repo (`scripts/optimize-earth-textures.mjs`)                                                                                  | Same as site (proprietary UI asset)                    |
 
 Regenerate WebP variants:
 
