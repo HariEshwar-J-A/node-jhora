@@ -1,78 +1,64 @@
 import { SKY_CONSTELLATIONS } from './constellations';
-import { LIGHT_INK_STARS } from './lightInkStars';
 
 type Props = {
     visible: boolean;
     sparse?: boolean;
-    light?: boolean;
     className?: string;
 };
 
-export function ConstellationOverlay({ visible, sparse, light, className }: Props) {
+function StarGlyph({ x, y, mag, index }: { x: number; y: number; mag: number; index: number }) {
+    const core = 0.00105 + mag * 0.00085;
+    const glow = core * (1.7 + mag * 0.6);
+    const spike = core * (6.2 + mag * 2.4);
+    return (
+        <g
+            className="constellation-star"
+            transform={`translate(${x} ${y})`}
+            style={{ animationDelay: `${(index % 8) * 0.41}s` }}
+        >
+            <circle r={glow} className="constellation-star__glow" />
+            {mag >= 0.72 && (
+                <g className="constellation-star__spikes" strokeWidth={0.00042}>
+                    <line x1={-spike} y1={0} x2={spike} y2={0} />
+                    <line x1={0} y1={-spike} x2={0} y2={spike} />
+                </g>
+            )}
+            <circle r={core} className="constellation-star__core" />
+        </g>
+    );
+}
+
+/** Real stars: white core, soft additive glow, spikes on the brightest. Lines stay unfilled. */
+export function ConstellationOverlay({ visible, sparse, className }: Props) {
+    let starIndex = 0;
     return (
         <svg
-            className={`constellation-overlay${sparse ? ' constellation-overlay--sparse' : ''}${light ? ' constellation-overlay--light' : ''}${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
+            className={`constellation-overlay${sparse ? ' constellation-overlay--sparse' : ''}${className ? ` ${className}` : ''}${visible ? ' constellation-overlay--visible' : ''}`}
             viewBox="0 0 1 1"
             preserveAspectRatio="xMidYMid slice"
             aria-hidden="true"
         >
-            <defs>
-                <radialGradient id="star-glow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                    <stop offset="35%" stopColor="#c8d8ff" stopOpacity="0.85" />
-                    <stop offset="100%" stopColor="#6080c0" stopOpacity="0" />
-                </radialGradient>
-                <filter id="star-bloom" x="-80%" y="-80%" width="260%" height="260%">
-                    <feGaussianBlur stdDeviation="0.004" result="b" />
-                    <feMerge>
-                        <feMergeNode in="b" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-            </defs>
-            {light &&
-                LIGHT_INK_STARS.map((s, i) => (
-                    <g
-                        key={`ink-${i}`}
-                        transform={`translate(${s.x} ${s.y}) rotate(${(s.rot * 180) / Math.PI})`}
-                        className="ink-star"
-                        style={{ animationDelay: `${s.delay}s` }}
-                    >
-                        <path
-                            d={`M 0 ${-s.r * 2.2} L 0 ${s.r * 2.2} M ${-s.r * 2.2} 0 L ${s.r * 2.2} 0`}
-                            className="ink-star__glint"
+            {SKY_CONSTELLATIONS.map((c) => (
+                <g key={c.name} className="constellation-group">
+                    {c.segments.map(([x1, y1, x2, y2], i) => (
+                        <line
+                            key={i}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            className="constellation-line"
+                            pathLength={1}
+                            style={{ animationDelay: `${i * 0.12}s` }}
                         />
-                        <circle cx={0} cy={0} r={s.r * 0.85} className="ink-star__core" />
-                    </g>
-                ))}
-            {!light &&
-                SKY_CONSTELLATIONS.map((c) => (
-                    <g key={c.name} className="constellation-group">
-                        {c.segments.map(([x1, y1, x2, y2], i) => (
-                            <line
-                                key={i}
-                                x1={x1}
-                                y1={y1}
-                                x2={x2}
-                                y2={y2}
-                                className="constellation-line"
-                                style={{ animationDelay: `${i * 0.15}s` }}
-                            />
-                        ))}
-                        {c.stars.map(([cx, cy], i) => (
-                            <circle
-                                key={i}
-                                cx={cx}
-                                cy={cy}
-                                r={0.0028}
-                                className="constellation-star"
-                                fill="url(#star-glow)"
-                                filter="url(#star-bloom)"
-                                style={{ animationDelay: `${0.8 + i * 0.05}s` }}
-                            />
-                        ))}
-                    </g>
-                ))}
+                    ))}
+                    {c.stars.map(([cx, cy, mag]) => {
+                        const index = starIndex;
+                        starIndex += 1;
+                        return <StarGlyph key={index} x={cx} y={cy} mag={mag} index={index} />;
+                    })}
+                </g>
+            ))}
         </svg>
     );
 }

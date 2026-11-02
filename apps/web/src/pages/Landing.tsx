@@ -3,6 +3,7 @@ import { AnimatedHeroBackground } from '../components/AnimatedHeroBackground';
 import { Reveal } from '../components/Reveal';
 import { LandingSkyHero } from '../components/space-intro/LandingSkyHero';
 import { CONTACT_EMAIL, CONTACT_URL } from '../lib/constants';
+import { useTheme } from '../lib/theme';
 
 const tiers = [
     { name: 'Free API', note: 'Coming soon', detail: 'Rate-limited HTTP API (not yet available).' },
@@ -96,8 +97,9 @@ const features = [
 ];
 
 export function LandingPage() {
+    const { mode } = useTheme();
     return (
-        <>
+        <div className={`landing-page${mode === 'dark' ? ' landing-page--sky' : ''}`}>
             <div className="hero-wrap hero-wrap--cinema">
                 <LandingSkyHero>
                     <section className="hero">
@@ -135,7 +137,7 @@ export function LandingPage() {
             </Reveal>
 
             <div className="section-motif">
-                <AnimatedHeroBackground />
+                {mode === 'light' && <AnimatedHeroBackground />}
                 <section className="section section-motif__inner">
                     <h2>Why node-jhora</h2>
                     <div className="feature-grid">
@@ -199,6 +201,6 @@ export function LandingPage() {
                     (CC BY 4.0). No analytics on this demo.
                 </p>
             </footer>
-        </>
+        </div>
     );
 }

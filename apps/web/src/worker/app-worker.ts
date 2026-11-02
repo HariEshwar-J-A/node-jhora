@@ -326,24 +326,6 @@ const api = {
                 : null,
         };
 
-        const boyStar = nakshatraIndex(moonLon);
-        const boySign = sign1(moonLon);
-        const girlStar = (boyStar + 5) % 27;
-        const girlSign = ((boySign + 3 - 1) % 12) + 1;
-        const matching = {
-            ashtaKuta: calculateAshtaKuta(boyStar, girlStar, boySign, girlSign),
-            dashaKuta: calculateDashaKuta(boyStar, girlStar, boySign, girlSign),
-            porutham: PoruthamMatch.match(boyStar, girlStar, boySign, girlSign),
-            mangalDosha: housesForMatch
-                ? checkMangalDosha(
-                      { planets: planetPositions, houses: housesForMatch },
-                      { planets: planetPositions, houses: housesForMatch },
-                  )
-                : null,
-            sampleNote:
-                'Demonstration scores only: girl chart uses offset nakshatra/sign, not a second birth time.',
-        };
-
         return toWorkerPlain({
             snapshot,
             extraVargas,
@@ -352,9 +334,70 @@ const api = {
             dashas,
             kp,
             transits,
-            matching,
             kernelMeta: { sha256: DE440S_SHA256, bytes: DE440S_BYTES },
             meta: { resolvedZone: tz.zone, localIso: birthLocal.toISO() },
+        });
+    },
+
+    async matchPair(personA: BirthInput, personB: BirthInput) {
+        const eph = await ensureEngine(personA.ephemerisUrl);
+        const load = async (input: BirthInput) => {
+            const tz = resolveTimezone(input.timezone);
+            if (!tz.ok) throw new Error(tz.message);
+            const instant = DateTime.fromISO(input.instantIso, { zone: 'utc' });
+            const session = new ChartSession({
+                instant,
+                location: {
+                    latitude: input.latitude,
+                    longitude: input.longitude,
+                    altitude: input.altitude,
+                },
+                settings: input.settings,
+                ephemeris: eph,
+                houseSystemOverride: input.houseSystem,
+                dasha: { depth: 1 },
+            });
+            const snapshot = await session.collect(['planets', 'houses']);
+            const planets = snapshot.planets ?? [];
+            const moon = planets.find((p) => p.name === 'Moon');
+            const moonLon = moon?.longitude ?? 0;
+            const planetPositions = planets.map((p) => ({
+                id: p.id,
+                name: p.name,
+                longitude: p.longitude,
+                latitude: p.latitude,
+                speed: p.speed,
+                distance: p.distance,
+                declination: p.declination,
+            }));
+            const houses = snapshot.houses;
+            const housesForMatch = houses
+                ? {
+                      ascendant: houses.ascendant,
+                      mc: houses.mc,
+                      cusps: houses.cusps,
+                      armc: houses.armc ?? houses.mc,
+                      vertex: houses.vertex ?? houses.ascendant,
+                  }
+                : undefined;
+            return { moonLon, planetPositions, housesForMatch };
+        };
+        const [a, b] = await Promise.all([load(personA), load(personB)]);
+        const aStar = nakshatraIndex(a.moonLon);
+        const bStar = nakshatraIndex(b.moonLon);
+        const aSign = sign1(a.moonLon);
+        const bSign = sign1(b.moonLon);
+        return toWorkerPlain({
+            ashtaKuta: calculateAshtaKuta(aStar, bStar, aSign, bSign),
+            dashaKuta: calculateDashaKuta(aStar, bStar, aSign, bSign),
+            porutham: PoruthamMatch.match(aStar, bStar, aSign, bSign),
+            mangalDosha:
+                a.housesForMatch && b.housesForMatch
+                    ? checkMangalDosha(
+                          { planets: a.planetPositions, houses: a.housesForMatch },
+                          { planets: b.planetPositions, houses: b.housesForMatch },
+                      )
+                    : null,
         });
     },
 

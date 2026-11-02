@@ -1,21 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AYANAMSA_IDS, getPreset, HOUSE_SYSTEM_IDS, type SettingsInput } from '@node-jhora/core';
+import { getPreset, type SettingsInput } from '@node-jhora/core';
 import { VargaBoard } from '../components/chart/VargaBoard';
-import { labelAyanamsa, labelHouseSystem } from '../lib/chart-labels';
+import { labelAyanamsa } from '../lib/chart-labels';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AnimatedTabPanel } from '../components/AnimatedTabPanel';
+import { BirthDataForm } from '../components/BirthDataForm';
 import { DashasPanel } from '../components/results/DashasPanel';
 import { ImportExportPanel } from '../components/results/ImportExportPanel';
 import { KpPanel } from '../components/results/KpPanel';
-import { MatchingPanel } from '../components/results/MatchingPanel';
+import { MatchingPanel, matchViewFromWorker } from '../components/results/MatchingPanel';
 import { PanchangaPanel } from '../components/results/PanchangaPanel';
 import { PlanetsPanel } from '../components/results/PlanetsPanel';
 import { StrengthPanel } from '../components/results/StrengthPanel';
 import { TransitsPanel } from '../components/results/TransitsPanel';
-import { PlaceCombobox } from '../components/PlaceCombobox';
 import { vargaTitle } from '../lib/astro-display';
-import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN, SAMPLE_CHART } from '../lib/constants';
-import { formatCoord } from '../lib/place-label';
+import {
+    birthSummary,
+    createProfileId,
+    readProfileStore,
+    validateBirth,
+    writeProfileStore,
+    type BirthDraft,
+    type BirthFieldErrors,
+    type BirthProfile,
+} from '../lib/birth';
+import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN } from '../lib/constants';
 import { parseBirthInstant } from '../lib/format';
 import type { ChartMeta } from '../components/chart/types';
 import type { InitProgress } from '../lib/worker-types';
@@ -44,24 +53,36 @@ const TABS: { id: TabId; label: string }[] = [
     { id: 'import', label: 'Import / export' },
 ];
 
+function initialStore() {
+    const stored = readProfileStore();
+    const active =
+        stored.profiles.find((profile) => profile.id === stored.activeId) ?? stored.profiles[0]!;
+    return { profiles: stored.profiles, activeId: active.id, draft: active };
+}
+
 export function AppPage() {
+    const boot = useMemo(initialStore, []);
     const [tab, setTab] = useState<TabId>('chart');
-    const [date, setDate] = useState(SAMPLE_CHART.date);
-    const [time, setTime] = useState(SAMPLE_CHART.time);
-    const [timezone, setTimezone] = useState(SAMPLE_CHART.timezone);
-    const [latitude, setLatitude] = useState(String(SAMPLE_CHART.latitude));
-    const [longitude, setLongitude] = useState(String(SAMPLE_CHART.longitude));
-    const [ayanamsa, setAyanamsa] = useState<(typeof AYANAMSA_IDS)[number]>('true_citra');
-    const [houseSystem, setHouseSystem] = useState<(typeof HOUSE_SYSTEM_IDS)[number]>('whole_sign');
-    const [customVarga, setCustomVarga] = useState('');
-    const [dashaDepth, setDashaDepth] = useState(3);
+    const [profiles, setProfiles] = useState<BirthProfile[]>(boot.profiles);
+    const [activeId, setActiveId] = useState(boot.activeId);
+    const [draft, setDraft] = useState<BirthDraft>(boot.draft);
+    const [fieldErrors, setFieldErrors] = useState<BirthFieldErrors>({});
+    const [sheetOpen, setSheetOpen] = useState(false);
     const [kernelReady, setKernelReady] = useState(false);
     const [progress, setProgress] = useState<InitProgress>({ phase: 'checking-cache' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const [result, setResult] = useState<any>();
-
     const [initAttempt, setInitAttempt] = useState(0);
+
+    useEffect(() => {
+        writeProfileStore(
+            profiles.map((profile) =>
+                profile.id === activeId ? { ...draft, id: profile.id } : profile,
+            ),
+            activeId,
+        );
+    }, [profiles, activeId, draft]);
 
     useEffect(() => {
         let cancelled = false;
@@ -69,14 +90,12 @@ export function AppPage() {
             try {
                 setError(undefined);
                 setKernelReady(false);
-                await initEphemeris(new URL(EPHE_PATH, window.location.href).href, (p) => {
-                    if (!cancelled) setProgress(p);
+                await initEphemeris(new URL(EPHE_PATH, window.location.href).href, (next) => {
+                    if (!cancelled) setProgress(next);
                 });
-                if (!cancelled) {
-                    setKernelReady(true);
-                }
-            } catch (e) {
-                if (!cancelled) setError(String(e));
+                if (!cancelled) setKernelReady(true);
+            } catch (err) {
+                if (!cancelled) setError(String(err));
             }
         })();
         return () => {
@@ -84,63 +103,56 @@ export function AppPage() {
         };
     }, [initAttempt]);
 
-    const settings: SettingsInput = useMemo(() => {
+    const settingsFor = useCallback((source: BirthDraft): SettingsInput => {
         const base = getPreset('node-jhora-default');
         return {
             ...base,
-            ayanamsa,
-            houseSystem,
+            ayanamsa: source.ayanamsa,
+            houseSystem: source.houseSystem,
+            nodeType: source.nodeType,
         };
-    }, [ayanamsa, houseSystem]);
+    }, []);
 
-    const compute = useCallback(async () => {
-        setError(undefined);
-        const parsed = parseBirthInstant(date, time, timezone);
-        if (!parsed.ok) {
-            setError(parsed.message);
-            return;
-        }
-        const lat = Number(latitude);
-        const lon = Number(longitude);
-        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-            setError('Latitude and longitude must be numbers.');
-            return;
-        }
-        setLoading(true);
-        try {
-            const instantIso = parsed.dt.toUTC().toISO()!;
-            const custom = customVarga.trim() ? Number(customVarga) : undefined;
-            const data = await getWorker().computeFull({
-                instantIso,
-                latitude: lat,
-                longitude: lon,
-                settings,
-                houseSystem,
-                ephemerisUrl: new URL(EPHE_PATH, window.location.href).href,
-                timezone: parsed.zone,
-                customVarga: custom,
-                dashaDepth,
-            });
-            setResult(data);
-        } catch (e) {
-            setError(String(e));
-        } finally {
-            setLoading(false);
-        }
-    }, [date, time, timezone, latitude, longitude, settings, houseSystem, customVarga, dashaDepth]);
-
-    const planets = result?.snapshot?.planets ?? [];
-    const houses = result?.snapshot?.houses;
-
-    const chartMeta: ChartMeta = useMemo(
-        () => ({
-            title: vargaTitle(1),
-            subtitle: labelAyanamsa(ayanamsa),
-            dateLabel: `${date} ${time} (${timezone})`,
-            place: `${latitude}°, ${longitude}°`,
-        }),
-        [ayanamsa, date, time, timezone, latitude, longitude],
+    const computeFrom = useCallback(
+        async (source: BirthDraft) => {
+            const errors = validateBirth(source);
+            setFieldErrors(errors);
+            if (Object.keys(errors).length) {
+                setError('Fix the highlighted fields.');
+                setSheetOpen(true);
+                return;
+            }
+            setError(undefined);
+            const parsed = parseBirthInstant(source.date, source.time, source.timezone);
+            if (!parsed.ok) {
+                setError(parsed.message);
+                return;
+            }
+            setLoading(true);
+            try {
+                const custom = source.customVarga.trim() ? Number(source.customVarga) : undefined;
+                const data = await getWorker().computeFull({
+                    instantIso: parsed.dt.toUTC().toISO()!,
+                    latitude: Number(source.latitude),
+                    longitude: Number(source.longitude),
+                    settings: settingsFor(source),
+                    houseSystem: source.houseSystem,
+                    ephemerisUrl: new URL(EPHE_PATH, window.location.href).href,
+                    timezone: parsed.zone,
+                    customVarga: custom,
+                    dashaDepth: 1,
+                });
+                setResult(data);
+                setSheetOpen(false);
+            } catch (err) {
+                setError(String(err));
+            } finally {
+                setLoading(false);
+            }
+        },
+        [settingsFor],
     );
+
     const progressPct =
         progress.totalBytes && progress.loadedBytes
             ? Math.min(100, (100 * progress.loadedBytes) / progress.totalBytes)
@@ -148,121 +160,94 @@ export function AppPage() {
               ? 100
               : 0;
 
+    const planets = result?.snapshot?.planets ?? [];
+    const houses = result?.snapshot?.houses;
+    const chartMeta: ChartMeta = useMemo(
+        () => ({
+            title: vargaTitle(1),
+            subtitle: labelAyanamsa(draft.ayanamsa),
+            dateLabel: `${draft.date} ${draft.time} (${draft.timezone})`,
+            place: draft.place || `${draft.latitude}°, ${draft.longitude}°`,
+        }),
+        [draft],
+    );
+
+    function selectProfile(id: string) {
+        const profile = profiles.find((item) => item.id === id);
+        if (!profile) return;
+        setActiveId(id);
+        setDraft(profile);
+        setFieldErrors({});
+        if (kernelReady) void computeFrom(profile);
+    }
+
+    const form = (
+        <BirthDataForm
+            draft={draft}
+            onChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
+            profiles={profiles}
+            activeId={activeId}
+            onSelectProfile={selectProfile}
+            onAdd={() => {
+                const created: BirthProfile = {
+                    ...draft,
+                    id: createProfileId(),
+                    name: draft.name.trim() || 'Untitled',
+                };
+                setProfiles((prev) => [...prev, created]);
+                setActiveId(created.id);
+                setDraft(created);
+            }}
+            onRename={() => {
+                setProfiles((prev) =>
+                    prev.map((profile) =>
+                        profile.id === activeId ? { ...draft, id: profile.id } : profile,
+                    ),
+                );
+            }}
+            onDuplicate={() => {
+                const copy: BirthProfile = {
+                    ...draft,
+                    id: createProfileId(),
+                    name: `${draft.name.trim() || 'Profile'} copy`,
+                };
+                setProfiles((prev) => [...prev, copy]);
+                setActiveId(copy.id);
+                setDraft(copy);
+            }}
+            onDelete={() => {
+                const rest = profiles.filter((profile) => profile.id !== activeId);
+                const next = rest[0];
+                setProfiles(rest.length ? rest : profiles);
+                if (next) selectProfile(next.id);
+            }}
+            errors={fieldErrors}
+            showSubmit
+            onSubmit={() => void computeFrom(draft)}
+            loading={loading}
+            kernelReady={kernelReady}
+            progress={{ phase: progress.phase, percent: progressPct }}
+        />
+    );
+
     return (
         <div className="app-layout">
-            <aside className="card">
-                <h2>Birth data</h2>
-                <p style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>
-                    Stored locally in this tab only. Supported range: {KERNEL_DATE_MIN} –{' '}
-                    {KERNEL_DATE_MAX}.
+            <aside className={`card birth-panel${sheetOpen ? ' birth-panel--open' : ''}`}>
+                <div className="birth-panel__head">
+                    <h2>Birth data</h2>
+                    <button
+                        type="button"
+                        className="btn btn-outline birth-sheet-close"
+                        data-testid="birth-sheet-close"
+                        onClick={() => setSheetOpen(false)}
+                    >
+                        Close
+                    </button>
+                </div>
+                <p className="birth-panel__range">
+                    Saved on this device. Supported range: {KERNEL_DATE_MIN} – {KERNEL_DATE_MAX}.
                 </p>
-                {!kernelReady && (
-                    <div style={{ margin: '1rem 0' }}>
-                        <p className="mono">Ephemeris: {progress.phase}</p>
-                        <div className="progress" aria-label="Download progress">
-                            <span style={{ width: `${progressPct}%` }} />
-                        </div>
-                    </div>
-                )}
-                <div className="field-row">
-                    <label htmlFor="date">Date</label>
-                    <input id="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                </div>
-                <div className="field-row">
-                    <label htmlFor="time">Time</label>
-                    <input id="time" value={time} onChange={(e) => setTime(e.target.value)} />
-                </div>
-                <div className="field-row">
-                    <label htmlFor="tz">
-                        Time zone (IANA or offset, e.g. Asia/Kolkata or +05:30)
-                    </label>
-                    <input id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
-                </div>
-                <PlaceCombobox
-                    initialLabel={SAMPLE_CHART.place}
-                    onPick={(hit) => {
-                        setLatitude(formatCoord(hit.latitude));
-                        setLongitude(formatCoord(hit.longitude));
-                        setTimezone(hit.timezone);
-                    }}
-                />
-                <div className="field-row">
-                    <label htmlFor="lat">Latitude</label>
-                    <input
-                        id="lat"
-                        value={latitude}
-                        onChange={(e) => setLatitude(e.target.value)}
-                    />
-                </div>
-                <div className="field-row">
-                    <label htmlFor="lon">Longitude</label>
-                    <input
-                        id="lon"
-                        value={longitude}
-                        onChange={(e) => setLongitude(e.target.value)}
-                    />
-                </div>
-                <div className="field-row">
-                    <label htmlFor="ayan">Ayanamsa</label>
-                    <select
-                        id="ayan"
-                        value={ayanamsa}
-                        onChange={(e) => setAyanamsa(e.target.value as typeof ayanamsa)}
-                    >
-                        {AYANAMSA_IDS.map((id) => (
-                            <option key={id} value={id}>
-                                {labelAyanamsa(id)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="field-row">
-                    <label htmlFor="hs">House system</label>
-                    <select
-                        id="hs"
-                        value={houseSystem}
-                        onChange={(e) => setHouseSystem(e.target.value as typeof houseSystem)}
-                    >
-                        {HOUSE_SYSTEM_IDS.map((id) => (
-                            <option key={id} value={id}>
-                                {labelHouseSystem(id)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="field-row">
-                    <label htmlFor="cv">Custom varga divisor (optional)</label>
-                    <input
-                        id="cv"
-                        value={customVarga}
-                        onChange={(e) => setCustomVarga(e.target.value)}
-                        placeholder="e.g. 300"
-                    />
-                </div>
-                <div className="field-row">
-                    <label htmlFor="depth">Vimshottari depth (1–5)</label>
-                    <input
-                        id="depth"
-                        type="number"
-                        min={1}
-                        max={5}
-                        value={dashaDepth}
-                        onChange={(e) => setDashaDepth(Number(e.target.value))}
-                    />
-                </div>
-                <button
-                    type="button"
-                    className="btn btn-default"
-                    data-testid="calculate-btn"
-                    disabled={loading || !kernelReady}
-                    onClick={compute}
-                >
-                    {loading
-                        ? 'Calculating…'
-                        : kernelReady
-                          ? 'Calculate'
-                          : 'Calculate (loads ephemeris)'}
-                </button>
+                {form}
                 {error && (
                     <p role="alert" className="form-error">
                         {error}
@@ -282,26 +267,42 @@ export function AppPage() {
                     </p>
                 )}
             </aside>
+            {sheetOpen && (
+                <button
+                    type="button"
+                    className="birth-sheet-backdrop"
+                    aria-label="Close birth data"
+                    onClick={() => setSheetOpen(false)}
+                />
+            )}
 
             <main>
+                <button
+                    type="button"
+                    className="birth-chip"
+                    data-testid="birth-summary-chip"
+                    onClick={() => setSheetOpen(true)}
+                >
+                    {birthSummary(draft)}
+                </button>
                 <div className="tabs" role="tablist">
-                    {TABS.map((t) => (
+                    {TABS.map((item) => (
                         <button
-                            key={t.id}
+                            key={item.id}
                             type="button"
                             role="tab"
-                            data-testid={`tab-${t.id}`}
-                            className={`tab ${tab === t.id ? 'active' : ''}`}
-                            onClick={() => setTab(t.id)}
+                            data-testid={`tab-${item.id}`}
+                            className={`tab ${tab === item.id ? 'active' : ''}`}
+                            onClick={() => setTab(item.id)}
                         >
-                            {t.label}
+                            {item.label}
                         </button>
                     ))}
                 </div>
 
                 <ErrorBoundary title="This panel failed to render">
                     <AnimatedTabPanel tabKey={tab}>
-                        {!result && tab !== 'import' && (
+                        {!result && tab !== 'import' && tab !== 'matching' && (
                             <div className="card">
                                 <p>
                                     Load the ephemeris kernel, enter birth data, and run Calculate.
@@ -333,7 +334,8 @@ export function AppPage() {
                             <DashasPanel
                                 vimshottari={result.dashas?.vimshottari ?? []}
                                 others={result.dashas ?? {}}
-                                depth={dashaDepth}
+                                depth={1}
+                                timeZone={result.meta?.resolvedZone ?? draft.timezone}
                                 karakas={result.karakas}
                             />
                         )}
@@ -356,14 +358,41 @@ export function AppPage() {
 
                         {result && tab === 'kp' && <KpPanel kp={result.kp ?? {}} />}
 
-                        {result && tab === 'matching' && (
-                            <MatchingPanel matching={result.matching ?? {}} />
+                        {tab === 'matching' && (
+                            <MatchingPanel
+                                current={draft}
+                                profiles={profiles}
+                                kernelReady={kernelReady}
+                                onMatch={async (a, b) => {
+                                    const ephemerisUrl = new URL(EPHE_PATH, window.location.href)
+                                        .href;
+                                    const toInput = (source: BirthDraft) => {
+                                        const parsed = parseBirthInstant(
+                                            source.date,
+                                            source.time,
+                                            source.timezone,
+                                        );
+                                        if (!parsed.ok) throw new Error(parsed.message);
+                                        return {
+                                            instantIso: parsed.dt.toUTC().toISO()!,
+                                            latitude: Number(source.latitude),
+                                            longitude: Number(source.longitude),
+                                            settings: settingsFor(source),
+                                            houseSystem: source.houseSystem,
+                                            ephemerisUrl,
+                                            timezone: parsed.zone,
+                                        };
+                                    };
+                                    const raw = await getWorker().matchPair(toInput(a), toInput(b));
+                                    return matchViewFromWorker(raw);
+                                }}
+                            />
                         )}
 
                         {result && tab === 'transits' && (
                             <TransitsPanel
                                 transits={result.transits ?? {}}
-                                timeZone={result.meta?.resolvedZone ?? timezone}
+                                timeZone={result.meta?.resolvedZone ?? draft.timezone}
                             />
                         )}
 

@@ -7,6 +7,10 @@ export type AppWorkerApi = Comlink.Remote<{
     getInitProgress: () => Promise<InitProgress>;
     init: (url: string) => Promise<InitProgress>;
     computeFull: (input: import('./worker-types').BirthInput) => Promise<unknown>;
+    matchPair: (
+        personA: import('./worker-types').BirthInput,
+        personB: import('./worker-types').BirthInput,
+    ) => Promise<unknown>;
     parseJhdText: (text: string) => Promise<unknown>;
     writeJhdText: (chart: unknown) => Promise<string>;
     parseNjhText: (text: string) => Promise<unknown>;

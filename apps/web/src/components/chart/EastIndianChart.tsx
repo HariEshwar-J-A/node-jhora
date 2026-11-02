@@ -1,17 +1,26 @@
+import { formatDms } from '../../lib/format';
+import { degreeInSignDms, signName } from '../../lib/astro-display';
+import type { ChartMeta, ChartPlanet } from './types';
 import {
+    EAST_CENTER,
+    EAST_FRAME_PATH,
+    EAST_SIGNS,
+    EAST_VIEW_BOX,
     degreeInSign,
     isRetrograde,
-    planetShortName,
     planetSign0,
     signIndex0,
     signLabel,
-    wholeSignHouse,
+    southCenterMetaLines,
 } from './geometry';
-import { formatDms } from '../../lib/format';
-import { CHART_COMPACT_PLANET_FONT, CHART_PLANET_FONT_SIZE } from './chartLayout';
-import type { ChartMeta, ChartPlanet } from './types';
+import {
+    CHART_COMPACT_PLANET_FONT,
+    CHART_SIGN_FONT_SIZE,
+    CHART_SIGN_FONT_SIZE_COMPACT,
+    formatPlanetLabel,
+    layoutLabelsInRect,
+} from './chartLayout';
 
-/** East Indian (Bengali/Odia-style) — rectangular 3×4 house grid, Lagna in house 1. */
 type Props = {
     ascendant: number;
     planets: ChartPlanet[];
@@ -20,21 +29,6 @@ type Props = {
     compact?: boolean;
     planetFont?: number;
 };
-
-const EAST_LAYOUT: { house: number; x: number; y: number; w: number; h: number }[] = [
-    { house: 1, x: 34, y: 4, w: 32, h: 22 },
-    { house: 2, x: 68, y: 4, w: 28, h: 22 },
-    { house: 3, x: 68, y: 28, w: 28, h: 22 },
-    { house: 4, x: 68, y: 52, w: 28, h: 22 },
-    { house: 5, x: 68, y: 76, w: 28, h: 20 },
-    { house: 6, x: 34, y: 76, w: 32, h: 20 },
-    { house: 7, x: 4, y: 76, w: 28, h: 20 },
-    { house: 8, x: 4, y: 52, w: 28, h: 22 },
-    { house: 9, x: 4, y: 28, w: 28, h: 22 },
-    { house: 10, x: 4, y: 4, w: 28, h: 22 },
-    { house: 11, x: 34, y: 28, w: 32, h: 22 },
-    { house: 12, x: 34, y: 52, w: 32, h: 22 },
-];
 
 export function EastIndianChart({
     ascendant,
@@ -45,62 +39,111 @@ export function EastIndianChart({
     planetFont,
 }: Props) {
     const ascSign0 = signIndex0(ascendant);
-    const byHouse = new Map<number, ChartPlanet[]>();
+    const bySign = new Map<number, ChartPlanet[]>();
     for (const p of planets) {
-        const h = wholeSignHouse(planetSign0(p), ascSign0);
-        const list = byHouse.get(h) ?? [];
+        const s = planetSign0(p);
+        const list = bySign.get(s) ?? [];
         list.push(p);
-        byHouse.set(h, list);
+        bySign.set(s, list);
+    }
+    for (const list of bySign.values()) {
+        list.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    const frame =
-        'M 4 4 H 96 V 96 H 4 Z ' +
-        EAST_LAYOUT.map(({ x, y, w, h }) => `M ${x} ${y} H ${x + w} V ${y + h} H ${x} Z`).join(' ');
+    const signFont = compact ? CHART_SIGN_FONT_SIZE_COMPACT : CHART_SIGN_FONT_SIZE;
 
     return (
         <div className={`chart-canvas${compact ? ' chart-canvas--compact' : ''}`}>
             <svg
-                viewBox="0 0 100 100"
+                viewBox={EAST_VIEW_BOX}
+                preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label="East Indian chart"
                 className="chart-canvas__svg"
                 key={chartKey}
             >
-                <path className="chart-frame" d={frame} pathLength={1} />
-                {meta && (
-                    <text x={50} y={42} textAnchor="middle" className="chart-center-meta-svg">
-                        {meta.title}
-                    </text>
-                )}
-                {EAST_LAYOUT.map(({ house, x, y }) => {
-                    const sign0 = (ascSign0 + house - 1) % 12;
-                    const inHouse = byHouse.get(house) ?? [];
-                    return (
-                        <g key={house}>
-                            <text x={x + 3} y={y + 6} className="chart-sign-num">
-                                {signLabel(sign0)}
-                                {house === 1 ? ' Asc' : ''}
+                <path className="chart-frame" d={EAST_FRAME_PATH} />
+                {meta &&
+                    (() => {
+                        const { lines, fontSize } = southCenterMetaLines(meta);
+                        const cx = EAST_CENTER.x + EAST_CENTER.w / 2;
+                        const cy = EAST_CENTER.y + EAST_CENTER.h / 2;
+                        const lineGap = fontSize * 1.35;
+                        const startY = cy - ((lines.length - 1) * lineGap) / 2;
+                        return (
+                            <text
+                                x={cx}
+                                y={startY}
+                                textAnchor="middle"
+                                className="chart-center-meta-svg"
+                                fontSize={fontSize}
+                            >
+                                {lines.map((line, i) => (
+                                    <tspan key={line} x={cx} dy={i === 0 ? 0 : lineGap}>
+                                        {line}
+                                    </tspan>
+                                ))}
                             </text>
-                            {inHouse.slice(0, 4).map((p, i) => (
-                                <text
-                                    key={p.name}
-                                    x={x + 3}
-                                    y={y + 11 + i * 4.5}
-                                    className="chart-planet"
-                                    fontSize={
-                                        compact
-                                            ? CHART_COMPACT_PLANET_FONT
-                                            : (planetFont ?? CHART_PLANET_FONT_SIZE)
-                                    }
-                                >
-                                    <title>
-                                        {p.name} · {formatDms(p.longitude)}
-                                    </title>
-                                    {planetShortName(p.name)}
-                                    {isRetrograde(p) ? ' R' : ''}
-                                    {compact ? '' : ` ${Math.floor(degreeInSign(p))}°`}
-                                </text>
-                            ))}
+                        );
+                    })()}
+                {EAST_SIGNS.map((cell) => {
+                    const inSign = bySign.get(cell.sign) ?? [];
+                    const isLagna = cell.sign === ascSign0;
+                    const labelItems = inSign.map((p) => ({
+                        id: p.name,
+                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p), compact),
+                    }));
+                    const placed = layoutLabelsInRect(
+                        cell.text,
+                        labelItems,
+                        compact
+                            ? { fontSize: CHART_COMPACT_PLANET_FONT }
+                            : planetFont
+                              ? { fontSize: planetFont }
+                              : undefined,
+                    );
+                    return (
+                        <g key={cell.sign} className="chart-house">
+                            {isLagna && (
+                                <line
+                                    x1={cell.lagnaTick.x1}
+                                    y1={cell.lagnaTick.y1}
+                                    x2={cell.lagnaTick.x2}
+                                    y2={cell.lagnaTick.y2}
+                                    className="chart-lagna-diagonal"
+                                />
+                            )}
+                            <text
+                                x={cell.signLabel.x}
+                                y={cell.signLabel.y}
+                                textAnchor="middle"
+                                className="chart-sign-num"
+                                fontSize={signFont}
+                            >
+                                {signLabel(cell.sign)}
+                            </text>
+                            {placed.map((slot) => {
+                                const p = inSign.find((x) => x.name === slot.id)!;
+                                return (
+                                    <g key={slot.id}>
+                                        <title>
+                                            {p.name} · {signName(cell.sign + 1)} ·{' '}
+                                            {degreeInSignDms(degreeInSign(p))} (
+                                            {formatDms(p.longitude)})
+                                            {isRetrograde(p) ? ' · Retrograde' : ''}
+                                        </title>
+                                        <text
+                                            x={slot.x}
+                                            y={slot.y}
+                                            textAnchor={slot.textAnchor}
+                                            className="chart-planet"
+                                            fontSize={slot.fontSize}
+                                        >
+                                            {slot.text}
+                                        </text>
+                                    </g>
+                                );
+                            })}
                         </g>
                     );
                 })}

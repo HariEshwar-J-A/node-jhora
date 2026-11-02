@@ -9,6 +9,7 @@ import {
     southPlanetTextRect,
 } from '../apps/web/src/components/chart/chartLayout.ts';
 import {
+    EAST_SIGNS,
     NORTH_HOUSES,
     northHouseSignNumber,
     pointInPolygon,
@@ -165,5 +166,88 @@ describe('North house table', () => {
         const ys = placed.map((p) => p.y);
         const mid = (Math.min(...ys) + Math.max(...ys)) / 2;
         expect(Math.abs(mid - cellCy)).toBeLessThan(1.5);
+    });
+});
+
+describe('East Indian sign chart', () => {
+    it('places Aries in the top-middle cell and the other signs counter-clockwise', () => {
+        expect(EAST_SIGNS.map((cell) => cell.sign)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        const aries = EAST_SIGNS[0]!;
+        const taurus = EAST_SIGNS[1]!;
+        const pisces = EAST_SIGNS[11]!;
+        const ariesCx = aries.poly.reduce((s, p) => s + p[0], 0) / aries.poly.length;
+        const ariesCy = aries.poly.reduce((s, p) => s + p[1], 0) / aries.poly.length;
+        expect(ariesCx).toBeGreaterThan(40);
+        expect(ariesCx).toBeLessThan(62);
+        expect(ariesCy).toBeLessThan(30);
+        const taurusCx = taurus.poly.reduce((s, p) => s + p[0], 0) / taurus.poly.length;
+        const piscesCx = pisces.poly.reduce((s, p) => s + p[0], 0) / pisces.poly.length;
+        expect(taurusCx).toBeGreaterThan(ariesCx);
+        expect(piscesCx).toBeLessThan(ariesCx);
+        for (const cell of EAST_SIGNS) {
+            expect(cell.poly.length === 3 || cell.poly.length === 4).toBe(true);
+        }
+        const triangles = EAST_SIGNS.filter((cell) => cell.poly.length === 3);
+        expect(triangles).toHaveLength(8);
+    });
+
+    it('keeps sign numbers and up to four planet labels inside each sign, clear of the edges', () => {
+        for (const cell of EAST_SIGNS) {
+            expect(pointInPolygon(cell.signLabel.x, cell.signLabel.y, cell.poly)).toBe(true);
+            expect(
+                minEdgeDistance(cell.signLabel.x, cell.signLabel.y, cell.poly),
+            ).toBeGreaterThanOrEqual(2.4);
+            const sign = signLabelBox(
+                cell.signLabel.x,
+                cell.signLabel.y,
+                '12',
+                CHART_SIGN_FONT_SIZE,
+            );
+            for (const count of [1, 2, 4]) {
+                const items = Array.from({ length: count }, (_, i) => ({
+                    id: `${cell.sign}-${i}`,
+                    text: `Ma ${20 + i}°`,
+                }));
+                const placed = layoutLabelsInRect(cell.text, items);
+                expect(placed).toHaveLength(count);
+                const boxes = placed.map((p) =>
+                    labelBox(p.x, p.y, p.text, p.fontSize, p.textAnchor),
+                );
+                for (const p of placed) {
+                    expect(p.text).toContain('°');
+                    expect(p.fontSize).toBe(CHART_PLANET_FONT_SIZE);
+                }
+                for (let i = 0; i < boxes.length; i++) {
+                    const box = boxes[i]!;
+                    for (const [x, y] of [
+                        [box.x0, box.y0],
+                        [box.x1, box.y0],
+                        [box.x1, box.y1],
+                        [box.x0, box.y1],
+                    ] as [number, number][]) {
+                        expect({
+                            sign: cell.sign,
+                            count,
+                            text: placed[i]!.text,
+                            x,
+                            y,
+                            inside: pointInPolygon(x, y, cell.poly),
+                        }).toEqual({
+                            sign: cell.sign,
+                            count,
+                            text: placed[i]!.text,
+                            x,
+                            y,
+                            inside: true,
+                        });
+                        expect(minEdgeDistance(x, y, cell.poly)).toBeGreaterThan(0.6);
+                    }
+                    expect(boxesOverlap(box, sign, 0.15)).toBe(false);
+                    for (let j = i + 1; j < boxes.length; j++) {
+                        expect(boxesOverlap(box, boxes[j]!, 0.1)).toBe(false);
+                    }
+                }
+            }
+        }
     });
 });

@@ -1269,24 +1269,59 @@ table.data th.mono {
     scroll-margin-top: var(--site-header-offset);
 }
 
+.landing-page--sky {
+    background: #090909;
+    color: #f4f4f5;
+    min-height: 100%;
+}
+
+[data-theme='dark'] body:has(.landing-page--sky) {
+    background: #090909;
+}
+
+.landing-page--sky > .hero-wrap {
+    overflow: visible;
+    background: transparent;
+    border-bottom-color: rgb(255 255 255 / 0.14);
+}
+
+.landing-page--sky > .hero-wrap,
+.landing-page--sky > .section,
+.landing-page--sky > .section-motif,
+.landing-page--sky > .footer,
+.landing-page--sky .reveal {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+.landing-page--sky .card {
+    background: rgb(9 9 9 / 0.78);
+}
+
 .landing-sky-hero {
     position: relative;
     min-height: inherit;
     overflow: hidden;
-    background: #02040c;
-    color: #e8eeff;
+    background: #090909;
+    color: #f4f4f5;
+}
+
+.landing-sky-hero--persistent {
+    overflow: visible;
+    background: transparent;
 }
 
 [data-theme='light'] .landing-sky-hero {
-    background: #02040c;
-    color: #e8eeff;
+    background: #090909;
+    color: #f4f4f5;
 }
 
 .landing-sky-hero .btn-outline,
 .landing-sky-hero .intro-skip.btn-outline {
     border-color: rgb(232 238 255 / 0.55);
     color: #f4f7ff;
-    background: rgb(2 4 12 / 0.35);
+    background: rgb(9 9 9 / 0.35);
 }
 
 .landing-sky-hero .btn-outline:hover:not(:disabled),
@@ -1313,10 +1348,10 @@ table.data th.mono {
 
 [data-theme='light'] .landing-sky-hero__content {
     background: radial-gradient(
-        ellipse 130% 120% at 12% 42%,
-        rgb(248 250 252 / 0.94) 0%,
-        rgb(248 250 252 / 0.55) 46%,
-        transparent 74%
+        ellipse 120% 110% at 8% 40%,
+        rgb(248 250 252 / 0.9) 0%,
+        rgb(248 250 252 / 0.45) 40%,
+        transparent 68%
     );
     border-radius: 0;
     color: hsl(var(--foreground));
@@ -1386,7 +1421,22 @@ table.data th.mono {
     position: absolute;
     inset: 0;
     z-index: 2;
-    background: radial-gradient(ellipse at 50% 46%, transparent 46%, rgb(2 4 12 / 0.42) 100%);
+    background: radial-gradient(ellipse at 50% 46%, transparent 46%, rgb(9 9 9 / 0.45) 100%);
+}
+
+.landing-sky-hero--persistent .landing-sky-hero__canvas,
+.landing-sky-hero--persistent .landing-sky-hero__fallback,
+.landing-sky-hero--persistent .constellation-overlay,
+.landing-sky-hero--persistent .landing-sky-hero__vignette {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.landing-sky-hero--persistent .landing-sky-hero__vignette {
+    background: linear-gradient(to bottom, rgb(9 9 9 / 0.55), transparent 7rem);
 }
 
 .landing-sky-hero__content {
@@ -1403,9 +1453,9 @@ table.data th.mono {
     max-width: 42rem;
     background: linear-gradient(
         105deg,
-        rgb(2 4 12 / 0.82) 0%,
-        rgb(2 4 12 / 0.55) 52%,
-        rgb(2 4 12 / 0.08) 100%
+        rgb(9 9 9 / 0.82) 0%,
+        rgb(9 9 9 / 0.5) 48%,
+        rgb(9 9 9 / 0.05) 100%
     );
     border-radius: 0.5rem;
     margin: clamp(0.5rem, 3vw, 2rem);
@@ -1438,7 +1488,8 @@ table.data th.mono {
     pointer-events: none;
     opacity: 0;
     transition: opacity 1.2s ease 0.4s;
-    color: rgb(200 220 255 / 0.75);
+    color: rgb(255 255 255 / 0.8);
+    mix-blend-mode: screen;
 }
 
 .constellation-overlay--sparse .constellation-group:nth-child(n + 4) {
@@ -1451,11 +1502,7 @@ table.data th.mono {
     }
 
     .constellation-overlay--visible {
-        opacity: 0.45;
-    }
-
-    .constellation-star {
-        r: 0.0018;
+        opacity: 0.82;
     }
 }
 
@@ -1464,20 +1511,30 @@ table.data th.mono {
 }
 
 .constellation-line {
-    stroke: currentColor;
-    stroke-width: 0.0025;
+    stroke: rgb(255 255 255 / 0.34);
+    stroke-width: 1px;
     vector-effect: non-scaling-stroke;
     fill: none;
-    stroke-dasharray: 0.08;
-    stroke-dashoffset: 0.08;
-    animation: constellation-draw 2.4s ease forwards;
+    stroke-linecap: round;
 }
 
 .constellation-star {
-    fill: currentColor;
-    opacity: 0;
-    animation: star-pop 0.5s ease forwards;
-    animation-delay: 1.2s;
+    animation: star-twinkle 3.6s ease-in-out infinite;
+}
+
+.constellation-star__glow {
+    fill: #fff;
+    opacity: 0.14;
+}
+
+.constellation-star__core {
+    fill: #fff;
+}
+
+.constellation-star__spikes {
+    stroke: rgb(255 255 255 / 0.8);
+    fill: none;
+    stroke-linecap: round;
 }
 
 @keyframes constellation-draw {
@@ -1486,9 +1543,13 @@ table.data th.mono {
     }
 }
 
-@keyframes star-pop {
-    to {
-        opacity: 0.85;
+@keyframes star-twinkle {
+    0%,
+    100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 1;
     }
 }
 
@@ -1541,15 +1602,23 @@ table.data th.mono {
         margin: 0.65rem;
         max-width: none;
         padding-top: 0.75rem;
-        background: hsl(var(--background) / 0.94);
+    }
+
+    [data-theme='light'] .landing-sky-hero__content {
+        background: linear-gradient(
+            to bottom,
+            rgb(248 250 252 / 0.9) 0%,
+            rgb(248 250 252 / 0.7) 62%,
+            rgb(248 250 252 / 0.12) 100%
+        );
         color: hsl(var(--foreground));
     }
 
-    .landing-sky-hero__content .hero h1 {
+    [data-theme='light'] .landing-sky-hero__content .hero h1 {
         color: hsl(var(--foreground));
     }
 
-    .landing-sky-hero__content .hero p {
+    [data-theme='light'] .landing-sky-hero__content .hero p {
         color: hsl(var(--muted-foreground));
     }
 
@@ -1588,5 +1657,268 @@ table.data th.mono {
         max-width: none;
         max-height: none;
         width: 100%;
+    }
+}
+
+.birth-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.birth-panel__head h2 {
+    margin: 0;
+}
+
+.birth-panel__range,
+.birth-form__summary-inline,
+.dasha-note {
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.birth-sheet-close,
+.birth-sheet-backdrop,
+.birth-chip {
+    display: none;
+}
+
+.birth-form__tools,
+.match-actions,
+.dasha-toolbar,
+.dasha-toolbar__modes,
+.birth-form__when,
+.birth-form__io {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.birth-form__tools select {
+    flex: 1 1 8rem;
+    min-width: 0;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--input));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+.birth-form__tools .btn,
+.match-actions .btn,
+.dasha-toolbar__modes .btn {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.8rem;
+}
+
+.birth-form__when {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.birth-form__advanced {
+    margin: 0.25rem 0 0.75rem;
+}
+
+.birth-form__advanced summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.field-error {
+    margin: 0.2rem 0 0;
+    font-size: 0.78rem;
+    color: hsl(var(--foreground));
+}
+
+.birth-form__submit {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: 0.65rem 0 0.15rem;
+    background: linear-gradient(to top, hsl(var(--card)) 70%, transparent);
+}
+
+.birth-form__submit .btn {
+    width: 100%;
+}
+
+.dasha-toolbar {
+    justify-content: space-between;
+}
+
+.dasha-toolbar h3 {
+    margin: 0;
+}
+
+.dasha-toolbar__modes .is-active {
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+}
+
+.dasha-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    align-items: baseline;
+    width: 100%;
+    padding: 0.35rem 0.4rem;
+    border: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.dasha-row--current {
+    background: hsl(var(--muted));
+    font-weight: 600;
+}
+
+.dasha-row__level,
+.dasha-row__when {
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+.dasha-row__drill {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dasha-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.dasha-crumbs button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+.match-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.match-run {
+    margin: 0.75rem 0;
+}
+
+.match-result__head {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.score-dial {
+    width: 7.5rem;
+    height: 7.5rem;
+    flex: none;
+}
+
+.score-dial__track,
+.score-dial__value {
+    fill: none;
+    stroke-width: 8;
+}
+
+.score-dial__track {
+    stroke: hsl(var(--muted));
+}
+
+.score-dial__value {
+    stroke: hsl(var(--foreground));
+}
+
+.score-dial__score {
+    font-size: 1.4rem;
+    fill: hsl(var(--foreground));
+}
+
+.score-dial__max {
+    font-size: 0.7rem;
+    fill: hsl(var(--muted-foreground));
+}
+
+.match-doshas {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+}
+
+@media (max-width: 900px) {
+    .birth-chip {
+        display: inline-flex;
+        max-width: 100%;
+        margin: 0 0 0.75rem;
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+        font: inherit;
+        font-size: 0.85rem;
+    }
+
+    .birth-panel:not(.birth-panel--open) {
+        display: none;
+    }
+
+    .birth-panel--open {
+        display: block;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        max-height: min(86vh, 40rem);
+        overflow: auto;
+        margin: 0;
+        border-radius: 0.85rem 0.85rem 0 0;
+    }
+
+    .birth-panel--open .birth-sheet-close {
+        display: inline-flex;
+    }
+
+    .birth-sheet-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 55;
+        border: 0;
+        background: rgb(0 0 0 / 0.45);
+    }
+
+    .match-pair,
+    .birth-form__when {
+        grid-template-columns: 1fr;
     }
 }

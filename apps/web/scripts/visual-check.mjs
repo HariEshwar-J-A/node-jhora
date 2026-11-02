@@ -342,11 +342,41 @@ async function skipLandingIntro(page) {
         await skip.click();
         await page.waitForTimeout(400);
     }
-    await page.waitForTimeout(800);
+    await page
+        .waitForFunction(
+            () => {
+                const canvas = document.querySelector('.landing-sky-hero__canvas');
+                if (!canvas) return document.querySelector('.landing-sky-hero__fallback') != null;
+                return canvas.dataset.intro === '1';
+            },
+            { timeout: 20_000 },
+        )
+        .catch(() => {});
+    await page.waitForTimeout(700);
 }
 
 async function snap(page, name) {
     await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
+}
+
+async function snapView(page, name) {
+    await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: false });
+}
+
+async function openBirthFormIfNeeded(page) {
+    const chip = page.getByTestId('birth-summary-chip');
+    if (await chip.isVisible().catch(() => false)) {
+        await chip.click();
+        await page.getByTestId('place-input').waitFor({ state: 'visible', timeout: 10_000 });
+    }
+}
+
+async function closeBirthFormIfNeeded(page) {
+    const close = page.getByTestId('birth-sheet-close');
+    if (await close.isVisible().catch(() => false)) {
+        await close.click();
+        await page.waitForTimeout(200);
+    }
 }
 
 async function assertDropdownInView(page, vpName) {
@@ -400,7 +430,8 @@ async function assertPlaceCombobox(page, vpName) {
     page.on('response', onResponse);
     await input.click();
     await input.fill('sao paulo');
-    const firstSao = page.getByRole('option').first();
+    const placeList = page.locator('.place-combo__list');
+    const firstSao = placeList.getByRole('option').first();
     await firstSao.waitFor({ state: 'visible', timeout: 120_000 });
     await page.waitForTimeout(250);
     page.off('response', onResponse);
@@ -428,7 +459,7 @@ async function assertPlaceCombobox(page, vpName) {
     await page.screenshot({ path: join(OUT, `app-place-sao-${vpName}.png`) });
 
     await input.fill('chen');
-    const chennai = page.getByRole('option', { name: /Chennai,/ });
+    const chennai = placeList.getByRole('option', { name: /Chennai,/ });
     await chennai.waitFor({ state: 'visible', timeout: 30_000 });
     const chenNames = await page.locator('.place-combo__option').allTextContents();
     const fold = (value) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -588,10 +619,12 @@ async function assertThumbnailLabels(page) {
 
 async function initAppChartTab(page, vpName) {
     await page.goto(`${BASE}#/app`);
+    await openBirthFormIfNeeded(page);
     await assertPlaceCombobox(page, vpName);
     await page.getByTestId('calculate-btn').click({ timeout: 180_000 });
     const table = page.getByTestId('planets-table');
     await table.waitFor({ state: 'visible', timeout: 180_000 });
+    await closeBirthFormIfNeeded(page);
     await assertChartPlanetFontMin(page);
     await assertChartPlanetDegrees(page);
     await assertChartTextNoOverlap(page);
@@ -630,6 +663,83 @@ async function runVarga(page, varga) {
     await assertThumbnailLabels(page);
 }
 
+async function assertEastReady(page, vpName, label) {
+    await page.getByTestId('chart-style-east').click();
+    await page.waitForTimeout(250);
+    if (vpName === '1280') await assertChartPlanetFontMin(page, 12, 480);
+    if (vpName === '390') await assertChartPlanetFontMin(page, 10, 200);
+    await assertChartPlanetDegrees(page);
+    await assertChartTextNoOverlap(page);
+    await assertNoTextClipped(page);
+    await assertLagnaLineClear(page);
+    await assertNoHorizontalOverflow(page, label);
+}
+
+async function reviewOwnerSurfaces(page, vp) {
+    for (const light of [false, true]) {
+        const theme = light ? 'light' : 'dark';
+        await setTheme(page, light);
+
+        await page.getByTestId('tab-chart').click();
+        await assertEastReady(page, vp.name, `east d1 ${theme} ${vp.name}`);
+        await snapView(page, `app-east-d1-${theme}-${vp.name}`);
+
+        await page.getByTestId('tab-vargas').click();
+        await page.locator('.varga-board__picker select').selectOption('9');
+        await page.waitForTimeout(200);
+        await assertEastReady(page, vp.name, `east d9 ${theme} ${vp.name}`);
+        const hero = await page
+            .locator('.varga-board__hero .chart-center-meta-svg')
+            .evaluate((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim());
+        if (hero !== 'D9 Navamsa') fail(`East D9 title "${hero}"`);
+        await snapView(page, `app-east-d9-${theme}-${vp.name}`);
+
+        await page.getByTestId('tab-dashas').click();
+        await page.getByTestId('dasha-mode-tree').click();
+        await page.getByTestId('dasha-tree').waitFor({ state: 'visible' });
+        const current = page.locator('.dasha-row--current').first();
+        if (await current.count()) await current.click();
+        else await page.locator('[role="treeitem"] .dasha-row').first().click();
+        await page.waitForTimeout(250);
+        await assertNoHorizontalOverflow(page, `dasha tree ${theme} ${vp.name}`);
+        await snapView(page, `app-dasha-tree-${theme}-${vp.name}`);
+
+        await page.getByTestId('dasha-mode-drill').click();
+        await page.getByTestId('dasha-drill').waitFor({ state: 'visible' });
+        await page.locator('.dasha-row__drill').first().click();
+        const crumb = await page.locator('.dasha-crumbs').innerText();
+        if (!crumb.includes('>')) fail(`Dasha breadcrumb missing at ${theme} ${vp.name}: ${crumb}`);
+        await assertNoHorizontalOverflow(page, `dasha drill ${theme} ${vp.name}`);
+        await snapView(page, `app-dasha-drill-${theme}-${vp.name}`);
+
+        await page.getByTestId('tab-matching').click();
+        await page.getByTestId('match-btn').click();
+        await page.getByTestId('match-result').waitFor({ state: 'visible', timeout: 180_000 });
+        const dial = await page.locator('.score-dial__max').evaluate((el) => el.textContent ?? '');
+        if (!dial.includes('36')) fail(`Ashtakoota dial is not out of 36 (${dial})`);
+        await assertNoHorizontalOverflow(page, `matching ${theme} ${vp.name}`);
+        await page.locator('.match-pair').scrollIntoViewIfNeeded();
+        await snapView(page, `app-matching-forms-${theme}-${vp.name}`);
+        await page.getByTestId('match-result').scrollIntoViewIfNeeded();
+        await snapView(page, `app-matching-${theme}-${vp.name}`);
+
+        if (vp.name === '390') {
+            await closeBirthFormIfNeeded(page);
+            await page.getByTestId('birth-summary-chip').scrollIntoViewIfNeeded();
+            await snapView(page, `app-form-chip-${theme}-390`);
+            await openBirthFormIfNeeded(page);
+            await assertNoHorizontalOverflow(page, `birth sheet ${theme} 390`);
+            await snapView(page, `app-form-sheet-${theme}-390`);
+            await closeBirthFormIfNeeded(page);
+        } else {
+            await page.locator('.birth-panel').scrollIntoViewIfNeeded();
+            await page.evaluate(() => window.scrollTo(0, 0));
+            await snapView(page, `app-form-${theme}-1280`);
+            await assertNoHorizontalOverflow(page, `birth form ${theme} 1280`);
+        }
+    }
+}
+
 async function main() {
     await mkdir(OUT, { recursive: true });
     const browser = await chromium.launch();
@@ -652,7 +762,10 @@ async function main() {
                 `landing ${light ? 'light' : 'dark'} ${vp.name}`,
             );
             await assertNoFilledConstellationPaths(page);
+            await page.evaluate(() => window.scrollTo(0, 0));
+            await page.waitForTimeout(150);
             await snap(page, `landing-hero-${light ? 'light' : 'dark'}-${vp.name}`);
+            await snapView(page, `landing-sky-${light ? 'light' : 'dark'}-${vp.name}`);
             report.push(`landing-hero-${light ? 'light' : 'dark'}-${vp.name}`);
 
             await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -661,6 +774,7 @@ async function main() {
             if (light) await assertLicensingTierCards(page);
             await assertNoFilledConstellationPaths(page);
             await snap(page, `landing-why-${light ? 'light' : 'dark'}-${vp.name}`);
+            await snapView(page, `landing-sky-scrolled-${light ? 'light' : 'dark'}-${vp.name}`);
             report.push(`landing-why-${light ? 'light' : 'dark'}-${vp.name}`);
         }
 
@@ -701,6 +815,8 @@ async function main() {
             await page.waitForTimeout(200);
             await snap(page, 'app-varga-d9-south-1280');
         }
+
+        await reviewOwnerSurfaces(page, vp);
 
         await context.close();
     }

@@ -42,11 +42,24 @@ async function queryBytes(page) {
     );
 }
 
+async function openBirthForm(page) {
+    const chip = page.getByTestId('birth-summary-chip');
+    if (await chip.isVisible().catch(() => false)) {
+        await chip.click();
+        await page.getByTestId('place-input').waitFor({ state: 'visible', timeout: 10_000 });
+    }
+}
+
 async function searchSao(page) {
+    await openBirthForm(page);
     const input = page.getByTestId('place-input');
     await input.click();
     await input.fill('sao paulo');
-    await page.getByRole('option').first().waitFor({ state: 'visible', timeout: 120_000 });
+    await page
+        .locator('.place-combo__list')
+        .getByRole('option')
+        .first()
+        .waitFor({ state: 'visible', timeout: 120_000 });
 }
 
 async function waitForMidLoad(page) {
@@ -98,6 +111,7 @@ async function shootLoader(browser, viewport) {
         if (req.url().includes('la-sa.json.gz')) page.shardStarted = true;
     });
     await page.goto(`${BASE}#/app`, { waitUntil: 'domcontentloaded' });
+    await openBirthForm(page);
     const input = page.getByTestId('place-input');
     await page.evaluate(() => {
         document.getElementById('place')?.scrollIntoView({ block: 'center' });
@@ -120,7 +134,11 @@ async function shootLoader(browser, viewport) {
     if (readOnly === null) throw new Error(`Input was editable during load at ${viewport.name}`);
     if (value !== 'sao paulo') throw new Error(`Typed text changed during load: "${value}"`);
     await page.screenshot({ path: join(OUT, `place-loader-40-${viewport.name}.png`) });
-    await page.getByRole('option').first().waitFor({ state: 'visible', timeout: 120_000 });
+    await page
+        .locator('.place-combo__list')
+        .getByRole('option')
+        .first()
+        .waitFor({ state: 'visible', timeout: 120_000 });
     await label.waitFor({ state: 'hidden', timeout: 30_000 });
     const after = await input.inputValue();
     const stillReadOnly = await input.getAttribute('readonly');

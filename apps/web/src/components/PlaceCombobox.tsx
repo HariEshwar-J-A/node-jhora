@@ -9,9 +9,18 @@ const MIN_QUERY = 2;
 type Props = {
     initialLabel?: string;
     onPick: (hit: PlaceHit) => void;
+    inputId?: string;
+    testId?: string;
+    label?: string;
 };
 
-export function PlaceCombobox({ initialLabel = '', onPick }: Props) {
+export function PlaceCombobox({
+    initialLabel = '',
+    onPick,
+    inputId = 'place',
+    testId = 'place-input',
+    label = 'Birth place',
+}: Props) {
     const listId = useId();
     const progressId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -123,14 +132,14 @@ export function PlaceCombobox({ initialLabel = '', onPick }: Props) {
 
     return (
         <div className="place-combo">
-            <label htmlFor="place">Birth place</label>
+            <label htmlFor={inputId}>{label}</label>
             <div className="place-combo__field" ref={fieldRef}>
                 <input
-                    id="place"
+                    id={inputId}
                     ref={inputRef}
                     className="place-combo__input"
                     role="combobox"
-                    data-testid="place-input"
+                    data-testid={testId}
                     autoComplete="off"
                     spellCheck={false}
                     placeholder="e.g. Chennai"

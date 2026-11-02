@@ -4,12 +4,15 @@ export type SpaceScenePhase = 'intro' | 'sky';
 
 export type SpaceSceneHandle = {
     skipIntro: () => void;
+    setParallax: (scrollY: number) => void;
     dispose: () => void;
 };
 
 export type MountSpaceSceneOptions = {
     mobile: boolean;
     skipIntro: boolean;
+    /** Light theme: night sky only, no Earth flight. */
+    skyOnly?: boolean;
     reducedMotion?: boolean;
     textureBase: string;
     onIntroComplete: () => void;
@@ -110,7 +113,7 @@ function buildStars(THREE: typeof import('three'), count: number) {
             float alpha = (core + spikes * 0.85) * vTwinkle;
             if (alpha < 0.02) discard;
             float warm = step(0.62, fract(vPhase * 1.7));
-            vec3 col = mix(vec3(0.78, 0.86, 1.0), vec3(1.0, 0.92, 0.78), warm);
+            vec3 col = mix(vec3(0.94, 0.94, 0.96), vec3(1.0, 0.95, 0.88), warm);
             col = mix(col, vec3(1.0), core * 0.65);
             gl_FragColor = vec4(col, alpha);
           }
@@ -145,10 +148,217 @@ function configureMap(THREE: typeof import('three'), tex: Texture, color: boolea
     tex.flipY = true;
 }
 
+const SKY_CLEAR = 0x090909;
+
+async function mountSkyBackdrop(
+    canvas: HTMLCanvasElement,
+    opts: MountSpaceSceneOptions,
+): Promise<SpaceSceneHandle> {
+    const THREE = await import('three');
+    const disposables: { dispose: () => void }[] = [];
+    const track = <T extends { dispose: () => void }>(item: T): T => {
+        disposables.push(item);
+        return item;
+    };
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: !opts.mobile,
+        alpha: false,
+        powerPreference: 'high-performance',
+    });
+    const maxDpr = opts.mobile ? 1.25 : 1.5;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = opts.mobile ? 1.02 : 1.08;
+    renderer.setClearColor(SKY_CLEAR, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(68, 1, 0.08, 900);
+    scene.add(camera);
+    const skyRig = new THREE.Object3D();
+    skyRig.position.set(0, -0.12, 0.04);
+    skyRig.rotation.set(-Math.PI / 2 + 0.22, 0.18, 0.04);
+    const skyPos = skyRig.position.clone();
+    const skyQuat = skyRig.quaternion.clone();
+
+    const starCounts = opts.mobile ? [720, 380, 160] : [2600, 1500, 640];
+    const starGroups = starCounts.map((count) => {
+        const pts = buildStars(THREE, count);
+        scene.add(pts);
+        track(pts.geometry);
+        track(pts.material as Material);
+        return pts;
+    });
+
+    const [{ EffectComposer }, { RenderPass }, { OutputPass }] = await Promise.all([
+        import('three/addons/postprocessing/EffectComposer.js'),
+        import('three/addons/postprocessing/RenderPass.js'),
+        import('three/addons/postprocessing/OutputPass.js'),
+    ]);
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    if (!opts.mobile) {
+        const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
+        composer.addPass(
+            new UnrealBloomPass(
+                new THREE.Vector2(
+                    Math.max(1, canvas.clientWidth / 2),
+                    Math.max(1, canvas.clientHeight / 2),
+                ),
+                0.22,
+                0.32,
+                0.86,
+            ),
+        );
+    }
+    composer.addPass(new OutputPass());
+    track(composer);
+
+    const streaks: { line: import('three').Line; head: Points; life: number }[] = [];
+    const spawnStreak = () => {
+        const x0 = (Math.random() - 0.5) * 46;
+        const y0 = 18 + Math.random() * 22;
+        const z0 = -30 - Math.random() * 18;
+        const len = 7 + Math.random() * 9;
+        const ang = -0.7 - Math.random() * 0.35;
+        const headPos = new THREE.Vector3(x0, y0, z0);
+        const tail = new THREE.Vector3(x0 + Math.cos(ang) * len, y0 + Math.sin(ang) * len, z0);
+        const line = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([tail, headPos]),
+            new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+            }),
+        );
+        const head = new THREE.Points(
+            new THREE.BufferGeometry().setAttribute(
+                'position',
+                new THREE.Float32BufferAttribute([headPos.x, headPos.y, headPos.z], 3),
+            ),
+            new THREE.PointsMaterial({
+                size: 1.6,
+                sizeAttenuation: true,
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            }),
+        );
+        scene.add(line);
+        scene.add(head);
+        streaks.push({ line, head, life: 0 });
+    };
+    const tickStreaks = () => {
+        for (let i = streaks.length - 1; i >= 0; i--) {
+            const streak = streaks[i]!;
+            streak.life += 1;
+            (streak.line.material as import('three').LineBasicMaterial).opacity = Math.max(
+                0,
+                0.9 - streak.life * 0.07,
+            );
+            (streak.head.material as import('three').PointsMaterial).opacity = Math.max(
+                0,
+                1 - streak.life * 0.1,
+            );
+            if (streak.life > 16) {
+                scene.remove(streak.line);
+                scene.remove(streak.head);
+                streak.line.geometry.dispose();
+                (streak.line.material as Material).dispose();
+                streak.head.geometry.dispose();
+                (streak.head.material as Material).dispose();
+                streaks.splice(i, 1);
+            }
+        }
+    };
+
+    let parallax = 0;
+    let raf = 0;
+    let paused = false;
+    let shootAcc = 1.4;
+    const started = performance.now();
+    const resize = () => {
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        if (w <= 0 || h <= 0) return;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+        renderer.setSize(w, h, false);
+        composer.setSize(w, h);
+        const pr = renderer.getPixelRatio();
+        for (const pts of starGroups) {
+            (pts.material as import('three').ShaderMaterial).uniforms.uPixelRatio.value = pr;
+        }
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    const onVis = () => {
+        paused = document.hidden;
+    };
+    document.addEventListener('visibilitychange', onVis);
+    canvas.dataset.intro = '1';
+    opts.onPhaseChange?.('sky');
+    opts.onIntroComplete();
+
+    const tick = (now: number) => {
+        raf = requestAnimationFrame(tick);
+        if (paused) return;
+        const shift = Math.max(-1.4, Math.min(1.4, parallax * 0.00032));
+        camera.position.copy(skyPos);
+        camera.quaternion.copy(skyQuat);
+        camera.position.x += shift * 8;
+        camera.position.y += shift * 2.2;
+        camera.rotateZ(shift * 0.06);
+        shootAcc += 0.016;
+        if (shootAcc > 2.6) {
+            shootAcc = 0;
+            spawnStreak();
+        }
+        tickStreaks();
+        const elapsed = (now - started) / 1000;
+        for (const pts of starGroups) {
+            (pts.material as import('three').ShaderMaterial).uniforms.uTime.value = elapsed;
+        }
+        composer.render();
+    };
+    raf = requestAnimationFrame(tick);
+
+    return {
+        skipIntro() {},
+        setParallax(scrollY: number) {
+            parallax = scrollY;
+        },
+        dispose() {
+            cancelAnimationFrame(raf);
+            ro.disconnect();
+            document.removeEventListener('visibilitychange', onVis);
+            for (const streak of streaks) {
+                scene.remove(streak.line);
+                scene.remove(streak.head);
+                streak.line.geometry.dispose();
+                (streak.line.material as Material).dispose();
+                streak.head.geometry.dispose();
+                (streak.head.material as Material).dispose();
+            }
+            composer.passes.forEach((pass) => pass.dispose());
+            renderer.dispose();
+            for (const item of disposables) item.dispose();
+        },
+    };
+}
+
 export async function mountSpaceScene(
     canvas: HTMLCanvasElement,
     opts: MountSpaceSceneOptions,
 ): Promise<SpaceSceneHandle> {
+    if (opts.skyOnly) return mountSkyBackdrop(canvas, opts);
     const THREE = await import('three');
     const reduced = opts.reducedMotion === true;
     const duration = reduced ? REDUCED_MS : INTRO_MS;
@@ -170,7 +380,7 @@ export async function mountSpaceScene(
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = opts.mobile ? 1.02 : 1.08;
-    renderer.setClearColor(0x02040c, 1);
+    renderer.setClearColor(SKY_CLEAR, 1);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, 1, 0.08, 900);
@@ -689,6 +899,7 @@ export async function mountSpaceScene(
         }
     }
 
+    let parallax = 0;
     let introStart = 0;
     let clockStarted = false;
     let skySent = false;
@@ -744,10 +955,10 @@ export async function mountSpaceScene(
         texturesReady = true;
         clockStarted = true;
         completeIntro();
+    } else {
+        placeFlight(0);
+        posePlanet(0, 0);
     }
-
-    placeFlight(0);
-    posePlanet(0, 0);
 
     const renderFrame = () => {
         if (composer) composer.render();
@@ -788,6 +999,12 @@ export async function mountSpaceScene(
             if ((!Number.isFinite(held) || held >= 0.5) && reduced && t >= 0.5) sendSky();
             if ((!Number.isFinite(held) || held >= 1) && t >= 1) completeIntro();
         } else {
+            const shift = Math.max(-1.4, Math.min(1.4, parallax * 0.00032));
+            camera.position.copy(SKY_POS);
+            camera.quaternion.copy(SKY_QUAT);
+            camera.position.x += shift * 8;
+            camera.position.y += shift * 2.2;
+            camera.rotateZ(shift * 0.06);
             shootAcc += 0.016;
             if (shootAcc > 2.6) {
                 shootAcc = 0;
@@ -807,6 +1024,9 @@ export async function mountSpaceScene(
     return {
         skipIntro: () => {
             completeIntro();
+        },
+        setParallax: (scrollY: number) => {
+            parallax = scrollY;
         },
         dispose: () => {
             cancelAnimationFrame(raf);
