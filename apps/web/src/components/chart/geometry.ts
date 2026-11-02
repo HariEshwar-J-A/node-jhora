@@ -107,3 +107,64 @@ export function planetStackLayout(count: number, baseY: number, maxRows = 6): nu
     const start = baseY - ((n - 1) * step) / 2;
     return Array.from({ length: n }, (_, i) => start + i * step);
 }
+
+export type PlanetLabelSlot = { x: number; y: number; fontSize: number };
+
+/** North Indian: wrap into two columns when crowded; shrink type to stay inside the house. */
+export function northHousePlanetLayout(
+    count: number,
+    anchor: { x: number; y: number },
+): PlanetLabelSlot[] {
+    if (count === 0) return [];
+    const cols = count > 3 ? 2 : 1;
+    const rows = Math.ceil(count / cols);
+    const fontSize = count > 4 ? 3.05 : count > 3 ? 3.35 : 4.1;
+    const rowStep = fontSize * 1.18;
+    const colStep = 10.5;
+    const slots: PlanetLabelSlot[] = [];
+    for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const xOff = cols === 1 ? 0 : (col - (cols - 1) / 2) * colStep;
+        const blockH = (rows - 1) * rowStep;
+        const y = anchor.y + 6 - blockH / 2 + row * rowStep;
+        slots.push({ x: anchor.x + xOff, y, fontSize });
+    }
+    return slots;
+}
+
+/** South Indian: grid labels inside a sign cell (up to 2×2). */
+export function southCellPlanetLayout(
+    count: number,
+    cell: { x: number; y: number; size: number },
+): PlanetLabelSlot[] {
+    if (count === 0) return [];
+    const cols = count > 2 ? 2 : 1;
+    const rows = Math.ceil(count / cols);
+    const fontSize = count > 3 ? 2.95 : 3.55;
+    const rowStep = fontSize * 1.12;
+    const colStep = 8.5;
+    const startY = cell.y + 9.5;
+    const slots: PlanetLabelSlot[] = [];
+    for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        slots.push({
+            x: cell.x + 3 + col * colStep,
+            y: startY + row * rowStep,
+            fontSize,
+        });
+    }
+    return slots;
+}
+
+export function southCenterMetaLines(meta: { title: string; subtitle?: string }): {
+    lines: string[];
+    fontSize: number;
+} {
+    const lines = [meta.title];
+    if (meta.subtitle) lines.push(meta.subtitle);
+    const longest = Math.max(...lines.map((l) => l.length));
+    const fontSize = longest > 10 ? 2.85 : longest > 7 ? 3.15 : 3.45;
+    return { lines: lines.slice(0, 2), fontSize };
+}

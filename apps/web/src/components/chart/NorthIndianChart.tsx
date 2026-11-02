@@ -8,7 +8,7 @@ import {
     isRetrograde,
     planetShortName,
     planetSign0,
-    planetStackLayout,
+    northHousePlanetLayout,
     signIndex0,
     signLabel,
     wholeSignHouse,
@@ -55,7 +55,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                     const sign0 = (ascSign0 + i) % 12;
                     const anchor = NORTH_HOUSE_ANCHORS[house]!;
                     const inHouse = byHouse.get(house) ?? [];
-                    const ys = planetStackLayout(inHouse.length, anchor.y + 6);
+                    const slots = northHousePlanetLayout(inHouse.length, anchor);
                     return (
                         <g key={house} className="chart-house">
                             <text
@@ -69,7 +69,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                             {house === 1 && (
                                 <text
                                     x={anchor.x}
-                                    y={anchor.y - 7.5}
+                                    y={anchor.y - 8}
                                     textAnchor="middle"
                                     className="chart-lagna-tag"
                                 >
@@ -79,10 +79,11 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                             {inHouse.map((p, idx) => (
                                 <text
                                     key={p.name}
-                                    x={anchor.x}
-                                    y={ys[idx] ?? anchor.y + 6}
+                                    x={slots[idx]?.x ?? anchor.x}
+                                    y={slots[idx]?.y ?? anchor.y + 6}
                                     textAnchor="middle"
                                     className="chart-planet"
+                                    fontSize={slots[idx]?.fontSize ?? 4.25}
                                 >
                                     <title>
                                         {p.name} · {signName(planetSign0(p) + 1)} ·{' '}

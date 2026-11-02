@@ -11,6 +11,7 @@ export type MountSpaceSceneOptions = {
     mobile: boolean;
     skipIntro: boolean;
     textureBase: string;
+    lightSky?: boolean;
     onIntroComplete: () => void;
     onPhaseChange?: (phase: SpaceScenePhase) => void;
 };
@@ -42,10 +43,16 @@ function createNebulaTexture(THREE: typeof import('three')): Texture {
     ctx.fillRect(0, 0, size, size);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.flipY = false;
     return tex;
 }
 
-function buildStars(THREE: typeof import('three'), count: number, radius: number) {
+function buildStars(
+    THREE: typeof import('three'),
+    count: number,
+    radius: number,
+    lightSky: boolean,
+) {
     const positions = new Float32Array(count * 3);
     const magnitudes = new Float32Array(count);
     const phases = new Float32Array(count);
@@ -73,12 +80,14 @@ function buildStars(THREE: typeof import('three'), count: number, radius: number
         uniforms: {
             uTime: { value: 0 },
             uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+            uLightSky: { value: lightSky ? 1 : 0 },
         },
         vertexShader: `
           attribute float magnitude;
           attribute float phase;
           uniform float uTime;
           uniform float uPixelRatio;
+          uniform float uLightSky;
           varying float vMag;
           varying float vTwinkle;
           void main() {
@@ -93,6 +102,7 @@ function buildStars(THREE: typeof import('three'), count: number, radius: number
         fragmentShader: `
           varying float vMag;
           varying float vTwinkle;
+          uniform float uLightSky;
           void main() {
             vec2 c = gl_PointCoord - vec2(0.5);
             float r = length(c);
@@ -101,7 +111,9 @@ function buildStars(THREE: typeof import('three'), count: number, radius: number
             float glow = exp(-r * 7.0) * 0.55;
             float sparkle = smoothstep(0.48, 0.02, abs(c.x) * abs(c.y) * 12.0) * step(0.82, vMag);
             float alpha = (core + glow + sparkle * 0.35) * vTwinkle * (0.5 + vMag * 0.7);
-            vec3 col = mix(vec3(0.82, 0.88, 1.0), vec3(1.0), vMag);
+            vec3 darkCol = mix(vec3(0.12, 0.16, 0.28), vec3(0.05, 0.08, 0.14), vMag);
+            vec3 lightCol = mix(vec3(0.82, 0.88, 1.0), vec3(1.0), vMag);
+            vec3 col = mix(lightCol, darkCol, uLightSky);
             gl_FragColor = vec4(col, alpha);
           }
         `,
@@ -131,16 +143,23 @@ export async function mountSpaceScene(
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = opts.mobile ? 0.95 : 1.05;
 
+    const lightSky = opts.lightSky === true;
+    if (lightSky) {
+        renderer.setClearColor(0xf8fafc, 1);
+    } else {
+        renderer.setClearColor(0x02040c, 1);
+    }
+
     const scene = new THREE.Scene();
-    const travelFog = new THREE.FogExp2(0x03050a, 0.0012);
+    const travelFog = new THREE.FogExp2(lightSky ? 0xf0f4f8 : 0x03050a, lightSky ? 0.0025 : 0.0012);
     scene.fog = travelFog;
 
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 800);
     camera.position.set(0, 0, -120);
 
-    const starFar = buildStars(THREE, opts.mobile ? 1200 : 3200, 180);
-    const starMid = buildStars(THREE, opts.mobile ? 800 : 2000, 120);
-    const starNear = buildStars(THREE, opts.mobile ? 400 : 900, 70);
+    const starFar = buildStars(THREE, opts.mobile ? 1200 : 3200, 180, lightSky);
+    const starMid = buildStars(THREE, opts.mobile ? 800 : 2000, 120, lightSky);
+    const starNear = buildStars(THREE, opts.mobile ? 400 : 900, 70, lightSky);
     [starFar, starMid, starNear].forEach((p) => {
         points.push(p);
         scene.add(p);
@@ -175,6 +194,14 @@ export async function mountSpaceScene(
     const nightMap = loader.load(`${opts.textureBase}earth-night-${suffix}.webp`);
     dayMap.colorSpace = THREE.SRGBColorSpace;
     nightMap.colorSpace = THREE.SRGBColorSpace;
+    dayMap.flipY = false;
+    nightMap.flipY = false;
+    dayMap.premultiplyAlpha = false;
+    nightMap.premultiplyAlpha = false;
+
+    const gl = renderer.getContext() as WebGL2RenderingContext;
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     disposables.push(dayMap, nightMap);
 
     const earthGeo = new THREE.SphereGeometry(8, opts.mobile ? 48 : 64, opts.mobile ? 32 : 48);
@@ -262,7 +289,7 @@ export async function mountSpaceScene(
         phase = 'sky';
         opts.onPhaseChange?.('sky');
         opts.onIntroComplete();
-        scene.fog = new THREE.FogExp2(0x020308, opts.mobile ? 0.018 : 0.014);
+        scene.fog = new THREE.FogExp2(lightSky ? 0xf8fafc : 0x020308, opts.mobile ? 0.018 : 0.014);
         earth.visible = false;
         atmosphere.visible = false;
         nebula.visible = false;

@@ -9,7 +9,8 @@ import {
     isRetrograde,
     planetShortName,
     planetSign0,
-    planetStackLayout,
+    southCellPlanetLayout,
+    southCenterMetaLines,
     signIndex0,
     signLabel,
 } from './geometry';
@@ -48,33 +49,39 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                 key={chartKey}
             >
                 <path className="chart-frame" d={SOUTH_FRAME_PATH} pathLength={1} />
-                {meta && (
-                    <foreignObject
-                        x={SOUTH_CENTER.x}
-                        y={SOUTH_CENTER.y}
-                        width={SOUTH_CENTER.w}
-                        height={SOUTH_CENTER.h}
-                    >
-                        <div className="chart-center-meta">
-                            <div className="chart-center-meta__title">{meta.title}</div>
-                            {meta.subtitle ? (
-                                <div className="chart-center-meta__sub">{meta.subtitle}</div>
-                            ) : null}
-                            {meta.dateLabel ? (
-                                <div className="chart-center-meta__sub">{meta.dateLabel}</div>
-                            ) : null}
-                            {meta.place ? (
-                                <div className="chart-center-meta__sub">{meta.place}</div>
-                            ) : null}
-                        </div>
-                    </foreignObject>
-                )}
+                {meta &&
+                    (() => {
+                        const { lines, fontSize } = southCenterMetaLines(meta);
+                        const cx = SOUTH_CENTER.x + SOUTH_CENTER.w / 2;
+                        const cy = SOUTH_CENTER.y + SOUTH_CENTER.h / 2;
+                        const lineGap = fontSize * 1.35;
+                        const startY = cy - ((lines.length - 1) * lineGap) / 2;
+                        return (
+                            <text
+                                x={cx}
+                                y={startY}
+                                textAnchor="middle"
+                                className="chart-center-meta-svg"
+                                fontSize={fontSize}
+                            >
+                                {lines.map((line, i) => (
+                                    <tspan key={i} x={cx} dy={i === 0 ? 0 : lineGap}>
+                                        {line}
+                                    </tspan>
+                                ))}
+                            </text>
+                        );
+                    })()}
                 {SOUTH_SIGN_CELLS.map(({ sign, row, col }) => {
                     const x = origin + col * cell;
                     const y = origin + row * cell;
                     const inSign = bySign.get(sign) ?? [];
                     const isLagna = sign === ascSign0;
-                    const ys = planetStackLayout(inSign.length, y + 12, 5);
+                    const slots = southCellPlanetLayout(inSign.length, {
+                        x,
+                        y,
+                        size: cell,
+                    });
                     return (
                         <g key={sign}>
                             {isLagna && (
@@ -92,9 +99,10 @@ export function SouthIndianChart({ ascendant, planets, meta, chartKey, compact }
                             {inSign.map((p, idx) => (
                                 <text
                                     key={p.name}
-                                    x={x + 2.5}
-                                    y={ys[idx] ?? y + 10}
+                                    x={slots[idx]?.x ?? x + 2.5}
+                                    y={slots[idx]?.y ?? y + 10}
                                     className="chart-planet"
+                                    fontSize={slots[idx]?.fontSize ?? 3.55}
                                 >
                                     <title>
                                         {p.name} · {signName(sign + 1)} ·{' '}

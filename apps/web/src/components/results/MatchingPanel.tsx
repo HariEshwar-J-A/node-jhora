@@ -1,18 +1,60 @@
 import { StatCard } from '../ui/StatCard';
 import { DataTable, type DataColumn } from '../ui/DataTable';
 
+type KutaScoreLike = { name: string; score: number; maxScore?: number };
+type MatchBlock = {
+    totalScore?: number;
+    maxScore?: number;
+    total?: number;
+    max?: number;
+    score?: number;
+    kutas?: Record<string, number>;
+    matches?: KutaScoreLike[];
+};
+
+type PoruthamBlock = {
+    totalScore?: number;
+    maxTotal?: number;
+    matched?: number;
+    total?: number;
+    matches?: KutaScoreLike[];
+};
+
 type Props = {
     matching: {
         sampleNote?: string;
-        ashtaKuta?: { total?: number; max?: number; kutas?: Record<string, number> };
-        dashaKuta?: { score?: number };
-        porutham?: { matched?: number; total?: number };
+        ashtaKuta?: MatchBlock;
+        dashaKuta?: MatchBlock;
+        porutham?: PoruthamBlock;
         mangalDosha?: { boy?: boolean; girl?: boolean } | null;
     };
 };
 
+function matchTotal(block: MatchBlock | undefined): { score: number | null; max: number | null } {
+    if (!block) return { score: null, max: null };
+    const score = block.totalScore ?? block.total ?? block.score ?? null;
+    const max = block.maxScore ?? block.max ?? null;
+    return { score, max };
+}
+
+function matchKutaRows(block: MatchBlock | undefined): { name: string; score: number }[] {
+    if (!block) return [];
+    if (block.matches?.length) {
+        return block.matches.map((m) => ({ name: m.name, score: m.score }));
+    }
+    if (block.kutas) {
+        return Object.entries(block.kutas).map(([name, score]) => ({ name, score }));
+    }
+    return [];
+}
+
 export function MatchingPanel({ matching }: Props) {
-    const kutas = matching.ashtaKuta?.kutas ? Object.entries(matching.ashtaKuta.kutas) : [];
+    const ashta = matchTotal(matching.ashtaKuta);
+    const dasha = matchTotal(matching.dashaKuta);
+    const poruthamScore = matching.porutham?.totalScore ?? matching.porutham?.matched ?? null;
+    const poruthamMax = matching.porutham?.maxTotal ?? matching.porutham?.total ?? null;
+
+    const kutas = matchKutaRows(matching.ashtaKuta);
 
     const kutaColumns: DataColumn<{ name: string; score: number }>[] = [
         { key: 'name', header: 'Kuta', render: (r) => r.name },
@@ -27,31 +69,21 @@ export function MatchingPanel({ matching }: Props) {
             <div className="stat-grid">
                 <StatCard
                     label="Ashta kuta"
-                    value={
-                        matching.ashtaKuta?.total != null
-                            ? `${matching.ashtaKuta.total} / ${matching.ashtaKuta.max ?? 36}`
-                            : '—'
-                    }
+                    value={ashta.score != null ? `${ashta.score} / ${ashta.max ?? 36}` : '—'}
                 />
-                <StatCard label="Dasha kuta" value={String(matching.dashaKuta?.score ?? '—')} />
+                <StatCard
+                    label="Dasha kuta"
+                    value={dasha.score != null ? String(dasha.score) : '—'}
+                />
                 <StatCard
                     label="Porutham"
-                    value={
-                        matching.porutham
-                            ? `${matching.porutham.matched ?? '—'} / ${matching.porutham.total ?? '—'}`
-                            : '—'
-                    }
+                    value={poruthamScore != null ? `${poruthamScore} / ${poruthamMax ?? '—'}` : '—'}
                 />
             </div>
             {kutas.length > 0 && (
                 <div className="card">
                     <h3>Kuta breakdown</h3>
-                    <DataTable
-                        columns={kutaColumns}
-                        rows={kutas.map(([name, score]) => ({ name, score }))}
-                        rowKey={(r) => r.name}
-                        compact
-                    />
+                    <DataTable columns={kutaColumns} rows={kutas} rowKey={(r) => r.name} compact />
                 </div>
             )}
             {matching.mangalDosha && (

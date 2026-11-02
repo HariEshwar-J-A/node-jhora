@@ -12,6 +12,8 @@ const LORD_NAMES: Record<number, string> = {
     4: 'Mars',
     5: 'Jupiter',
     6: 'Saturn',
+    7: 'Rahu',
+    8: 'Ketu',
     10: 'Rahu',
     11: 'Uranus',
     12: 'Neptune',

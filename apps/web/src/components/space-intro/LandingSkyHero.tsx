@@ -10,6 +10,7 @@ import { useReducedMotion } from 'framer-motion';
 import { ConstellationOverlay } from './ConstellationOverlay';
 import { detectWebGL } from './session';
 import type { SpaceSceneHandle } from './runSpaceScene';
+import { useTheme } from '../../lib/theme';
 
 const FALLBACK = `${import.meta.env.BASE_URL}textures/night-sky-fallback.webp`;
 
@@ -40,6 +41,7 @@ type Props = {
 };
 
 export function LandingSkyHero({ children }: Props) {
+    const { mode } = useTheme();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const sceneRef = useRef<SpaceSceneHandle | null>(null);
     const reduceMotion = useReducedMotion();
@@ -62,6 +64,7 @@ export function LandingSkyHero({ children }: Props) {
             mountSpaceScene(canvasRef.current, {
                 mobile,
                 skipIntro: false,
+                lightSky: mode === 'light',
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
                     setSkyReady(true);
@@ -85,7 +88,7 @@ export function LandingSkyHero({ children }: Props) {
             sceneRef.current?.dispose();
             sceneRef.current = null;
         };
-    }, [staticMode, mobile]);
+    }, [staticMode, mobile, mode]);
 
     const onSkip = useCallback(() => {
         sceneRef.current?.skipIntro();

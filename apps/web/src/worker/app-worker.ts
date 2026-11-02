@@ -42,6 +42,7 @@ import {
 import { DateTime } from 'luxon';
 
 import { NAMED_VARGA_DIVISIONS } from '../lib/constants';
+import { formatRiseSetOutcome } from '../lib/rise-set-display';
 import type { BirthInput, InitProgress } from '../lib/worker-types';
 import { resolveTimezone } from '../lib/format';
 import { toWorkerPlain } from '../lib/serialize-worker';
@@ -231,10 +232,14 @@ const api = {
         }
 
         const jdStart = instant.toUTC().toMillis() / 86400000 + 2440587.5;
-        const sunRiseSet = computeRiseSetTable(eph, 0, jdStart, {
+        const riseSetTable = computeRiseSetTable(eph, 0, jdStart, {
             latitude: input.latitude,
             longitude: input.longitude,
         });
+        const sunRiseSet = {
+            rise: formatRiseSetOutcome(riseSetTable.rise, tz.zone),
+            set: formatRiseSetOutcome(riseSetTable.set, tz.zone),
+        };
 
         const planetPositions = planets.map((p) => ({
             id: p.id,

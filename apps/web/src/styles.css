@@ -588,10 +588,16 @@ table.data th {
     font-weight: 500;
 }
 
-.chart-wheel .chart-lagna-mark {
+.chart-wheel .chart-lagna-mark,
+.chart-canvas .chart-lagna-tag {
     fill: hsl(var(--foreground));
-    font-size: 3.5px;
+    font-size: 3px;
     font-weight: 700;
+}
+
+.chart-canvas .chart-center-meta-svg {
+    fill: hsl(var(--foreground));
+    font-weight: 600;
 }
 
 @keyframes chart-frame-draw {
@@ -705,9 +711,25 @@ table.data th {
 .sav-grid__cell {
     border: 1px solid hsl(var(--border));
     border-radius: 0.35rem;
-    padding: 0.35rem;
-    text-align: center;
+    padding: 0.35rem 0.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
     font-size: 0.75rem;
+}
+
+.sav-grid__sign {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.7rem;
+    line-height: 1;
+}
+
+.sav-grid__pts {
+    font-weight: 600;
+    font-size: 0.82rem;
+    line-height: 1.1;
 }
 
 .varga-board__toolbar {
@@ -910,6 +932,57 @@ table.data th {
     overflow: hidden;
     background: #02040c;
     color: #e8eeff;
+}
+
+[data-theme='light'] .landing-sky-hero {
+    background: #f8fafc;
+    color: hsl(var(--foreground));
+}
+
+.landing-sky-hero .btn-outline,
+.landing-sky-hero .intro-skip.btn-outline {
+    border-color: rgb(232 238 255 / 0.55);
+    color: #f4f7ff;
+    background: rgb(2 4 12 / 0.35);
+}
+
+.landing-sky-hero .btn-outline:hover:not(:disabled),
+.landing-sky-hero .intro-skip.btn-outline:hover:not(:disabled) {
+    background: rgb(232 238 255 / 0.12);
+    border-color: rgb(232 238 255 / 0.85);
+}
+
+[data-theme='light'] .landing-sky-hero .btn-outline,
+[data-theme='light'] .landing-sky-hero .intro-skip.btn-outline {
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+}
+
+[data-theme='light'] .landing-sky-hero .btn-ghost {
+    color: hsl(var(--foreground));
+}
+
+[data-theme='light'] .landing-sky-hero .badge {
+    border-color: hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+}
+
+[data-theme='light'] .landing-sky-hero__vignette {
+    background: linear-gradient(
+        to bottom,
+        rgb(248 250 252 / 0.55) 0%,
+        transparent 38%,
+        rgb(248 250 252 / 0.75) 100%
+    );
+}
+
+[data-theme='light'] .landing-sky-hero__canvas {
+    filter: saturate(0.85) contrast(1.05) brightness(1.15);
+}
+
+[data-theme='light'] .constellation-overlay {
+    color: rgb(30 41 59 / 0.72);
 }
 
 .landing-sky-hero__canvas,
