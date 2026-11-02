@@ -309,8 +309,8 @@ const api = {
         const mercuryTransits = mercuryRaw.map((e) => ({
             planetId: e.planetId,
             type: e.type,
-            prevSign: e.prevValue,
-            newSign: e.newValue,
+            prevValue: e.prevValue,
+            newValue: e.newValue,
             instant: e.time.toUTC().toISO(),
         }));
         const scanner = new TransitScanner(eph);

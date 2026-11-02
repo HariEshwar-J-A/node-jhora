@@ -113,31 +113,58 @@ export function planetStackLayout(count: number, baseY: number, maxRows = 6): nu
 
 export type PlanetLabelSlot = { x: number; y: number; fontSize: number };
 
-/** North Indian: fit labels inside each house polygon; stack on narrow corners. */
+const NORTH_CENTER = { x: 50, y: 50 };
+
+/** Shift label block toward chart centre so text clears diagonals and outer frame. */
+function northHouseLabelOrigin(
+    house: number,
+    anchor: { x: number; y: number },
+): { x: number; y: number } {
+    const pull: Record<number, number> = {
+        1: 0.1,
+        2: 0.24,
+        3: 0.16,
+        4: 0.14,
+        5: 0.14,
+        6: 0.2,
+        7: 0.12,
+        8: 0.2,
+        9: 0.14,
+        10: 0.16,
+        11: 0.18,
+        12: 0.24,
+    };
+    const t = pull[house] ?? 0.14;
+    return {
+        x: anchor.x + (NORTH_CENTER.x - anchor.x) * t,
+        y: anchor.y + (NORTH_CENTER.y - anchor.y) * t,
+    };
+}
+
+/** North Indian: inset labels; 2×2 grid when crowded; always room for "Su 12° R". */
 export function northHousePlanetLayout(
     count: number,
     anchor: { x: number; y: number },
     house?: number,
 ): PlanetLabelSlot[] {
     if (count === 0) return [];
-    const narrowHouses = new Set([2, 3, 5, 6, 8, 9, 11, 12]);
-    const narrow = house != null && narrowHouses.has(house);
-    const cols = count > 3 && !narrow ? 2 : 1;
+    const origin = house != null ? northHouseLabelOrigin(house, anchor) : anchor;
+    const cols = count >= 3 ? 2 : 1;
     const rows = Math.ceil(count / cols);
-    let fontSize = 4;
-    if (count > 2) fontSize = narrow ? 2.85 : 3.25;
-    if (count > 3) fontSize = narrow ? 2.65 : 2.95;
-    if (count > 4) fontSize = narrow ? 2.45 : 2.75;
-    const rowStep = fontSize * 1.25;
-    const colStep = narrow ? 0 : 8.5;
+    let fontSize = 3.85;
+    if (count >= 3) fontSize = 3.05;
+    if (count >= 4) fontSize = 2.75;
+    if (count >= 5) fontSize = 2.55;
+    const rowStep = fontSize * 1.32;
+    const colStep = count >= 4 ? 7.2 : 8;
     const slots: PlanetLabelSlot[] = [];
     for (let i = 0; i < count; i++) {
         const col = i % cols;
         const row = Math.floor(i / cols);
         const xOff = cols === 1 ? 0 : (col - (cols - 1) / 2) * colStep;
         const blockH = (rows - 1) * rowStep;
-        const y = anchor.y + 5 - blockH / 2 + row * rowStep;
-        slots.push({ x: anchor.x + xOff, y, fontSize });
+        const y = origin.y + 4 - blockH / 2 + row * rowStep;
+        slots.push({ x: origin.x + xOff, y, fontSize });
     }
     return slots;
 }

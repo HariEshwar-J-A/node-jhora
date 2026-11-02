@@ -91,6 +91,12 @@ export function signName(sign1Based: number): string {
     return SIGN_NAMES[sign1Based - 1] ?? '—';
 }
 
+/** Nakshatra name from 0-based index (matches {@link TransitEvent} values). */
+export function nakshatraName(index0: number): string {
+    if (!Number.isFinite(index0) || index0 < 0 || index0 > 26) return '—';
+    return NAKSHATRA_NAMES[index0] ?? '—';
+}
+
 export function degreeInSignDms(degree: number): string {
     const d = Math.floor(degree);
     const mFloat = (degree - d) * 60;

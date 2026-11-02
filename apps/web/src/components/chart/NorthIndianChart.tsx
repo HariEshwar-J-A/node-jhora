@@ -22,12 +22,9 @@ type Props = {
     compact?: boolean;
 };
 
-function formatPlanetLine(p: ChartPlanet, compact: boolean): string {
+function formatPlanetLine(p: ChartPlanet): string {
     const d = Math.floor(degreeInSign(p));
     const retro = isRetrograde(p) ? ' R' : '';
-    if (compact) {
-        return `${planetShortName(p.name)}${d}${retro}`;
-    }
     return `${planetShortName(p.name)} ${d}°${retro}`;
 }
 
@@ -98,7 +95,7 @@ export function NorthIndianChart({ ascendant, planets, chartKey, compact }: Prop
                                             {formatDms(p.longitude)})
                                             {isRetrograde(p) ? ' · Retrograde' : ''}
                                         </title>
-                                        {formatPlanetLine(p, fs < 3.2)}
+                                        {formatPlanetLine(p)}
                                     </text>
                                 );
                             })}
