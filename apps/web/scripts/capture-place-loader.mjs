@@ -1,6 +1,6 @@
 /**
  * Local screenshots of the place-index loader (not part of CI).
- * Preview must already be serving http://127.0.0.1:4173/node-jhora/
+ * Preview must already be serving http://127.0.0.1:4173/astrology/
  *
  * Writes:
  *   /opt/cursor/artifacts/screenshots/place-loader-40-390.png
@@ -13,7 +13,9 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const BASE = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/node-jhora/';
+import { previewOrigin } from '../site.mjs';
+
+const BASE = process.env.PREVIEW_URL ?? previewOrigin();
 const OUT = process.env.LOADER_SHOTS ?? '/opt/cursor/artifacts/screenshots';
 
 function trackAtlas(page, bucket) {

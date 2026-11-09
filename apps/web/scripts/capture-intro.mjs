@@ -1,6 +1,6 @@
 /**
  * Local intro frames (not CI).
- * Preview must already be on PREVIEW_URL (default http://127.0.0.1:4173/node-jhora/).
+ * Preview must already be on PREVIEW_URL (default http://127.0.0.1:4173/astrology/).
  *
  * Writes PNGs and a desktop webm under INTRO_OUT
  * (default /opt/cursor/artifacts/screenshots).
@@ -8,7 +8,9 @@
 import { chromium } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
-const BASE = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/node-jhora/';
+import { previewOrigin } from '../site.mjs';
+
+const BASE = process.env.PREVIEW_URL ?? previewOrigin();
 const OUT = process.env.INTRO_OUT ?? '/opt/cursor/artifacts/screenshots';
 
 const MARKS = [

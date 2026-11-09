@@ -1,3 +1,5 @@
+import { KERNEL_FILENAME } from '../../site.mjs';
+
 /** Supported DE440s coverage (packages/core/src/browser/constants.ts, engine provider). */
 export const KERNEL_DATE_MIN = '1849-12-26';
 export const KERNEL_DATE_MAX = '2150-01-22';
@@ -9,7 +11,7 @@ export const NAMED_VARGA_DIVISIONS = [
 export const CONTACT_URL = 'https://harieshwar.dev/#contact';
 export const CONTACT_EMAIL = 'harieshwar.dev@gmail.com';
 
-export const EPHE_PATH = `${import.meta.env.BASE_URL}ephe/de440s.bsp`;
+export const EPHE_PATH = `${import.meta.env.BASE_URL}ephe/${KERNEL_FILENAME}`;
 
 export const SAMPLE_CHART = {
     label: 'Sample (Chennai, fictional)',

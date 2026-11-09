@@ -1,10 +1,10 @@
-# Deploy node-jhora marketing site and browser app to GitHub Pages
+# Production hosting is Vercel at https://harieshwar.dev/astrology.
+# This workflow is kept so the Pages recipe can be restored. It does not
+# deploy: there is no push trigger, and both jobs are gated off.
 
 name: Deploy Pages
 
 on:
-    push:
-        branches: [main]
     workflow_dispatch:
 
 permissions:
@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
     build:
+        if: false
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -35,6 +36,7 @@ jobs:
                   path: apps/web/dist
 
     deploy:
+        if: false
         needs: build
         runs-on: ubuntu-latest
         environment:

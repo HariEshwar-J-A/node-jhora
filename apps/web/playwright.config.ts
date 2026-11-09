@@ -1,10 +1,12 @@
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
+import { previewOrigin } from './site.mjs';
 
 const webRoot = dirname(fileURLToPath(import.meta.url));
 const port = process.env.PORT ?? '4173';
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}/node-jhora/`;
+
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? previewOrigin(port);
 
 export default defineConfig({
     testDir: './tests/e2e',

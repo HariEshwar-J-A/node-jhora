@@ -1,5 +1,6 @@
 public/ephe/
 public/atlas/
 dist/
+test-results/
 apps/web/public/ephe/
 .visual-check/

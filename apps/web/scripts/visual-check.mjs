@@ -10,7 +10,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const BASE = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/node-jhora/';
+import { previewOrigin } from '../site.mjs';
+
+const BASE = process.env.PREVIEW_URL ?? previewOrigin();
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const OUT = process.env.VISUAL_CHECK_OUT ?? join(SCRIPT_DIR, '..', '.visual-check');
 
