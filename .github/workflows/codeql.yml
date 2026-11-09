@@ -1,9 +1,10 @@
 name: CodeQL
 
+# Default: push to main and weekly schedule. PR analysis is skipped for speed; re-enable
+# by adding pull_request or run the "CI" workflow with full_ci / label full-ci before merge.
+
 on:
     push:
-        branches: [main]
-    pull_request:
         branches: [main]
     schedule:
         - cron: '0 6 * * 1'

@@ -33,55 +33,68 @@ function expandPlace(row: PlaceRecord, matchedKey: string): PlaceHit {
     };
 }
 
-/** Ranking: exact key match first, then larger population, then lower GeoNames id. */
-function rankBefore(a: Candidate, b: Candidate, places: PlaceRecord[]): boolean {
-    if (a.exact !== b.exact) return a.exact;
-    const pa = places[a.placeIndex][6];
-    const pb = places[b.placeIndex][6];
-    if (pa !== pb) return pa > pb;
-    return places[a.placeIndex][7] < places[b.placeIndex][7];
-}
+/** Alternate-name hits are used only to fill a short primary list. */
+const ALTERNATE_FILL_LIMIT = 8;
 
 interface Candidate {
-    placeIndex: number;
+    place: PlaceRecord;
     key: string;
-    exact: boolean;
+    /** 0 primary/ascii, 1 word-start, 2 alternate. */
+    kind: number;
+}
+
+function byPopulation(a: Candidate, b: Candidate): number {
+    const pop = b.place[6] - a.place[6];
+    if (pop !== 0) return pop;
+    return a.place[7] - b.place[7];
+}
+
+/** Lower kind first (primary, then word-start), then larger population. */
+function byTier(a: Candidate, b: Candidate): number {
+    if (a.kind !== b.kind) return a.kind - b.kind;
+    return byPopulation(a, b);
 }
 
 /**
- * Scan every key in `shard` that starts with `prefix`, keeping the best
- * `limit` places. Every prefix hit is considered (not just the first `limit`
- * in key order), so ranking is by match quality and population.
+ * Scan every key in `shard` that starts with `prefix`. A place keeps its best
+ * (lowest) kind when several keys match.
  */
 function collectPrefixHits(
     shard: IndexShardPayload,
     prefix: string,
-    places: PlaceRecord[],
-    top: Candidate[],
-    best: Map<number, Candidate>,
-    limit: number,
+    globalPlaces: PlaceRecord[],
+    found: Map<number, Candidate>,
 ): void {
-    const { keys, placeIndexes } = shard;
+    const places = shard.places ?? globalPlaces;
+    const { keys, placeIndexes, kinds } = shard;
     const start = lowerBound(keys, prefix);
     for (let i = start; i < keys.length; i++) {
-        const key = keys[i];
+        const key = keys[i]!;
         if (!key.startsWith(prefix)) break;
-        const placeIndex = placeIndexes[i];
-        const exact = key === prefix;
-        const prev = best.get(placeIndex);
-        if (prev && (prev.exact || !exact)) continue;
-        const cand: Candidate = { placeIndex, key, exact };
-        best.set(placeIndex, cand);
-        if (prev) {
-            const at = top.indexOf(prev);
-            if (at >= 0) top.splice(at, 1);
-        }
-        if (top.length >= limit && !rankBefore(cand, top[top.length - 1], places)) continue;
-        let pos = top.length;
-        while (pos > 0 && rankBefore(cand, top[pos - 1], places)) pos--;
-        top.splice(pos, 0, cand);
-        if (top.length > limit) top.pop();
+        const place = places[placeIndexes[i]!];
+        if (!place) continue;
+        const kind = kinds?.[i] ?? 0;
+        const id = place[7];
+        const prev = found.get(id);
+        if (prev && prev.kind <= kind) continue;
+        found.set(id, { place, key, kind });
     }
+}
+
+function rankHits(found: Map<number, Candidate>, limit: number): PlaceHit[] {
+    const primary: Candidate[] = [];
+    const alternates: Candidate[] = [];
+    for (const cand of found.values()) {
+        if (cand.kind >= 2) alternates.push(cand);
+        else primary.push(cand);
+    }
+    primary.sort(byTier);
+    let ranked = primary;
+    if (primary.length < ALTERNATE_FILL_LIMIT) {
+        alternates.sort(byPopulation);
+        ranked = primary.concat(alternates);
+    }
+    return ranked.slice(0, limit).map((cand) => expandPlace(cand.place, cand.key));
 }
 
 export class Gazetteer {
@@ -148,8 +161,7 @@ export class Gazetteer {
     }
 
     private searchShards(prefix: string, limit: number, shardIds: string[]): PlaceHit[] {
-        const top: Candidate[] = [];
-        const best = new Map<number, Candidate>();
+        const found = new Map<number, Candidate>();
 
         for (const shardId of shardIds) {
             if (!this.manifest.indexShards[shardId]) continue;
@@ -157,15 +169,14 @@ export class Gazetteer {
             if (!shard) {
                 throw new Error(`Atlas index shard not loaded: ${shardId}`);
             }
-            collectPrefixHits(shard, prefix, this.places, top, best, limit);
+            collectPrefixHits(shard, prefix, this.places, found);
         }
 
-        return top.map((c) => expandPlace(this.places[c.placeIndex], c.key));
+        return rankHits(found, limit);
     }
 
     /**
-     * Resolve a single best match: an exact (normalized) name match wins over a
-     * longer prefix match; ties go to the larger population.
+     * Resolve a single best match using the same tiers as {@link search}.
      */
     resolve(query: string): PlaceHit | null {
         const hits = this.search(query, { limit: 1 });

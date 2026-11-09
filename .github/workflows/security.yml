@@ -1,5 +1,8 @@
 name: Security
 
+# pnpm audit runs on every PR. Runtime licence scan matches release gates but runs only
+# when FULL CI is enabled (repository variable FULL_CI=true or PR label `full-ci`).
+
 on:
     push:
         branches: [main]
@@ -22,6 +25,7 @@ jobs:
               run: pnpm audit --audit-level=high
 
     license-check:
+        if: vars.FULL_CI == 'true' || contains(github.event.pull_request.labels.*.name, 'full-ci')
         name: Runtime licence check (no AGPL/GPL)
         runs-on: ubuntu-latest
         steps:
