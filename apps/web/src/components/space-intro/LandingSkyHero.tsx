@@ -2,6 +2,7 @@ import {
     type ReactNode,
     useCallback,
     useEffect,
+    useLayoutEffect,
     useRef,
     useState,
     useSyncExternalStore,
@@ -39,6 +40,23 @@ type Props = {
     children: ReactNode;
 };
 
+/** Keep the hero at the top of the viewport. Scroll restoration and a focus
+ * jump onto the Skip control (it sits at the bottom of a 100svh hero, below
+ * the sticky header) were leaving the headline above the viewport while the
+ * fixed starfield stayed put. */
+function pinLandingScroll() {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+}
+
+function pinLandingScrollSoon() {
+    pinLandingScroll();
+    requestAnimationFrame(() => {
+        pinLandingScroll();
+        requestAnimationFrame(pinLandingScroll);
+    });
+}
+
 export function LandingSkyHero({ children }: Props) {
     const { mode } = useTheme();
     const skyOnly = mode === 'light';
@@ -52,6 +70,16 @@ export function LandingSkyHero({ children }: Props) {
     const [staticMode] = useState(() => !detectWebGL());
     const [skyReady, setSkyReady] = useState(staticMode || skyOnly);
     const [showSkip, setShowSkip] = useState(!staticMode && !skyOnly);
+
+    useLayoutEffect(() => {
+        pinLandingScroll();
+    }, []);
+
+    // After Skip unmounts, focus can jump and scroll the hero away. Pin again
+    // once that commit has landed, not only in the click handler before it.
+    useLayoutEffect(() => {
+        if (!showSkip) pinLandingScrollSoon();
+    }, [showSkip]);
 
     useEffect(() => {
         if (staticMode || skyOnly) return;
@@ -89,6 +117,7 @@ export function LandingSkyHero({ children }: Props) {
                 textureBase: `${import.meta.env.BASE_URL}textures/`,
                 onIntroComplete: () => {
                     setShowSkip(false);
+                    pinLandingScrollSoon();
                 },
                 onPhaseChange: (phase) => {
                     if (phase === 'sky') setSkyReady(true);
@@ -116,6 +145,7 @@ export function LandingSkyHero({ children }: Props) {
         sceneRef.current?.skipIntro();
         setSkyReady(true);
         setShowSkip(false);
+        pinLandingScrollSoon();
     }, []);
 
     return (

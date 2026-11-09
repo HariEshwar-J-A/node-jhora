@@ -207,6 +207,36 @@ async function assertHeroClearsHeader(page, vpName) {
     if (bad) fail(`Hero H1 intersects sticky header at ${vpName}: ${bad}`);
 }
 
+/** H1 must start at or below the sticky header. A negative top (the headline
+ * scrolled above the viewport) used to pass the intersection check. */
+async function assertHeroTopAtLeastHeader(page, vpName) {
+    const bad = await page.evaluate(() => {
+        const header = document.querySelector('.site-header');
+        const h1 = document.querySelector('.landing-sky-hero .hero h1');
+        const copy = document.querySelector('.landing-sky-hero .hero p');
+        const actions = document.querySelector('.landing-sky-hero .hero-actions');
+        if (!header || !h1) return 'missing header or h1';
+        const headerH = header.getBoundingClientRect().height;
+        const top = h1.getBoundingClientRect().top;
+        if (top < headerH) {
+            return `h1 top ${top.toFixed(1)} < header height ${headerH.toFixed(1)} (scrollY ${window.scrollY.toFixed(1)})`;
+        }
+        const vh = window.innerHeight;
+        for (const [name, el] of [
+            ['copy', copy],
+            ['actions', actions],
+        ]) {
+            if (!el) return `missing ${name}`;
+            const r = el.getBoundingClientRect();
+            if (r.top < headerH || r.bottom > vh + 1 || r.height < 8) {
+                return `${name} top ${r.top.toFixed(1)} bottom ${r.bottom.toFixed(1)} header ${headerH.toFixed(1)} vh ${vh}`;
+            }
+        }
+        return null;
+    });
+    if (bad) fail(`Hero H1 is not below the header at ${vpName}: ${bad}`);
+}
+
 async function assertLandingSectionsVisible(page, theme, vpName) {
     await page.evaluate(() => {
         document.querySelector('#licensing')?.scrollIntoView({ block: 'center' });
@@ -347,8 +377,10 @@ async function skipLandingIntro(page) {
             () => {
                 const canvas = document.querySelector('.landing-sky-hero__canvas');
                 if (!canvas) return document.querySelector('.landing-sky-hero__fallback') != null;
-                return canvas.dataset.intro === '1';
+                const intro = Number(canvas.dataset.intro);
+                return Number.isFinite(intro) && intro >= 1;
             },
+            null,
             { timeout: 20_000 },
         )
         .catch(() => {});
@@ -757,6 +789,9 @@ async function main() {
             await skipLandingIntro(page);
             await assertHeroVisible(page);
             await assertHeroClearsHeader(page, vp.name);
+            // Measure before any harness scrollTo — that call used to hide a
+            // dark 390 jump that left the H1 above the viewport.
+            if (vp.name === '390' && !light) await assertHeroTopAtLeastHeader(page, vp.name);
             await assertNoHorizontalOverflow(
                 page,
                 `landing ${light ? 'light' : 'dark'} ${vp.name}`,

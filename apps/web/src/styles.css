@@ -1278,6 +1278,11 @@ table.data th.mono {
     background: #060606;
     color: #f4f4f5;
     min-height: 100%;
+    overflow-anchor: none;
+}
+
+html:has(.landing-page--sky) {
+    overflow-anchor: none;
 }
 
 [data-theme='dark'] body:has(.landing-page--sky) {
@@ -1458,6 +1463,13 @@ table.data th.mono {
     z-index: 5;
     right: 1rem;
     bottom: 1rem;
+}
+
+/* Dark sky is position:fixed, so an absolute Skip at the bottom of the
+   100svh hero sits below the sticky header and a focus/click scrolls the
+   headline off the top. Keep Skip in the viewport. */
+.landing-sky-hero--persistent .intro-skip {
+    position: fixed;
 }
 
 .constellation-overlay {
