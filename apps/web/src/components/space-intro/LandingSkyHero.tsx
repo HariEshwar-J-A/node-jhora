@@ -207,7 +207,11 @@ export function LandingSkyHero({ children }: Props) {
                         aria-hidden="true"
                     />
                 ) : (
-                    <canvas ref={canvasRef} className="landing-sky-hero__canvas" aria-hidden="true" />
+                    <canvas
+                        ref={canvasRef}
+                        className="landing-sky-hero__canvas"
+                        aria-hidden="true"
+                    />
                 )}
                 <ConstellationOverlay visible={skyReady || staticMode || skyOnly} sparse={mobile} />
                 <div className="landing-sky-hero__vignette" aria-hidden="true" />
