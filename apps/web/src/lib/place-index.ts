@@ -3,8 +3,6 @@ import { normalizeSearchKey, shardIdForKey } from '@node-jhora/atlas';
 import type { PlaceWorkerRequest, PlaceWorkerResponse } from '../worker/place-worker';
 import PlaceWorker from '../worker/place-worker?worker';
 
-const PREFETCH_DELAY_MS = 800;
-
 type ProgressFn = (percent: number) => void;
 type Priority = 'high' | 'low';
 type WorkerCall = PlaceWorkerRequest extends infer T
@@ -32,8 +30,6 @@ const pending = new Map<number, (response: PlaceWorkerResponse) => void>();
 const jobs = new Map<string, ShardJob>();
 const ingested = new Set<string>();
 const ingesting = new Map<string, Promise<void>>();
-let urgent = 0;
-let prefetchScheduled = false;
 
 export function manifestUrl(): string {
     return new URL(`${import.meta.env.BASE_URL}atlas/manifest.json`, window.location.origin).href;
@@ -205,7 +201,6 @@ async function ensureBytes(
     priority: Priority,
     onProgress?: ProgressFn,
 ): Promise<{ buffer: ArrayBuffer; fromCache: boolean }> {
-    if (priority === 'high') urgent += 1;
     const job = beginLoad(shardId, priority);
     listen(job, onProgress);
     try {
@@ -215,7 +210,6 @@ async function ensureBytes(
         job.listeners.delete(onProgress as ProgressFn);
         job.users -= 1;
         if (job.users <= 0) jobs.delete(shardId);
-        if (priority === 'high') urgent -= 1;
     }
 }
 
@@ -279,41 +273,6 @@ async function prepareShard(
     if (ingested.has(shardId)) return;
     const { buffer } = await ensureBytes(shardId, priority, onProgress);
     await ingest(shardId, buffer);
-}
-
-function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-        window.setTimeout(resolve, ms);
-    });
-}
-
-async function prefetchAll(): Promise<void> {
-    const current = await loadManifest();
-    for (const shardId of Object.keys(current.indexShards)) {
-        while (urgent > 0) await delay(40);
-        if (ingested.has(shardId)) continue;
-        try {
-            await ensureBytes(shardId, 'low');
-        } catch {
-            /* A failed background shard is fetched again on search. */
-        }
-    }
-}
-
-/** After the field is focused, pull the other shards at idle priority into the Cache API. */
-export function schedulePrefetch(): void {
-    if (prefetchScheduled) return;
-    prefetchScheduled = true;
-    window.setTimeout(() => {
-        const start = () => {
-            void prefetchAll();
-        };
-        if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(start, { timeout: 4000 });
-        } else {
-            start();
-        }
-    }, PREFETCH_DELAY_MS);
 }
 
 export async function searchPlaces(

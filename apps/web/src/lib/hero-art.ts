@@ -1,2 +1,4 @@
-/** Owner-provided monochrome art (see apps/web/public/images/README.md). */
-export const HERO_ASTRO_BG = `${import.meta.env.BASE_URL}images/hero-astro.webp`;
+/** Owner-provided monochrome art. Imported so Vite content-hashes the file. */
+import heroUrl from '../assets/hero-astro.webp';
+
+export const HERO_ASTRO_BG = heroUrl;

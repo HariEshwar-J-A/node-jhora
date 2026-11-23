@@ -5,7 +5,7 @@ import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = process.env.HERO_ART_SRC ?? join(root, 'assets/v2_astro_bg_frame_mono.png');
-const outDir = join(root, 'public/images');
+const outDir = join(root, 'src/assets');
 const outWebp = join(outDir, 'hero-astro.webp');
 
 mkdirSync(outDir, { recursive: true });

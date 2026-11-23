@@ -139,6 +139,16 @@ export async function ensureEphemerisBytes(
     return bytes;
 }
 
+/**
+ * Verify the pinned SHA-256 and store bytes that were already downloaded.
+ * Does not fetch. Used so a progress download is not followed by a second copy.
+ */
+export async function storeEphemerisBytes(bytes: Uint8Array, sourceUrl: string): Promise<void> {
+    assertPinnedKernel(bytes);
+    await writeIndexedDb(bytes);
+    await writeCacheStorage(bytes, sourceUrl);
+}
+
 /** Register {@link ensureEphemerisBytes} as the BSP loader used by {@link EphemerisEngine}. */
 export function registerBrowserEphemerisProvider(options: EnsureEphemerisOptions = {}): void {
     setBspBytesLoader(async () => ensureEphemerisBytes(options));

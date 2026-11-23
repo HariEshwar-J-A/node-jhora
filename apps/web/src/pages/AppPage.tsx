@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getPreset, type SettingsInput } from '@node-jhora/core';
 import { VargaBoard } from '../components/chart/VargaBoard';
 import { labelAyanamsa } from '../lib/chart-labels';
@@ -74,6 +74,29 @@ export function AppPage() {
     const [error, setError] = useState<string | undefined>();
     const [result, setResult] = useState<any>();
     const [initAttempt, setInitAttempt] = useState(0);
+    const kernelTask = useRef<Promise<void> | null>(null);
+    const kernelAttempt = useRef(-1);
+
+    const startKernel = useCallback(() => {
+        if (kernelAttempt.current !== initAttempt) {
+            kernelAttempt.current = initAttempt;
+            kernelTask.current = null;
+        }
+        if (kernelTask.current) return kernelTask.current;
+        const task = initEphemeris(new URL(EPHE_PATH, window.location.href).href, (next) => {
+            setProgress(next);
+        })
+            .then(() => {
+                setKernelReady(true);
+            })
+            .catch((err: unknown) => {
+                kernelTask.current = null;
+                setError(String(err));
+                throw err;
+            });
+        kernelTask.current = task;
+        return task;
+    }, [initAttempt]);
 
     useEffect(() => {
         writeProfileStore(
@@ -85,23 +108,29 @@ export function AppPage() {
     }, [profiles, activeId, draft]);
 
     useEffect(() => {
+        setKernelReady(false);
+        setError(undefined);
         let cancelled = false;
-        (async () => {
-            try {
-                setError(undefined);
-                setKernelReady(false);
-                await initEphemeris(new URL(EPHE_PATH, window.location.href).href, (next) => {
-                    if (!cancelled) setProgress(next);
-                });
-                if (!cancelled) setKernelReady(true);
-            } catch (err) {
-                if (!cancelled) setError(String(err));
-            }
-        })();
+        const kick = () => {
+            if (cancelled) return;
+            // The worker script is small. The 32 MB kernel starts on this same
+            // idle, or immediately if Calculate runs first.
+            getWorker();
+            void startKernel().catch(() => {});
+        };
+        let idleId = 0;
+        let timer = 0;
+        if (typeof window.requestIdleCallback === 'function') {
+            idleId = window.requestIdleCallback(kick, { timeout: 1200 });
+        } else {
+            timer = window.setTimeout(kick, 200);
+        }
         return () => {
             cancelled = true;
+            if (idleId) window.cancelIdleCallback?.(idleId);
+            if (timer) window.clearTimeout(timer);
         };
-    }, [initAttempt]);
+    }, [startKernel]);
 
     const settingsFor = useCallback((source: BirthDraft): SettingsInput => {
         const base = getPreset('node-jhora-default');
@@ -130,6 +159,7 @@ export function AppPage() {
             }
             setLoading(true);
             try {
+                await startKernel();
                 const custom = source.customVarga.trim() ? Number(source.customVarga) : undefined;
                 const data = await getWorker().computeFull({
                     instantIso: parsed.dt.toUTC().toISO()!,
@@ -150,7 +180,7 @@ export function AppPage() {
                 setLoading(false);
             }
         },
-        [settingsFor],
+        [settingsFor, startKernel],
     );
 
     const progressPct =
@@ -276,7 +306,7 @@ export function AppPage() {
                 />
             )}
 
-            <main>
+            <div className="app-main">
                 <button
                     type="button"
                     className="birth-chip"
@@ -364,6 +394,7 @@ export function AppPage() {
                                 profiles={profiles}
                                 kernelReady={kernelReady}
                                 onMatch={async (a, b) => {
+                                    await startKernel();
                                     const ephemerisUrl = new URL(EPHE_PATH, window.location.href)
                                         .href;
                                     const toInput = (source: BirthDraft) => {
@@ -399,7 +430,7 @@ export function AppPage() {
                         {tab === 'import' && <ImportExportPanel />}
                     </AnimatedTabPanel>
                 </ErrorBoundary>
-            </main>
+            </div>
         </div>
     );
 }

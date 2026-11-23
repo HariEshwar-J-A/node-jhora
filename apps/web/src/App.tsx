@@ -3,9 +3,9 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { PageTransition } from './components/PageTransition';
 import { SiteHeader } from './components/SiteHeader';
 import { ThemeProvider } from './lib/theme';
-import { AppPage } from './pages/AppPage';
+import { LandingPage } from './pages/Landing';
 
-const LandingPage = lazy(() => import('./pages/Landing').then((m) => ({ default: m.LandingPage })));
+const AppPage = lazy(() => import('./pages/AppPage').then((m) => ({ default: m.AppPage })));
 const DocsRoutes = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsRoutes })));
 
 function RouteFallback() {

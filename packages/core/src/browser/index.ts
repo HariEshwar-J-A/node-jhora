@@ -41,4 +41,5 @@ export {
     ensureEphemerisBytes,
     type EnsureEphemerisOptions,
     registerBrowserEphemerisProvider,
+    storeEphemerisBytes,
 } from './ephemeris-cache.js';

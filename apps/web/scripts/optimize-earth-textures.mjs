@@ -13,7 +13,9 @@
  *
  * Specular and normal maps are derived here from the day image. They are not
  * a third-party texture pack. WebP is used because this repo has no KTX2 /
- * Basis encoder. Desktop is 4096×2048; mobile is 2048×1024.
+ * Basis encoder. Day, night, spec, and normal stay 4096×2048 on desktop.
+ * Clouds are encoded at the 2048×1024 master size (the old 4096 file was an
+ * upscale) and at 1024×512 on mobile, where the sphere is a few hundred pixels.
  */
 import { mkdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -26,6 +28,12 @@ const outDir = join(root, 'public/textures');
 const SIZES = {
     desktop: { w: 4096, h: 2048 },
     mobile: { w: 2048, h: 1024 },
+};
+
+/** Cloud master is 2048×1024. A 4096 encode only interpolated it. */
+const CLOUD_SIZES = {
+    desktop: { w: 2048, h: 1024 },
+    mobile: { w: 1024, h: 512 },
 };
 
 const daySrc = process.env.EARTH_DAY_SRC ?? '/tmp/earth-src/day.jpg';
@@ -100,13 +108,13 @@ function deriveMaps(rgb, w, h) {
     return { spec, normal };
 }
 
-async function encodeColor(name, srcPath, quality) {
-    for (const [label, { w, h }] of Object.entries(SIZES)) {
+async function encodeColor(name, srcPath, quality, sizes = SIZES) {
+    for (const [label, { w, h }] of Object.entries(sizes)) {
         const out = join(outDir, `${name}-${label}.webp`);
         await sharp(srcPath)
             .rotate()
             .resize(w, h, { fit: 'fill' })
-            .webp({ quality, effort: 4, smartSubsample: true })
+            .webp({ quality, effort: 6, smartSubsample: true })
             .toFile(out);
         console.log(`${name}-${label}.webp  ${statSync(out).size} bytes`);
     }
@@ -118,10 +126,10 @@ async function encodeDerived(rgb, w, h, label) {
     const normalOut = join(outDir, `earth-normal-${label}.webp`);
     await sharp(spec, { raw: { width: w, height: h, channels: 1 } })
         .blur(0.4)
-        .webp({ quality: label === 'desktop' ? 74 : 70, effort: 4 })
+        .webp({ quality: label === 'desktop' ? 74 : 70, effort: 6 })
         .toFile(specOut);
     await sharp(normal, { raw: { width: w, height: h, channels: 3 } })
-        .webp({ quality: label === 'desktop' ? 88 : 82, effort: 4, smartSubsample: false })
+        .webp({ quality: label === 'desktop' ? 88 : 82, effort: 6, smartSubsample: false })
         .toFile(normalOut);
     console.log(
         `earth-spec-${label}.webp  ${statSync(specOut).size} bytes`,
@@ -133,7 +141,7 @@ mkdirSync(outDir, { recursive: true });
 
 await encodeColor('earth-day', daySrc, 76);
 await encodeColor('earth-night', nightSrc, 70);
-await encodeColor('earth-clouds', cloudSrc, 68);
+await encodeColor('earth-clouds', cloudSrc, 72, CLOUD_SIZES);
 
 for (const [label, { w, h }] of Object.entries(SIZES)) {
     const { data } = await sharp(daySrc)
@@ -149,7 +157,7 @@ const moonOut = join(outDir, 'earth-moon.webp');
 await sharp(moonSrc)
     .rotate()
     .resize(1024, 512, { fit: 'fill' })
-    .webp({ quality: 80, effort: 4 })
+    .webp({ quality: 80, effort: 6 })
     .toFile(moonOut);
 console.log(`earth-moon.webp  ${statSync(moonOut).size} bytes`);
 

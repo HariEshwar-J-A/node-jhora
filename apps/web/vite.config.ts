@@ -164,6 +164,33 @@ function siteFilesPlugin(): Plugin {
     };
 }
 
+/** Preload the two Inter weights the hero uses. The files are content-hashed. */
+function fontPreloadPlugin(): Plugin {
+    return {
+        name: 'font-preload',
+        transformIndexHtml: {
+            order: 'post',
+            handler(html, ctx) {
+                const bundle = ctx.bundle;
+                if (!bundle) return html;
+                const links: string[] = [];
+                for (const item of Object.values(bundle)) {
+                    if (item.type !== 'asset') continue;
+                    if (!/inter-latin-(400|600)-normal-[^/]+\.woff2$/.test(item.fileName)) continue;
+                    links.push(
+                        `<link rel="preload" as="font" type="font/woff2" href="${SITE_BASE_PATH}${item.fileName}" crossorigin />`,
+                    );
+                }
+                if (!links.length) return html;
+                return html.replace(
+                    '<meta charset="UTF-8" />',
+                    `<meta charset="UTF-8" />\n        ${links.join('\n        ')}`,
+                );
+            },
+        },
+    };
+}
+
 export default defineConfig({
     base: SITE_BASE_PATH,
     root,
@@ -171,6 +198,7 @@ export default defineConfig({
         atlasRawGzipPlugin(),
         kernelTypePlugin(),
         siteFilesPlugin(),
+        fontPreloadPlugin(),
         forceNodeShimsPlugin(),
         nodeStubPlugin(),
         react(),
@@ -189,6 +217,16 @@ export default defineConfig({
     build: {
         outDir: 'dist/astrology',
         emptyOutDir: true,
+        modulePreload: {
+            resolveDependencies(_filename, deps) {
+                return deps.filter(
+                    (dep) =>
+                        !dep.includes('njh-core') &&
+                        !dep.includes('motion') &&
+                        !dep.includes('three'),
+                );
+            },
+        },
         target: 'es2022',
         minify: 'esbuild',
         sourcemap: false,
@@ -196,6 +234,9 @@ export default defineConfig({
             external: [],
             output: {
                 manualChunks(id) {
+                    // The dynamic-import helper must not land in the three chunk.
+                    // If it does, the landing page statically imports three.js.
+                    if (id.includes('preload-helper')) return 'preload';
                     if (
                         id.includes('node_modules/react') ||
                         id.includes('node_modules/react-dom')

@@ -11,6 +11,7 @@ import {
     DE440S_SHA256,
     ensureEphemerisBytes,
     resetSpkCache,
+    storeEphemerisBytes,
 } from '@node-jhora/core/browser';
 import { ChartSession } from '@node-jhora/engine';
 import { TransitScanner } from '@node-jhora/events';
@@ -134,12 +135,13 @@ async function ensureEngine(url: string): Promise<EphemerisEngine> {
             );
             try {
                 await withTimeout(
-                    ensureEphemerisBytes({ urls: [url] }),
+                    storeEphemerisBytes(bytes, url),
                     15_000,
                     'Persisting ephemeris cache',
                 );
-            } catch {
-                /* init proceeds with in-memory bytes even if persist fails */
+            } catch (err) {
+                // A hash mismatch must not boot a bad kernel. A storage failure can.
+                if (String(err).includes('SHA-256')) throw err;
             }
             setProgress({
                 phase: 'ready',

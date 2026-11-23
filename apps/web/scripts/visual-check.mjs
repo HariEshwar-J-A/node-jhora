@@ -399,6 +399,9 @@ async function snapView(page, name) {
 
 async function openBirthFormIfNeeded(page) {
     const chip = page.getByTestId('birth-summary-chip');
+    // The chart app is a separate chunk. Wait until it has mounted before
+    // deciding whether the birth sheet is closed.
+    await chip.waitFor({ state: 'attached', timeout: 30_000 });
     if (await chip.isVisible().catch(() => false)) {
         await chip.click();
         await page.getByTestId('place-input').waitFor({ state: 'visible', timeout: 10_000 });

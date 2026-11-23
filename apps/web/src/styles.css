@@ -1,5 +1,11 @@
-@import '@fontsource/inter/latin.css';
-@import '@fontsource/jetbrains-mono/latin.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
 
 /* shadcn-style zinc tokens — monochrome only */
 :root,
@@ -371,6 +377,7 @@ a {
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.15;
+    min-height: 1.15em;
     margin: 0 0 1rem;
 }
 
@@ -378,6 +385,8 @@ a {
     color: hsl(var(--muted-foreground));
     max-width: 52ch;
     margin: 0;
+    line-height: 1.5;
+    min-height: 3em;
 }
 
 .hero-actions {
@@ -1404,6 +1413,7 @@ html:has(.landing-page--sky) {
     display: block;
     object-fit: cover;
     z-index: 0;
+    background: #060606;
 }
 
 .landing-sky-hero__vignette {
@@ -1571,6 +1581,39 @@ html:has(.landing-page--sky) {
     overflow: visible;
 }
 
+.route-shell--enter {
+    animation: route-fade 0.28s ease;
+}
+
+@keyframes route-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.reveal {
+    animation: reveal-in 0.45s ease both;
+}
+
+@keyframes reveal-in {
+    from {
+        transform: translateY(16px);
+    }
+    to {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .route-shell--enter,
+    .reveal {
+        animation: none;
+    }
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 0.28s;
@@ -1587,6 +1630,14 @@ html:has(.landing-page--sky) {
 
     .hero {
         padding: 0.25rem 0 1rem;
+    }
+
+    .hero h1 {
+        min-height: 3.45em;
+    }
+
+    .hero p {
+        min-height: 6em;
     }
 
     .landing-sky-hero__content {

@@ -1,6 +1,17 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { HERO_ASTRO_BG } from '../lib/hero-art';
+
+function useReducedMotion() {
+    return useSyncExternalStore(
+        (onChange) => {
+            const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+            mq.addEventListener('change', onChange);
+            return () => mq.removeEventListener('change', onChange);
+        },
+        () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        () => false,
+    );
+}
 
 /** Stylized thin-line constellation paths (Cancer crab + Leo lion silhouettes). */
 const CONSTELLATION_PATHS = [

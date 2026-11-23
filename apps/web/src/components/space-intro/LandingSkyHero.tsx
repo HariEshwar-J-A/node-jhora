@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useTheme } from '../../lib/theme';
 import { ConstellationOverlay } from './ConstellationOverlay';
+import { mountInkSky } from './inkSky';
 import { detectWebGL } from './session';
 import type { SpaceSceneHandle } from './runSpaceScene';
 
@@ -104,37 +105,73 @@ export function LandingSkyHero({ children }: Props) {
         const canvas = canvasRef.current;
         if (!canvas) return;
         let mounted = true;
+        let idleId = 0;
+        let timer = 0;
         setSkyReady(skyOnly);
         setShowSkip(!skyOnly && !skipRequested.current);
 
-        import('./runSpaceScene').then(({ mountSpaceScene }) => {
+        const start = () => {
             if (!mounted || !canvasRef.current) return;
-            mountSpaceScene(canvasRef.current, {
-                mobile,
-                skipIntro: skyOnly || skipRequested.current,
-                skyOnly,
-                reducedMotion: prefersReduced,
-                textureBase: `${import.meta.env.BASE_URL}textures/`,
-                onIntroComplete: () => {
-                    setShowSkip(false);
-                    pinLandingScrollSoon();
-                },
-                onPhaseChange: (phase) => {
-                    if (phase === 'sky') setSkyReady(true);
-                },
-            }).then((handle) => {
-                if (!mounted) {
-                    handle.dispose();
-                    return;
-                }
-                sceneRef.current = handle;
-                handle.setParallax(window.scrollY);
-                if (!skyOnly && skipRequested.current) handle.skipIntro();
+            if (skyOnly) {
+                // Light theme: animated sky without the three.js parse on the LCP path.
+                const sky = mountInkSky(canvasRef.current, {
+                    mobile,
+                    reducedMotion: prefersReduced,
+                });
+                sceneRef.current = {
+                    skipIntro() {},
+                    setParallax: (y) => sky.setParallax(y),
+                    dispose: () => sky.dispose(),
+                };
+                sky.setParallax(window.scrollY);
+                return;
+            }
+            // Dark theme: the Earth intro still plays on every reload. Load three.js
+            // only after the hero text has painted, so it is not the LCP.
+            void import('./runSpaceScene').then(({ mountSpaceScene }) => {
+                if (!mounted || !canvasRef.current) return;
+                mountSpaceScene(canvasRef.current, {
+                    mobile,
+                    skipIntro: skipRequested.current,
+                    skyOnly: false,
+                    reducedMotion: prefersReduced,
+                    textureBase: `${import.meta.env.BASE_URL}textures/`,
+                    onIntroComplete: () => {
+                        setShowSkip(false);
+                        pinLandingScrollSoon();
+                    },
+                    onPhaseChange: (phase) => {
+                        if (phase === 'sky') setSkyReady(true);
+                    },
+                }).then((handle) => {
+                    if (!mounted) {
+                        handle.dispose();
+                        return;
+                    }
+                    sceneRef.current = handle;
+                    handle.setParallax(window.scrollY);
+                    if (skipRequested.current) handle.skipIntro();
+                });
             });
+        };
+
+        // Two frames so the headline paints, then idle (bounded) before WebGL.
+        const schedule = () => {
+            if (typeof window.requestIdleCallback === 'function') {
+                idleId = window.requestIdleCallback(start, { timeout: skyOnly ? 500 : 900 });
+            } else {
+                timer = window.setTimeout(start, skyOnly ? 32 : 200);
+            }
+        };
+        const outer = requestAnimationFrame(() => {
+            requestAnimationFrame(schedule);
         });
 
         return () => {
             mounted = false;
+            cancelAnimationFrame(outer);
+            if (idleId) window.cancelIdleCallback?.(idleId);
+            if (timer) window.clearTimeout(timer);
             sceneRef.current?.dispose();
             sceneRef.current = null;
         };

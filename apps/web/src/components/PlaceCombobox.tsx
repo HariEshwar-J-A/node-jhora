@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlaceHit } from '@node-jhora/atlas';
 import { formatPlaceLabel } from '../lib/place-label';
-import { schedulePrefetch, searchPlaces } from '../lib/place-index';
+import { searchPlaces } from '../lib/place-index';
 
 const DEBOUNCE_MS = 150;
 const MIN_QUERY = 2;
@@ -156,7 +156,6 @@ export function PlaceCombobox({
                         setQuery(event.target.value);
                     }}
                     onFocus={() => {
-                        schedulePrefetch();
                         if (!picked.current && query.trim().length >= MIN_QUERY) setOpen(true);
                     }}
                     onKeyDown={onKeyDown}

@@ -29,7 +29,7 @@ type Props = {
     submitLabel?: string;
     loading?: boolean;
     kernelReady?: boolean;
-    progress?: { phase: string; percent: number };
+    progress?: { phase: string; percent: number; message?: string };
 };
 
 function FieldError({ id, message }: { id: string; message?: string }) {
@@ -299,7 +299,7 @@ export function BirthDataForm({
                 />
             </div>
 
-            {progress && !kernelReady && (
+            {progress && !kernelReady && (progress.phase === 'downloading' || progress.message) && (
                 <div className="birth-form__kernel">
                     <p className="mono">Ephemeris: {progress.phase}</p>
                     <div className="progress" aria-label="Download progress">
@@ -314,13 +314,9 @@ export function BirthDataForm({
                         type="submit"
                         className="btn btn-default"
                         data-testid="calculate-btn"
-                        disabled={loading || !kernelReady}
+                        disabled={loading}
                     >
-                        {loading
-                            ? 'Calculating…'
-                            : kernelReady
-                              ? submitLabel
-                              : 'Loading ephemeris…'}
+                        {loading ? 'Calculating…' : submitLabel}
                     </button>
                     <p className="birth-form__summary-inline">{birthSummary(draft)}</p>
                 </div>

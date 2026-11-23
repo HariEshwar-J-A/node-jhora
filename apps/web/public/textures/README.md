@@ -25,9 +25,10 @@ node scripts/optimize-earth-textures.mjs
 Place the NASA originals at `/tmp/earth-src/{day,night,clouds,moon}.jpg`, or set
 `EARTH_DAY_SRC`, `EARTH_NIGHT_SRC`, `EARTH_CLOUDS_SRC`, and `EARTH_MOON_SRC`.
 
-The night and cloud masters are smaller than 4K, so the desktop maps upscale
-them. The day master is 5400×2700 and is downscaled.
+The night master is smaller than 4K, so the desktop night map upscales it.
+Cloud maps stay at the 2048×1024 master on desktop and 1024×512 on mobile.
+The day master is 5400×2700 and is downscaled.
 
-Owner hero art (2D section motif): `assets/v2_astro_bg_frame_mono.png` → `public/images/hero-astro.webp` via `scripts/optimize-hero-art.mjs`.
+Owner hero art (2D section motif): `assets/v2_astro_bg_frame_mono.png` → `src/assets/hero-astro.webp` via `scripts/optimize-hero-art.mjs`.
 
 Constellation stick figures in `src/components/space-intro/constellations.ts` are hand-authored for this demo (not imported from GPL star-catalogue artwork).

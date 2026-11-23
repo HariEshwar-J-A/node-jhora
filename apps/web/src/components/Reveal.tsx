@@ -1,5 +1,4 @@
-import { type ReactNode, useRef } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 type RevealProps = {
     children: ReactNode;
@@ -7,25 +6,34 @@ type RevealProps = {
     className?: string;
 };
 
-/** Content is always visible; motion is optional slide-in only. */
+/** Content stays visible. The slide is CSS, so the landing page does not load framer-motion. */
 export function Reveal({ children, delay = 0, className }: RevealProps) {
     const ref = useRef<HTMLDivElement>(null);
-    const reduce = useReducedMotion();
-    const inView = useInView(ref, { once: true, margin: '0px 0px -4% 0px' });
+    const [on, setOn] = useState(false);
 
-    if (reduce) {
-        return <div className={className}>{children}</div>;
-    }
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const io = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry?.isIntersecting) return;
+                setOn(true);
+                io.disconnect();
+            },
+            { rootMargin: '0px 0px -4% 0px' },
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
 
     return (
-        <motion.div
+        <div
             ref={ref}
-            className={className}
-            initial={{ opacity: 1, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 1, y: 16 }}
-            transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
+            className={`${className ?? ''} ${on ? 'reveal' : ''}`.trim()}
+            style={on ? { animationDelay: `${delay}s` } : undefined}
         >
             {children}
-        </motion.div>
+        </div>
     );
 }
