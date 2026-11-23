@@ -1353,13 +1353,23 @@ html:has(.landing-page--sky) {
 .landing-page--sky > .footer,
 .landing-page--sky .reveal {
     position: relative;
-    z-index: 2;
-    isolation: isolate;
+    z-index: 1;
     background: transparent;
 }
 
-.landing-page--sky .site-header {
-    isolation: isolate;
+/* WebGL sky lives in a body portal; keep the app above that fixed layer. */
+body.landing-sky-active #root {
+    position: relative;
+    z-index: 1;
+}
+
+.landing-sky-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #060606;
 }
 
 .landing-page--sky .card {
@@ -1399,32 +1409,18 @@ html:has(.landing-page--sky) {
 
 .landing-sky-hero {
     position: relative;
-    isolation: isolate;
     min-height: inherit;
-    overflow: hidden;
-    background: #060606;
+    overflow: visible;
+    background: transparent;
     color: #f4f4f5;
 }
 
 .landing-sky-hero--persistent {
     overflow: visible;
-    background: transparent;
-}
-
-/* Backdrop only: keeps WebGL + blend modes off the hero UI paint order. */
-.landing-sky-hero__backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    isolation: isolate;
-    overflow: hidden;
 }
 
 .landing-sky-hero__foreground {
     position: relative;
-    z-index: 2;
-    isolation: isolate;
 }
 
 [data-theme='light'] .landing-sky-hero {
@@ -1456,7 +1452,6 @@ html:has(.landing-page--sky) {
 }
 
 .landing-sky-hero .btn-default:hover:not(:disabled) {
-    filter: none;
     background: #e8eeff;
     color: #060606;
 }
@@ -1508,8 +1503,8 @@ html:has(.landing-page--sky) {
     }
 }
 
-.landing-sky-hero__canvas,
-.landing-sky-hero__fallback {
+.landing-sky-layer .landing-sky-hero__canvas,
+.landing-sky-layer .landing-sky-hero__fallback {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1521,44 +1516,20 @@ html:has(.landing-page--sky) {
     background: #060606;
 }
 
-.landing-sky-hero__vignette {
+.landing-sky-layer .landing-sky-hero__vignette {
     pointer-events: none;
     position: absolute;
     inset: 0;
     z-index: 1;
-    /* Keep the copy column (top-left) inside the transparent core on wide desktops. */
-    background: radial-gradient(
-        ellipse 95% 82% at 36% 38%,
-        transparent 0%,
-        transparent 52%,
-        rgb(0 0 0 / 0.26) 100%
-    );
+    background: radial-gradient(ellipse at 50% 42%, transparent 58%, rgb(0 0 0 / 0.28) 100%);
 }
 
-[data-theme='light'] .landing-sky-hero__vignette {
-    background: radial-gradient(
-        ellipse 88% 78% at 34% 36%,
-        transparent 0%,
-        transparent 54%,
-        rgb(0 0 0 / 0.16) 100%
-    );
-}
-
-.landing-sky-hero--persistent .landing-sky-hero__backdrop {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-}
-
-.landing-sky-hero--persistent .landing-sky-hero__vignette {
+[data-theme='dark'] .landing-sky-layer .landing-sky-hero__vignette {
     background: linear-gradient(to bottom, rgb(6 6 6 / 0.55), transparent 7rem);
 }
 
 .landing-sky-hero__content {
     position: relative;
-    z-index: 1;
     opacity: 0;
     transform: translateY(8px);
     transition:
@@ -1603,7 +1574,7 @@ html:has(.landing-page--sky) {
     position: fixed;
 }
 
-.constellation-overlay {
+.landing-sky-layer .constellation-overlay {
     position: absolute;
     inset: 0;
     z-index: 1;
@@ -1611,7 +1582,6 @@ html:has(.landing-page--sky) {
     opacity: 0;
     transition: opacity 1.2s ease 0.4s;
     color: rgb(255 255 255 / 0.8);
-    mix-blend-mode: screen;
 }
 
 .constellation-overlay--sparse .constellation-group:nth-child(n + 4) {

@@ -7,6 +7,7 @@ import {
     useState,
     useSyncExternalStore,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme } from '../../lib/theme';
 import { ConstellationOverlay } from './ConstellationOverlay';
 import { mountInkSky } from './inkSky';
@@ -77,9 +78,19 @@ export function LandingSkyHero({ children }: Props) {
     const [staticMode] = useState(() => !detectWebGL());
     const [skyReady, setSkyReady] = useState(staticMode || skyOnly);
     const [showSkip, setShowSkip] = useState(!staticMode && !skyOnly);
+    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
     useLayoutEffect(() => {
         pinLandingScroll();
+    }, []);
+
+    useLayoutEffect(() => {
+        if (typeof document === 'undefined') return;
+        setPortalTarget(document.body);
+        document.body.classList.add('landing-sky-active');
+        return () => {
+            document.body.classList.remove('landing-sky-active');
+        };
     }, []);
 
     // After Skip unmounts, focus can jump and scroll the hero away. Pin again
@@ -122,7 +133,6 @@ export function LandingSkyHero({ children }: Props) {
         const start = () => {
             if (!mounted || !canvasRef.current) return;
             if (skyOnly) {
-                // Light theme: animated sky without the three.js parse on the LCP path.
                 const sky = mountInkSky(canvasRef.current, {
                     mobile,
                     reducedMotion: prefersReduced,
@@ -135,8 +145,6 @@ export function LandingSkyHero({ children }: Props) {
                 sky.setParallax(window.scrollY);
                 return;
             }
-            // Dark theme: the Earth intro still plays on every reload. Load three.js
-            // only after the hero text has painted, so it is not the LCP.
             void import('./runSpaceScene').then(({ mountSpaceScene }) => {
                 if (!mounted || !canvasRef.current) return;
                 mountSpaceScene(canvasRef.current, {
@@ -165,7 +173,6 @@ export function LandingSkyHero({ children }: Props) {
             });
         };
 
-        // Two frames so the headline paints, then idle (bounded) before WebGL.
         const schedule = () => {
             if (typeof window.requestIdleCallback === 'function') {
                 idleId = window.requestIdleCallback(start, { timeout: skyOnly ? 500 : 900 });
@@ -185,7 +192,7 @@ export function LandingSkyHero({ children }: Props) {
             sceneRef.current?.dispose();
             sceneRef.current = null;
         };
-    }, [staticMode, mobile, prefersReduced, skyOnly]);
+    }, [staticMode, mobile, prefersReduced, skyOnly, portalTarget]);
 
     const onSkip = useCallback(() => {
         skipRequested.current = true;
@@ -196,9 +203,9 @@ export function LandingSkyHero({ children }: Props) {
         pinLandingScrollSoon();
     }, []);
 
-    return (
-        <div className={`landing-sky-hero${persistent ? ' landing-sky-hero--persistent' : ''}`}>
-            <div className="landing-sky-hero__backdrop" aria-hidden="true">
+    const skyLayer =
+        portalTarget != null ? (
+            <div className="landing-sky-layer" aria-hidden="true">
                 {staticMode ? (
                     <img
                         className="landing-sky-hero__fallback"
@@ -216,16 +223,27 @@ export function LandingSkyHero({ children }: Props) {
                 <ConstellationOverlay visible={skyReady || staticMode || skyOnly} sparse={mobile} />
                 <div className="landing-sky-hero__vignette" aria-hidden="true" />
             </div>
-            <div className="landing-sky-hero__foreground">
-                {showSkip && (
-                    <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>
-                        Skip intro
-                    </button>
-                )}
-                <div className="landing-sky-hero__content landing-sky-hero__content--visible">
-                    {children}
+        ) : null;
+
+    return (
+        <>
+            {portalTarget != null && skyLayer != null ? createPortal(skyLayer, portalTarget) : null}
+            <div className={`landing-sky-hero${persistent ? ' landing-sky-hero--persistent' : ''}`}>
+                <div className="landing-sky-hero__foreground">
+                    {showSkip && (
+                        <button
+                            type="button"
+                            className="btn btn-outline intro-skip"
+                            onClick={onSkip}
+                        >
+                            Skip intro
+                        </button>
+                    )}
+                    <div className="landing-sky-hero__content landing-sky-hero__content--visible">
+                        {children}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
