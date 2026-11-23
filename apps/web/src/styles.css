@@ -88,6 +88,11 @@ a {
     text-decoration: none;
 }
 
+.btn-nav:hover:not(.btn-nav-active) {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+}
+
 .btn-nav-active {
     background: hsl(var(--muted));
     border-color: hsl(var(--border));
@@ -155,6 +160,7 @@ a {
 .nav-pill:hover {
     color: hsl(var(--foreground));
     background: hsl(var(--muted));
+    border-color: hsl(var(--border));
 }
 
 .nav-pill.active {
@@ -184,6 +190,8 @@ a {
 
 .icon-btn:hover {
     background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--ring) / 0.45);
 }
 
 .btn {
@@ -223,7 +231,7 @@ a {
 }
 
 .btn-default:hover:not(:disabled) {
-    opacity: 0.9;
+    filter: brightness(0.94);
 }
 
 .btn-outline {
@@ -234,6 +242,8 @@ a {
 
 .btn-outline:hover:not(:disabled) {
     background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--ring) / 0.55);
 }
 
 .btn-ghost {
@@ -243,6 +253,7 @@ a {
 
 .btn-ghost:hover:not(:disabled) {
     background: hsl(var(--muted));
+    color: hsl(var(--foreground));
 }
 
 .card {
@@ -256,13 +267,27 @@ a {
 
 .card-hover {
     transition:
-        box-shadow 0.2s,
-        transform 0.2s;
+        border-color 0.15s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease,
+        background 0.15s ease;
 }
 
 .card-hover:hover {
-    box-shadow: 0 4px 12px hsl(240 10% 3.9% / 0.08);
-    transform: translateY(-1px);
+    position: relative;
+    z-index: 2;
+    border-color: hsl(var(--ring) / 0.45);
+    background: hsl(var(--card));
+    box-shadow: 0 4px 14px hsl(240 10% 3.9% / 0.12);
+    transform: translateY(-2px);
+}
+
+.card-hover:hover :where(h1, h2, h3, h4, h5, h6, p, li, span, a.btn) {
+    color: inherit;
+}
+
+.card-hover.feature-card:hover p {
+    color: hsl(var(--muted-foreground));
 }
 
 /* Hero */
@@ -504,6 +529,7 @@ a {
 .tab:hover {
     color: hsl(var(--foreground));
     background: hsl(var(--muted));
+    border-color: hsl(var(--border));
 }
 
 .tab.active {
@@ -605,8 +631,12 @@ a {
 
 .place-combo__option {
     cursor: pointer;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease;
 }
 
+.place-combo__option:hover,
 .place-combo__option[aria-selected='true'] {
     background: hsl(var(--muted));
     color: hsl(var(--foreground));
@@ -1175,7 +1205,8 @@ table.data th.mono {
     color: hsl(var(--muted-foreground));
 }
 
-.docs-link:hover {
+.docs-link:hover,
+.docs-link:focus-visible {
     background: hsl(var(--muted));
     color: hsl(var(--foreground));
 }
@@ -1234,12 +1265,23 @@ table.data th.mono {
 
 .code-block__copy {
     border: 1px solid hsl(var(--border));
-    background: transparent;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
     border-radius: 0.25rem;
     padding: 0.15rem 0.45rem;
     cursor: pointer;
     font: inherit;
     font-size: 0.75rem;
+    transition:
+        background 0.12s ease,
+        border-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.code-block__copy:hover {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--ring) / 0.45);
 }
 
 .code-block pre {
@@ -1273,6 +1315,7 @@ table.data th.mono {
 
     .card-hover:hover {
         transform: none;
+        box-shadow: 0 0 0 1px hsl(var(--ring) / 0.35);
     }
 }
 
@@ -1310,7 +1353,8 @@ html:has(.landing-page--sky) {
 .landing-page--sky > .footer,
 .landing-page--sky .reveal {
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    isolation: isolate;
     background: transparent;
 }
 
@@ -1320,6 +1364,37 @@ html:has(.landing-page--sky) {
 
 .landing-page--sky .card {
     background: rgb(6 6 6 / 0.78);
+    color: #f4f4f5;
+}
+
+.landing-page--sky :is(.section, .section-motif, #licensing, .footer) :is(h2, h3) {
+    color: #f4f4f5;
+}
+
+.landing-page--sky .card-hover:hover {
+    background: rgb(18 18 18 / 0.96);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #f4f4f5;
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.45);
+}
+
+.landing-page--sky .card-hover:hover :where(h2, h3, h4, h5, h6, p, li, .mono, a.btn) {
+    color: inherit;
+}
+
+.landing-page--sky .card-hover.feature-card:hover p {
+    color: rgb(212 212 216);
+}
+
+.landing-page--sky .card a.btn-outline:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.1);
+    color: #f4f4f5;
+    border-color: rgb(255 255 255 / 0.35);
+}
+
+.landing-page--sky .section p,
+.landing-page--sky .footer {
+    color: rgb(212 212 216);
 }
 
 .landing-sky-hero {
@@ -1367,6 +1442,7 @@ html:has(.landing-page--sky) {
 .landing-sky-hero .intro-skip.btn-outline:hover:not(:disabled) {
     background: rgb(232 238 255 / 0.12);
     border-color: rgb(232 238 255 / 0.85);
+    color: #f4f7ff;
 }
 
 .landing-sky-hero .btn-ghost {
@@ -1375,6 +1451,13 @@ html:has(.landing-page--sky) {
 
 .landing-sky-hero .btn-ghost:hover:not(:disabled) {
     background: rgb(255 255 255 / 0.1);
+    color: #f4f7ff;
+}
+
+.landing-sky-hero .btn-default:hover:not(:disabled) {
+    filter: none;
+    background: #e8eeff;
+    color: #060606;
 }
 
 .landing-sky-hero .badge {
@@ -1578,7 +1661,7 @@ html:has(.landing-page--sky) {
 
 .section-motif {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     border-block: 1px solid hsl(var(--border));
 }
 
