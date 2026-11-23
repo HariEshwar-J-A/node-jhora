@@ -58,6 +58,12 @@ function pinLandingScrollSoon() {
     });
 }
 
+/** Skip is fixed at the bottom; when it unmounts, focus can jump and scroll. */
+function releaseIntroFocus() {
+    const el = document.activeElement;
+    if (el instanceof HTMLElement && el.closest('.intro-skip')) el.blur();
+}
+
 export function LandingSkyHero({ children }: Props) {
     const { mode } = useTheme();
     const skyOnly = mode === 'light';
@@ -79,7 +85,10 @@ export function LandingSkyHero({ children }: Props) {
     // After Skip unmounts, focus can jump and scroll the hero away. Pin again
     // once that commit has landed, not only in the click handler before it.
     useLayoutEffect(() => {
-        if (!showSkip) pinLandingScrollSoon();
+        if (!showSkip) {
+            releaseIntroFocus();
+            pinLandingScrollSoon();
+        }
     }, [showSkip]);
 
     useEffect(() => {
@@ -137,6 +146,7 @@ export function LandingSkyHero({ children }: Props) {
                     reducedMotion: prefersReduced,
                     textureBase: `${import.meta.env.BASE_URL}textures/`,
                     onIntroComplete: () => {
+                        releaseIntroFocus();
                         setShowSkip(false);
                         pinLandingScrollSoon();
                     },
@@ -181,31 +191,36 @@ export function LandingSkyHero({ children }: Props) {
         skipRequested.current = true;
         sceneRef.current?.skipIntro();
         setSkyReady(true);
+        releaseIntroFocus();
         setShowSkip(false);
         pinLandingScrollSoon();
     }, []);
 
     return (
         <div className={`landing-sky-hero${persistent ? ' landing-sky-hero--persistent' : ''}`}>
-            {staticMode ? (
-                <img
-                    className="landing-sky-hero__fallback"
-                    src={FALLBACK}
-                    alt=""
-                    aria-hidden="true"
-                />
-            ) : (
-                <canvas ref={canvasRef} className="landing-sky-hero__canvas" aria-hidden="true" />
-            )}
-            <ConstellationOverlay visible={skyReady || staticMode || skyOnly} sparse={mobile} />
-            <div className="landing-sky-hero__vignette" aria-hidden="true" />
-            {showSkip && (
-                <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>
-                    Skip intro
-                </button>
-            )}
-            <div className="landing-sky-hero__content landing-sky-hero__content--visible">
-                {children}
+            <div className="landing-sky-hero__backdrop" aria-hidden="true">
+                {staticMode ? (
+                    <img
+                        className="landing-sky-hero__fallback"
+                        src={FALLBACK}
+                        alt=""
+                        aria-hidden="true"
+                    />
+                ) : (
+                    <canvas ref={canvasRef} className="landing-sky-hero__canvas" aria-hidden="true" />
+                )}
+                <ConstellationOverlay visible={skyReady || staticMode || skyOnly} sparse={mobile} />
+                <div className="landing-sky-hero__vignette" aria-hidden="true" />
+            </div>
+            <div className="landing-sky-hero__foreground">
+                {showSkip && (
+                    <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>
+                        Skip intro
+                    </button>
+                )}
+                <div className="landing-sky-hero__content landing-sky-hero__content--visible">
+                    {children}
+                </div>
             </div>
         </div>
     );

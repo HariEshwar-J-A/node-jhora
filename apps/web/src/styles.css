@@ -1314,6 +1314,10 @@ html:has(.landing-page--sky) {
     background: transparent;
 }
 
+.landing-page--sky .site-header {
+    isolation: isolate;
+}
+
 .landing-page--sky .card {
     background: rgb(6 6 6 / 0.78);
 }
@@ -1329,6 +1333,22 @@ html:has(.landing-page--sky) {
 .landing-sky-hero--persistent {
     overflow: visible;
     background: transparent;
+}
+
+/* Backdrop only: keeps WebGL + blend modes off the hero UI paint order. */
+.landing-sky-hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.landing-sky-hero__foreground {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
 }
 
 [data-theme='light'] .landing-sky-hero {
@@ -1413,6 +1433,7 @@ html:has(.landing-page--sky) {
     display: block;
     object-fit: cover;
     z-index: 0;
+    pointer-events: none;
     background: #060606;
 }
 
@@ -1424,10 +1445,7 @@ html:has(.landing-page--sky) {
     background: radial-gradient(ellipse at 50% 42%, transparent 58%, rgb(0 0 0 / 0.28) 100%);
 }
 
-.landing-sky-hero--persistent .landing-sky-hero__canvas,
-.landing-sky-hero--persistent .landing-sky-hero__fallback,
-.landing-sky-hero--persistent .constellation-overlay,
-.landing-sky-hero--persistent .landing-sky-hero__vignette {
+.landing-sky-hero--persistent .landing-sky-hero__backdrop {
     position: fixed;
     inset: 0;
     width: 100%;
@@ -1441,7 +1459,7 @@ html:has(.landing-page--sky) {
 
 .landing-sky-hero__content {
     position: relative;
-    z-index: 4;
+    z-index: 0;
     opacity: 0;
     transform: translateY(8px);
     transition:
@@ -1470,9 +1488,13 @@ html:has(.landing-page--sky) {
 
 .intro-skip {
     position: absolute;
-    z-index: 5;
+    z-index: 1;
     right: 1rem;
     bottom: 1rem;
+}
+
+.landing-sky-hero__foreground .intro-skip {
+    position: absolute;
 }
 
 /* Dark sky is position:fixed, so an absolute Skip at the bottom of the
