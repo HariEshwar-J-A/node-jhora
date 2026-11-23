@@ -1337,7 +1337,7 @@ html:has(.landing-page--sky) {
     overflow-anchor: none;
 }
 
-[data-theme='dark'] body:has(.landing-page--sky) {
+[data-theme='dark'] body:has(.landing-page--sky):not(.landing-sky-active) {
     background: #060606;
 }
 
@@ -1358,9 +1358,51 @@ html:has(.landing-page--sky) {
 }
 
 /* WebGL sky lives in a body portal; keep the app above that fixed layer. */
-body.landing-sky-active #root {
+body.landing-sky-active {
+    background: transparent;
+}
+
+html:has(body.landing-sky-active) {
+    background: transparent;
+}
+
+body.landing-sky-active #root,
+body.landing-sky-active .route-shell {
     position: relative;
     z-index: 1;
+    background: transparent;
+}
+
+body.landing-sky-active .landing-page {
+    background: transparent;
+    color: #f4f4f5;
+}
+
+body.landing-sky-active .hero-wrap,
+body.landing-sky-active .hero-wrap--cinema,
+body.landing-sky-active .landing-sky-hero,
+body.landing-sky-active .landing-sky-hero__foreground {
+    background: transparent;
+}
+
+body.landing-sky-active .landing-page .section,
+body.landing-sky-active .landing-page .section-motif,
+body.landing-sky-active .landing-page #licensing,
+body.landing-sky-active .landing-page .footer {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+body.landing-sky-active .landing-page .section h2,
+body.landing-sky-active .landing-page .section-motif h2,
+body.landing-sky-active .landing-page #licensing h2,
+body.landing-sky-active .landing-page #licensing h3 {
+    color: hsl(var(--foreground));
+}
+
+[data-theme='dark'] body.landing-sky-active .landing-page .section p,
+[data-theme='dark'] body.landing-sky-active .landing-page .footer {
+    color: hsl(var(--muted-foreground));
 }
 
 .landing-sky-layer {
@@ -1424,7 +1466,6 @@ body.landing-sky-active #root {
 }
 
 [data-theme='light'] .landing-sky-hero {
-    background: #060606;
     color: #f4f4f5;
 }
 
