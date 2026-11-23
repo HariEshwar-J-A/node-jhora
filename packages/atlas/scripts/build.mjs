@@ -66,11 +66,22 @@ function parseArgs(argv) {
     return { outDir, fixturePath };
 }
 
-function download(url, dest) {
+/** Attempts per GeoNames file; a reset or stall is retried with backoff. */
+const DOWNLOAD_ATTEMPTS = 5;
+/** Abort a request whose socket is idle this long (ms). */
+const SOCKET_IDLE_MS = 60_000;
+const MAX_REDIRECTS = 5;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function download(url, dest, redirects = 0) {
     return new Promise((resolve, reject) => {
         const partial = `${dest}.partial`;
         const file = createWriteStream(partial);
+        let settled = false;
         const fail = (err) => {
+            if (settled) return;
+            settled = true;
             file.destroy();
             try {
                 unlinkSync(partial);
@@ -79,11 +90,26 @@ function download(url, dest) {
             }
             reject(err);
         };
-        httpsGet(url, (res) => {
+        const req = httpsGet(url, (res) => {
             const status = res.statusCode ?? 0;
             if (status >= 300 && status < 400 && res.headers.location) {
                 res.resume();
-                download(res.headers.location, dest).then(resolve, reject);
+                file.destroy();
+                try {
+                    unlinkSync(partial);
+                } catch {
+                    /* ignore */
+                }
+                if (redirects >= MAX_REDIRECTS) {
+                    settled = true;
+                    reject(new Error(`too many redirects for ${url}`));
+                    return;
+                }
+                settled = true;
+                download(new URL(res.headers.location, url).href, dest, redirects + 1).then(
+                    resolve,
+                    reject,
+                );
                 return;
             }
             if (status !== 200) {
@@ -91,20 +117,37 @@ function download(url, dest) {
                 fail(new Error(`HTTP ${status} for ${url}`));
                 return;
             }
+            const total = parseInt(res.headers['content-length'] ?? '0', 10);
+            let received = 0;
+            res.on('data', (chunk) => {
+                received += chunk.length;
+            });
+            res.on('aborted', () => fail(new Error(`connection aborted after ${received} bytes`)));
+            res.on('error', fail);
             res.pipe(file);
             file.on('finish', () => {
                 file.close(() => {
+                    if (settled) return;
+                    if (total > 0 && received !== total) {
+                        fail(new Error(`truncated download (${received} of ${total} bytes)`));
+                        return;
+                    }
                     try {
                         renameSync(partial, dest);
                     } catch (e) {
                         fail(e);
                         return;
                     }
+                    settled = true;
                     resolve();
                 });
             });
             file.on('error', fail);
-        }).on('error', fail);
+        });
+        req.setTimeout(SOCKET_IDLE_MS, () => {
+            req.destroy(new Error(`socket idle for ${SOCKET_IDLE_MS / 1000}s`));
+        });
+        req.on('error', fail);
     });
 }
 
@@ -113,8 +156,23 @@ async function ensureDownload(url, dest) {
         return;
     }
     mkdirSync(dirname(dest), { recursive: true });
-    console.log(`[atlas:build] Downloading ${url}`);
-    await download(url, dest);
+    for (let attempt = 1; ; attempt++) {
+        console.log(
+            `[atlas:build] Downloading ${url}${attempt > 1 ? ` (attempt ${attempt}/${DOWNLOAD_ATTEMPTS})` : ''}`,
+        );
+        try {
+            await download(url, dest);
+            return;
+        } catch (err) {
+            const detail = String(err?.message ?? err).replace(/[\r\n\x00-\x1f\x7f]/g, '');
+            if (attempt >= DOWNLOAD_ATTEMPTS) {
+                throw new Error(`${url} failed after ${DOWNLOAD_ATTEMPTS} attempts: ${detail}`);
+            }
+            const waitMs = 2_000 * 2 ** (attempt - 1);
+            console.warn(`[atlas:build] ${detail} — retrying in ${waitMs / 1000}s…`);
+            await sleep(waitMs);
+        }
+    }
 }
 
 function parseCitiesLine(line) {

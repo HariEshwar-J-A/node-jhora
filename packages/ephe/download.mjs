@@ -52,6 +52,12 @@ const DEST = join(__dirname, 'de440s.bsp');
 const PARTIAL = `${DEST}.partial`;
 const CACHE_KEY = `ephe/${DE440S_SHA256}`;
 const SOURCES = DE440S_URLS;
+/** Attempts per source URL; a transient reset or stall is retried with backoff. */
+const ATTEMPTS_PER_SOURCE = 3;
+/** Abort a request whose socket is idle this long (ms). */
+const SOCKET_IDLE_MS = 60_000;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function sha256(path) {
     return new Promise((resolve, reject) => {
@@ -92,7 +98,7 @@ function download(url) {
             reject(err);
         };
 
-        httpsGet(url, (res) => {
+        const req = httpsGet(url, (res) => {
             const status = res.statusCode ?? 0;
             if (
                 status === 301 ||
@@ -135,14 +141,23 @@ function download(url) {
                 }
             });
 
+            res.on('aborted', () => fail(new Error(`connection aborted after ${received} bytes`)));
             res.pipe(stream);
             stream.on('finish', () => {
                 process.stdout.write('\n');
+                if (total > 0 && received !== total) {
+                    fail(new Error(`truncated download (${received} of ${total} bytes)`));
+                    return;
+                }
                 resolve();
             });
             stream.on('error', fail);
             res.on('error', fail);
-        }).on('error', fail);
+        });
+        req.setTimeout(SOCKET_IDLE_MS, () => {
+            req.destroy(new Error(`socket idle for ${SOCKET_IDLE_MS / 1000}s`));
+        });
+        req.on('error', fail);
     });
 }
 
@@ -193,15 +208,21 @@ async function main() {
     }
 
     for (const url of SOURCES) {
-        try {
-            await download(url);
-            await acceptDownload();
-            remember(DEST);
-            return;
-        } catch (err) {
-            removeQuiet(PARTIAL);
-            const failDetail = String(err?.message ?? err).replace(/[\r\n\x00-\x1f\x7f]/g, '');
-            console.warn(`[node-jhora/ephe] Failed: ${failDetail} — trying next source…`);
+        for (let attempt = 1; attempt <= ATTEMPTS_PER_SOURCE; attempt++) {
+            try {
+                await download(url);
+                await acceptDownload();
+                remember(DEST);
+                return;
+            } catch (err) {
+                removeQuiet(PARTIAL);
+                const failDetail = sanitizeLogLine(err?.message ?? err);
+                const last = attempt === ATTEMPTS_PER_SOURCE;
+                console.warn(
+                    `[node-jhora/ephe] Failed (attempt ${attempt}/${ATTEMPTS_PER_SOURCE}): ${failDetail}${last ? ' — trying next source…' : ' — retrying…'}`,
+                );
+                if (!last) await sleep(2_000 * 2 ** (attempt - 1));
+            }
         }
     }
     console.error(

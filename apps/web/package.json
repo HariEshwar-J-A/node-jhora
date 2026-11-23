@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "prebuild": "node scripts/stage-ephe.mjs && node scripts/stage-atlas.mjs",
+        "prebuild": "node ../../packages/ephe/download.mjs && node scripts/stage-ephe.mjs && node scripts/stage-atlas.mjs",
         "optimize:textures": "node scripts/optimize-earth-textures.mjs",
         "dev": "vite",
         "build": "tsc --noEmit --pretty false && vite build && node scripts/check-pages-size.mjs",

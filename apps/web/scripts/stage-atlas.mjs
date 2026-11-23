@@ -14,7 +14,15 @@
  */
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    cpSync,
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -102,8 +110,14 @@ if (!isFresh()) {
         stdio: 'inherit',
     });
     if (result.status !== 0) {
-        console.error('stage-atlas: gazetteer build failed');
-        process.exit(result.status ?? 1);
+        console.error(
+            [
+                'stage-atlas: gazetteer build failed and no verified copy was in the build cache',
+                `  (cache key ${dataKey}). The GeoNames downloads are retried with backoff;`,
+                '  if they still fail, rerun the build. Refusing to ship a site without the atlas.',
+            ].join('\n'),
+        );
+        process.exit(result.status || 1);
     }
     writeFileSync(stampPath, `${expectedHash}\n`);
 }
@@ -121,6 +135,11 @@ for (const name of GEONAMES_FILES) {
 
 const prefix = `v${EXPECTED_VERSION}-${expectedHash}`;
 const source = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const shardEntries = Object.entries(source.indexShards ?? {});
+if (shardEntries.length === 0) {
+    console.error('stage-atlas: manifest.json lists no index shards; refusing to publish');
+    process.exit(1);
+}
 const indexShards = {};
 for (const [id, rel] of Object.entries(source.indexShards ?? {})) {
     if (typeof rel !== 'string' || rel.includes('..') || rel.startsWith('/')) {
@@ -132,5 +151,12 @@ for (const [id, rel] of Object.entries(source.indexShards ?? {})) {
 rmSync(dest, { recursive: true, force: true });
 mkdirSync(join(dest, prefix), { recursive: true });
 cpSync(join(dataDir, 'index'), join(dest, prefix, 'index'), { recursive: true });
+for (const [id, rel] of Object.entries(indexShards)) {
+    const shard = join(dest, rel);
+    if (!existsSync(shard) || statSync(shard).size === 0) {
+        console.error(`stage-atlas: shard ${id} missing or empty at ${rel}; refusing to publish`);
+        process.exit(1);
+    }
+}
 writeFileSync(join(dest, 'manifest.json'), JSON.stringify({ ...source, indexShards }));
 console.log(`stage-atlas: published gazetteer ${prefix} to public/atlas/`);
