@@ -227,13 +227,15 @@ export function LandingSkyHero({ children }: Props) {
 
     return (
         <>
-            {portalTarget != null && skyLayer != null
-                ? createPortal(skyLayer, portalTarget)
-                : null}
+            {portalTarget != null && skyLayer != null ? createPortal(skyLayer, portalTarget) : null}
             <div className={`landing-sky-hero${persistent ? ' landing-sky-hero--persistent' : ''}`}>
                 <div className="landing-sky-hero__foreground">
                     {showSkip && (
-                        <button type="button" className="btn btn-outline intro-skip" onClick={onSkip}>
+                        <button
+                            type="button"
+                            className="btn btn-outline intro-skip"
+                            onClick={onSkip}
+                        >
                             Skip intro
                         </button>
                     )}
