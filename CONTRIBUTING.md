@@ -64,6 +64,20 @@ Releases are triggered manually from the **Release** workflow (dry-run by defaul
 
 pnpm 12 will not finish an install while a dependency's lifecycle script is neither approved nor denied (`ERR_PNPM_IGNORED_BUILDS`). Decisions are `allowBuilds` in `pnpm-workspace.yaml`. The linker stays isolated; there is no `.npmrc` hoist.
 
+## Continuous integration (lean vs full)
+
+Pull requests and pushes to `main` run **lean CI** on a single Ubuntu runner (Node 22): `format`, `lint`, `typecheck`, `build`, `unit`, and the `@node-jhora/web` smoke test (`apps/web/tests/e2e/smoke.spec.ts`). Those jobs run in parallel.
+
+**Full CI** adds the Windows / Node 20 matrix, golden tests, docs build, API report check, bench regression, pack/JSR dry-run (`.github/workflows/pack.yml`), Bun/Deno runtime smokes, and the runtime licence scan. Enable full CI any of these ways:
+
+- Add the **`full-ci`** label to the pull request
+- Set repository variable **`FULL_CI`** to `true` (Settings → Secrets and variables → Actions → Variables)
+- Run the **CI** workflow manually (**Actions → CI → Run workflow**) with **Run full matrix and extended checks** checked
+
+CodeQL runs on pushes to `main` and on a weekly schedule, not on every pull request. The **Release** workflow still runs all publish gates before npm/JSR upload.
+
+Update branch protection required checks to match lean job names (`format`, `lint`, `typecheck`, `build`, `unit`, `web`). Remove retired matrix job names (`install`, `golden`, `docs`, `api-report`, `web-e2e`, and per-OS duplicates) if they are still listed.
+
 ## Checks
 
 From the repository root, after the Corepack commands above:

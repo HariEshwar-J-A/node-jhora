@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ATTRIBUTION_TEXT } from './attribution.js';
+import { decodeJsonBytes } from './codec.js';
 import { materializeIndexShard } from './materialize.js';
 import { Gazetteer } from './search.js';
 import type {
@@ -33,6 +34,7 @@ export async function readPlaces(
     dataDir: DataDir,
     manifest: GazetteerManifest,
 ): Promise<PlaceRecord[]> {
+    if (!manifest.places) return [];
     const raw = await readFile(join(toPath(dataDir), manifest.places), 'utf8');
     return JSON.parse(raw) as PlaceRecord[];
 }
@@ -56,7 +58,8 @@ export function createDirectoryShardLoader(
         if (!rel) {
             throw new Error(`Unknown atlas index shard: ${shardId}`);
         }
-        const raw = JSON.parse(await readFile(join(toPath(dataDir), rel), 'utf8')) as IndexShardRaw;
+        const bytes = await readFile(join(toPath(dataDir), rel));
+        const raw = (await decodeJsonBytes(bytes)) as IndexShardRaw;
         return materializeIndexShard(raw, strings);
     };
 }

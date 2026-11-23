@@ -86,5 +86,39 @@ in `packages/core/src/vedic/ayanamsa.ts` (see `@provenance` comments and ADR 002
 
 ## GeoNames (atlas)
 
-City gazetteer data in `@node-jhora/atlas` is © GeoNames, used under **CC-BY 4.0**
-(see `packages/atlas/README.md`).
+City gazetteer data in `@node-jhora/atlas`, including the birth-place index served
+by the website, is © GeoNames, used under **CC-BY 4.0**
+(see `packages/atlas/README.md` and `packages/atlas/ATTRIBUTION.md`). The site
+builds that index at prebuild time from the GeoNames dumps and does not call the
+GeoNames web service.
+
+## `@node-jhora/web` demo site (npm runtime)
+
+| Package                                                                   | Licence    | Use                                                                      |
+| ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
+| [three](https://github.com/mrdoob/three.js/)                              | MIT        | Lazy-loaded WebGL landing intro (`apps/web/src/components/space-intro/`) |
+| [framer-motion](https://www.framer.com/motion/)                           | MIT        | Route transitions, scroll reveal, tab panels                             |
+| [@fontsource/inter](https://fontsource.org/fonts/inter)                   | OFL-1.1    | Self-hosted UI sans                                                      |
+| [@fontsource/jetbrains-mono](https://fontsource.org/fonts/jetbrains-mono) | OFL-1.1    | Self-hosted code mono                                                    |
+| [react](https://react.dev/) / [react-dom](https://react.dev/)             | MIT        | UI                                                                       |
+| [react-router-dom](https://reactrouter.com/)                              | MIT        | Hash routing                                                             |
+| [comlink](https://github.com/GoogleChromeLabs/comlink)                    | Apache-2.0 | Web Worker RPC                                                           |
+| [luxon](https://github.com/moment/luxon)                                  | MIT        | Time zones in the chart app                                              |
+
+### Bundled imagery (`apps/web/public/textures/`)
+
+NASA imagery, self-hosted as WebP (no KTX2 encoder in this repo). U.S. Government
+public domain — see `apps/web/public/textures/README.md`.
+
+- **Blue Marble Next Generation**, December 2004, topography and bathymetry
+  (`world.topo.bathy.200412.3x5400x2700.jpg`) — day surface. Specular and normal
+  maps are derived in-repo from this image.
+- **Black Marble 2012** (`dnb_land_ocean_ice.2012.3600x1800.jpg`) — city lights.
+- **Blue Marble cloud composite** (`cloud_combined_2048.jpg`) — cloud layer.
+- **LRO wide-angle color mosaic** (`lroc_color_poles_1k.jpg`, NASA/GSFC) — Moon.
+
+Owner-provided monochrome hero motif (`apps/web/assets/v2_astro_bg_frame_mono.png`) is
+proprietary to the copyright holder and used with permission in section backgrounds only.
+
+Constellation line overlays on the landing sky are hand-authored in
+`apps/web/src/components/space-intro/constellations.ts` (not GPL catalogue artwork).

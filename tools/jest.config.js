@@ -7,6 +7,7 @@ export default {
     testMatch: ['**/*.test.ts'],
     moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.js$': '$1',
+        '^luxon$': '<rootDir>/../packages/prediction/node_modules/luxon/build/node/luxon.js',
     },
     transform: {
         '^.+\\.tsx?$': [

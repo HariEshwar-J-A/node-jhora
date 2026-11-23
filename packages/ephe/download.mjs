@@ -18,16 +18,19 @@
  *
  * The bytes are pinned. NAIF publishes MD5 3917ee56769db332790c751e2168843d
  * for this kernel in aa_checksums.txt (directory dated 2020-12-21). The
- * SHA-256 below is of those same bytes, checked against the SSD mirror on
- * 2026-10-26. A file already at DEST with this digest is left in place, so
- * CI can cache packages/ephe/de440s.bsp with the digest as the cache key.
+ * SHA-256 lives in constants.mjs, checked against the SSD mirror on
+ * 2026-10-26. A file already at DEST with this digest is left in place.
+ * A verified copy under .vercel/cache (keyed by the full SHA-256) is
+ * restored before any JPL request, so a Vercel rebuild does not re-download.
  */
 
 import { createHash } from 'crypto';
 import {
+    copyFileSync,
     createReadStream,
     createWriteStream,
     existsSync,
+    mkdirSync,
     realpathSync,
     renameSync,
     statSync,
@@ -36,6 +39,8 @@ import {
 import { get as httpsGet } from 'https';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { DE440S_BYTES, DE440S_SHA256, DE440S_URLS } from './constants.mjs';
+import { readCachedFile, writeCachedFile } from '../../scripts/build-cache.mjs';
 
 /** Strip CR/LF and control chars so error messages cannot forge log lines (CodeQL). */
 function sanitizeLogLine(value) {
@@ -45,15 +50,8 @@ function sanitizeLogLine(value) {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEST = join(__dirname, 'de440s.bsp');
 const PARTIAL = `${DEST}.partial`;
-
-/** SHA-256 of the NAIF/JPL de440s.bsp kernel (32,726,016 bytes). */
-const DE440S_SHA256 = 'c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2';
-const DE440S_BYTES = 32726016;
-
-const SOURCES = [
-    'https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp',
-    'https://ssd.jpl.nasa.gov/pub/eph/planets/bsp/de440s.bsp',
-];
+const CACHE_KEY = `ephe/${DE440S_SHA256}`;
+const SOURCES = DE440S_URLS;
 
 function sha256(path) {
     return new Promise((resolve, reject) => {
@@ -161,11 +159,34 @@ async function acceptDownload() {
     );
 }
 
+function remember(src) {
+    writeCachedFile(CACHE_KEY, 'de440s.bsp', src);
+}
+
+async function restoreFromCache() {
+    for (;;) {
+        const cached = readCachedFile(CACHE_KEY, 'de440s.bsp');
+        if (!cached) return false;
+        if (await matchesPinnedChecksum(cached)) {
+            mkdirSync(dirname(DEST), { recursive: true });
+            copyFileSync(cached, DEST);
+            console.log(
+                '[node-jhora/ephe] Restored de440s.bsp from build cache (sha256 verified).',
+            );
+            return true;
+        }
+        console.warn('[node-jhora/ephe] cached kernel failed sha256 — ignoring.');
+        removeQuiet(cached);
+    }
+}
+
 async function main() {
     if (await matchesPinnedChecksum(DEST)) {
+        remember(DEST);
         console.log('[node-jhora/ephe] de440s.bsp checksum matches — skipping download.');
         return;
     }
+    if (await restoreFromCache()) return;
     if (existsSync(DEST)) {
         console.warn('[node-jhora/ephe] de440s.bsp checksum does not match — downloading again.');
         removeQuiet(DEST);
@@ -175,6 +196,7 @@ async function main() {
         try {
             await download(url);
             await acceptDownload();
+            remember(DEST);
             return;
         } catch (err) {
             removeQuiet(PARTIAL);

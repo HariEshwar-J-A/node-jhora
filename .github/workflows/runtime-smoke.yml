@@ -1,6 +1,6 @@
 name: Runtime smoke
 
-# Verify Bun and Deno can import built workspace packages (quickstarts).
+# Bun and Deno import smoke tests. Runs only when FULL CI is enabled (see ci.yml header).
 
 on:
     pull_request:
@@ -10,6 +10,7 @@ permissions:
 
 jobs:
     bun:
+        if: vars.FULL_CI == 'true' || contains(github.event.pull_request.labels.*.name, 'full-ci')
         name: bun
         runs-on: ubuntu-latest
         steps:
@@ -25,6 +26,7 @@ jobs:
             - run: node tools/runtime-smoke-bun.mjs
 
     deno:
+        if: vars.FULL_CI == 'true' || contains(github.event.pull_request.labels.*.name, 'full-ci')
         name: deno
         runs-on: ubuntu-latest
         steps:

@@ -7,7 +7,7 @@
  *   node scripts/build.mjs [--out data] [--fixture tests/fixtures/gazetteer-mini]
  */
 
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import {
     createWriteStream,
     existsSync,
@@ -16,6 +16,7 @@ import {
     readdirSync,
     renameSync,
     statSync,
+    rmSync,
     unlinkSync,
     writeFileSync,
 } from 'node:fs';
@@ -24,6 +25,7 @@ import { createInterface } from 'node:readline';
 import { createReadStream } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { normalizeSearchKey, shardIdForKey } from './normalize.mjs';
 
@@ -45,6 +47,11 @@ const GEONAMES = {
     alternateNames: 'https://download.geonames.org/export/dump/alternateNamesV2.zip',
     timeZones: 'https://download.geonames.org/export/dump/timeZones.txt',
 };
+
+/** 0 primary/ascii, 1 later word of that name, 2 alternate. */
+const KIND_PRIMARY = 0;
+const KIND_WORD = 1;
+const KIND_ALT = 2;
 
 function parseArgs(argv) {
     let outDir = join(PKG_ROOT, 'data');
@@ -144,15 +151,29 @@ function hasIndicScript(text) {
     );
 }
 
-function shouldKeepAlternate(cols) {
+function shouldKeepAlternate(cols, population) {
     const lang = cols[2] ?? '';
     const name = cols[3] ?? '';
     if (!name || name.length > 48) return false;
-    if (cols[4] === '1' || cols[6] === '1' || cols[7] === '1' || cols[8] === '1') return true;
-    // 'link' rows are URLs (Wikipedia etc.), not names; never index them.
-    if (lang === 'link') return false;
-    if (lang === 'en' || lang === 'abbr') return true;
+    // Codes and links are not place names.
+    if (
+        lang === 'link' ||
+        lang === 'wkdt' ||
+        lang === 'post' ||
+        lang === 'iata' ||
+        lang === 'icao' ||
+        lang === 'faac'
+    ) {
+        return false;
+    }
     if (hasIndicScript(name)) return true;
+    const preferred = cols[4] === '1';
+    const short = cols[5] === '1';
+    const colloquial = cols[6] === '1';
+    const historic = cols[7] === '1';
+    // Unflagged Latin rows are transliterations (Chengchow, "São Paulo" on Frei Paulo).
+    if (preferred || short) return true;
+    if ((historic || colloquial) && population > 100_000) return true;
     return false;
 }
 
@@ -162,29 +183,46 @@ function createKeyAccumulator() {
         perPlace: new Map(),
         /** shard -> entries */
         keyMap: new Map(),
-        pairSeen: new Set(),
+        /** `${key}\0${placeIndex}` -> kind, so a better kind replaces the row */
+        kindByPair: new Map(),
     };
 }
 
-function addKey(acc, key, placeIndex) {
+function addKey(acc, key, placeIndex, kind) {
     const normalized = normalizeSearchKey(key);
     if (!normalized || normalized.length > 64) return;
 
-    let placeSet = acc.perPlace.get(placeIndex);
-    if (!placeSet) {
-        placeSet = new Set();
-        acc.perPlace.set(placeIndex, placeSet);
+    let placeKinds = acc.perPlace.get(placeIndex);
+    if (!placeKinds) {
+        placeKinds = new Map();
+        acc.perPlace.set(placeIndex, placeKinds);
     }
-    if (placeSet.has(normalized)) return;
-    placeSet.add(normalized);
+    const prevKind = placeKinds.get(normalized);
+    if (prevKind !== undefined && prevKind <= kind) return;
+    placeKinds.set(normalized, kind);
 
     const pair = `${normalized}\0${placeIndex}`;
-    if (acc.pairSeen.has(pair)) return;
-    acc.pairSeen.add(pair);
+    const previous = acc.kindByPair.get(pair);
+    if (previous !== undefined && previous <= kind) return;
+    acc.kindByPair.set(pair, kind);
 
     const shard = shardIdForKey(normalized);
     if (!acc.keyMap.has(shard)) acc.keyMap.set(shard, []);
-    acc.keyMap.get(shard).push([normalized, placeIndex]);
+    const bucket = acc.keyMap.get(shard);
+    if (previous !== undefined) {
+        const existing = bucket.find((row) => row[0] === normalized && row[1] === placeIndex);
+        if (existing) existing[2] = kind;
+        return;
+    }
+    bucket.push([normalized, placeIndex, kind]);
+}
+
+function addPrimaryKeys(acc, text, placeIndex) {
+    addKey(acc, text, placeIndex, KIND_PRIMARY);
+    const words = normalizeSearchKey(text).split(' ');
+    for (let i = 1; i < words.length; i++) {
+        if (words[i].length >= 3) addKey(acc, words[i], placeIndex, KIND_WORD);
+    }
 }
 
 async function streamAlternateNames(zipPath, geonameIds, onName) {
@@ -197,64 +235,107 @@ async function streamAlternateNames(zipPath, geonameIds, onName) {
         });
     }
     const rl = createInterface({ input: createReadStream(txtPath), crlfDelay: Infinity });
+    let scanned = 0;
     for await (const line of rl) {
+        scanned++;
+        if (scanned % 2_000_000 === 0) {
+            console.log(`[atlas:build] Scanned ${scanned} alternate-name rows…`);
+        }
         if (!line) continue;
         const cols = line.split('\t');
         if (cols.length < 4) continue;
         const geonameId = Number(cols[1]);
         if (!geonameIds.has(geonameId)) continue;
-        if (!shouldKeepAlternate(cols)) continue;
         const altName = cols[3];
-        if (altName) onName(geonameId, altName);
+        if (altName) onName(geonameId, altName, cols);
     }
 }
 
-async function readCities1000(zipPath) {
-    const buf = execSync(`unzip -p "${zipPath}" cities1000.txt`, { maxBuffer: 64 * 1024 * 1024 });
+function readCities1000(zipPath) {
+    const child = spawn('unzip', ['-p', zipPath, 'cities1000.txt'], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+    });
     const cities = [];
-    for (const line of buf.toString('utf8').split('\n')) {
-        if (!line) continue;
-        const row = parseCitiesLine(line);
-        if (row) cities.push(row);
-    }
-    return cities;
+    const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
+    const done = new Promise((resolve, reject) => {
+        let stderr = '';
+        child.stderr.on('data', (chunk) => {
+            stderr += String(chunk);
+        });
+        child.on('error', reject);
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`unzip cities1000.txt exited ${code}: ${stderr.slice(0, 500)}`));
+                return;
+            }
+            resolve();
+        });
+    });
+    return (async () => {
+        for await (const line of rl) {
+            if (!line) continue;
+            const row = parseCitiesLine(line);
+            if (row) cities.push(row);
+        }
+        await done;
+        return cities;
+    })();
 }
 
 function writeShards(outDir, places, keyMap) {
-    mkdirSync(outDir, { recursive: true });
+    rmSync(outDir, { recursive: true, force: true });
     mkdirSync(join(outDir, 'index'), { recursive: true });
 
-    writeFileSync(join(outDir, 'places.json'), JSON.stringify(places));
-
     const indexShards = {};
+    const shardBytes = {};
     let keyCount = 0;
+    let largest = 0;
+    let largestId = '';
     for (const [shardId, entries] of keyMap.entries()) {
         entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
         const keys = [];
         const placeIndexes = [];
-        for (const [k, idx] of entries) {
+        const kinds = [];
+        const localPlaces = [];
+        const localIndex = new Map();
+        for (const [k, idx, kind] of entries) {
+            let local = localIndex.get(idx);
+            if (local === undefined) {
+                local = localPlaces.length;
+                localIndex.set(idx, local);
+                localPlaces.push(places[idx]);
+            }
             keys.push(k);
-            placeIndexes.push(idx);
+            placeIndexes.push(local);
+            kinds.push(kind);
             keyCount++;
         }
-        const fileName = `index/${shardId}.json`;
+        const fileName = `index/${shardId}.json.gz`;
         indexShards[shardId] = fileName;
-        writeFileSync(join(outDir, fileName), JSON.stringify({ keys, placeIndexes }));
+        const filePath = join(outDir, fileName);
+        const json = JSON.stringify({ keys, placeIndexes, kinds, places: localPlaces });
+        writeFileSync(filePath, gzipSync(Buffer.from(json), { level: 9 }));
+        const size = statSync(filePath).size;
+        shardBytes[shardId] = size;
+        if (size > largest) {
+            largest = size;
+            largestId = shardId;
+        }
     }
 
     const manifest = {
-        version: 1,
+        version: 2,
         attribution: ATTRIBUTION_TEXT,
         license: 'CC-BY-4.0',
         geonamesUrl: 'https://www.geonames.org/',
         builtAt: new Date().toISOString(),
         placeCount: places.length,
         keyCount,
-        places: 'places.json',
         indexShards,
+        shardBytes,
     };
     writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest));
-    return { keyCount };
+    return { keyCount, largest, largestId };
 }
 
 function copyFixture(fixturePath, outDir) {
@@ -315,32 +396,29 @@ async function buildFull(outDir) {
             city.geonameId,
         ]);
 
-        addKey(acc, city.name, placeIndex);
-        if (city.asciiName && city.asciiName !== city.name) {
-            addKey(acc, city.asciiName, placeIndex);
-        }
-        const altLimit = city.population >= 50_000 ? 32 : city.population >= 5_000 ? 12 : 4;
-        if (city.alternates) {
-            const alts = city.alternates.split(',');
-            const limit = Math.min(alts.length, altLimit);
-            for (let i = 0; i < limit; i++) {
-                const trimmed = alts[i].trim();
-                if (trimmed) addKey(acc, trimmed, placeIndex);
-            }
+        addPrimaryKeys(acc, city.name, placeIndex);
+        if (
+            city.asciiName &&
+            normalizeSearchKey(city.asciiName) !== normalizeSearchKey(city.name)
+        ) {
+            addPrimaryKeys(acc, city.asciiName, placeIndex);
         }
     }
 
-    console.log('[atlas:build] Streaming alternate names for cities1000…');
-    await streamAlternateNames(altZip, geonameIds, (geonameId, altName) => {
+    console.log(`[atlas:build] Streaming alternate names for ${cities.length} cities1000 places…`);
+    await streamAlternateNames(altZip, geonameIds, (geonameId, altName, cols) => {
         const placeIndex = placeIndexByGeoname.get(geonameId);
         if (placeIndex === undefined) return;
         const pop = places[placeIndex][6];
-        if (pop < 5_000 && !hasIndicScript(altName)) return;
-        addKey(acc, altName, placeIndex);
+        if (!shouldKeepAlternate(cols, pop)) return;
+        addKey(acc, altName, placeIndex, KIND_ALT);
     });
 
-    const { keyCount } = writeShards(outDir, places, acc.keyMap);
+    const { keyCount, largest, largestId } = writeShards(outDir, places, acc.keyMap);
     console.log(`[atlas:build] Wrote ${places.length} places, ${keyCount} keys → ${outDir}`);
+    console.log(
+        `[atlas:build] Largest shard ${sanitizeLogLine(largestId)}: ${(largest / 1024).toFixed(1)} KB`,
+    );
 }
 
 function dirSizeBytes(dir) {
@@ -366,8 +444,32 @@ async function main() {
     const bytes = dirSizeBytes(outDir);
     const mb = (bytes / (1024 * 1024)).toFixed(2);
     console.log(`[atlas:build] Total data size: ${sanitizeLogLine(mb)} MB`);
-    if (bytes > 26 * 1024 * 1024) {
-        console.warn('[atlas:build] Warning: output exceeds ~25 MB web budget');
+    // cities1000 is exhaustive. Passing 25 MB is expected and is not a warning.
+    console.log(
+        '[atlas:build] Passing 25 MB is expected for an exhaustive cities1000 atlas and is not a warning. GitHub Pages allows 100 MB per file and the site must stay well under 1 GB.',
+    );
+    const fileLimit = 100 * 1024 * 1024;
+    const atlasLimit = 900 * 1024 * 1024;
+    let oversized = false;
+    const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.json'), 'utf8'));
+    for (const [shardId, rel] of Object.entries(manifest.indexShards)) {
+        const size = statSync(join(outDir, rel)).size;
+        if (size > fileLimit) {
+            console.error(
+                `[atlas:build] Shard ${sanitizeLogLine(shardId)} is ${(size / (1024 * 1024)).toFixed(1)} MB (limit 100 MB)`,
+            );
+            oversized = true;
+        }
+    }
+    if (bytes > atlasLimit) {
+        console.error(
+            `[atlas:build] Atlas is ${sanitizeLogLine(mb)} MB, above the 900 MB cap (site must stay well under 1 GB)`,
+        );
+        oversized = true;
+    }
+    if (oversized) {
+        console.error('[atlas:build] Output exceeds GitHub Pages limits');
+        process.exit(1);
     }
 }
 

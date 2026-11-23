@@ -1,3 +1,4 @@
+import { decodeJsonBytes } from './codec.js';
 import { materializeIndexShard } from './materialize.js';
 import { Gazetteer } from './search.js';
 import type {
@@ -25,7 +26,9 @@ export function createFetchShardLoader(
         if (!res.ok) {
             throw new Error(`Failed to load atlas shard ${shardId}: HTTP ${res.status}`);
         }
-        const raw = (await res.json()) as IndexShardRaw;
+        const raw = (await decodeJsonBytes(
+            new Uint8Array(await res.arrayBuffer()),
+        )) as IndexShardRaw;
         return materializeIndexShard(raw, strings);
     };
 }

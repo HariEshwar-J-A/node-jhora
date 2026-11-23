@@ -12,7 +12,14 @@ export function materializeIndexShard(
         return {
             keys: (raw.keys as number[]).map((id) => strings[id]),
             placeIndexes: raw.placeIndexes,
+            kinds: raw.kinds,
+            places: raw.places,
         };
     }
-    return { keys: raw.keys as string[], placeIndexes: raw.placeIndexes };
+    return {
+        keys: raw.keys as string[],
+        placeIndexes: raw.placeIndexes,
+        kinds: raw.kinds,
+        places: raw.places,
+    };
 }

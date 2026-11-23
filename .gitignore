@@ -47,6 +47,9 @@ packages/ephe-long/dist/
 debug_*.mjs
 debug_*.js
 
+# Vercel local cache (kernel + atlas). The project link is not committed.
+.vercel/
+
 # OS
 .DS_Store
 Thumbs.db

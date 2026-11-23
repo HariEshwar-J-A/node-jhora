@@ -42,3 +42,11 @@ minimumReleaseAgeExclude:
 
 overrides:
     light-my-request: 6.6.0
+    # Dev-only tooling (jest's test-exclude/jest-config, typescript-estree,
+    # api-extractor) pulls glob 10/13 and minimatch 9/10. Both ranges are
+    # flagged: glob GHSA-3g3m-2fjr-6pw4 (fixed in 14.0.2) and minimatch
+    # GHSA-g3hv-75wg-m249 (fixed in 11.0.1). The newer majors keep the same
+    # glob()/glob.sync()/minimatch() API the callers use, and nothing here
+    # reaches a published package or the web bundle.
+    'glob@>=9.0.0 <14.0.2': ^14.0.6
+    'minimatch@>=7.0.0 <11.0.1': ^11.0.9
