@@ -1,7 +1,10 @@
 /**
  * Light-theme hero sky. Canvas 2D, no three.js: a near-black field, white
- * stars, and a few streaks. The dark theme still uses the WebGL Earth intro.
+ * stars, constellation stick figures, and a few streaks. The dark theme still
+ * uses the WebGL Earth intro (constellations stay on the SVG overlay there).
  */
+
+import { SKY_CONSTELLATIONS } from './constellations.js';
 
 export type InkSkyHandle = {
     setParallax: (scrollY: number) => void;
@@ -9,6 +12,72 @@ export type InkSkyHandle = {
 };
 
 type Star = { x: number; y: number; z: number; mag: number; phase: number };
+
+function coverMap(normX: number, normY: number, w: number, h: number) {
+    const scale = Math.max(w, h);
+    const ox = (w - scale) * 0.5;
+    const oy = (h - scale) * 0.5;
+    return { x: ox + normX * scale, y: oy + normY * scale, scale };
+}
+
+function drawConstellations(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    now: number,
+    opts: { mobile: boolean; reducedMotion: boolean },
+) {
+    const figures = opts.mobile ? SKY_CONSTELLATIONS.slice(0, 3) : SKY_CONSTELLATIONS;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
+    ctx.lineWidth = 1;
+    ctx.lineCap = 'round';
+    for (const figure of figures) {
+        for (const [x1, y1, x2, y2] of figure.segments) {
+            const a = coverMap(x1, y1, w, h);
+            const b = coverMap(x2, y2, w, h);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+        }
+    }
+    let index = 0;
+    for (const figure of figures) {
+        for (const [cx, cy, mag] of figure.stars) {
+            const { x, y, scale } = coverMap(cx, cy, w, h);
+            const tw = opts.reducedMotion
+                ? 1
+                : 0.55 + 0.45 * Math.sin(now * 0.001 * (0.8 + mag * 2.2) + index * 0.41);
+            const core = (0.00105 + mag * 0.00085) * scale;
+            const glow = core * (1.7 + mag * 0.6);
+            ctx.globalAlpha = 0.14 * tw;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(x, y, glow, 0, Math.PI * 2);
+            ctx.fill();
+            if (mag >= 0.72) {
+                const spike = core * (6.2 + mag * 2.4);
+                ctx.globalAlpha = 0.8 * tw;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x - spike, y);
+                ctx.lineTo(x + spike, y);
+                ctx.moveTo(x, y - spike);
+                ctx.lineTo(x, y + spike);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = tw;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(x, y, core, 0, Math.PI * 2);
+            ctx.fill();
+            index += 1;
+        }
+    }
+    ctx.restore();
+}
 
 function mulberry32(seed: number) {
     return () => {
@@ -78,6 +147,8 @@ export function mountInkSky(
             ctx.fill();
         }
         ctx.globalAlpha = 1;
+
+        drawConstellations(ctx, w, h, now, opts);
 
         if (!opts.reducedMotion && streaks.length < 2 && rnd() < 0.004) {
             streaks.push({ x: rnd() * w, y: rnd() * h * 0.45, life: 1, speed: 7 + rnd() * 6 });

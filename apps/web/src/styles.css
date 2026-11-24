@@ -183,12 +183,16 @@ a {
 }
 
 /* Light landing below hero: opaque page paint so fixed sky does not show between sections. */
-html:has([data-theme='light'] body.landing-sky-active.landing-past-hero) {
+html[data-theme='light']:has(body.landing-sky-active.landing-past-hero) {
     background: hsl(var(--background));
 }
 
 [data-theme='light'] body.landing-sky-active.landing-past-hero {
     background: hsl(var(--background));
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero > .landing-sky-layer {
+    visibility: hidden;
 }
 
 [data-theme='light'] body.landing-sky-active.landing-past-hero #root,
@@ -1495,6 +1499,8 @@ body.landing-sky-active .landing-page #licensing h3 {
     pointer-events: none;
     overflow: hidden;
     background: #060606;
+    isolation: isolate;
+    contain: strict;
 }
 
 .landing-page--sky .card {
@@ -1701,6 +1707,9 @@ body.landing-sky-active .landing-page #licensing h3 {
 .landing-sky-layer .constellation-overlay {
     position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
     z-index: 2;
     pointer-events: none;
     opacity: 0;
