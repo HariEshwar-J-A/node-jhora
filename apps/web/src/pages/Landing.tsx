@@ -107,7 +107,13 @@ export function LandingPage() {
         }
         const syncPastHero = () => {
             const hero = document.querySelector('.hero-wrap--cinema');
-            const past = !hero || hero.getBoundingClientRect().bottom <= 8;
+            const header = document.querySelector('.site-header');
+            if (!hero || !header) {
+                document.body.classList.remove('landing-past-hero');
+                return;
+            }
+            const past =
+                hero.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom + 1;
             document.body.classList.toggle('landing-past-hero', past);
         };
         syncPastHero();

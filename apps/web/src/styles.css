@@ -129,9 +129,12 @@ a {
         color 0.25s ease;
 }
 
-/* Light theme landing: dark sky hero — match header to sky (dark theme already uses dark tokens). */
+/* Light theme landing: dark sky hero — match header to sky (dark theme already uses dark tokens).
+   Fully transparent bg + backdrop-filter blanks header children in Chromium on wide viewports. */
 [data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header {
-    background: transparent;
+    background: rgb(6 6 6 / 0.42);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-bottom-color: rgb(255 255 255 / 0.12);
 }
 
@@ -177,6 +180,28 @@ a {
     .btn-default:hover:not(:disabled) {
     background: #e8eeff;
     color: #060606;
+}
+
+/* Light landing below hero: opaque page paint so fixed sky does not show between sections. */
+html:has([data-theme='light'] body.landing-sky-active.landing-past-hero) {
+    background: hsl(var(--background));
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero {
+    background: hsl(var(--background));
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero #root,
+[data-theme='light'] body.landing-sky-active.landing-past-hero .route-shell,
+[data-theme='light'] body.landing-sky-active.landing-past-hero .landing-page {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-header {
+        transition: none;
+    }
 }
 
 :root {
