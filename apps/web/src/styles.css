@@ -123,6 +123,60 @@ a {
     border-bottom: 1px solid hsl(var(--border));
     background: hsl(var(--background) / 0.92);
     backdrop-filter: blur(8px);
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease;
+}
+
+/* Light theme landing: dark sky hero — match header to sky (dark theme already uses dark tokens). */
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header {
+    background: transparent;
+    border-bottom-color: rgb(255 255 255 / 0.12);
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    :is(.wordmark, .btn-nav, .icon-btn) {
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .icon-btn {
+    border-color: rgb(255 255 255 / 0.28);
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .icon-btn:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.4);
+    color: #f4f7ff;
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    .btn-nav:hover:not(.btn-nav-active) {
+    background: rgb(255 255 255 / 0.1);
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .btn-nav-active {
+    background: rgb(255 255 255 / 0.12);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .btn-default {
+    background: #f4f7ff;
+    color: #060606;
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    .btn-default:hover:not(:disabled) {
+    background: #e8eeff;
+    color: #060606;
 }
 
 :root {
