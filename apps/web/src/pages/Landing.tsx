@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatedHeroBackground } from '../components/AnimatedHeroBackground';
 import { Reveal } from '../components/Reveal';
@@ -98,6 +99,33 @@ const features = [
 
 export function LandingPage() {
     const { mode } = useTheme();
+
+    useEffect(() => {
+        if (mode !== 'light') {
+            document.body.classList.remove('landing-past-hero');
+            return;
+        }
+        const syncPastHero = () => {
+            const hero = document.querySelector('.hero-wrap--cinema');
+            const header = document.querySelector('.site-header');
+            if (!hero || !header) {
+                document.body.classList.remove('landing-past-hero');
+                return;
+            }
+            const past =
+                hero.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom + 1;
+            document.body.classList.toggle('landing-past-hero', past);
+        };
+        syncPastHero();
+        window.addEventListener('scroll', syncPastHero, { passive: true });
+        window.addEventListener('resize', syncPastHero, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', syncPastHero);
+            window.removeEventListener('resize', syncPastHero);
+            document.body.classList.remove('landing-past-hero');
+        };
+    }, [mode]);
+
     return (
         <div className={`landing-page${mode === 'dark' ? ' landing-page--sky' : ''}`}>
             <div className="hero-wrap hero-wrap--cinema">

@@ -123,6 +123,89 @@ a {
     border-bottom: 1px solid hsl(var(--border));
     background: hsl(var(--background) / 0.92);
     backdrop-filter: blur(8px);
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease;
+}
+
+/* Light theme landing: dark sky hero — match header to sky (dark theme already uses dark tokens).
+   Fully transparent bg + backdrop-filter blanks header children in Chromium on wide viewports. */
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header {
+    background: rgb(6 6 6 / 0.42);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom-color: rgb(255 255 255 / 0.12);
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    :is(.wordmark, .btn-nav, .icon-btn) {
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .icon-btn {
+    border-color: rgb(255 255 255 / 0.28);
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .icon-btn:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.4);
+    color: #f4f7ff;
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    .btn-nav:hover:not(.btn-nav-active) {
+    background: rgb(255 255 255 / 0.1);
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .btn-nav-active {
+    background: rgb(255 255 255 / 0.12);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .btn-default {
+    background: #f4f7ff;
+    color: #060606;
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    .btn-default:hover:not(:disabled) {
+    background: #e8eeff;
+    color: #060606;
+}
+
+/* Light landing below hero: opaque page paint so fixed sky does not show between sections. */
+html[data-theme='light']:has(body.landing-sky-active.landing-past-hero) {
+    background: hsl(var(--background));
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero {
+    background: hsl(var(--background));
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero > .landing-sky-layer {
+    visibility: hidden;
+}
+
+[data-theme='light'] body.landing-sky-active.landing-past-hero #root,
+[data-theme='light'] body.landing-sky-active.landing-past-hero .route-shell,
+[data-theme='light'] body.landing-sky-active.landing-past-hero .landing-page {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-header {
+        transition: none;
+    }
 }
 
 :root {
@@ -1416,6 +1499,8 @@ body.landing-sky-active .landing-page #licensing h3 {
     pointer-events: none;
     overflow: hidden;
     background: #060606;
+    isolation: isolate;
+    contain: strict;
 }
 
 .landing-page--sky .card {
@@ -1622,6 +1707,9 @@ body.landing-sky-active .landing-page #licensing h3 {
 .landing-sky-layer .constellation-overlay {
     position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
     z-index: 2;
     pointer-events: none;
     opacity: 0;

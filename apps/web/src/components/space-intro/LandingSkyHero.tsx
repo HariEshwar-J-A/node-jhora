@@ -220,7 +220,9 @@ export function LandingSkyHero({ children }: Props) {
                         aria-hidden="true"
                     />
                 )}
-                <ConstellationOverlay visible={skyReady || staticMode || skyOnly} sparse={mobile} />
+                {!skyOnly && (
+                    <ConstellationOverlay visible={skyReady || staticMode} sparse={mobile} />
+                )}
                 <div className="landing-sky-hero__vignette" aria-hidden="true" />
             </div>
         ) : null;
