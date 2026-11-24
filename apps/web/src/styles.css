@@ -1359,11 +1359,15 @@ html:has(.landing-page--sky) {
 
 /* WebGL sky lives in a body portal; keep the app above that fixed layer. */
 body.landing-sky-active {
-    background: transparent;
+    /* Fill scrollbar-gutter gaps; hero still shows the portaled sky through #root. */
+    background: #060606;
+    overflow-x: clip;
 }
 
 html:has(body.landing-sky-active) {
-    background: transparent;
+    /* Match sky base so scrollbar-gutter gaps never flash page background. */
+    background: #060606;
+    scrollbar-gutter: auto;
 }
 
 body.landing-sky-active #root,
@@ -1618,29 +1622,26 @@ body.landing-sky-active .landing-page #licensing h3 {
 .landing-sky-layer .constellation-overlay {
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 2;
     pointer-events: none;
     opacity: 0;
     transition: opacity 1.2s ease 0.4s;
     color: rgb(255 255 255 / 0.8);
+    mix-blend-mode: screen;
 }
 
 .constellation-overlay--sparse .constellation-group:nth-child(n + 4) {
     display: none;
 }
 
-@media (max-width: 480px) {
-    .constellation-overlay {
-        opacity: 0;
-    }
-
-    .constellation-overlay--visible {
-        opacity: 0.82;
-    }
+.landing-sky-layer .constellation-overlay--visible {
+    opacity: 1;
 }
 
-.constellation-overlay--visible {
-    opacity: 1;
+@media (max-width: 480px) {
+    .landing-sky-layer .constellation-overlay--visible {
+        opacity: 0.82;
+    }
 }
 
 .constellation-line {
