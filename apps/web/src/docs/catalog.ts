@@ -23,7 +23,7 @@ export const DOC_PAGES: DocPage[] = [
             },
             {
                 type: 'p',
-                text: 'Use the sidebar to jump to install steps, API topics, and the live chart demo. All examples use fictional Greenwich sample data unless noted.',
+                text: 'Use the docs menu to jump to install steps, API topics, and the live chart demo. All examples use fictional Greenwich sample data unless noted.',
             },
         ],
     },

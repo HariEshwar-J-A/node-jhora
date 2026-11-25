@@ -304,4 +304,14 @@ export const hi: Messages = {
     'license.banner':
         '{strong} node-jhora बंद स्रोत है; व्यावसायिक उपयोग के लिए सशुल्क लाइसेंस आवश्यक है। {link}।',
     'license.strong': 'मालिकाना सॉफ़्टवेयर।',
+
+    'nav.menu': 'मेनू',
+    'nav.openMenu': 'मेनू खोलें',
+    'nav.closeMenu': 'मेनू बंद करें',
+    'docs.browse': 'दस्तावेज़ देखें',
+    'docs.onThisPage': 'इस पृष्ठ पर',
+    'docs.noResults': 'आपकी खोज से कोई विषय मेल नहीं खाता।',
+    'docs.closeNav': 'दस्तावेज़ मेनू बंद करें',
+
+    'theme.label': 'दिखावट',
 };

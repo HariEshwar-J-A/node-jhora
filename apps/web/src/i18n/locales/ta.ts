@@ -305,4 +305,14 @@ export const ta: Messages = {
     'license.banner':
         '{strong} node-jhora மூடிய மூலம் கொண்டது; வணிகப் பயன்பாட்டுக்குக் கட்டண உரிமம் தேவை. {link}.',
     'license.strong': 'தனியுரிமை மென்பொருள்.',
+
+    'nav.menu': 'பட்டி',
+    'nav.openMenu': 'பட்டியைத் திற',
+    'nav.closeMenu': 'பட்டியை மூடு',
+    'docs.browse': 'ஆவணங்களை உலாவு',
+    'docs.onThisPage': 'இந்தப் பக்கத்தில்',
+    'docs.noResults': 'உங்கள் தேடலுக்குப் பொருந்தும் தலைப்புகள் இல்லை.',
+    'docs.closeNav': 'ஆவணப் பட்டியை மூடு',
+
+    'theme.label': 'தோற்றம்',
 };

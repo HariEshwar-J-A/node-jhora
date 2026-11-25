@@ -404,6 +404,7 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                         rows={flattenDashaTable(tree as DashaPeriod[]).slice(0, 40)}
                         rowKey={(row) => `${name}-${row.row.planet}-${row.row.start}`}
                         compact
+                        capped
                     />
                 </div>
             ))}
