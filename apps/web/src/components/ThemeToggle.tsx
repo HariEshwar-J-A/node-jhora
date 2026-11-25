@@ -1,16 +1,16 @@
 import { useI18n } from '../i18n';
 import { useTheme } from '../lib/theme';
 
-export function ThemeToggle() {
+export function ThemeToggle({ block = false }: { block?: boolean }) {
     const { mode, toggle } = useTheme();
     const { t } = useI18n();
     const label = mode === 'dark' ? t('theme.toLight') : t('theme.toDark');
     return (
         <button
             type="button"
-            className="icon-btn"
-            aria-label={label}
-            title={label}
+            className={block ? 'btn btn-outline menu-theme' : 'icon-btn'}
+            aria-label={block ? undefined : label}
+            title={block ? undefined : label}
             onClick={toggle}
         >
             {mode === 'dark' ? (
@@ -40,6 +40,7 @@ export function ThemeToggle() {
                     />
                 </svg>
             )}
+            {block && <span>{label}</span>}
         </button>
     );
 }

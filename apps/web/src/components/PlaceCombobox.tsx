@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlaceHit } from '@node-jhora/atlas';
+import { MQ_SHEET, useMediaQuery } from '../hooks/useMediaQuery';
 import { useI18n } from '../i18n';
 import { formatPlaceLabel } from '../lib/place-label';
 import { searchPlaces } from '../lib/place-index';
@@ -27,6 +28,8 @@ export function PlaceCombobox({
     const progressId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
     const fieldRef = useRef<HTMLDivElement>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const compact = useMediaQuery(MQ_SHEET);
     const [query, setQuery] = useState(initialLabel);
     const [dropUp, setDropUp] = useState(false);
     const [hits, setHits] = useState<PlaceHit[]>([]);
@@ -122,18 +125,58 @@ export function PlaceCombobox({
 
     useLayoutEffect(() => {
         if (!showList || !fieldRef.current) return;
+        // Phones and tablets show the list inline under the input (see CSS), so it
+        // can never cover what is being typed or be clipped by the sheet.
+        if (compact) {
+            setDropUp(false);
+            return;
+        }
         const rect = fieldRef.current.getBoundingClientRect();
         const spaceBelow = window.innerHeight - rect.bottom;
         const spaceAbove = rect.top;
         const cap = Math.min(320, window.innerHeight * 0.5);
         setDropUp(spaceBelow < cap && spaceAbove > spaceBelow);
-    }, [showList, hits]);
+    }, [showList, hits, compact]);
+
+    /** Bring the field to the top of its scrolling sheet so the list has room above the keyboard. */
+    function revealField() {
+        const root = rootRef.current;
+        const scroller = root?.closest<HTMLElement>('[data-sheet-scroll]');
+        if (!root || !scroller) return;
+        const delta = root.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 8;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        scroller.scrollTo({
+            top: scroller.scrollTop + delta,
+            behavior: reduce ? 'auto' : 'smooth',
+        });
+    }
+
+    // Tapping anywhere else dismisses the list.
+    useEffect(() => {
+        if (!showList) return;
+        const onDown = (event: PointerEvent) => {
+            if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+        };
+        document.addEventListener('pointerdown', onDown);
+        return () => document.removeEventListener('pointerdown', onDown);
+    }, [showList]);
+
+    // The keyboard opening or closing changes the visible height: keep the field in view.
+    useEffect(() => {
+        const vv = window.visualViewport;
+        if (!compact || !vv) return;
+        const onResize = () => {
+            if (document.activeElement === inputRef.current) revealField();
+        };
+        vv.addEventListener('resize', onResize);
+        return () => vv.removeEventListener('resize', onResize);
+    }, [compact]);
     const activeId = showList && hits[active] ? `${listId}-opt-${active}` : undefined;
     const empty = showList && !busy && !error && hits.length === 0;
     const loadingLabel = t('place.loading', { percent });
 
     return (
-        <div className="place-combo">
+        <div className="place-combo" ref={rootRef}>
             <label htmlFor={inputId}>{label ?? t('place.label')}</label>
             <div className="place-combo__field" ref={fieldRef}>
                 <input
@@ -143,7 +186,10 @@ export function PlaceCombobox({
                     role="combobox"
                     data-testid={testId}
                     autoComplete="off"
+                    autoCapitalize="words"
+                    autoCorrect="off"
                     spellCheck={false}
+                    enterKeyHint="search"
                     placeholder={t('place.placeholder')}
                     aria-autocomplete="list"
                     aria-expanded={showList}
@@ -159,6 +205,7 @@ export function PlaceCombobox({
                     }}
                     onFocus={() => {
                         if (!picked.current && query.trim().length >= MIN_QUERY) setOpen(true);
+                        if (compact) window.setTimeout(revealField, 280);
                     }}
                     onKeyDown={onKeyDown}
                 />

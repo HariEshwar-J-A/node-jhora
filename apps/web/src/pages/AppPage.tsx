@@ -26,6 +26,10 @@ import {
 } from '../lib/birth';
 import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN } from '../lib/constants';
 import { useI18n } from '../i18n';
+import { MQ_SHEET, useMediaQuery } from '../hooks/useMediaQuery';
+import { useModalBehavior } from '../hooks/useModalBehavior';
+import { useVisualViewportVars } from '../hooks/useVisualViewportVars';
+import { CloseIcon } from '../components/ui/Drawer';
 import { parseBirthInstant } from '../lib/format';
 import type { ChartMeta } from '../components/chart/types';
 import type { InitProgress } from '../lib/worker-types';
@@ -70,6 +74,12 @@ export function AppPage() {
     const [draft, setDraft] = useState<BirthDraft>(boot.draft);
     const [fieldErrors, setFieldErrors] = useState<BirthFieldErrors>({});
     const [sheetOpen, setSheetOpen] = useState(false);
+    const sheetMode = useMediaQuery(MQ_SHEET);
+    const sheetActive = sheetOpen && sheetMode;
+    const sheetRef = useRef<HTMLElement>(null);
+    const closeSheet = useCallback(() => setSheetOpen(false), []);
+    useModalBehavior(sheetActive, sheetRef, closeSheet);
+    useVisualViewportVars(sheetActive);
     const [kernelReady, setKernelReady] = useState(false);
     const [progress, setProgress] = useState<InitProgress>({ phase: 'checking-cache' });
     const [loading, setLoading] = useState(false);
@@ -275,45 +285,57 @@ export function AppPage() {
 
     return (
         <div className="app-layout">
-            <aside className={`card birth-panel${sheetOpen ? ' birth-panel--open' : ''}`}>
+            <aside
+                ref={sheetRef}
+                className={`card birth-panel${sheetOpen ? ' birth-panel--open' : ''}`}
+                role={sheetActive ? 'dialog' : undefined}
+                aria-modal={sheetActive ? true : undefined}
+                aria-labelledby="birth-panel-title"
+                tabIndex={sheetActive ? -1 : undefined}
+            >
+                <span className="birth-panel__grab" aria-hidden="true" />
                 <div className="birth-panel__head">
-                    <h2>{t('app.birthData')}</h2>
+                    <h2 id="birth-panel-title">{t('app.birthData')}</h2>
                     <button
                         type="button"
-                        className="btn btn-outline birth-sheet-close"
+                        className="icon-btn birth-sheet-close"
                         data-testid="birth-sheet-close"
-                        onClick={() => setSheetOpen(false)}
+                        aria-label={t('app.closeBirthData')}
+                        onClick={closeSheet}
                     >
-                        {t('common.close')}
+                        <CloseIcon />
                     </button>
                 </div>
-                <p className="birth-panel__range">
-                    {t('app.range', { min: KERNEL_DATE_MIN, max: KERNEL_DATE_MAX })}
-                </p>
-                {form}
-                {error && (
-                    <p role="alert" className="form-error">
-                        {error}
-                        {!kernelReady && (
-                            <button
-                                type="button"
-                                className="btn btn-outline"
-                                style={{ display: 'block', marginTop: '0.5rem' }}
-                                onClick={() => {
-                                    resetWorker();
-                                    setInitAttempt((n) => n + 1);
-                                }}
-                            >
-                                {t('app.retryKernel')}
-                            </button>
-                        )}
+                <div className="birth-panel__body" data-sheet-scroll>
+                    <p className="birth-panel__range">
+                        {t('app.range', { min: KERNEL_DATE_MIN, max: KERNEL_DATE_MAX })}
                     </p>
-                )}
+                    {form}
+                    {error && (
+                        <p role="alert" className="form-error">
+                            {error}
+                            {!kernelReady && (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    style={{ display: 'block', marginTop: '0.5rem' }}
+                                    onClick={() => {
+                                        resetWorker();
+                                        setInitAttempt((n) => n + 1);
+                                    }}
+                                >
+                                    {t('app.retryKernel')}
+                                </button>
+                            )}
+                        </p>
+                    )}
+                </div>
             </aside>
             {sheetOpen && (
                 <button
                     type="button"
                     className="birth-sheet-backdrop"
+                    tabIndex={-1}
                     aria-label={t('app.closeBirthData')}
                     onClick={() => setSheetOpen(false)}
                 />
@@ -324,9 +346,24 @@ export function AppPage() {
                     type="button"
                     className="birth-chip"
                     data-testid="birth-summary-chip"
+                    aria-haspopup="dialog"
                     onClick={() => setSheetOpen(true)}
                 >
-                    {birthSummary(draft, t('app.chartFallback'))}
+                    <span className="birth-chip__text">
+                        <span className="birth-chip__label">{t('app.birthData')}</span>
+                        <span className="birth-chip__summary">
+                            {birthSummary(draft, t('app.chartFallback'))}
+                        </span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
                 </button>
                 <div className="tabs" role="tablist">
                     {TABS.map((id) => (
@@ -336,7 +373,15 @@ export function AppPage() {
                             role="tab"
                             data-testid={`tab-${id}`}
                             className={`tab ${tab === id ? 'active' : ''}`}
-                            onClick={() => setTab(id)}
+                            aria-selected={tab === id}
+                            onClick={(event) => {
+                                setTab(id);
+                                event.currentTarget.scrollIntoView({
+                                    inline: 'center',
+                                    block: 'nearest',
+                                    behavior: 'smooth',
+                                });
+                            }}
                         >
                             {t(`app.tab.${id}`)}
                         </button>

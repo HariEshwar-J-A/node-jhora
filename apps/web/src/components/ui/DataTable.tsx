@@ -13,11 +13,15 @@ type Props<T> = {
     rowKey: (row: T) => string;
     testId?: string;
     compact?: boolean;
+    /** Long tables scroll inside a capped height on small screens (header stays pinned). */
+    capped?: boolean;
 };
 
-export function DataTable<T>({ columns, rows, rowKey, testId, compact }: Props<T>) {
+export function DataTable<T>({ columns, rows, rowKey, testId, compact, capped }: Props<T>) {
     return (
-        <div className={`data-table-wrap${compact ? ' data-table-wrap--compact' : ''}`}>
+        <div
+            className={`data-table-wrap${compact ? ' data-table-wrap--compact' : ''}${capped ? ' data-table-wrap--capped' : ''}`}
+        >
             <table className="data" data-testid={testId}>
                 <thead>
                     <tr>

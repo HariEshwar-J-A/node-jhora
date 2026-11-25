@@ -304,6 +304,16 @@ export const en = {
     'license.banner':
         '{strong} node-jhora is closed source; commercial use requires a paid license. {link}.',
     'license.strong': 'Proprietary software.',
+
+    'nav.menu': 'Menu',
+    'nav.openMenu': 'Open menu',
+    'nav.closeMenu': 'Close menu',
+    'docs.browse': 'Browse docs',
+    'docs.onThisPage': 'On this page',
+    'docs.noResults': 'No topics match your search.',
+    'docs.closeNav': 'Close documentation menu',
+
+    'theme.label': 'Appearance',
 } as const;
 
 export type MessageKey = keyof typeof en;
