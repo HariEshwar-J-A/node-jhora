@@ -25,6 +25,7 @@ import {
     type BirthProfile,
 } from '../lib/birth';
 import { EPHE_PATH, KERNEL_DATE_MAX, KERNEL_DATE_MIN } from '../lib/constants';
+import { useI18n } from '../i18n';
 import { parseBirthInstant } from '../lib/format';
 import type { ChartMeta } from '../components/chart/types';
 import type { InitProgress } from '../lib/worker-types';
@@ -41,16 +42,16 @@ type TabId =
     | 'transits'
     | 'import';
 
-const TABS: { id: TabId; label: string }[] = [
-    { id: 'chart', label: 'Chart' },
-    { id: 'vargas', label: 'Vargas' },
-    { id: 'dashas', label: 'Dashas' },
-    { id: 'panchanga', label: 'Panchanga' },
-    { id: 'strength', label: 'Strength' },
-    { id: 'kp', label: 'KP' },
-    { id: 'matching', label: 'Matching' },
-    { id: 'transits', label: 'Transits' },
-    { id: 'import', label: 'Import / export' },
+const TABS: TabId[] = [
+    'chart',
+    'vargas',
+    'dashas',
+    'panchanga',
+    'strength',
+    'kp',
+    'matching',
+    'transits',
+    'import',
 ];
 
 function initialStore() {
@@ -62,6 +63,7 @@ function initialStore() {
 
 export function AppPage() {
     const boot = useMemo(initialStore, []);
+    const { lang, t } = useI18n();
     const [tab, setTab] = useState<TabId>('chart');
     const [profiles, setProfiles] = useState<BirthProfile[]>(boot.profiles);
     const [activeId, setActiveId] = useState(boot.activeId);
@@ -144,15 +146,15 @@ export function AppPage() {
 
     const computeFrom = useCallback(
         async (source: BirthDraft) => {
-            const errors = validateBirth(source);
+            const errors = validateBirth(source, t);
             setFieldErrors(errors);
             if (Object.keys(errors).length) {
-                setError('Fix the highlighted fields.');
+                setError(t('app.fixFields'));
                 setSheetOpen(true);
                 return;
             }
             setError(undefined);
-            const parsed = parseBirthInstant(source.date, source.time, source.timezone);
+            const parsed = parseBirthInstant(source.date, source.time, source.timezone, t);
             if (!parsed.ok) {
                 setError(parsed.message);
                 return;
@@ -180,8 +182,17 @@ export function AppPage() {
                 setLoading(false);
             }
         },
-        [settingsFor, startKernel],
+        [settingsFor, startKernel, t],
     );
+
+    // Re-word any visible field errors when the language changes.
+    const draftRef = useRef(draft);
+    draftRef.current = draft;
+    useEffect(() => {
+        setFieldErrors((prev) =>
+            Object.keys(prev).length ? validateBirth(draftRef.current, t) : prev,
+        );
+    }, [t]);
 
     const progressPct =
         progress.totalBytes && progress.loadedBytes
@@ -194,12 +205,12 @@ export function AppPage() {
     const houses = result?.snapshot?.houses;
     const chartMeta: ChartMeta = useMemo(
         () => ({
-            title: vargaTitle(1),
-            subtitle: labelAyanamsa(draft.ayanamsa),
+            title: vargaTitle(1, lang),
+            subtitle: labelAyanamsa(draft.ayanamsa, lang),
             dateLabel: `${draft.date} ${draft.time} (${draft.timezone})`,
             place: draft.place || `${draft.latitude}°, ${draft.longitude}°`,
         }),
-        [draft],
+        [draft, lang],
     );
 
     function selectProfile(id: string) {
@@ -222,7 +233,7 @@ export function AppPage() {
                 const created: BirthProfile = {
                     ...draft,
                     id: createProfileId(),
-                    name: draft.name.trim() || 'Untitled',
+                    name: draft.name.trim() || t('common.untitled'),
                 };
                 setProfiles((prev) => [...prev, created]);
                 setActiveId(created.id);
@@ -239,7 +250,9 @@ export function AppPage() {
                 const copy: BirthProfile = {
                     ...draft,
                     id: createProfileId(),
-                    name: `${draft.name.trim() || 'Profile'} copy`,
+                    name: t('common.profileCopy', {
+                        name: draft.name.trim() || t('common.profile'),
+                    }),
                 };
                 setProfiles((prev) => [...prev, copy]);
                 setActiveId(copy.id);
@@ -264,18 +277,18 @@ export function AppPage() {
         <div className="app-layout">
             <aside className={`card birth-panel${sheetOpen ? ' birth-panel--open' : ''}`}>
                 <div className="birth-panel__head">
-                    <h2>Birth data</h2>
+                    <h2>{t('app.birthData')}</h2>
                     <button
                         type="button"
                         className="btn btn-outline birth-sheet-close"
                         data-testid="birth-sheet-close"
                         onClick={() => setSheetOpen(false)}
                     >
-                        Close
+                        {t('common.close')}
                     </button>
                 </div>
                 <p className="birth-panel__range">
-                    Saved on this device. Supported range: {KERNEL_DATE_MIN} – {KERNEL_DATE_MAX}.
+                    {t('app.range', { min: KERNEL_DATE_MIN, max: KERNEL_DATE_MAX })}
                 </p>
                 {form}
                 {error && (
@@ -291,7 +304,7 @@ export function AppPage() {
                                     setInitAttempt((n) => n + 1);
                                 }}
                             >
-                                Retry ephemeris load
+                                {t('app.retryKernel')}
                             </button>
                         )}
                     </p>
@@ -301,7 +314,7 @@ export function AppPage() {
                 <button
                     type="button"
                     className="birth-sheet-backdrop"
-                    aria-label="Close birth data"
+                    aria-label={t('app.closeBirthData')}
                     onClick={() => setSheetOpen(false)}
                 />
             )}
@@ -313,31 +326,28 @@ export function AppPage() {
                     data-testid="birth-summary-chip"
                     onClick={() => setSheetOpen(true)}
                 >
-                    {birthSummary(draft)}
+                    {birthSummary(draft, t('app.chartFallback'))}
                 </button>
                 <div className="tabs" role="tablist">
-                    {TABS.map((item) => (
+                    {TABS.map((id) => (
                         <button
-                            key={item.id}
+                            key={id}
                             type="button"
                             role="tab"
-                            data-testid={`tab-${item.id}`}
-                            className={`tab ${tab === item.id ? 'active' : ''}`}
-                            onClick={() => setTab(item.id)}
+                            data-testid={`tab-${id}`}
+                            className={`tab ${tab === id ? 'active' : ''}`}
+                            onClick={() => setTab(id)}
                         >
-                            {item.label}
+                            {t(`app.tab.${id}`)}
                         </button>
                     ))}
                 </div>
 
-                <ErrorBoundary title="This panel failed to render">
+                <ErrorBoundary title={t('app.panelFailed')}>
                     <AnimatedTabPanel tabKey={tab}>
                         {!result && tab !== 'import' && tab !== 'matching' && (
                             <div className="card">
-                                <p>
-                                    Load the ephemeris kernel, enter birth data, and run Calculate.
-                                    Sample: fictional Chennai, 2000-01-01 12:00 Asia/Kolkata.
-                                </p>
+                                <p>{t('app.emptyHint')}</p>
                             </div>
                         )}
 
@@ -374,7 +384,7 @@ export function AppPage() {
                             <PanchangaPanel
                                 panchanga={result.snapshot.panchanga ?? {}}
                                 sunRiseSet={result.sunRiseSet}
-                                riseSetNote="Sunrise and sunset for the birth date (local civil day), using the JHora default: geometric disc centre on the horizon without refraction. USNO and NOAA tables use the upper limb with refraction, typically about 4–6 minutes earlier."
+                                riseSetNote={t('app.riseSetNote')}
                             />
                         )}
 
@@ -402,6 +412,7 @@ export function AppPage() {
                                             source.date,
                                             source.time,
                                             source.timezone,
+                                            t,
                                         );
                                         if (!parsed.ok) throw new Error(parsed.message);
                                         return {

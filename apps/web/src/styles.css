@@ -71,6 +71,45 @@ pre {
     font-size: 0.88em;
 }
 
+/*
+ * Tamil / Hindi: Latin glyphs still come from Inter (and JetBrains Mono in
+ * .mono cells); the script falls through to Noto, loaded only on demand.
+ */
+html[lang='ta'] body {
+    font-family: Inter, 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+html[lang='hi'] body {
+    font-family: Inter, 'Noto Sans Devanagari', system-ui, sans-serif;
+}
+
+html[lang='ta'] :is(.mono, code, pre) {
+    font-family: 'JetBrains Mono', 'Noto Sans Tamil', ui-monospace, monospace;
+}
+
+html[lang='hi'] :is(.mono, code, pre) {
+    font-family: 'JetBrains Mono', 'Noto Sans Devanagari', ui-monospace, monospace;
+}
+
+/* Indic scripts need a little more line height for stacked vowel signs. */
+html:is([lang='ta'], [lang='hi']) body {
+    line-height: 1.7;
+}
+
+/* Long Tamil words: allow breaking inside cards and table cells instead of overflowing. */
+html[lang='ta'] :is(.card, h1, h2, h3, p, li) {
+    overflow-wrap: break-word;
+}
+
+.doc-lang-note {
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px dashed hsl(var(--border));
+    border-radius: 0.375rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8125rem;
+}
+
 a {
     color: inherit;
     text-decoration: none;
@@ -141,8 +180,20 @@ a {
 [data-theme='light']
     body.landing-sky-active:not(.landing-past-hero)
     .site-header
-    :is(.wordmark, .btn-nav, .icon-btn) {
+    :is(.wordmark, .btn-nav, .icon-btn, .lang-switch) {
     color: #f4f7ff;
+}
+
+[data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .lang-switch {
+    border-color: rgb(255 255 255 / 0.28);
+}
+
+[data-theme='light']
+    body.landing-sky-active:not(.landing-past-hero)
+    .site-header
+    .lang-switch:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.4);
 }
 
 [data-theme='light'] body.landing-sky-active:not(.landing-past-hero) .site-header .icon-btn {
@@ -256,6 +307,58 @@ html[data-theme='light']:has(body.landing-sky-active.landing-past-hero) {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.lang-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 2.25rem;
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    background: transparent;
+}
+
+.lang-switch:hover {
+    background: hsl(var(--muted));
+    border-color: hsl(var(--ring) / 0.45);
+}
+
+.lang-switch:focus-within {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+}
+
+.lang-switch__icon {
+    position: absolute;
+    left: 0.55rem;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+}
+
+.lang-switch__select {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 100%;
+    max-width: 8.5rem;
+    padding: 0 0.7rem 0 1.9rem;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    text-overflow: ellipsis;
+}
+
+.lang-switch__select option {
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
 }
 
 .icon-btn {
@@ -1119,11 +1222,15 @@ table.data th.mono {
 
 .bar-chart__row {
     display: grid;
-    grid-template-columns: 5rem 1fr 3.5rem;
+    grid-template-columns: 5rem 1fr minmax(3.5rem, max-content);
     gap: 0.5rem;
     align-items: center;
     margin-bottom: 0.4rem;
     font-size: 0.8125rem;
+}
+
+.bar-chart__value {
+    white-space: nowrap;
 }
 
 .bar-chart__track {

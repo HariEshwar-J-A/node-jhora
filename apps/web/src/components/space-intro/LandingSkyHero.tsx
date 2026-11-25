@@ -8,6 +8,7 @@ import {
     useSyncExternalStore,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '../../i18n';
 import { useTheme } from '../../lib/theme';
 import { ConstellationOverlay } from './ConstellationOverlay';
 import { mountInkSky } from './inkSky';
@@ -67,6 +68,7 @@ function releaseIntroFocus() {
 
 export function LandingSkyHero({ children }: Props) {
     const { mode } = useTheme();
+    const { t } = useI18n();
     const skyOnly = mode === 'light';
     const persistent = mode === 'dark';
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -238,7 +240,7 @@ export function LandingSkyHero({ children }: Props) {
                             className="btn btn-outline intro-skip"
                             onClick={onSkip}
                         >
-                            Skip intro
+                            {t('landing.skipIntro')}
                         </button>
                     )}
                     <div className="landing-sky-hero__content landing-sky-hero__content--visible">

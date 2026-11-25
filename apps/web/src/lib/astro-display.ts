@@ -1,3 +1,10 @@
+import {
+    localNakshatraName,
+    localSignName,
+    localVargaTitle,
+    nakshatraFromEnglish,
+} from '../i18n/astro';
+import type { Lang } from '../i18n/langs';
 import { SIGN_NAMES } from './format';
 
 const NAKSHATRA_NAMES = [
@@ -60,7 +67,10 @@ const OWN_SIGNS: Record<string, number[]> = {
     Saturn: [9, 10],
 };
 
-export function nakshatraForLongitude(longitude: number): {
+export function nakshatraForLongitude(
+    longitude: number,
+    lang: Lang = 'en',
+): {
     index: number;
     name: string;
     pada: number;
@@ -72,27 +82,39 @@ export function nakshatraForLongitude(longitude: number): {
     const pada = Math.min(4, Math.floor(frac / 25) + 1);
     return {
         index: idx + 1,
-        name: NAKSHATRA_NAMES[idx] ?? 'Unknown',
+        name: NAKSHATRA_NAMES[idx] ? nakshatraFromEnglish(NAKSHATRA_NAMES[idx], lang) : '—',
         pada,
     };
 }
 
-export function dignityLabel(planetName: string, sign1Based: number): string {
+export type DignityKey = 'exalted' | 'debilitated' | 'own';
+
+export function dignityKey(planetName: string, sign1Based: number): DignityKey | undefined {
     const sign0 = sign1Based - 1;
-    if (EXALTATION[planetName] === sign0) return 'Exalted';
-    if (DEBILITATION[planetName] === sign0) return 'Debilitated';
+    if (EXALTATION[planetName] === sign0) return 'exalted';
+    if (DEBILITATION[planetName] === sign0) return 'debilitated';
     const own = OWN_SIGNS[planetName];
-    if (own?.includes(sign0)) return 'Own sign';
+    if (own?.includes(sign0)) return 'own';
+    return undefined;
+}
+
+export function dignityLabel(planetName: string, sign1Based: number): string {
+    const key = dignityKey(planetName, sign1Based);
+    if (key === 'exalted') return 'Exalted';
+    if (key === 'debilitated') return 'Debilitated';
+    if (key === 'own') return 'Own sign';
     return '—';
 }
 
-export function signName(sign1Based: number): string {
+export function signName(sign1Based: number, lang: Lang = 'en'): string {
+    if (lang !== 'en') return localSignName(sign1Based, lang);
     if (!Number.isFinite(sign1Based) || sign1Based < 1 || sign1Based > 12) return '—';
     return SIGN_NAMES[sign1Based - 1] ?? '—';
 }
 
 /** Nakshatra name from 0-based index (matches {@link TransitEvent} values). */
-export function nakshatraName(index0: number): string {
+export function nakshatraName(index0: number, lang: Lang = 'en'): string {
+    if (lang !== 'en') return localNakshatraName(index0, lang);
     if (!Number.isFinite(index0) || index0 < 0 || index0 > 26) return '—';
     return NAKSHATRA_NAMES[index0] ?? '—';
 }
@@ -133,7 +155,8 @@ export const VARGA_NAMES: Record<number, string> = {
     150: 'Nadiamsa',
 };
 
-export function vargaTitle(division: number): string {
+export function vargaTitle(division: number, lang: Lang = 'en'): string {
+    if (lang !== 'en') return localVargaTitle(division, lang);
     const name = VARGA_NAMES[division];
     return name ? `D${division} ${name}` : `D${division}`;
 }

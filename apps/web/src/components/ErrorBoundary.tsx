@@ -1,4 +1,26 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { useI18n } from '../i18n';
+
+function ErrorFallback({
+    title,
+    message,
+    onRetry,
+}: {
+    title?: string;
+    message: string;
+    onRetry: () => void;
+}) {
+    const { t } = useI18n();
+    return (
+        <div className="card error-boundary" role="alert">
+            <h3>{title ?? t('common.somethingWrong')}</h3>
+            <p className="error-boundary__msg">{message}</p>
+            <button type="button" className="btn btn-outline" onClick={onRetry}>
+                {t('common.tryAgain')}
+            </button>
+        </div>
+    );
+}
 
 type Props = {
     children: ReactNode;
@@ -24,20 +46,14 @@ export class ErrorBoundary extends Component<Props, State> {
     render() {
         if (this.state.error) {
             return (
-                <div className="card error-boundary" role="alert">
-                    <h3>{this.props.title ?? 'Something went wrong'}</h3>
-                    <p className="error-boundary__msg">{this.state.error.message}</p>
-                    <button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={() => {
-                            this.setState({ error: undefined });
-                            this.props.onReset?.();
-                        }}
-                    >
-                        Try again
-                    </button>
-                </div>
+                <ErrorFallback
+                    title={this.props.title}
+                    message={this.state.error.message}
+                    onRetry={() => {
+                        this.setState({ error: undefined });
+                        this.props.onReset?.();
+                    }}
+                />
             );
         }
         return this.props.children;

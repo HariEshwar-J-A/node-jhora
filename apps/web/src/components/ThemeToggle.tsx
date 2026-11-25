@@ -1,8 +1,10 @@
+import { useI18n } from '../i18n';
 import { useTheme } from '../lib/theme';
 
 export function ThemeToggle() {
     const { mode, toggle } = useTheme();
-    const label = mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+    const { t } = useI18n();
+    const label = mode === 'dark' ? t('theme.toLight') : t('theme.toDark');
     return (
         <button
             type="button"

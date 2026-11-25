@@ -2,6 +2,14 @@ import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { DateTime } from 'luxon';
 import { planetShortName } from '../chart/geometry';
 import { DataTable, type DataColumn } from '../ui/DataTable';
+import { useI18n, type Lang } from '../../i18n';
+import {
+    dashaLevelName,
+    dashaLordName,
+    dashaSystemName,
+    karakaName,
+    planetName,
+} from '../../i18n/astro';
 import {
     DASHA_DURATIONS,
     expandVimshottariLevel,
@@ -29,7 +37,61 @@ type Props = {
 type Mode = 'tree' | 'drill';
 
 const MODE_KEY = 'njh-dasha-mode';
-const LEVEL_NAME = ['', 'Maha', 'Antar', 'Pratyantar', 'Sookshma', 'Prana'];
+
+const KARAKA_ORDER = ['AK', 'AmK', 'BK', 'MK', 'PK', 'GK', 'DK'];
+const PLANET_BY_ID: Record<number, string> = {
+    0: 'Sun',
+    1: 'Moon',
+    2: 'Mercury',
+    3: 'Venus',
+    4: 'Mars',
+    5: 'Jupiter',
+    6: 'Saturn',
+    7: 'Rahu',
+    8: 'Ketu',
+    10: 'Rahu',
+    99: 'Ketu',
+};
+
+type KarakaRow = { key: string; planet: string };
+
+/**
+ * The worker returns `[{ planetId, karaka, longitude }]`; older snapshots used
+ * a `{ AK: 'Sun', ... }` map. Accept both (the array used to print
+ * "[object Object]").
+ */
+export function karakaRows(karakas: unknown): KarakaRow[] {
+    let rows: KarakaRow[] = [];
+    if (Array.isArray(karakas)) {
+        rows = karakas.flatMap((item) => {
+            if (!item || typeof item !== 'object') return [];
+            const { planetId, karaka } = item as { planetId?: unknown; karaka?: unknown };
+            if (typeof karaka !== 'string') return [];
+            const planet =
+                typeof planetId === 'number'
+                    ? (PLANET_BY_ID[planetId] ?? String(planetId))
+                    : String(planetId ?? '—');
+            return [{ key: karaka, planet }];
+        });
+    } else if (karakas && typeof karakas === 'object') {
+        rows = Object.entries(karakas as Record<string, unknown>).map(([key, planet]) => ({
+            key,
+            planet:
+                typeof planet === 'number'
+                    ? (PLANET_BY_ID[planet] ?? String(planet))
+                    : String(planet),
+        }));
+    }
+    const rank = (key: string) => {
+        const i = KARAKA_ORDER.indexOf(key);
+        return i < 0 ? KARAKA_ORDER.length : i;
+    };
+    return rows.sort((a, b) => rank(a.key) - rank(b.key));
+}
+
+function lordLabel(planet: string, lang: Lang): string {
+    return lang === 'en' ? planetShortName(planet) : planetName(planet, lang);
+}
 
 function loadMode(): Mode {
     if (typeof localStorage === 'undefined') return 'tree';
@@ -70,6 +132,7 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
     const [path, setPath] = useState<VimPeriod[]>([]);
     const [focusId, setFocusId] = useState<string | null>(null);
     const now = Date.now();
+    const { lang, t } = useI18n();
 
     const roots = useMemo(
         () => (Array.isArray(vimshottari) ? vimshottari.map((period) => toVim(period, 1)) : []),
@@ -194,8 +257,10 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                             {period.level >= 5 ? '·' : open ? '▾' : '▸'}
                         </span>
                         <span className="dasha-row__lord">
-                            {planetShortName(period.planet)}{' '}
-                            <span className="dasha-row__level">{LEVEL_NAME[period.level]}</span>
+                            {lordLabel(period.planet, lang)}{' '}
+                            <span className="dasha-row__level">
+                                {dashaLevelName(period.level, lang)}
+                            </span>
                         </span>
                         <span className="mono dasha-row__when">
                             {formatWhen(period.start, timeZone)} –{' '}
@@ -210,6 +275,8 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
         });
     }
 
+    const karakaList = useMemo(() => karakaRows(karakas), [karakas]);
+
     const otherEntries = Object.entries(others).filter(
         ([key, value]) => key !== 'vimshottari' && Array.isArray(value) && value.length,
     );
@@ -217,20 +284,22 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
     const columns: DataColumn<{ level: number; row: DashaPeriod }>[] = [
         {
             key: 'lord',
-            header: 'Lord',
+            header: t('dasha.lord'),
             render: ({ level, row }) => (
-                <span style={{ paddingLeft: `${level * 0.75}rem` }}>{row.planet}</span>
+                <span style={{ paddingLeft: `${level * 0.75}rem` }}>
+                    {dashaLordName(row.planet, lang)}
+                </span>
             ),
         },
         {
             key: 'start',
-            header: 'Start',
+            header: t('dasha.start'),
             className: 'mono',
             render: ({ row }) => formatWhen(String(row.start), timeZone),
         },
         {
             key: 'end',
-            header: 'End',
+            header: t('dasha.end'),
             className: 'mono',
             render: ({ row }) => formatWhen(String(row.end), timeZone),
         },
@@ -240,8 +309,12 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
         <div className="dashas-panel" data-testid="panel-dashas">
             <div className="card">
                 <div className="dasha-toolbar">
-                    <h3>Vimshottari</h3>
-                    <div className="dasha-toolbar__modes" role="radiogroup" aria-label="Dasha view">
+                    <h3>{t('dasha.vimshottari')}</h3>
+                    <div
+                        className="dasha-toolbar__modes"
+                        role="radiogroup"
+                        aria-label={t('dasha.view')}
+                    >
                         <button
                             type="button"
                             role="radio"
@@ -250,7 +323,7 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                             className={`btn btn-outline${mode === 'tree' ? ' is-active' : ''}`}
                             onClick={() => setMode('tree')}
                         >
-                            Tree
+                            {t('dasha.tree')}
                         </button>
                         <button
                             type="button"
@@ -260,23 +333,20 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                             className={`btn btn-outline${mode === 'drill' ? ' is-active' : ''}`}
                             onClick={() => setMode('drill')}
                         >
-                            Drill-down
+                            {t('dasha.drill')}
                         </button>
                     </div>
                 </div>
-                <p className="dasha-note">
-                    Dates in {timeZone}. The running period is highlighted. Levels below the
-                    mahadasha (depth {depth} on the chart) load when you open a row.
-                </p>
+                <p className="dasha-note">{t('dasha.note', { zone: timeZone, depth })}</p>
                 {mode === 'tree' ? (
-                    <div role="tree" aria-label="Vimshottari dasha" data-testid="dasha-tree">
+                    <div role="tree" aria-label={t('dasha.treeAria')} data-testid="dasha-tree">
                         {renderTree(roots, 1)}
                     </div>
                 ) : (
                     <div data-testid="dasha-drill">
-                        <nav className="dasha-crumbs" aria-label="Dasha path">
+                        <nav className="dasha-crumbs" aria-label={t('dasha.pathAria')}>
                             <button type="button" onClick={() => setPath([])}>
-                                Vimshottari
+                                {t('dasha.vimshottari')}
                             </button>
                             {path.map((period, index) => (
                                 <span key={periodId(period)}>
@@ -285,12 +355,13 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                                         type="button"
                                         onClick={() => setPath(path.slice(0, index + 1))}
                                     >
-                                        {LEVEL_NAME[period.level]} {planetShortName(period.planet)}
+                                        {dashaLevelName(period.level, lang)}{' '}
+                                        {lordLabel(period.planet, lang)}
                                     </button>
                                 </span>
                             ))}
                         </nav>
-                        <div role="tree" aria-label="Vimshottari level">
+                        <div role="tree" aria-label={t('dasha.levelAria')}>
                             {drillList.map((period) => {
                                 const active = containsNow(period, now);
                                 return (
@@ -308,9 +379,9 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                                             disabled={period.level >= 5}
                                         >
                                             <span>
-                                                {planetShortName(period.planet)}{' '}
+                                                {lordLabel(period.planet, lang)}{' '}
                                                 <span className="dasha-row__level">
-                                                    {LEVEL_NAME[period.level]}
+                                                    {dashaLevelName(period.level, lang)}
                                                 </span>
                                             </span>
                                             <span className="mono">
@@ -327,7 +398,7 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
             </div>
             {otherEntries.map(([name, tree]) => (
                 <div className="card" key={name}>
-                    <h3>{name.replace(/([A-Z])/g, ' $1').trim()}</h3>
+                    <h3>{dashaSystemName(name, lang)}</h3>
                     <DataTable
                         columns={columns}
                         rows={flattenDashaTable(tree as DashaPeriod[]).slice(0, 40)}
@@ -336,20 +407,23 @@ export function DashasPanel({ vimshottari, others, depth, karakas, timeZone = 'U
                     />
                 </div>
             ))}
-            {karakas && typeof karakas === 'object' ? (
+            {karakaList.length > 0 ? (
                 <div className="card">
-                    <h3>Jaimini chara karakas</h3>
+                    <h3>{t('dasha.karakasTitle')}</h3>
                     <DataTable
                         columns={[
-                            { key: 'k', header: 'Karaka', render: (row) => row.key },
-                            { key: 'p', header: 'Planet', render: (row) => row.planet },
+                            {
+                                key: 'k',
+                                header: t('dasha.karaka'),
+                                render: (row) => karakaName(row.key, lang),
+                            },
+                            {
+                                key: 'p',
+                                header: t('dasha.planet'),
+                                render: (row) => planetName(row.planet, lang),
+                            },
                         ]}
-                        rows={Object.entries(karakas as Record<string, string>).map(
-                            ([key, planet]) => ({
-                                key,
-                                planet: String(planet),
-                            }),
-                        )}
+                        rows={karakaList}
                         rowKey={(row) => row.key}
                         compact
                     />

@@ -1,10 +1,14 @@
+import { useI18n } from '../i18n';
 import { CONTACT_URL } from '../lib/constants';
 
 export function LicenseBanner() {
+    const { t, rich } = useI18n();
     return (
         <aside className="license-banner" role="note">
-            <strong>Proprietary software.</strong> node-jhora is closed source; commercial use
-            requires a paid license. <a href={CONTACT_URL}>Contact for licensing</a>.
+            {rich('license.banner', {
+                strong: <strong>{t('license.strong')}</strong>,
+                link: <a href={CONTACT_URL}>{t('landing.contactLicensing')}</a>,
+            })}
         </aside>
     );
 }

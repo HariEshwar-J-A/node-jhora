@@ -1,4 +1,5 @@
 import { AYANAMSA_IDS, HOUSE_SYSTEM_IDS } from '@node-jhora/core';
+import { tEn, type Translate } from '../i18n/core';
 import { SAMPLE_CHART } from './constants';
 import { parseBirthInstant } from './format';
 
@@ -120,39 +121,35 @@ export function writeProfileStore(profiles: BirthProfile[], activeId: string) {
     localStorage.setItem(ACTIVE_KEY, activeId);
 }
 
-export function validateBirth(draft: BirthDraft): BirthFieldErrors {
+export function validateBirth(draft: BirthDraft, t: Translate = tEn): BirthFieldErrors {
     const errors: BirthFieldErrors = {};
-    if (!draft.date.trim()) errors.date = 'Enter a date.';
-    if (!draft.time.trim()) errors.time = 'Enter a time.';
+    if (!draft.date.trim()) errors.date = t('err.dateRequired');
+    if (!draft.time.trim()) errors.time = t('err.timeRequired');
     if (!errors.date && !errors.time && draft.timezone.trim()) {
-        const parsed = parseBirthInstant(draft.date, draft.time, draft.timezone);
-        if (!parsed.ok) {
-            if (/time zone/i.test(parsed.message)) errors.timezone = parsed.message;
-            else if (/date/i.test(parsed.message)) errors.date = parsed.message;
-            else errors.time = parsed.message;
-        }
+        const parsed = parseBirthInstant(draft.date, draft.time, draft.timezone, t);
+        if (!parsed.ok) errors[parsed.field] = parsed.message;
     } else if (!draft.timezone.trim()) {
-        errors.timezone = 'Time zone is required. Pick a place or open Advanced.';
+        errors.timezone = t('err.tzRequiredPick');
     }
     const lat = Number(draft.latitude);
     const lon = Number(draft.longitude);
     if (!draft.latitude.trim() || !Number.isFinite(lat) || lat < -90 || lat > 90) {
-        errors.latitude = 'Latitude must be a number from −90 to 90.';
+        errors.latitude = t('err.latRange');
     }
     if (!draft.longitude.trim() || !Number.isFinite(lon) || lon < -180 || lon > 180) {
-        errors.longitude = 'Longitude must be a number from −180 to 180.';
+        errors.longitude = t('err.lonRange');
     }
     if (draft.customVarga.trim()) {
         const n = Number(draft.customVarga);
         if (!Number.isInteger(n) || n < 1 || n > 300) {
-            errors.customVarga = 'Custom varga must be a whole number from 1 to 300.';
+            errors.customVarga = t('err.customVarga');
         }
     }
     return errors;
 }
 
-export function birthSummary(draft: BirthDraft): string {
-    const place = draft.place.split(',')[0]?.trim() || draft.name.trim() || 'Chart';
+export function birthSummary(draft: BirthDraft, fallback = 'Chart'): string {
+    const place = draft.place.split(',')[0]?.trim() || draft.name.trim() || fallback;
     const when = [draft.date, draft.time].filter(Boolean).join(' ');
     return when ? `${place} · ${when}` : place;
 }

@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { BirthDataForm } from '../BirthDataForm';
 import { DataTable, type DataColumn } from '../ui/DataTable';
+import { useI18n, type Lang, type MessageKey, type Translate } from '../../i18n';
+import { kutaName } from '../../i18n/astro';
 import {
     createProfileId,
     draftFromUnknown,
@@ -22,9 +24,54 @@ export type MatchView = {
     totalScore: number;
     maxScore: number;
     kutas: KutaRow[];
-    doshas: { name: string; detail: string }[];
+    doshas: Dosha[];
     porutham?: { score: number; max: number };
 };
+
+/** Structured so the UI can word each dosha in the chosen language. */
+export type Dosha =
+    | { kind: 'kuta'; kuta: string; description?: string }
+    | { kind: 'rajju'; description?: string }
+    | { kind: 'mangal'; a: boolean; b: boolean; status?: string };
+
+const GRADES = new Set(['Good', 'Bad', 'Excellent', 'Passable']);
+
+/** Engine kuta descriptions are short grades; anything else stays as sent. */
+function gradeText(description: string | undefined, t: Translate): string | undefined {
+    if (!description) return undefined;
+    return GRADES.has(description) ? t(`match.grade.${description}` as MessageKey) : description;
+}
+
+export function doshaText(
+    dosha: Dosha,
+    lang: Lang,
+    t: Translate,
+): { name: string; detail: string } {
+    if (dosha.kind === 'kuta') {
+        return {
+            name: t('match.doshaName', { name: kutaName(dosha.kuta, lang) }),
+            detail: gradeText(dosha.description, t) ?? t('match.scoreZero'),
+        };
+    }
+    if (dosha.kind === 'rajju') {
+        return {
+            name: t('match.rajjuDosha'),
+            detail: gradeText(dosha.description, t) ?? t('match.sameRajju'),
+        };
+    }
+    const statusKey = ['Cancel', 'Present', 'None'].includes(dosha.status ?? '')
+        ? (`match.status.${dosha.status}` as MessageKey)
+        : 'match.status.unknown';
+    return {
+        name: t('match.mangalDosha'),
+        detail: t('match.mangalDetail', {
+            a: dosha.a ? t('match.present') : t('match.absent'),
+            b: dosha.b ? t('match.present') : t('match.absent'),
+            status:
+                dosha.status && statusKey === 'match.status.unknown' ? dosha.status : t(statusKey),
+        }),
+    };
+}
 
 export function matchViewFromWorker(rawUnknown: unknown): MatchView {
     const raw = (rawUnknown && typeof rawUnknown === 'object' ? rawUnknown : {}) as {
@@ -45,25 +92,26 @@ export function matchViewFromWorker(rawUnknown: unknown): MatchView {
         } | null;
     };
     const kutas = raw.ashtaKuta?.matches ?? [];
-    const doshas: { name: string; detail: string }[] = [];
+    const doshas: Dosha[] = [];
     for (const kuta of kutas) {
         if (kuta.score === 0 && (kuta.name === 'Nadi' || kuta.name === 'Bhakoot')) {
             doshas.push({
-                name: `${kuta.name} dosha`,
-                detail: kuta.description || 'Score is 0.',
+                kind: 'kuta',
+                kuta: kuta.name,
+                description: kuta.description || undefined,
             });
         }
     }
     const rajju = raw.porutham?.matches?.find((row) => row.name === 'Rajju');
     if (rajju && rajju.score === 0) {
-        doshas.push({ name: 'Rajju dosha', detail: rajju.description || 'Same rajju.' });
+        doshas.push({ kind: 'rajju', description: rajju.description || undefined });
     }
     if (raw.mangalDosha) {
-        const boy = raw.mangalDosha.boyHasDosha ? 'present' : 'absent';
-        const girl = raw.mangalDosha.girlHasDosha ? 'present' : 'absent';
         doshas.push({
-            name: 'Mangal dosha',
-            detail: `Person A ${boy}, Person B ${girl} (${raw.mangalDosha.matchStatus ?? 'unknown'}).`,
+            kind: 'mangal',
+            a: Boolean(raw.mangalDosha.boyHasDosha),
+            b: Boolean(raw.mangalDosha.girlHasDosha),
+            status: raw.mangalDosha.matchStatus,
         });
     }
     return {
@@ -98,6 +146,7 @@ const PERSON_B: BirthDraft = {
 };
 
 function ScoreDial({ score, max }: { score: number; max: number }) {
+    const { t } = useI18n();
     const radius = 42;
     const circ = 2 * Math.PI * radius;
     const frac = max > 0 ? Math.max(0, Math.min(1, score / max)) : 0;
@@ -106,7 +155,7 @@ function ScoreDial({ score, max }: { score: number; max: number }) {
             className="score-dial"
             viewBox="0 0 120 120"
             role="img"
-            aria-label={`${score} of ${max}`}
+            aria-label={t('match.scoreOf', { score, max })}
         >
             <circle className="score-dial__track" cx="60" cy="60" r={radius} />
             <circle
@@ -140,6 +189,7 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
     const [busy, setBusy] = useState(false);
     const fileA = useRef<HTMLInputElement>(null);
     const fileB = useRef<HTMLInputElement>(null);
+    const { lang, t } = useI18n();
 
     function patch(which: 'a' | 'b', next: Partial<BirthDraft>) {
         const apply = which === 'a' ? setPersonA : setPersonB;
@@ -148,19 +198,19 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
 
     function remember(draft: BirthDraft, which: 'a' | 'b') {
         const id = createProfileId();
-        const profile = { ...draft, id, name: draft.name.trim() || 'Untitled' };
+        const profile = { ...draft, id, name: draft.name.trim() || t('common.untitled') };
         setLocalProfiles((prev) => [...prev, profile]);
         if (which === 'a') setActiveA(id);
         else setActiveB(id);
     }
 
     async function run() {
-        const aErr = validateBirth(personA);
-        const bErr = validateBirth(personB);
+        const aErr = validateBirth(personA, t);
+        const bErr = validateBirth(personB, t);
         setErrorsA(aErr);
         setErrorsB(bErr);
         if (Object.keys(aErr).length || Object.keys(bErr).length) {
-            setError('Fix the highlighted fields before matching.');
+            setError(t('match.fixFields'));
             return;
         }
         setBusy(true);
@@ -179,28 +229,28 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
         try {
             const draft = draftFromUnknown(JSON.parse(await file.text()));
             if (!draft) {
-                setError('That JSON is not a birth profile.');
+                setError(t('match.notProfile'));
                 return;
             }
             if (which === 'a') setPersonA(draft);
             else setPersonB(draft);
             setError(undefined);
         } catch {
-            setError('Could not read that JSON file.');
+            setError(t('match.readFail'));
         }
     }
 
     const columns: DataColumn<KutaRow>[] = [
-        { key: 'name', header: 'Kuta', render: (row) => row.name },
+        { key: 'name', header: t('match.kuta'), render: (row) => kutaName(row.name, lang) },
         {
             key: 'score',
-            header: 'Obtained',
+            header: t('match.obtained'),
             className: 'mono',
             render: (row) => String(row.score),
         },
         {
             key: 'max',
-            header: 'Max',
+            header: t('match.max'),
             className: 'mono',
             render: (row) => String(row.maxScore),
         },
@@ -235,7 +285,15 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                 );
             },
             onDuplicate: () =>
-                remember({ ...draft, name: `${draft.name.trim() || 'Profile'} copy` }, which),
+                remember(
+                    {
+                        ...draft,
+                        name: t('common.profileCopy', {
+                            name: draft.name.trim() || t('common.profile'),
+                        }),
+                    },
+                    which,
+                ),
             onDelete: () => {
                 setLocalProfiles((prev) => prev.filter((item) => item.id !== activeId));
                 if (which === 'a') setActiveA(null);
@@ -255,35 +313,35 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                     className="btn btn-outline"
                     onClick={() => setPersonA(current)}
                 >
-                    Person A from current chart
+                    {t('match.aFromCurrent')}
                 </button>
                 <button
                     type="button"
                     className="btn btn-outline"
                     onClick={() => setPersonB(current)}
                 >
-                    Person B from current chart
+                    {t('match.bFromCurrent')}
                 </button>
                 <button
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => fileA.current?.click()}
                 >
-                    Import JSON for A
+                    {t('match.importA')}
                 </button>
                 <button
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => fileB.current?.click()}
                 >
-                    Import JSON for B
+                    {t('match.importB')}
                 </button>
                 <input
                     ref={fileA}
                     hidden
                     type="file"
                     accept="application/json,.json"
-                    aria-label="Import person A JSON"
+                    aria-label={t('match.importAriaA')}
                     onChange={(event) => {
                         void importJson('a', event.target.files?.[0]);
                         event.target.value = '';
@@ -294,7 +352,7 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                     hidden
                     type="file"
                     accept="application/json,.json"
-                    aria-label="Import person B JSON"
+                    aria-label={t('match.importAriaB')}
                     onChange={(event) => {
                         void importJson('b', event.target.files?.[0]);
                         event.target.value = '';
@@ -303,11 +361,11 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
             </div>
             <div className="match-pair">
                 <section className="card">
-                    <h3>Person A</h3>
+                    <h3>{t('match.personA')}</h3>
                     <BirthDataForm {...formProps('a')} />
                 </section>
                 <section className="card">
-                    <h3>Person B</h3>
+                    <h3>{t('match.personB')}</h3>
                     <BirthDataForm {...formProps('b')} />
                 </section>
             </div>
@@ -319,7 +377,7 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                     disabled={busy || !kernelReady}
                     onClick={() => void run()}
                 >
-                    {busy ? 'Matching…' : 'Match'}
+                    {busy ? t('match.running') : t('match.run')}
                 </button>
                 {error && (
                     <p role="alert" className="form-error">
@@ -332,11 +390,17 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                     <div className="match-result__head">
                         <ScoreDial score={result.totalScore} max={result.maxScore} />
                         <div>
-                            <h3>Ashtakoota</h3>
+                            <h3>{t('match.ashtakoota')}</h3>
                             <p>
-                                {result.totalScore} of {result.maxScore}
+                                {t('match.scoreOf', {
+                                    score: result.totalScore,
+                                    max: result.maxScore,
+                                })}
                                 {result.porutham
-                                    ? ` · Porutham ${result.porutham.score} / ${result.porutham.max}`
+                                    ? ` · ${t('match.porutham', {
+                                          score: result.porutham.score,
+                                          max: result.porutham.max,
+                                      })}`
                                     : ''}
                             </p>
                         </div>
@@ -347,16 +411,19 @@ export function MatchingPanel({ current, profiles, kernelReady, onMatch }: Props
                         rowKey={(row) => row.name}
                         compact
                     />
-                    <h3>Doshas</h3>
+                    <h3>{t('match.doshas')}</h3>
                     {result.doshas.length === 0 ? (
-                        <p>No dosha flagged in this pair.</p>
+                        <p>{t('match.noDosha')}</p>
                     ) : (
                         <ul className="match-doshas">
-                            {result.doshas.map((dosha) => (
-                                <li key={dosha.name}>
-                                    <strong>{dosha.name}</strong> — {dosha.detail}
-                                </li>
-                            ))}
+                            {result.doshas.map((dosha) => {
+                                const text = doshaText(dosha, lang, t);
+                                return (
+                                    <li key={dosha.kind === 'kuta' ? dosha.kuta : dosha.kind}>
+                                        <strong>{text.name}</strong> — {text.detail}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     )}
                 </div>

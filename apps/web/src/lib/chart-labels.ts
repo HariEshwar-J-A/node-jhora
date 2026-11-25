@@ -1,4 +1,6 @@
 import type { AYANAMSA_IDS, HOUSE_SYSTEM_IDS } from '@node-jhora/core';
+import { ayanamsaLabel, houseSystemLabel } from '../i18n/astro';
+import type { Lang } from '../i18n/langs';
 
 const AYANAMSA_LABELS: Record<(typeof AYANAMSA_IDS)[number], string> = {
     true_citra: 'True Chitra (Lahiri-type)',
@@ -41,10 +43,12 @@ const HOUSE_LABELS: Partial<Record<(typeof HOUSE_SYSTEM_IDS)[number], string>> =
     surya_siddhanta_houses: 'Surya Siddhanta',
 };
 
-export function labelAyanamsa(id: (typeof AYANAMSA_IDS)[number]): string {
+export function labelAyanamsa(id: (typeof AYANAMSA_IDS)[number], lang: Lang = 'en'): string {
+    if (lang !== 'en') return ayanamsaLabel(id, lang);
     return AYANAMSA_LABELS[id] ?? id.replace(/_/g, ' ');
 }
 
-export function labelHouseSystem(id: (typeof HOUSE_SYSTEM_IDS)[number]): string {
+export function labelHouseSystem(id: (typeof HOUSE_SYSTEM_IDS)[number], lang: Lang = 'en'): string {
+    if (lang !== 'en') return houseSystemLabel(id, lang);
     return HOUSE_LABELS[id] ?? id.replace(/_/g, ' ');
 }

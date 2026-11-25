@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlaceHit } from '@node-jhora/atlas';
+import { useI18n } from '../i18n';
 import { formatPlaceLabel } from '../lib/place-label';
 import { searchPlaces } from '../lib/place-index';
 
@@ -19,8 +20,9 @@ export function PlaceCombobox({
     onPick,
     inputId = 'place',
     testId = 'place-input',
-    label = 'Birth place',
+    label,
 }: Props) {
+    const { t, rich } = useI18n();
     const listId = useId();
     const progressId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -128,11 +130,11 @@ export function PlaceCombobox({
     }, [showList, hits]);
     const activeId = showList && hits[active] ? `${listId}-opt-${active}` : undefined;
     const empty = showList && !busy && !error && hits.length === 0;
-    const loadingLabel = `Loading places… ${percent}%`;
+    const loadingLabel = t('place.loading', { percent });
 
     return (
         <div className="place-combo">
-            <label htmlFor={inputId}>{label}</label>
+            <label htmlFor={inputId}>{label ?? t('place.label')}</label>
             <div className="place-combo__field" ref={fieldRef}>
                 <input
                     id={inputId}
@@ -142,7 +144,7 @@ export function PlaceCombobox({
                     data-testid={testId}
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder="e.g. Chennai"
+                    placeholder={t('place.placeholder')}
                     aria-autocomplete="list"
                     aria-expanded={showList}
                     aria-controls={listId}
@@ -192,16 +194,16 @@ export function PlaceCombobox({
                         role="listbox"
                         className={`place-combo__list${dropUp ? ' place-combo__list--up' : ''}`}
                         data-testid="place-list"
-                        aria-label="Matching places"
+                        aria-label={t('place.listLabel')}
                     >
                         {busy && hits.length === 0 && (
                             <li className="place-combo__status" role="presentation">
-                                Searching…
+                                {t('place.searching')}
                             </li>
                         )}
                         {error && (
                             <li className="place-combo__status" role="presentation">
-                                Place index unavailable — enter coordinates manually
+                                {t('place.unavailable')}
                             </li>
                         )}
                         {hits.map((hit, index) => {
@@ -230,18 +232,20 @@ export function PlaceCombobox({
                                 aria-selected="false"
                                 data-testid="place-empty"
                             >
-                                No matches — enter coordinates manually
+                                {t('place.noMatches')}
                             </li>
                         )}
                     </ul>
                 )}
             </div>
             <p className="place-combo__credit">
-                Places ©{' '}
-                <a href="https://www.geonames.org/" rel="noreferrer">
-                    GeoNames
-                </a>
-                , CC BY 4.0. Latitude, longitude, and time zone stay editable.
+                {rich('place.credit', {
+                    geonames: (
+                        <a href="https://www.geonames.org/" rel="noreferrer">
+                            GeoNames
+                        </a>
+                    ),
+                })}
             </p>
         </div>
     );

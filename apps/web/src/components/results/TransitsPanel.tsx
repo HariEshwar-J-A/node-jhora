@@ -1,4 +1,5 @@
 import { DataTable, type DataColumn } from '../ui/DataTable';
+import { useI18n, type Lang, type MessageKey } from '../../i18n';
 import { nakshatraName, signName } from '../../lib/astro-display';
 import { formatInstantLocalWithZone } from '../../lib/local-time-display';
 
@@ -18,14 +19,22 @@ type Props = {
     };
 };
 
-function formatTransitEndpoint(eventType: string, value: number | undefined | null): string {
+function formatTransitEndpoint(
+    eventType: string,
+    value: number | undefined | null,
+    lang: Lang,
+): string {
     if (value == null || !Number.isFinite(Number(value))) return '—';
     const v = Number(value);
-    if (eventType === 'Nakshatra') return nakshatraName(v);
-    return signName(v + 1);
+    if (eventType === 'Nakshatra') return nakshatraName(v, lang);
+    return signName(v + 1, lang);
 }
 
-function normalizeMercury(raw: Props['transits']['mercuryTransits'], zone: string): MercuryRow[] {
+function normalizeMercury(
+    raw: Props['transits']['mercuryTransits'],
+    zone: string,
+    lang: Lang,
+): MercuryRow[] {
     if (!raw) return [];
     const list = Array.isArray(raw) ? raw : Object.values(raw);
     return list
@@ -37,8 +46,8 @@ function normalizeMercury(raw: Props['transits']['mercuryTransits'], zone: strin
             return {
                 id: String(e.instant ?? i),
                 type: eventType,
-                from: formatTransitEndpoint(eventType, prev as number),
-                to: formatTransitEndpoint(eventType, next as number),
+                from: formatTransitEndpoint(eventType, prev as number, lang),
+                to: formatTransitEndpoint(eventType, next as number, lang),
                 when:
                     e.instant != null && String(e.instant)
                         ? formatInstantLocalWithZone(String(e.instant), zone)
@@ -48,28 +57,36 @@ function normalizeMercury(raw: Props['transits']['mercuryTransits'], zone: strin
 }
 
 export function TransitsPanel({ transits, timeZone }: Props) {
-    const mercury = normalizeMercury(transits.mercuryTransits, timeZone);
+    const { lang, t } = useI18n();
+    const mercury = normalizeMercury(transits.mercuryTransits, timeZone, lang);
+    const typeLabel = (type: string) =>
+        type === 'Sign' || type === 'Nakshatra' ? t(`transits.type.${type}` as MessageKey) : type;
 
     const columns: DataColumn<MercuryRow>[] = [
-        { key: 'type', header: 'Event', render: (r) => r.type },
-        { key: 'from', header: 'From', render: (r) => r.from },
-        { key: 'to', header: 'To', render: (r) => r.to },
-        { key: 'when', header: `Time (${timeZone})`, className: 'mono', render: (r) => r.when },
+        { key: 'type', header: t('transits.event'), render: (r) => typeLabel(r.type) },
+        { key: 'from', header: t('transits.from'), render: (r) => r.from },
+        { key: 'to', header: t('transits.to'), render: (r) => r.to },
+        {
+            key: 'when',
+            header: t('transits.time', { zone: timeZone }),
+            className: 'mono',
+            render: (r) => r.when,
+        },
     ];
 
     return (
         <div className="transits-panel" data-testid="panel-transits">
             <div className="card">
-                <h3>Mercury transits (30 days)</h3>
+                <h3>{t('transits.mercury')}</h3>
                 {mercury.length ? (
                     <DataTable columns={columns} rows={mercury} rowKey={(r) => r.id} />
                 ) : (
-                    <p>No Mercury ingress events in this window.</p>
+                    <p>{t('transits.none')}</p>
                 )}
             </div>
             {transits.marsIngress?.instant && (
                 <div className="card">
-                    <h3>Mars ingress (Aries)</h3>
+                    <h3>{t('transits.mars')}</h3>
                     <p className="mono">
                         {formatInstantLocalWithZone(transits.marsIngress.instant, timeZone)}
                     </p>

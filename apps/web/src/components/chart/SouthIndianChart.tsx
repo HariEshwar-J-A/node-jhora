@@ -1,4 +1,6 @@
 import { formatDms } from '../../lib/format';
+import { useI18n } from '../../i18n';
+import { planetName } from '../../i18n/astro';
 import { degreeInSignDms, signName } from '../../lib/astro-display';
 import type { ChartMeta, ChartPlanet } from './types';
 import {
@@ -54,6 +56,7 @@ export function SouthIndianChart({
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
 
+    const { lang, t } = useI18n();
     const signFont = compact ? CHART_SIGN_FONT_SIZE_COMPACT : CHART_SIGN_FONT_SIZE;
 
     return (
@@ -62,7 +65,7 @@ export function SouthIndianChart({
                 viewBox={SOUTH_VIEW_BOX}
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
-                aria-label="South Indian chart"
+                aria-label={t('chart.southAria')}
                 className="chart-canvas__svg"
                 key={chartKey}
             >
@@ -99,7 +102,13 @@ export function SouthIndianChart({
                     const textRect = southPlanetTextRect(rect);
                     const labelItems = inSign.map((p) => ({
                         id: p.name,
-                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p), compact),
+                        text: formatPlanetLabel(
+                            p.name,
+                            degreeInSign(p),
+                            isRetrograde(p),
+                            compact,
+                            lang,
+                        ),
                     }));
                     const placed = layoutLabelsInRect(
                         textRect,
@@ -136,10 +145,10 @@ export function SouthIndianChart({
                                 return (
                                     <g key={slot.id}>
                                         <title>
-                                            {p.name} · {signName(sign + 1)} ·{' '}
-                                            {degreeInSignDms(degreeInSign(p))} (
+                                            {planetName(p.name, lang)} · {signName(sign + 1, lang)}{' '}
+                                            · {degreeInSignDms(degreeInSign(p))} (
                                             {formatDms(p.longitude)})
-                                            {isRetrograde(p) ? ' · Retrograde' : ''}
+                                            {isRetrograde(p) ? ` · ${t('chart.retrograde')}` : ''}
                                         </title>
                                         <text
                                             x={slot.x}

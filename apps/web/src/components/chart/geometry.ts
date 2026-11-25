@@ -1,3 +1,5 @@
+import { planetShort } from '../../i18n/astro';
+import type { Lang } from '../../i18n/langs';
 import type { ChartPlanet } from './types';
 
 const SIGN_NAMES_SHORT = [
@@ -19,7 +21,8 @@ export function signIndex0(lon: number): number {
     return Math.floor((((lon % 360) + 360) % 360) / 30);
 }
 
-export function planetShortName(name: string): string {
+export function planetShortName(name: string, lang: Lang = 'en'): string {
+    if (lang !== 'en') return planetShort(name, lang);
     const map: Record<string, string> = {
         Sun: 'Su',
         Moon: 'Mo',

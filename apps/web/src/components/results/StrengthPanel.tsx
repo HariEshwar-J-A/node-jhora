@@ -1,5 +1,7 @@
 import { BarChart } from '../ui/BarChart';
 import { DataTable, type DataColumn } from '../ui/DataTable';
+import { useI18n } from '../../i18n';
+import { planetName, yogaRuleName } from '../../i18n/astro';
 
 type ShadbalaRow = {
     planetName: string;
@@ -33,12 +35,15 @@ function parseShadbalaBars(input: unknown): { label: string; value: number }[] {
     return [];
 }
 
-function yogaStatusRows(yogas: unknown): { id: string; name: string; status: string }[] {
+function yogaStatusRows(
+    yogas: unknown,
+): { id: string; key?: string; name: string; present: boolean }[] {
     const hits = Array.isArray(yogas) ? (yogas as YogaHit[]) : [];
     const rows = hits.map((h, i) => ({
         id: h.key ?? String(i),
+        key: h.key,
         name: h.name,
-        status: 'Present',
+        present: true,
     }));
     const gajaPresent = hits.some(
         (h) => h.key === 'GAJA_KESARI' || h.key === 'gaja_kesari' || /gaja\s*kesari/i.test(h.name),
@@ -46,8 +51,9 @@ function yogaStatusRows(yogas: unknown): { id: string; name: string; status: str
     if (!rows.some((r) => /gaja\s*kesari/i.test(r.name))) {
         rows.unshift({
             id: 'gaja_kesari',
+            key: 'GAJA_KESARI',
             name: 'Gaja Kesari Yoga',
-            status: gajaPresent ? 'Present' : 'Absent',
+            present: gajaPresent,
         });
     }
     return rows;
@@ -60,7 +66,11 @@ type Props = {
 };
 
 export function StrengthPanel({ shadbala, ashtakavarga, yogas }: Props) {
-    const shadbalaBars = parseShadbalaBars(shadbala);
+    const { lang, t, num } = useI18n();
+    const shadbalaBars = parseShadbalaBars(shadbala).map((bar) => ({
+        ...bar,
+        label: planetName(bar.label, lang),
+    }));
 
     const shadbalaTableRows = Array.isArray(shadbala)
         ? (shadbala as ShadbalaRow[]).map((row, i) => ({
@@ -80,27 +90,31 @@ export function StrengthPanel({ shadbala, ashtakavarga, yogas }: Props) {
     const yogaRows = yogaStatusRows(yogas);
 
     const shadbalaColumns: DataColumn<(typeof shadbalaTableRows)[0]>[] = [
-        { key: 'planet', header: 'Planet', render: (r) => r.planet },
+        { key: 'planet', header: t('strength.planet'), render: (r) => planetName(r.planet, lang) },
         {
             key: 'rupas',
-            header: 'Rupas',
+            header: t('strength.rupas'),
             className: 'mono',
-            render: (r) => r.rupas.toFixed(2),
+            render: (r) => num(r.rupas, 2),
         },
     ];
 
     const yogaColumns: DataColumn<(typeof yogaRows)[0]>[] = [
-        { key: 'name', header: 'Yoga', render: (r) => r.name },
-        { key: 'status', header: 'Status', render: (r) => r.status },
+        { key: 'name', header: t('strength.yoga'), render: (r) => yogaRuleName(r, lang) },
+        {
+            key: 'status',
+            header: t('strength.status'),
+            render: (r) => (r.present ? t('strength.present') : t('strength.absent')),
+        },
     ];
 
     return (
         <div className="strength-panel" data-testid="panel-strength">
             <div className="card">
-                <h3>Shadbala (totals)</h3>
+                <h3>{t('strength.shadbala')}</h3>
                 {shadbalaBars.length ? (
                     <>
-                        <BarChart bars={shadbalaBars} unit="rupa" />
+                        <BarChart bars={shadbalaBars} unit={t('strength.rupaUnit')} />
                         {shadbalaTableRows.length > 0 && (
                             <DataTable
                                 columns={shadbalaColumns}
@@ -111,26 +125,28 @@ export function StrengthPanel({ shadbala, ashtakavarga, yogas }: Props) {
                         )}
                     </>
                 ) : (
-                    <p>No shadbala totals in this snapshot.</p>
+                    <p>{t('strength.noShadbala')}</p>
                 )}
             </div>
             <div className="card">
-                <h3>Ashtakavarga (SAV)</h3>
+                <h3>{t('strength.sav')}</h3>
                 {sav.length === 12 ? (
-                    <div className="sav-grid" role="grid" aria-label="Sarvashtakavarga">
+                    <div className="sav-grid" role="grid" aria-label={t('strength.savAria')}>
                         {sav.map((pts, i) => (
                             <div key={i} className="sav-grid__cell" role="gridcell">
-                                <span className="sav-grid__sign">Sign {i + 1}</span>
+                                <span className="sav-grid__sign">
+                                    {t('strength.signN', { n: i + 1 })}
+                                </span>
                                 <span className="sav-grid__pts mono">{pts}</span>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p>SAV grid not available.</p>
+                    <p>{t('strength.savNone')}</p>
                 )}
             </div>
             <div className="card">
-                <h3>Yogas</h3>
+                <h3>{t('strength.yogas')}</h3>
                 <DataTable columns={yogaColumns} rows={yogaRows} rowKey={(r) => r.id} compact />
             </div>
         </div>

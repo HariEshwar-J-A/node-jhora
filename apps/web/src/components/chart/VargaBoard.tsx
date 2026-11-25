@@ -1,5 +1,6 @@
 import { calculateVarga } from '@node-jhora/core';
 import { useMemo, useState } from 'react';
+import { useI18n } from '../../i18n';
 import { VARGA_PICKER_DIVISIONS, vargaTitle } from '../../lib/astro-display';
 import { ChartToggle } from './ChartToggle';
 import { ChartView } from './ChartView';
@@ -52,6 +53,7 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
     const [selected, setSelected] = useState<number[]>([1, 9, 10, 12]);
     const [pickerDiv, setPickerDiv] = useState(9);
 
+    const { lang, t } = useI18n();
     const gridDivisions = useMemo(() => {
         const base = [...selected];
         if (!base.includes(pickerDiv)) base.unshift(pickerDiv);
@@ -69,7 +71,7 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
             <div className="varga-board__toolbar">
                 <ChartToggle value={style} onChange={setStyle} />
                 <label className="varga-board__picker">
-                    <span>Varga</span>
+                    <span>{t('varga.label')}</span>
                     <select
                         value={pickerDiv}
                         onChange={(e) => setPickerDiv(Number(e.target.value))}
@@ -87,13 +89,11 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
                     style={style}
                     ascendant={calculateVarga(ascendant, pickerDiv).longitude}
                     planets={pointsForDivision(pickerDiv, d1Planets, vargas)}
-                    meta={{ ...meta, title: vargaTitle(pickerDiv), subtitle: undefined }}
+                    meta={{ ...meta, title: vargaTitle(pickerDiv, lang), subtitle: undefined }}
                     chartKey={`D${pickerDiv}-${style}`}
                 />
             </div>
-            <p className="varga-board__hint">
-                Tap divisions to add or remove from the grid (up to six).
-            </p>
+            <p className="varga-board__hint">{t('varga.hint')}</p>
             <div className="varga-board__chips">
                 {VARGA_PICKER_DIVISIONS.map((d) => (
                     <button
@@ -109,12 +109,12 @@ export function VargaBoard({ ascendant, d1Planets, vargas, meta }: Props) {
             <div className="varga-board__grid">
                 {gridDivisions.map((d) => (
                     <figure key={d} className="varga-thumb">
-                        <figcaption>{vargaTitle(d)}</figcaption>
+                        <figcaption>{vargaTitle(d, lang)}</figcaption>
                         <ChartView
                             style={style}
                             ascendant={calculateVarga(ascendant, d).longitude}
                             planets={pointsForDivision(d, d1Planets, vargas)}
-                            meta={{ ...meta, title: vargaTitle(d), subtitle: undefined }}
+                            meta={{ ...meta, title: vargaTitle(d, lang), subtitle: undefined }}
                             compact
                             chartKey={`grid-D${d}-${style}`}
                         />

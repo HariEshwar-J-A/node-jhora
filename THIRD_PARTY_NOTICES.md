@@ -94,16 +94,18 @@ GeoNames web service.
 
 ## `@node-jhora/web` demo site (npm runtime)
 
-| Package                                                                   | Licence    | Use                                                                      |
-| ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
-| [three](https://github.com/mrdoob/three.js/)                              | MIT        | Lazy-loaded WebGL landing intro (`apps/web/src/components/space-intro/`) |
-| [framer-motion](https://www.framer.com/motion/)                           | MIT        | Route transitions, scroll reveal, tab panels                             |
-| [@fontsource/inter](https://fontsource.org/fonts/inter)                   | OFL-1.1    | Self-hosted UI sans                                                      |
-| [@fontsource/jetbrains-mono](https://fontsource.org/fonts/jetbrains-mono) | OFL-1.1    | Self-hosted code mono                                                    |
-| [react](https://react.dev/) / [react-dom](https://react.dev/)             | MIT        | UI                                                                       |
-| [react-router-dom](https://reactrouter.com/)                              | MIT        | Hash routing                                                             |
-| [comlink](https://github.com/GoogleChromeLabs/comlink)                    | Apache-2.0 | Web Worker RPC                                                           |
-| [luxon](https://github.com/moment/luxon)                                  | MIT        | Time zones in the chart app                                              |
+| Package                                                                               | Licence    | Use                                                                      |
+| ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
+| [three](https://github.com/mrdoob/three.js/)                                          | MIT        | Lazy-loaded WebGL landing intro (`apps/web/src/components/space-intro/`) |
+| [framer-motion](https://www.framer.com/motion/)                                       | MIT        | Route transitions, scroll reveal, tab panels                             |
+| [@fontsource/inter](https://fontsource.org/fonts/inter)                               | OFL-1.1    | Self-hosted UI sans                                                      |
+| [@fontsource/jetbrains-mono](https://fontsource.org/fonts/jetbrains-mono)             | OFL-1.1    | Self-hosted code mono                                                    |
+| [@fontsource/noto-sans-tamil](https://fontsource.org/fonts/noto-sans-tamil)           | OFL-1.1    | Tamil UI script; Tamil subset loaded only when Tamil is chosen           |
+| [@fontsource/noto-sans-devanagari](https://fontsource.org/fonts/noto-sans-devanagari) | OFL-1.1    | Hindi UI script; Devanagari subset loaded only when Hindi is chosen      |
+| [react](https://react.dev/) / [react-dom](https://react.dev/)                         | MIT        | UI                                                                       |
+| [react-router-dom](https://reactrouter.com/)                                          | MIT        | Hash routing                                                             |
+| [comlink](https://github.com/GoogleChromeLabs/comlink)                                | Apache-2.0 | Web Worker RPC                                                           |
+| [luxon](https://github.com/moment/luxon)                                              | MIT        | Time zones in the chart app                                              |
 
 ### Bundled imagery (`apps/web/public/textures/`)
 
