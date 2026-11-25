@@ -1,4 +1,6 @@
 import { formatDms } from '../../lib/format';
+import { useI18n } from '../../i18n';
+import { planetName } from '../../i18n/astro';
 import { degreeInSignDms, signName } from '../../lib/astro-display';
 import type { ChartMeta, ChartPlanet } from './types';
 import {
@@ -52,6 +54,7 @@ export function NorthIndianChart({
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
 
+    const { lang, t } = useI18n();
     const signFont = compact ? CHART_SIGN_FONT_SIZE_COMPACT : CHART_SIGN_FONT_SIZE;
 
     return (
@@ -61,7 +64,7 @@ export function NorthIndianChart({
                 viewBox={NORTH_VIEW_BOX}
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
-                aria-label="North Indian chart"
+                aria-label={t('chart.northAria')}
                 className="chart-canvas__svg"
                 key={chartKey}
             >
@@ -80,10 +83,16 @@ export function NorthIndianChart({
                     const inHouse = byHouse.get(house) ?? [];
                     const labelItems = inHouse.map((p) => ({
                         id: p.name,
-                        text: formatPlanetLabel(p.name, degreeInSign(p), isRetrograde(p), compact),
+                        text: formatPlanetLabel(
+                            p.name,
+                            degreeInSign(p),
+                            isRetrograde(p),
+                            compact,
+                            lang,
+                        ),
                     }));
                     if (house === 1) {
-                        labelItems.unshift({ id: '__asc__', text: 'Asc' });
+                        labelItems.unshift({ id: '__asc__', text: t('chart.asc') });
                     }
                     const placed = layoutLabelsInRect(
                         NORTH_PLANET_RECTS[house]!,
@@ -116,7 +125,7 @@ export function NorthIndianChart({
                                             className="chart-lagna-tag"
                                             fontSize={slot.fontSize}
                                         >
-                                            Asc
+                                            {t('chart.asc')}
                                         </text>
                                     );
                                 }
@@ -124,10 +133,11 @@ export function NorthIndianChart({
                                 return (
                                     <g key={slot.id}>
                                         <title>
-                                            {p.name} · {signName(planetSign0(p) + 1)} ·{' '}
+                                            {planetName(p.name, lang)} ·{' '}
+                                            {signName(planetSign0(p) + 1, lang)} ·{' '}
                                             {degreeInSignDms(degreeInSign(p))} (
                                             {formatDms(p.longitude)})
-                                            {isRetrograde(p) ? ' · Retrograde' : ''}
+                                            {isRetrograde(p) ? ` · ${t('chart.retrograde')}` : ''}
                                         </title>
                                         <text
                                             x={slot.x}

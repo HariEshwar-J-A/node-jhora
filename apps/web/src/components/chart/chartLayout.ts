@@ -1,3 +1,5 @@
+import { retroMark } from '../../i18n/astro';
+import type { Lang } from '../../i18n/langs';
 import { NORTH_PLANET_RECTS, type NorthTextRect, planetShortName } from './geometry.js';
 
 export const CHART_INSET = 2;
@@ -27,13 +29,44 @@ export type PlacedLabel = {
 
 export type LabelBox = { x0: number; y0: number; x1: number; y1: number };
 
+/**
+ * Approximate advance (in em) for Tamil and Devanagari code points, calibrated
+ * against Noto Sans Tamil / Devanagari in Chromium. Tamil letters are much
+ * wider than Latin; combining vowel signs and viramas add little or nothing.
+ */
+function indicAdvance(code: number): number | undefined {
+    if (code >= 0x0b80 && code <= 0x0bff) {
+        if (code === 0x0bcd) return 0.05; // virama (pulli)
+        if (code === 0x0bc1 || code === 0x0bc2) return 0.2; // u, uu
+        if (code === 0x0bbf || code === 0x0bc0) return 0.15; // i, ii
+        if (code >= 0x0bbe && code <= 0x0bcc) return 0.6; // spacing vowel signs
+        return 0.9;
+    }
+    if (code >= 0x0900 && code <= 0x097f) {
+        if (
+            code <= 0x0902 ||
+            code === 0x093c ||
+            (code >= 0x0941 && code <= 0x0948) ||
+            code === 0x094d ||
+            (code >= 0x0951 && code <= 0x0957) ||
+            code === 0x0962 ||
+            code === 0x0963
+        ) {
+            return 0; // non-spacing marks
+        }
+        if (code === 0x093e || code === 0x093f || code === 0x0940) return 0.25;
+        return 0.62;
+    }
+    return undefined;
+}
+
 export function estimateTextWidth(text: string, fontSize: number): number {
     let w = 0;
     for (const ch of text) {
         if (ch === ' ') w += fontSize * 0.28;
         else if (ch === '°') w += fontSize * 0.42;
         else if (ch === 'R') w += fontSize * 0.48;
-        else w += fontSize * 0.62;
+        else w += fontSize * (indicAdvance(ch.codePointAt(0)!) ?? 0.62);
     }
     return w;
 }
@@ -143,6 +176,34 @@ export function layoutLabelsInRect(
         }
     }
 
+    // Long labels (e.g. Tamil planet names) may not fit at the normal sizes:
+    // shrink a little further before giving up, rather than spill past the frame.
+    const smallest = fonts[fonts.length - 1]!;
+    for (let step = 1; step <= 8; step++) {
+        const fs = Math.round(smallest * (1 - step * 0.05) * 100) / 100;
+        const line = (fs / CHART_PLANET_FONT_SIZE) * CHART_LINE_HEIGHT;
+        for (const cols of [1, 2, 3]) {
+            const rows = Math.ceil(items.length / cols);
+            const xs = columnXs(rect, cols);
+            const startY = (rect.y0 + rect.y1) / 2 - ((rows - 1) * line) / 2;
+            const placed = items.map((item, i) => ({
+                id: item.id,
+                text: item.text,
+                x: xs[i % cols]!,
+                y: startY + Math.floor(i / cols) * line,
+                fontSize: fs,
+                textAnchor: 'middle' as const,
+            }));
+            const boxes = placed.map((slot) => labelBox(slot.x, slot.y, slot.text, fs, 'middle'));
+            const fits = boxes.every(
+                (box, i) =>
+                    boxInsideRect(box, rect, 0) &&
+                    !boxes.slice(0, i).some((other) => boxesOverlap(box, other, 0.15)),
+            );
+            if (fits) return placed;
+        }
+    }
+
     const fs =
         options?.fontSize ?? (items.length >= 7 ? CHART_PLANET_FONT_MIN : CHART_PLANET_FONT_SIZE);
     const line = (fs / CHART_PLANET_FONT_SIZE) * CHART_LINE_HEIGHT;
@@ -212,9 +273,11 @@ export function formatPlanetLabel(
     degree: number,
     retrograde: boolean,
     compact = false,
+    lang: Lang = 'en',
 ): string {
-    const retro = retrograde ? ' R' : '';
-    if (compact) return `${planetShortName(name)}${retro}`;
+    const retro = retrograde ? ` ${retroMark(lang)}` : '';
+    const short = planetShortName(name, lang);
+    if (compact) return `${short}${retro}`;
     const d = Math.floor(degree);
-    return `${planetShortName(name)} ${d}°${retro}`;
+    return `${short} ${d}°${retro}`;
 }

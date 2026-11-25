@@ -3,39 +3,31 @@ import { Link } from 'react-router-dom';
 import { AnimatedHeroBackground } from '../components/AnimatedHeroBackground';
 import { Reveal } from '../components/Reveal';
 import { LandingSkyHero } from '../components/space-intro/LandingSkyHero';
+import { useI18n, type MessageKey } from '../i18n';
 import { CONTACT_EMAIL, CONTACT_URL } from '../lib/constants';
 import { useTheme } from '../lib/theme';
 
 const tiers = [
-    { name: 'Free API', note: 'Coming soon', detail: 'Rate-limited HTTP API (not yet available).' },
+    { name: 'landing.tierFree', note: 'landing.tierFreeNote', detail: 'landing.tierFreeDetail' },
+    { name: 'landing.tierDev', note: 'landing.contactPricing', detail: 'landing.tierDevDetail' },
     {
-        name: 'Developer license',
-        note: 'Contact for pricing',
-        detail: 'Node.js library for individual development.',
+        name: 'landing.tierCommercial',
+        note: 'landing.contactPricing',
+        detail: 'landing.tierCommercialDetail',
     },
     {
-        name: 'Commercial license',
-        note: 'Contact for pricing',
-        detail: 'Paid use in products and services.',
+        name: 'landing.tierEnterprise',
+        note: 'landing.contactPricing',
+        detail: 'landing.tierEnterpriseDetail',
     },
-    {
-        name: 'Enterprise / API',
-        note: 'Contact for pricing',
-        detail: 'High-volume API and support arrangements.',
-    },
-];
+] as const satisfies readonly { name: MessageKey; note: MessageKey; detail: MessageKey }[];
 
-const facts = [
-    'JPL DE440s ephemeris kernel (32,726,016 bytes), validated by SHA-256 in the browser loader.',
-    '24 named divisional charts through D150, plus harmonic fallback for custom divisors.',
-    '26 house systems and 9 named ayanamsa presets in the settings schema (modes 0–46 in the engine registry).',
-    'Vimshottari dasha recursion to five levels (Maha through Prana) in @node-jhora/prediction.',
-];
+const facts = ['landing.fact1', 'landing.fact2', 'landing.fact3', 'landing.fact4'] as const;
 
 const features = [
     {
-        title: 'DE440s in the browser',
-        body: 'Pure TypeScript SPK reader; kernel loads once with progress and SHA-256 verification.',
+        title: 'landing.feature1Title',
+        body: 'landing.feature1Body',
         icon: (
             <svg className="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.2" />
@@ -44,8 +36,8 @@ const features = [
         ),
     },
     {
-        title: 'JHora-aligned defaults',
-        body: 'True Chitrapaksha, geometric positions, true node, and D-10 (5–8) scheme match Jagannatha Hora conventions.',
+        title: 'landing.feature2Title',
+        body: 'landing.feature2Body',
         icon: (
             <svg className="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <polygon
@@ -58,8 +50,8 @@ const features = [
         ),
     },
     {
-        title: 'Private by design',
-        body: 'Chart demo runs in a Web Worker; birth data stays on your device. Sample chart only on first load.',
+        title: 'landing.feature3Title',
+        body: 'landing.feature3Body',
         icon: (
             <svg className="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <rect
@@ -82,8 +74,8 @@ const features = [
         ),
     },
     {
-        title: 'Full stack packages',
-        body: 'Core, analytics, prediction, match, events, and format—same math in Node and in this app.',
+        title: 'landing.feature4Title',
+        body: 'landing.feature4Body',
         icon: (
             <svg className="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -95,10 +87,11 @@ const features = [
             </svg>
         ),
     },
-];
+] as const;
 
 export function LandingPage() {
     const { mode } = useTheme();
+    const { t, rich } = useI18n();
 
     useEffect(() => {
         if (mode !== 'light') {
@@ -131,22 +124,18 @@ export function LandingPage() {
             <div className="hero-wrap hero-wrap--cinema">
                 <LandingSkyHero>
                     <section className="hero">
-                        <span className="badge mono">PROPRIETARY · CLOSED SOURCE</span>
-                        <h1>Vedic chart engine for Node.js and the browser</h1>
-                        <p>
-                            node-jhora computes sidereal charts with a pure TypeScript JPL DE440s
-                            reader—no Swiss Ephemeris, no WASM. Licensing lives here; the chart app
-                            runs entirely in your browser.
-                        </p>
+                        <span className="badge mono">{t('landing.badge')}</span>
+                        <h1>{t('landing.title')}</h1>
+                        <p>{t('landing.lead')}</p>
                         <div className="hero-actions">
                             <Link className="btn btn-default" to="/app">
-                                Open chart app
+                                {t('landing.openApp')}
                             </Link>
                             <Link className="btn btn-outline" to="/docs">
-                                Read docs
+                                {t('landing.readDocs')}
                             </Link>
                             <a className="btn btn-ghost" href={CONTACT_URL}>
-                                Contact for licensing
+                                {t('landing.contactLicensing')}
                             </a>
                         </div>
                     </section>
@@ -155,10 +144,10 @@ export function LandingPage() {
 
             <Reveal>
                 <section className="section">
-                    <h2>Verified capabilities</h2>
+                    <h2>{t('landing.factsTitle')}</h2>
                     <ul>
                         {facts.map((f) => (
-                            <li key={f}>{f}</li>
+                            <li key={f}>{t(f)}</li>
                         ))}
                     </ul>
                 </section>
@@ -167,14 +156,14 @@ export function LandingPage() {
             <div className="section-motif">
                 {mode === 'light' && <AnimatedHeroBackground />}
                 <section className="section section-motif__inner">
-                    <h2>Why node-jhora</h2>
+                    <h2>{t('landing.whyTitle')}</h2>
                     <div className="feature-grid">
                         {features.map((f, i) => (
                             <Reveal key={f.title} delay={i * 0.06}>
                                 <article className="card card-hover feature-card">
                                     {f.icon}
-                                    <h3>{f.title}</h3>
-                                    <p>{f.body}</p>
+                                    <h3>{t(f.title)}</h3>
+                                    <p>{t(f.body)}</p>
                                 </article>
                             </Reveal>
                         ))}
@@ -183,39 +172,40 @@ export function LandingPage() {
             </div>
 
             <section className="section" id="licensing">
-                <h2>Licensing</h2>
+                <h2>{t('landing.licensingTitle')}</h2>
                 <p>
-                    The library is closed source and proprietary. All rights reserved. Commercial
-                    use requires a paid license. Questions:{' '}
-                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or{' '}
-                    <a href={CONTACT_URL}>the portfolio contact form</a>.
+                    {rich('landing.licensingBody', {
+                        email: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>,
+                        form: <a href={CONTACT_URL}>{t('landing.contactForm')}</a>,
+                    })}
                 </p>
                 <p>
-                    Birth-place search uses the GeoNames gazetteer (city names, coordinates, and
-                    IANA time zones), © <a href="https://www.geonames.org/">GeoNames</a>, licensed
-                    under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. The
-                    index is built offline and served with this site. No place query leaves the
-                    browser.
+                    {rich('landing.geonamesBody', {
+                        geonames: <a href="https://www.geonames.org/">GeoNames</a>,
+                        license: (
+                            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+                        ),
+                    })}
                 </p>
                 <div className="pricing-grid">
-                    {tiers.map((t) => (
-                        <article className="card" key={t.name}>
-                            <h3>{t.name}</h3>
-                            <p className="mono">{t.note}</p>
+                    {tiers.map((tier) => (
+                        <article className="card" key={tier.name}>
+                            <h3>{t(tier.name)}</h3>
+                            <p className="mono">{t(tier.note)}</p>
                             <p
                                 style={{
                                     color: 'hsl(var(--muted-foreground))',
                                     fontSize: '0.875rem',
                                 }}
                             >
-                                {t.detail}
+                                {t(tier.detail)}
                             </p>
                             <a
                                 className="btn btn-outline"
                                 href={CONTACT_URL}
                                 style={{ marginTop: '0.75rem' }}
                             >
-                                Contact for pricing
+                                {t('landing.contactPricing')}
                             </a>
                         </article>
                     ))}
@@ -223,11 +213,7 @@ export function LandingPage() {
             </section>
 
             <footer className="footer">
-                <p>
-                    © {new Date().getFullYear()} Harieshwar Jagan Abirami. node-jhora is not open
-                    source. Ephemeris data: NASA/JPL DE440s (public domain). Place names: GeoNames
-                    (CC BY 4.0). No analytics on this demo.
-                </p>
+                <p>{t('landing.footer', { year: new Date().getFullYear() })}</p>
             </footer>
         </div>
     );

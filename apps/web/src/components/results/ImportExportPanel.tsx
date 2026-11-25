@@ -1,9 +1,12 @@
 import { useRef, useState } from 'react';
+import { useI18n, type MessageKey } from '../../i18n';
 import { getWorker } from '../../lib/worker-client';
 
 export function ImportExportPanel() {
-    const [status, setStatus] = useState<string>();
-    const [error, setError] = useState<string>();
+    const { t } = useI18n();
+    // Keys (not text) so a language switch re-words the last message.
+    const [status, setStatus] = useState<MessageKey>();
+    const [error, setError] = useState<{ key: MessageKey } | { raw: string }>();
     const jhdInput = useRef<HTMLInputElement>(null);
     const njhInput = useRef<HTMLInputElement>(null);
 
@@ -28,10 +31,8 @@ export function ImportExportPanel() {
     return (
         <div className="card grid-2" data-testid="panel-import">
             <div>
-                <h3>JHD import / export</h3>
-                <p className="import-hint">
-                    Upload a .jhd file to validate and download a round-trip.
-                </p>
+                <h3>{t('io.jhdTitle')}</h3>
+                <p className="import-hint">{t('io.jhdHint')}</p>
                 <input ref={jhdInput} type="file" accept=".jhd,text/plain" />
                 <div className="import-actions">
                     <button
@@ -41,7 +42,7 @@ export function ImportExportPanel() {
                             setError(undefined);
                             const file = jhdInput.current?.files?.[0];
                             if (!file) {
-                                setError('Choose a JHD file first.');
+                                setError({ key: 'io.jhdChoose' });
                                 return;
                             }
                             try {
@@ -49,19 +50,19 @@ export function ImportExportPanel() {
                                 const parsed = await getWorker().parseJhdText(text);
                                 const out = await getWorker().writeJhdText(parsed);
                                 download(file.name.replace(/\.jhd$/i, '') + '-roundtrip.jhd', out);
-                                setStatus('JHD round-trip downloaded.');
+                                setStatus('io.jhdDone');
                             } catch (e) {
-                                setError(String(e));
+                                setError({ raw: String(e) });
                             }
                         }}
                     >
-                        Validate &amp; download
+                        {t('io.jhdRun')}
                     </button>
                 </div>
             </div>
             <div>
-                <h3>NJH import / export</h3>
-                <p className="import-hint">Upload a .njh chart file to serialize and download.</p>
+                <h3>{t('io.njhTitle')}</h3>
+                <p className="import-hint">{t('io.njhHint')}</p>
                 <input ref={njhInput} type="file" accept=".njh,text/plain" />
                 <div className="import-actions">
                     <button
@@ -71,7 +72,7 @@ export function ImportExportPanel() {
                             setError(undefined);
                             const file = njhInput.current?.files?.[0];
                             if (!file) {
-                                setError('Choose an NJH file first.');
+                                setError({ key: 'io.njhChoose' });
                                 return;
                             }
                             try {
@@ -79,20 +80,20 @@ export function ImportExportPanel() {
                                 const parsed = await getWorker().parseNjhText(text);
                                 const out = await getWorker().serializeNjhText(parsed);
                                 download(file.name.replace(/\.njh$/i, '') + '-serialized.njh', out);
-                                setStatus('NJH serialize downloaded.');
+                                setStatus('io.njhDone');
                             } catch (e) {
-                                setError(String(e));
+                                setError({ raw: String(e) });
                             }
                         }}
                     >
-                        Parse &amp; download
+                        {t('io.njhRun')}
                     </button>
                 </div>
             </div>
-            {status && <p className="import-status">{status}</p>}
+            {status && <p className="import-status">{t(status)}</p>}
             {error && (
                 <p role="alert" className="form-error">
-                    {error}
+                    {'key' in error ? t(error.key) : error.raw}
                 </p>
             )}
         </div>

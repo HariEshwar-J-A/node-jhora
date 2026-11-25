@@ -3,9 +3,11 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { ChartToggle } from '../chart/ChartToggle';
 import { ChartView } from '../chart/ChartView';
 import type { ChartMeta, ChartPlanet } from '../chart/types';
+import { useI18n } from '../../i18n';
+import { planetName } from '../../i18n/astro';
 import {
     degreeInSignDms,
-    dignityLabel,
+    dignityKey,
     nakshatraForLongitude,
     signName,
 } from '../../lib/astro-display';
@@ -27,46 +29,53 @@ type Props = {
 export function PlanetsPanel({ ascendant, planets, meta }: Props) {
     const [style, setStyle] = useChartStyle();
     const asc0 = signIndex0(ascendant);
+    const { lang, t, num } = useI18n();
 
     const columns: DataColumn<PlanetRow>[] = [
-        { key: 'name', header: 'Body', render: (p) => p.name },
-        { key: 'sign', header: 'Sign', render: (p) => signName(p.sign) },
+        { key: 'name', header: t('planets.body'), render: (p) => planetName(p.name, lang) },
+        { key: 'sign', header: t('planets.sign'), render: (p) => signName(p.sign, lang) },
         {
             key: 'lon',
-            header: 'Longitude',
+            header: t('planets.longitude'),
             className: 'mono',
             render: (p) => formatDms(p.longitude),
         },
         {
             key: 'deg',
-            header: 'In sign',
+            header: t('planets.inSign'),
             className: 'mono',
             render: (p) => degreeInSignDms(p.degree ?? ((p.longitude % 30) + 30) % 30),
         },
         {
             key: 'nak',
-            header: 'Nakshatra',
+            header: t('planets.nakshatra'),
             className: 'col-nak',
             render: (p) => {
-                const n = nakshatraForLongitude(p.longitude);
-                return `${n.name} P${n.pada}`;
+                const n = nakshatraForLongitude(p.longitude, lang);
+                return t('planets.nakPada', { name: n.name, pada: n.pada });
             },
         },
         {
             key: 'house',
-            header: 'House',
+            header: t('planets.house'),
             render: (p) => String(wholeSignHouse(planetSign0(p), asc0)),
         },
         {
             key: 'dig',
-            header: 'Dignity',
-            render: (p) => dignityLabel(p.name, p.sign),
+            header: t('planets.dignity'),
+            render: (p) => {
+                const key = dignityKey(p.name, p.sign);
+                return key ? t(`dignity.${key}`) : '—';
+            },
         },
         {
             key: 'spd',
-            header: 'Motion',
+            header: t('planets.motion'),
             className: 'mono',
-            render: (p) => (p.speed < 0 ? 'Retrograde' : `${p.speed.toFixed(4)}°/d`),
+            render: (p) =>
+                p.speed < 0
+                    ? t('chart.retrograde')
+                    : t('planets.speed', { speed: num(p.speed, 4) }),
         },
     ];
 
@@ -82,7 +91,7 @@ export function PlanetsPanel({ ascendant, planets, meta }: Props) {
         <div className="grid-2 grid-2--chart-table" data-testid="panel-chart">
             <div className="card chart-panel">
                 <ChartToggle value={style} onChange={setStyle} className="chart-panel__toggle" />
-                <ErrorBoundary title="Chart could not be rendered">
+                <ErrorBoundary title={t('chart.failed')}>
                     <ChartView
                         style={style}
                         ascendant={ascendant}
@@ -93,7 +102,7 @@ export function PlanetsPanel({ ascendant, planets, meta }: Props) {
                 </ErrorBoundary>
             </div>
             <div className="card card--table-scroll">
-                <h3>Planets (sidereal)</h3>
+                <h3>{t('planets.title')}</h3>
                 <DataTable
                     columns={columns}
                     rows={planets}

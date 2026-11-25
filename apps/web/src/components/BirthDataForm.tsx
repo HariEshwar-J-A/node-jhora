@@ -1,5 +1,6 @@
 import { useId, useRef } from 'react';
 import { AYANAMSA_IDS, HOUSE_SYSTEM_IDS } from '@node-jhora/core';
+import { useI18n, type MessageKey } from '../i18n';
 import { labelAyanamsa, labelHouseSystem } from '../lib/chart-labels';
 import {
     birthSummary,
@@ -56,7 +57,7 @@ export function BirthDataForm({
     placeTestId = 'place-input',
     showSubmit = false,
     onSubmit,
-    submitLabel = 'Calculate',
+    submitLabel,
     loading = false,
     kernelReady = true,
     progress,
@@ -65,6 +66,9 @@ export function BirthDataForm({
     const fileRef = useRef<HTMLInputElement>(null);
     const formId = useId();
     const fid = (name: string) => `${idPrefix}${name}`;
+    const { lang, t } = useI18n();
+    const phaseKey = `form.phase.${progress?.phase ?? ''}` as MessageKey;
+    const phaseLabel = progress && t(phaseKey) !== phaseKey ? t(phaseKey) : progress?.phase;
 
     return (
         <form
@@ -77,23 +81,23 @@ export function BirthDataForm({
         >
             <div className="birth-form__tools">
                 <label className="sr-only" htmlFor={fid('profile')}>
-                    Saved profile
+                    {t('form.savedProfile')}
                 </label>
                 <select
                     id={fid('profile')}
                     value={activeId ?? ''}
                     onChange={(event) => onSelectProfile(event.target.value)}
-                    aria-label="Saved profile"
+                    aria-label={t('form.savedProfile')}
                 >
                     {profiles.map((profile) => (
                         <option key={profile.id} value={profile.id}>
-                            {profile.name.trim() || 'Untitled'}
+                            {profile.name.trim() || t('common.untitled')}
                         </option>
                     ))}
-                    {profiles.length === 0 && <option value="">No saved profiles</option>}
+                    {profiles.length === 0 && <option value="">{t('form.noProfiles')}</option>}
                 </select>
                 <button type="button" className="btn btn-outline" onClick={onAdd}>
-                    Add
+                    {t('form.add')}
                 </button>
                 <button
                     type="button"
@@ -104,10 +108,10 @@ export function BirthDataForm({
                         nameRef.current?.select();
                     }}
                 >
-                    Rename
+                    {t('form.rename')}
                 </button>
                 <button type="button" className="btn btn-outline" onClick={onDuplicate}>
-                    Duplicate
+                    {t('form.duplicate')}
                 </button>
                 <button
                     type="button"
@@ -115,12 +119,12 @@ export function BirthDataForm({
                     onClick={onDelete}
                     disabled={profiles.length === 0}
                 >
-                    Delete
+                    {t('form.delete')}
                 </button>
             </div>
 
             <div className="field-row">
-                <label htmlFor={fid('name')}>Name</label>
+                <label htmlFor={fid('name')}>{t('form.name')}</label>
                 <input
                     id={fid('name')}
                     ref={nameRef}
@@ -147,7 +151,7 @@ export function BirthDataForm({
 
             <div className="birth-form__when">
                 <div className="field-row">
-                    <label htmlFor={fid('date')}>Date</label>
+                    <label htmlFor={fid('date')}>{t('form.date')}</label>
                     <input
                         id={fid('date')}
                         type="date"
@@ -159,7 +163,7 @@ export function BirthDataForm({
                     <FieldError id={fid('date-error')} message={errors.date} />
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('time')}>Time</label>
+                    <label htmlFor={fid('time')}>{t('form.time')}</label>
                     <input
                         id={fid('time')}
                         type="time"
@@ -174,9 +178,9 @@ export function BirthDataForm({
             </div>
 
             <details className="birth-form__advanced">
-                <summary>Advanced</summary>
+                <summary>{t('form.advanced')}</summary>
                 <div className="field-row">
-                    <label htmlFor={fid('lat')}>Latitude</label>
+                    <label htmlFor={fid('lat')}>{t('form.latitude')}</label>
                     <input
                         id={fid('lat')}
                         inputMode="decimal"
@@ -188,7 +192,7 @@ export function BirthDataForm({
                     <FieldError id={fid('lat-error')} message={errors.latitude} />
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('lon')}>Longitude</label>
+                    <label htmlFor={fid('lon')}>{t('form.longitude')}</label>
                     <input
                         id={fid('lon')}
                         inputMode="decimal"
@@ -200,7 +204,7 @@ export function BirthDataForm({
                     <FieldError id={fid('lon-error')} message={errors.longitude} />
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('tz')}>Time zone</label>
+                    <label htmlFor={fid('tz')}>{t('form.timezone')}</label>
                     <input
                         id={fid('tz')}
                         value={draft.timezone}
@@ -211,7 +215,7 @@ export function BirthDataForm({
                     <FieldError id={fid('tz-error')} message={errors.timezone} />
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('ayan')}>Ayanamsa</label>
+                    <label htmlFor={fid('ayan')}>{t('form.ayanamsa')}</label>
                     <select
                         id={fid('ayan')}
                         value={draft.ayanamsa}
@@ -221,13 +225,13 @@ export function BirthDataForm({
                     >
                         {AYANAMSA_IDS.map((id) => (
                             <option key={id} value={id}>
-                                {labelAyanamsa(id)}
+                                {labelAyanamsa(id, lang)}
                             </option>
                         ))}
                     </select>
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('hs')}>House system</label>
+                    <label htmlFor={fid('hs')}>{t('form.houseSystem')}</label>
                     <select
                         id={fid('hs')}
                         value={draft.houseSystem}
@@ -239,13 +243,13 @@ export function BirthDataForm({
                     >
                         {HOUSE_SYSTEM_IDS.map((id) => (
                             <option key={id} value={id}>
-                                {labelHouseSystem(id)}
+                                {labelHouseSystem(id, lang)}
                             </option>
                         ))}
                     </select>
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('node')}>Node type</label>
+                    <label htmlFor={fid('node')}>{t('form.nodeType')}</label>
                     <select
                         id={fid('node')}
                         value={draft.nodeType}
@@ -253,16 +257,16 @@ export function BirthDataForm({
                             onChange({ nodeType: event.target.value === 'mean' ? 'mean' : 'true' })
                         }
                     >
-                        <option value="true">True (osculating)</option>
-                        <option value="mean">Mean</option>
+                        <option value="true">{t('form.nodeTrue')}</option>
+                        <option value="mean">{t('form.nodeMean')}</option>
                     </select>
                 </div>
                 <div className="field-row">
-                    <label htmlFor={fid('cv')}>Custom varga divisor</label>
+                    <label htmlFor={fid('cv')}>{t('form.customVarga')}</label>
                     <input
                         id={fid('cv')}
                         value={draft.customVarga}
-                        placeholder="Optional, e.g. 300"
+                        placeholder={t('form.customVargaPlaceholder')}
                         aria-invalid={errors.customVarga ? true : undefined}
                         onChange={(event) => onChange({ customVarga: event.target.value })}
                     />
@@ -276,14 +280,14 @@ export function BirthDataForm({
                     className="btn btn-ghost"
                     onClick={() => fileRef.current?.click()}
                 >
-                    Import JSON
+                    {t('form.importJson')}
                 </button>
                 <input
                     ref={fileRef}
                     type="file"
                     accept="application/json,.json"
                     hidden
-                    aria-label={`Import birth JSON ${formId}`}
+                    aria-label={t('form.importJsonAria', { id: formId })}
                     onChange={async (event) => {
                         const file = event.target.files?.[0];
                         event.target.value = '';
@@ -301,8 +305,8 @@ export function BirthDataForm({
 
             {progress && !kernelReady && (progress.phase === 'downloading' || progress.message) && (
                 <div className="birth-form__kernel">
-                    <p className="mono">Ephemeris: {progress.phase}</p>
-                    <div className="progress" aria-label="Download progress">
+                    <p className="mono">{t('form.ephemeris', { phase: phaseLabel ?? '' })}</p>
+                    <div className="progress" aria-label={t('form.downloadProgress')}>
                         <span style={{ width: `${progress.percent}%` }} />
                     </div>
                 </div>
@@ -316,9 +320,11 @@ export function BirthDataForm({
                         data-testid="calculate-btn"
                         disabled={loading}
                     >
-                        {loading ? 'Calculating…' : submitLabel}
+                        {loading ? t('form.calculating') : (submitLabel ?? t('form.calculate'))}
                     </button>
-                    <p className="birth-form__summary-inline">{birthSummary(draft)}</p>
+                    <p className="birth-form__summary-inline">
+                        {birthSummary(draft, t('app.chartFallback'))}
+                    </p>
                 </div>
             )}
         </form>

@@ -1,5 +1,7 @@
 import type { KPSignificator } from '@node-jhora/core';
 import { DataTable, type DataColumn } from '../ui/DataTable';
+import { useI18n, type Lang, type Translate } from '../../i18n';
+import { planetName } from '../../i18n/astro';
 
 type PlanetSig = KPSignificator & { planetName: string };
 type HouseSig = KPSignificator & { houseNumber: number };
@@ -21,12 +23,13 @@ const LORD_NAMES: Record<number, string> = {
     99: 'Ketu',
 };
 
-function lordName(id: number): string {
-    return LORD_NAMES[id] ?? `Body ${id}`;
+function lordName(id: number, lang: Lang, t: Translate): string {
+    const name = LORD_NAMES[id];
+    return name ? planetName(name, lang) : t('kp.body', { id });
 }
 
-function formatSig(s: KPSignificator): string {
-    return `${lordName(s.starLord)} · ${lordName(s.subLord)} · ${lordName(s.subSubLord)}`;
+function formatSig(s: KPSignificator, lang: Lang, t: Translate): string {
+    return [s.starLord, s.subLord, s.subSubLord].map((id) => lordName(id, lang, t)).join(' · ');
 }
 
 type Props = {
@@ -37,20 +40,21 @@ type Props = {
 };
 
 export function KpPanel({ kp }: Props) {
+    const { lang, t } = useI18n();
     const planetCols: DataColumn<PlanetSig>[] = [
-        { key: 'p', header: 'Planet', render: (r) => r.planetName },
-        { key: 's', header: 'Significators', render: (r) => formatSig(r) },
+        { key: 'p', header: t('kp.planet'), render: (r) => planetName(r.planetName, lang) },
+        { key: 's', header: t('kp.significators'), render: (r) => formatSig(r, lang, t) },
     ];
 
     const houseCols: DataColumn<HouseSig>[] = [
-        { key: 'h', header: 'House', render: (r) => String(r.houseNumber) },
-        { key: 's', header: 'Significators', render: (r) => formatSig(r) },
+        { key: 'h', header: t('kp.house'), render: (r) => String(r.houseNumber) },
+        { key: 's', header: t('kp.significators'), render: (r) => formatSig(r, lang, t) },
     ];
 
     return (
         <div className="kp-panel" data-testid="panel-kp">
             <div className="card">
-                <h3>KP planet significators</h3>
+                <h3>{t('kp.planetsTitle')}</h3>
                 <DataTable
                     columns={planetCols}
                     rows={kp.planets ?? []}
@@ -59,7 +63,7 @@ export function KpPanel({ kp }: Props) {
                 />
             </div>
             <div className="card">
-                <h3>KP house cusps</h3>
+                <h3>{t('kp.housesTitle')}</h3>
                 <DataTable
                     columns={houseCols}
                     rows={kp.houses ?? []}
